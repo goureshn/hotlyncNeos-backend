@@ -23,3 +23,4 @@ use Illuminate\Support\Facades\Route;
 Route::post('/hotlync/checklicense', [LicenseWizardController::class, "checkLicense"]);
 Route::post('/auth/getcompareflag', [UserController::class, 'GetCompareFlag']);
 Route::post('/auth/login', [UserController::class, 'login']);
+
