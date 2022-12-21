@@ -1,0 +1,110 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Hotlync Api",
+        "description": "Ennovatech Solutions",
+        "contact": {
+            "email": "peter.noronha@ennovatech.com"
+        },
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/": {
+            "get": {
+                "tags": [
+                    "Home"
+                ],
+                "description": "Home page",
+                "responses": {
+                    "default": {
+                        "description": "Welcome page"
+                    }
+                }
+            }
+        },
+        "/auth/login": {
+            "post": {
+                "tags": [
+                    "User"
+                ],
+                "description": "Login",
+                "operationId": "2e19250fcb6adcc6dc23cd2dd19489b6",
+                "parameters": [
+                    {
+                        "name": "username",
+                        "in": "query",
+                        "description": "username of user",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "password",
+                        "in": "query",
+                        "description": "password of user",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "login_override",
+                        "in": "query",
+                        "description": "0 default",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "siteurl",
+                        "in": "query",
+                        "description": "URL of current site",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "username": {
+                                        "type": "string"
+                                    },
+                                    "password": {
+                                        "type": "string"
+                                    },
+                                    "login_override": {
+                                        "oneOf": [
+                                            {
+                                                "type": "string"
+                                            },
+                                            {
+                                                "type": "integer"
+                                            }
+                                        ]
+                                    },
+                                    "siteurl": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object",
+                                "example": {
+                                    "username": "etsadmin",
+                                    "password": "$up3rAdm!n",
+                                    "login_override": 0,
+                                    "siteurl": "staging4.myhotlync.com"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "default": {
+                        "description": "Login"
+                    }
+                }
+            }
+        }
+    }
+}

@@ -22,6 +22,64 @@ use Response;
 
 class UserController extends Controller
 {
+    /** @OA\Post(
+        *     path="/auth/login",
+        *     description="Login",
+        *     tags={"User"},
+        *     @OA\Parameter(
+        *         description="username of user",
+        *         in="query",
+        *         name="username",
+        *         @OA\Schema(type="string")
+        *     ),
+        *     @OA\Parameter(
+        *         description="password of user",
+        *         in="query",
+        *         name="password",
+        *         @OA\Schema(type="string")
+        *     ),
+        *     @OA\Parameter(
+        *         description="0 default",
+        *         in="query",
+        *         name="login_override",
+        *         @OA\Schema(type="string")
+        *     ),
+        *     @OA\Parameter(
+        *         description="URL of current site",
+        *         in="query",
+        *         name="siteurl",
+        *         @OA\Schema(type="string")
+        *     ),
+        *     @OA\RequestBody(
+        *         @OA\MediaType(
+        *             mediaType="application/json",
+        *             @OA\Schema(
+        *                 @OA\Property(
+        *                     property="username",
+        *                     type="string"
+        *                 ),
+        *                 @OA\Property(
+        *                     property="password",
+        *                     type="string"
+        *                 ),
+        *                 @OA\Property(
+        *                     property="login_override",
+        *                     oneOf={
+        *                     	   @OA\Schema(type="string"),
+        *                     	   @OA\Schema(type="integer"),
+        *                     }
+        *                 ),
+        *                 @OA\Property(
+        *                     property="siteurl",
+        *                     type="string"
+        *                 ),
+        *                 example={"username": "etsadmin", "password": "$up3rAdm!n", "login_override": 0, "siteurl": "staging4.myhotlync.com"}
+        *             )
+        *         )
+        *     ),
+        *     @OA\Response(response="default", description="Login")
+        * )
+        */
     function login(Request $request)
     {
         date_default_timezone_set(config('app.timezone'));
