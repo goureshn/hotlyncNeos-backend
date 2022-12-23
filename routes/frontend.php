@@ -3,6 +3,7 @@
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\DataController;
 use App\Http\Controllers\Frontend\CallController;
+use App\Http\Controllers\Frontend\ComplaintController;
 use App\Http\Controllers\Frontend\GuestserviceController;
 use App\Http\Controllers\FrontendController;
 use Illuminate\Support\Facades\Route;
@@ -23,3 +24,70 @@ use Illuminate\Support\Facades\Route;
 Route::any('/call/agentstatus', [CallController::class, 'getAgentStatus']);
 Route::any('/chat/unreadcount', [DataController::class, 'getChatUnreadCount']);
 Route::any('getfavouritemenu', [FrontendController::class, 'getFavouriteMenus']);
+
+Route::prefix('guestservice')->group(function () {
+    
+    Route::controller(GuestserviceController::class)->group(function () {
+        Route::any('statistics', 'getTicketStatisticInfo');
+        Route::any('getgsdispatcherlist', 'getGSDispatcherList');
+        Route::any('filterlist', 'getFilterList');
+        Route::any('prioritylist', 'getPriorityList');
+        Route::any('roomlist', 'getRoomList');
+        Route::any('locationlist', 'getLocationList');
+        Route::any('stafflist', 'getStaffList');
+        Route::any('departlist', 'getDepartmentList');
+        Route::any('usergrouplist', 'getUserGroupList');
+        Route::any('systemtasklist', 'getSystemTaskList');
+        Route::any('tasklist', 'getTaskList');
+        Route::any('ticketlist', 'getTicketList');
+        Route::any('storetasklistprofile', 'storeTaskListProfile');
+        Route::any('maxticketno', 'getMaxTicketNumber');
+        Route::any('guestname', 'getGuestName');
+        Route::any('quicktasklist', 'getQuickTaskList');
+        Route::any('maintasklist', 'getMainTaskList');
+        Route::any('locationgroup', 'getLocationGroup');
+        Route::any('historylist', 'getGuestHistoryList');
+        Route::any('taskinfo', 'getTaskInfo');
+        Route::any('getguestdata', 'getGuestData');
+        Route::any('guestprevhistorylist', 'getGuestPrevHistoryList');
+        Route::any('taskinfofromtask', 'getTaskInfoFromTask');
+        Route::any('createtasklist', 'createTaskList');
+        Route::any('createtasklistnew', 'createTaskListNew');
+        Route::any('uploadfiles', 'uploadFiles');
+        Route::any('changetask', 'changeTask');
+        Route::any('changefeedback', 'changeFeedback');
+        Route::any('messagelist', 'getTaskMessage');
+        Route::any('notifylist', 'getNotificationHistoryList');
+        Route::any('guestfeedback', 'updateGuestFeedback');
+        Route::any('taskinfowithreassign', 'getTaskInfoWithReassign');
+        Route::any('resendmessage', 'resendMessage');
+        Route::any('repeatticketlist', 'getRepeatedList');
+        Route::any('cancelrepeat', 'cancelRepeat');
+        Route::any('addtask', 'addTask');
+        Route::any('createmanagedtasklist', 'createManagedTaskList');
+    });
+
+    Route::any('chatroomlist', [ChatController::class, 'getChatSessionList']);
+
+});
+
+Route::prefix('complaint')->group(function () {
+
+    Route::controller(ComplaintController::class)->group(function () {
+        Route::any('stafflist', 'getStaffList');
+        Route::any('id', 'getID');
+        Route::any('findcheckinguest', 'findCheckinGuest');
+        Route::any('mainsubcategory', 'getMainSubCategoryList');
+        Route::any('searchguestlist', 'searchGuestList');
+        Route::any('searchcheckoutguest', 'getCheckoutGuestList');
+        Route::any('createmaincategory', 'createMainCategory');
+        Route::any('createmainsubcategory', 'createMainSubCategory');
+        Route::any('compensationtype', 'getCompensationType');
+        Route::any('deletemainsubcategory', 'deleteMainSubCategory');
+        Route::any('deletemaincategory', 'deleteMainCategory');
+        Route::any('changeseverity', 'changeSeverity');
+        Route::any('post', 'create');
+        Route::any('uploadfiles', 'uploadFiles');
+        Route::any('uploadguestimage', 'uploadFileGuest'); 
+    });
+});
