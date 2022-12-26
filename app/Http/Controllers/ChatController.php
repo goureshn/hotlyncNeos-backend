@@ -11,7 +11,7 @@ define("ACTIVE", 2);
 define("ENDED", 3);
 define("TRANSFER", 4);
 
-define("COMPLETED", 0);
+define("COMPLETEDCHAT", 0);
 define("OPEN", 1);
 define("ESCALATED", 2);
 define("TIMEOUT", 3);

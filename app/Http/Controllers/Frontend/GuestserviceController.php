@@ -77,13 +77,13 @@ if (!defined('CLEANING_NOT_ASSIGNED')) {
 
 
 
-define("COMPLETED", 0);
-define("OPEN", 1);
-define("ESCALATED", 2);
-define("TIMEOUT", 3);
-define("CANCELED", 4);
-define("SCHEDULED", 5);
-define("UNASSIGNED", 6);
+define("COMPLETEDGS", 0);
+define("OPENGS", 1);
+define("ESCALATEDGS", 2);
+define("TIMEOUTGS", 3);
+define("CANCELEDGS", 4);
+define("SCHEDULEDGS", 5);
+define("UNASSIGNEDGS", 6);
 
 define("STARTED", 0);
 define("ASSIGNED", 1);
@@ -1059,10 +1059,10 @@ class GuestserviceController extends Controller
 				$where = sprintf("st.attendant = '%d'", $attendant);
 				break;
 			case 'Open Tickets';
-				$where = sprintf("st.status_id = '%d'", OPEN);
+				$where = sprintf("st.status_id = '%d'", OPENGS);
 				break;
 			case 'Escalated Tickets';
-				$where = sprintf("st.status_id = '%d'", ESCALATED);
+				$where = sprintf("st.status_id = '%d'", ESCALATEDGS);
 				break;
 			case 'By Department';
 				$where = sprintf("st.type = '%d'", 2);
@@ -1077,7 +1077,7 @@ class GuestserviceController extends Controller
 				$where = "(TIME_TO_SEC(st.start_date_time) + st.max_time * 60 - TIME_TO_SEC('" . $cur_time . "') < 120) AND (TIME_TO_SEC(st.start_date_time) + st.max_time * 60 - TIME_TO_SEC('" . $cur_time . "') > 0)";
 				break;
 			case 'Schedule Tickets';
-				$where = sprintf("st.status_id = '%d'", SCHEDULED);
+				$where = sprintf("st.status_id = '%d'", SCHEDULEDGS);
 				break;
 			case 'My Tasks';
 				$where = sprintf("st.dispatcher = '%s' AND (st.status_id = '1' OR st.status_id = '2') AND (st.type = 1 OR st.type = 2 OR st.type = 4)", $dispatcher);
@@ -1099,7 +1099,7 @@ class GuestserviceController extends Controller
 				$where = sprintf("(exists (select 1 from services_complaint_state as cs where cs.task_id = st.id AND cs.dispatcher = %d) OR st.dispatcher = '%d') AND (st.status_id = '1' OR st.status_id = '2') AND (st.type = 3)", $dispatcher, $dispatcher);
 				break;
 			case '':
-				$where = sprintf("st.status_id != '%s' AND st.status_id != '%s'", COMPLETED, CANCELED);
+				$where = sprintf("st.status_id != '%s' AND st.status_id != '%s'", COMPLETEDGS, CANCELEDGS);
 				break;
 		}
 
@@ -1110,17 +1110,17 @@ class GuestserviceController extends Controller
 						if ($i == 0) {
 							if ($status_ids[$i] == 9) {
 								$query2->where(function ($query3) use ($status_ids) {
-									$query3->where('st.status_id', TIMEOUT);
+									$query3->where('st.status_id', TIMEOUTGS);
 									$query3->where('st.closed_flag', 1);
 								});
 							} else if ($status_ids[$i] == 3) {
 								$query2->where(function ($query3) use ($status_ids) {
-									$query3->where('st.status_id', TIMEOUT);
+									$query3->where('st.status_id', TIMEOUTGS);
 									$query3->where('st.closed_flag', 0);
 								});
 							} else if ($status_ids[$i] == 7) {
 								$query2->where(function ($query3) use ($status_ids) {
-									$query3->where('st.status_id', TIMEOUT);
+									$query3->where('st.status_id', TIMEOUTGS);
 									$query3->where('st.closed_flag', 1);
 								});
 							} else {
@@ -1129,17 +1129,17 @@ class GuestserviceController extends Controller
 						} else {
 							if ($status_ids[$i] == 9) {
 								$query2->orWhere(function ($query3) use ($status_ids) {
-									$query3->where('st.status_id', TIMEOUT);
+									$query3->where('st.status_id', TIMEOUTGS);
 									$query3->where('st.closed_flag', 1);
 								});
 							} else if ($status_ids[$i] == 3) {
 								$query2->orWhere(function ($query3) use ($status_ids) {
-									$query3->where('st.status_id', TIMEOUT);
+									$query3->where('st.status_id', TIMEOUTGS);
 									$query3->where('st.closed_flag', 0);
 								});
 							} else if ($status_ids[$i] == 7) {
 								$query2->where(function ($query3) use ($status_ids) {
-									$query3->where('st.status_id', TIMEOUT);
+									$query3->where('st.status_id', TIMEOUTGS);
 									$query3->where('st.closed_flag', 1);
 								});
 							} else {
@@ -1568,9 +1568,9 @@ class GuestserviceController extends Controller
 			$assigned_flag = Task::whereRaw('DATE(start_date_time) = CURDATE()')
 				->where('dispatcher', $row->user_id)
 				->where(function ($query) use ($datetime, $task) {
-					$query->whereIn('status_id', array(OPEN, ESCALATED))
+					$query->whereIn('status_id', array(OPENGS, ESCALATEDGS))
 						->orWhere(function ($subquery) use ($datetime, $task) {	// vacation period
-							$subquery->where('status_id', SCHEDULED)
+							$subquery->where('status_id', SCHEDULEDGS)
 								->whereRaw("TIME_TO_SEC(TIMEDIFF(start_date_time, '$datetime')) < $task->max_time");
 						});
 				})
@@ -1583,9 +1583,9 @@ class GuestserviceController extends Controller
 					->whereRaw('DATE(start_date_time) = CURDATE()')
 					->where('dispatcher', $row->user_id)
 					->where(function ($query) use ($datetime, $task) {
-						$query->whereIn('status_id', array(COMPLETED, TIMEOUT, CANCELED))
+						$query->whereIn('status_id', array(COMPLETEDGS, TIMEOUTGS, CANCELEDGS))
 							->orWhere(function ($subquery) use ($datetime, $task) {	// vacation period
-								$subquery->where('status_id', SCHEDULED)
+								$subquery->where('status_id', SCHEDULEDGS)
 									->whereRaw("TIME_TO_SEC(TIMEDIFF(start_date_time, '$datetime')) >= $task->max_time");
 							});
 					})
@@ -1607,9 +1607,9 @@ class GuestserviceController extends Controller
 					->whereRaw('DATE(start_date_time) = CURDATE()')
 					->where('dispatcher', $row->user_id)
 					->where(function ($query) use ($datetime, $task) {
-						$query->whereIn('status_id', array(OPEN, ESCALATED))
+						$query->whereIn('status_id', array(OPENGS, ESCALATEDGS))
 							->orWhere(function ($subquery) use ($datetime, $task) {	// vacation period
-								$subquery->where('status_id', SCHEDULED)
+								$subquery->where('status_id', SCHEDULEDGS)
 									->whereRaw("TIME_TO_SEC(TIMEDIFF(start_date_time, '$datetime')) < $task->max_time");
 							});
 					})
@@ -1830,9 +1830,9 @@ class GuestserviceController extends Controller
 				$assigned_flag = Task::whereRaw('DATE(start_date_time) = CURDATE()')
 					->where('dispatcher', $row->user_id)
 					->where(function ($query) use ($datetime, $task) {
-						$query->whereIn('status_id', array(OPEN, ESCALATED))
+						$query->whereIn('status_id', array(OPENGS, ESCALATEDGS))
 							->orWhere(function ($subquery) use ($datetime, $task) {	// vacation period
-								$subquery->where('status_id', SCHEDULED)
+								$subquery->where('status_id', SCHEDULEDGS)
 									->whereRaw("TIME_TO_SEC(TIMEDIFF(start_date_time, '$datetime')) < $task->max_time");
 							});
 					})
@@ -1845,9 +1845,9 @@ class GuestserviceController extends Controller
 						->whereRaw('DATE(start_date_time) = CURDATE()')
 						->where('dispatcher', $row->user_id)
 						->where(function ($query) use ($datetime, $task) {
-							$query->whereIn('status_id', array(COMPLETED, TIMEOUT, CANCELED))
+							$query->whereIn('status_id', array(COMPLETEDGS, TIMEOUTGS, CANCELEDGS))
 								->orWhere(function ($subquery) use ($datetime, $task) {	// vacation period
-									$subquery->where('status_id', SCHEDULED)
+									$subquery->where('status_id', SCHEDULEDGS)
 										->whereRaw("TIME_TO_SEC(TIMEDIFF(start_date_time, '$datetime')) >= $task->max_time");
 								});
 						})
@@ -1869,9 +1869,9 @@ class GuestserviceController extends Controller
 						->whereRaw('DATE(start_date_time) = CURDATE()')
 						->where('dispatcher', $row->user_id)
 						->where(function ($query) use ($datetime, $task) {
-							$query->whereIn('status_id', array(OPEN, ESCALATED))
+							$query->whereIn('status_id', array(OPENGS, ESCALATEDGS))
 								->orWhere(function ($subquery) use ($datetime, $task) {	// vacation period
-									$subquery->where('status_id', SCHEDULED)
+									$subquery->where('status_id', SCHEDULEDGS)
 										->whereRaw("TIME_TO_SEC(TIMEDIFF(start_date_time, '$datetime')) < $task->max_time");
 								});
 						})
@@ -2011,21 +2011,21 @@ class GuestserviceController extends Controller
 
 				unset($row['info_list']);
 
-				if ($row['dispatcher'] < 1 && $row['status_id'] != SCHEDULED) {
+				if ($row['dispatcher'] < 1 && $row['status_id'] != SCHEDULEDGS) {
 					// check unassigned task
 					$model = TaskList::find($row['task_list']);
 					$taskgroup = $model->taskgroup;
 					if (empty($taskgroup) || count($taskgroup) < 1 || $taskgroup[0]->unassigne_flag == 0) {
 						$noassigned_flag = true;
-						$row['status_id'] = OPEN;
+						$row['status_id'] = OPENGS;
 					} else {
-						$row['status_id'] = UNASSIGNED;
+						$row['status_id'] = UNASSIGNEDGS;
 						// $max_time = Functions::calcDurationForMinute($row['start_date_time'], $taskgroup[0]->start_duration);
 						// $row['max_time'] = $max_time;
 					}
 				}
 
-				if (($row['status_id'] == OPEN || $row['status_id'] == UNASSIGNED) && $this->isValidTicket($row, $prev) == false) {
+				if (($row['status_id'] == OPENGS || $row['status_id'] == UNASSIGNEDGS) && $this->isValidTicket($row, $prev) == false) {
 					$prev->type = $row['type'];
 					$invalid_task_list[] = $prev;
 					continue;
@@ -2033,7 +2033,7 @@ class GuestserviceController extends Controller
 
 				// check running ticket.
 				$last_task = null;
-				if ($row['dispatcher'] > 0 && $row['status_id'] != SCHEDULED && $row['status_id'] == OPEN) {
+				if ($row['dispatcher'] > 0 && $row['status_id'] != SCHEDULEDGS && $row['status_id'] == OPENGS) {
 					if ($this->isQueuableTask($row['task_list']))	// check queuable task
 						$last_task = $this->getRunningTicket($row['property_id'], $row['dispatcher'], 0, $row['location_id']);
 				}
@@ -2067,7 +2067,7 @@ class GuestserviceController extends Controller
 				if($row["feedback_flag"] === null) $row["feedback_flag"] = "";
 				$id = DB::table('services_task')->insertGetId($row);
 
-				if ($row['dispatcher'] < 1 && $row['status_id'] != SCHEDULED) {
+				if ($row['dispatcher'] < 1 && $row['status_id'] != SCHEDULEDGS) {
 					$this->sendNoStaffMail($id, $task_info);
 				}
 				if (!empty($setting['hskp_gs_rush_task']) && ($setting['hskp_gs_rush_task'] == $row['task_list'])) {
@@ -2111,7 +2111,7 @@ class GuestserviceController extends Controller
 					->whereIn('type', array(1, 2))
 					->where('location_id', $ticket['location_id'])	// same location
 					->where('task_list', $task_id)	// same task
-					->whereIn('status_id', array(OPEN, ESCALATED, UNASSIGNED) )
+					->whereIn('status_id', array(OPENGS, ESCALATEDGS, UNASSIGNEDGS) )
 					->where('queued_flag', 0)
 					->first();
 			if( !empty($task) )
@@ -2148,7 +2148,7 @@ class GuestserviceController extends Controller
 		$last24 = date('Y-m-d H:i:s', strtotime(' -1 day'));
 
 		$last_task = Task::where('dispatcher', $dispatcher)	// same dispatcher
-			->whereIn('status_id', array(OPEN, ESCALATED) )
+			->whereIn('status_id', array(OPENGS, ESCALATEDGS) )
 			->where('running', 1)
 			->where('location_id', '!=', $location_id)
 			->where('id', '!=', $task_id)
@@ -2320,7 +2320,7 @@ class GuestserviceController extends Controller
 
 		// if($task_user!=$user_id)
 		{
-			if( $task->status_id != COMPLETED && $task->status_id != TIMEOUT || $type == 'Forward' )
+			if( $task->status_id != COMPLETEDGS && $task->status_id != TIMEOUTGS || $type == 'Forward' )
 			{
 
 				$email_content = $this->getNotifyEmailMessage($task, $user_id, $type);
@@ -2465,14 +2465,14 @@ class GuestserviceController extends Controller
 						$task->priority_name, $task->vip == 1 ? 'RM:VIP' : '', $task->vip, empty($task->custom_message) ? '' : $task->custom_message);
 			}
 
-			if( $task->status_id == ESCALATED && $type == 'Escalated')
+			if( $task->status_id == ESCALATEDGS && $type == 'Escalated')
 			{
 				$task_state = TaskState::where('task_id', $task->id)->first();
 				if( !empty($task_state) )
 					$notification = 'ESC' . $task_state->level . ' ' . $notification;
 			}
 
-			if( $task->status_id == CANCELED )
+			if( $task->status_id == CANCELEDGS )
 			{
 				$notification = 'CANCELLED ' . $notification;
 			}
@@ -3028,7 +3028,7 @@ class GuestserviceController extends Controller
 			// task state
 			$this->createNewTaskState($tasklist[$i], 0, $tasklist[$i]->tg_id, $tasklist[$i]->escalation_group);
 
-			if($tasklist[$i]->status_id == OPEN) {
+			if($tasklist[$i]->status_id == OPENGS) {
 			    if ($bCallSytemNotification == false) {
                     $this->saveSystemNotification($tasklist[$i], "Open");
                     $bCallSytemNotification = true;
@@ -3392,7 +3392,7 @@ class GuestserviceController extends Controller
 
 						if($task_user!=($value->user_id))
 						{
-							if(!empty($task) &&( $task->status_id != COMPLETED && $task->status_id != TIMEOUT || $type == 'Forward') )
+							if(!empty($task) &&( $task->status_id != COMPLETEDGS && $task->status_id != TIMEOUTGS || $type == 'Forward') )
 							{
 
 								$this->sendNotification($value->user_id, $task_id,$task->dept_func, $task->task_list, $type, $task_notify->notification, $email_content, $send_mode, $task_notify->id, $guest_flag,1);
@@ -3493,10 +3493,10 @@ class GuestserviceController extends Controller
 		$status_id = $info['status_id'];
 
 		// calc max time for ending xx:xx:00
-		if ($status_id == OPEN) {
+		if ($status_id == OPENGS) {
 			if ($task_info->unassigne_flag == 1) {
 				$dispatcher = 0;
-				$status_id = UNASSIGNED;
+				$status_id = UNASSIGNEDGS;
 				$max_time = Functions::calcDurationForMinute($info['start_date_time'], $task_info->start_duration);
 			} else {
 				$max_time = Functions::calcDurationForMinute($info['start_date_time'], $task_info->max_time);
@@ -3547,7 +3547,7 @@ class GuestserviceController extends Controller
 				$ret['test'] = $ret['message'];
 				return $ret;
 			}
-		} elseif (($status_id == OPEN || $status_id == UNASSIGNED)  && $this->isValidTicket($ticket, $prev) == false) {
+		} elseif (($status_id == OPENGS || $status_id == UNASSIGNEDGS)  && $this->isValidTicket($ticket, $prev) == false) {
 			$ret['code'] = 201;
 
 			$ret['message'] = 'You cannot create multiple ticket with same task for same room';
@@ -3715,7 +3715,7 @@ class GuestserviceController extends Controller
 		$this->createSystemTask($ticket_ids);
 
 
-		if ($task->status_id == OPEN)
+		if ($task->status_id == OPENGS)
 			$this->saveSystemNotification($task, "Open");
 
 
@@ -3815,7 +3815,7 @@ class GuestserviceController extends Controller
 		// echo $cur_time;
 
 		// remove all complete, timeout, canceled ticket.
-		DB::table('services_task_state')->whereIn('status_id', array(COMPLETED, TIMEOUT, CANCELED))->delete();
+		DB::table('services_task_state')->whereIn('status_id', array(COMPLETEDGS, TIMEOUTGS, CANCELEDGS))->delete();
 
 		// check repeated ticket
 		$repeated_count = $this->checkRepeatTickets($cur_date, $cur_time);
@@ -3854,7 +3854,7 @@ class GuestserviceController extends Controller
 				$join->on('st.property_id', '=', 'cg.property_id');
 			})
 			->where('st.repeat_flag', 1)
-			->where('st.status_id', '!=', SCHEDULED)
+			->where('st.status_id', '!=', SCHEDULEDGS)
 			->where('st.start_date_time', '<=', $yesterday)
 			->select(DB::raw('st.*, cg.departure, cg.checkout_flag'))
 			->get();
@@ -3910,11 +3910,11 @@ class GuestserviceController extends Controller
 				$task->compensation_id = 0;
 				$task->compensation_status = 1;
 
-				$task->status_id = OPEN;
+				$task->status_id = OPENGS;
 
 				// check running ticket.
 				$last_task = null;
-				if ($dispatcher > 0 && $task->status_id  == OPEN) {
+				if ($dispatcher > 0 && $task->status_id  == OPENGS) {
 					if ($this->isQueuableTask($task->task_list))	// check queuable task
 						$last_task = $this->getRunningTicket($task->property_id, $dispatcher, 0, $task->location_id);
 				}
@@ -3936,7 +3936,7 @@ class GuestserviceController extends Controller
 
 				$status = '';
 
-				if ($task->status_id == OPEN) {
+				if ($task->status_id == OPENGS) {
 					$this->saveSystemNotification($task, 'Open');
 					$status = 'Open';
 				}
@@ -4001,7 +4001,7 @@ class GuestserviceController extends Controller
 				$join->on('st.guest_id', '=', 'cg.guest_id');
 				$join->on('st.property_id', '=', 'cg.property_id');
 			})
-			->where('st.status_id', SCHEDULED)
+			->where('st.status_id', SCHEDULEDGS)
 			->where('st.start_date_time', '<=', $cur_time)
 			->whereRaw("DATE(st.start_date_time) = '$cur_date'")
 			->select(DB::raw('st.*, cg.departure, cg.checkout_flag'))
@@ -4018,11 +4018,11 @@ class GuestserviceController extends Controller
 
 			$dispatcher = $this->getStaffForTicket($row->id);
 			$task->dispatcher = $dispatcher;
-			$task->status_id = OPEN;
+			$task->status_id = OPENGS;
 
 			// check running ticket.
 			$last_task = null;
-			if ($dispatcher > 0 && $task->status_id  == OPEN) {
+			if ($dispatcher > 0 && $task->status_id  == OPENGS) {
 				if ($this->isQueuableTask($task->task_list))	// check queuable task
 					$last_task = $this->getRunningTicket($task->property_id, $dispatcher, 0, $task->location_id);
 			}
@@ -4039,7 +4039,7 @@ class GuestserviceController extends Controller
 
 			$task->save();
 
-			if ($task->status_id == OPEN)
+			if ($task->status_id == OPENGS)
 				$this->saveSystemNotification($task, 'Open');
 
 			// save and send notification
@@ -4167,7 +4167,7 @@ class GuestserviceController extends Controller
 			return;
 		}
 
-		if ($task->dispatcher == 0 && ($nostaff_escalation_setting->escalation_setting == 0 || $task->status_id == ESCALATED) && ($task_state->end_time > $cur_time)) {
+		if ($task->dispatcher == 0 && ($nostaff_escalation_setting->escalation_setting == 0 || $task->status_id == ESCALATEDGS) && ($task_state->end_time > $cur_time)) {
 			return;
 		} elseif ($task->dispatcher == 0 && ($nostaff_escalation_setting->escalation_setting == 1) && ($task_state->end_time > $cur_time)) {
 			$startTime = new DateTime($task_state->end_time);
@@ -4214,8 +4214,8 @@ class GuestserviceController extends Controller
 
 		if (count($user_list) > 0 && !empty($escalation))		// escalated
 		{
-			if ($task->status_id != ESCALATED) {
-				$task->status_id = ESCALATED;
+			if ($task->status_id != ESCALATEDGS) {
+				$task->status_id = ESCALATEDGS;
 				$task->escalate_flag = 1;
 				$task->running = 1;
 
@@ -4257,7 +4257,7 @@ class GuestserviceController extends Controller
 		} else {
 			// change task to time_out
 			$task->end_date_time = $cur_time;
-			$task->status_id = TIMEOUT;
+			$task->status_id = TIMEOUTGS;
 			$task->running = 0;
 
 			$this->saveMobileNotification($task, 'Timeout', 0);
@@ -4486,7 +4486,7 @@ class GuestserviceController extends Controller
 		}
 
 		$task_state_model->level = $escalation->level;
-		$task_state_model->status_id = ESCALATED;
+		$task_state_model->status_id = ESCALATEDGS;
 		$task_state_model->elaspse_time = 0;
 		$task_state_model->running = 1;
 
@@ -4620,7 +4620,7 @@ class GuestserviceController extends Controller
 				$task_log->comment = $task->custom_message;
 				$task_log->log_type = 'Assignment';
 				$task_log->log_time = $cur_time;
-				if ($task->status_id == OPEN)
+				if ($task->status_id == OPENGS)
 					$task_log->status = 'Open';
 
 				$task_log->method = 'Following';
@@ -4669,7 +4669,7 @@ class GuestserviceController extends Controller
 			$task_log->comment = $task->custom_message;
 			$task_log->log_type = $message;
 			$task_log->log_time = $cur_time;
-			if ($task->status_id == OPEN)
+			if ($task->status_id == OPENGS)
 				$task_log->status = 'Open';
 
 			$task_log->method = 'Following';
@@ -4687,7 +4687,7 @@ class GuestserviceController extends Controller
 			$task_log->log_type = $message;
 			$task_log->log_time = $cur_time;
 
-			if ($task->status_id == OPEN)
+			if ($task->status_id == OPENGS)
 				$task_log->status = 'Open';
 
 			$task_log->method = 'Following';
@@ -4718,7 +4718,7 @@ class GuestserviceController extends Controller
 			->where('st.dispatcher', $dispatcher)
 			->where('st.queued_flag', 1)
 			->where('st.id', '!=', $task_id)
-			->whereIn('st.status_id', array(OPEN, ESCALATED))
+			->whereIn('st.status_id', array(OPENGS, ESCALATEDGS))
 			->orderBy('sts.elaspse_time', 'desc')
 			->orderBy('st.priority', 'desc')
 			->select(DB::raw('st.*'))
@@ -4750,12 +4750,12 @@ class GuestserviceController extends Controller
 		if ($task_state->running == 1)	// already resume
 			return -1;
 
-		if ($task_state->status_id != OPEN &&  $task_state->status_id != ESCALATED)
+		if ($task_state->status_id != OPENGS &&  $task_state->status_id != ESCALATEDGS)
 			return -1;
 
 		// check running ticket.
 		$last_task = null;
-		if ($task->dispatcher > 0 && $task->status_id != SCHEDULED) {
+		if ($task->dispatcher > 0 && $task->status_id != SCHEDULEDGS) {
 			if ($this->isQueuableTask($task->task_list))	// check queuable task
 				$last_task = $this->getRunningTicket($task->property_id, $task->dispatcher, $task->id, $task->location_id);
 		}
@@ -4859,10 +4859,10 @@ class GuestserviceController extends Controller
 
 	public function getLogType($task)
 	{
-		if ($task->status_id == OPEN)		// Open
+		if ($task->status_id == OPENGS)		// Open
 			return 'Assignment';
 
-		if ($task->status_id == SCHEDULED)		// Scheduled
+		if ($task->status_id == SCHEDULEDGS)		// Scheduled
 			return 'Scheduled';
 
 		return 'Assignment';
@@ -4958,24 +4958,24 @@ class GuestserviceController extends Controller
 				$row['max_time'] = $max_time;
 			}
 
-			if( $row['dispatcher'] < 1 && $row['status_id'] != SCHEDULED  )
+			if( $row['dispatcher'] < 1 && $row['status_id'] != SCHEDULEDGS  )
 			{
 				// check unassigned task
 				$model = TaskList::find($row['task_list']);
 				$taskgroup = $model->taskgroup;
 				if( empty($taskgroup) || count($taskgroup) < 1 || $taskgroup[0]->unassigne_flag == 0 ){
 					$noassigned_flag = true;
-					$row['status_id'] = OPEN;
+					$row['status_id'] = OPENGS;
 				}
 				else
 				{
-					$row['status_id'] = UNASSIGNED;
+					$row['status_id'] = UNASSIGNEDGS;
 					// $max_time = Functions::calcDurationForMinute($row['start_date_time'], $taskgroup[0]->start_duration);
 					// $row['max_time'] = $max_time;
 				}
 			}
 
-			if( ($row['status_id'] == OPEN || $row['status_id'] == UNASSIGNED) && $this->isValidTicket($row, $prev) == false )
+			if( ($row['status_id'] == OPENGS || $row['status_id'] == UNASSIGNEDGS) && $this->isValidTicket($row, $prev) == false )
 			{
 				$prev->type = $row['type'];
 				$invalid_task_list[] = $prev;
@@ -4984,7 +4984,7 @@ class GuestserviceController extends Controller
 
 			// check running ticket.
 			$last_task = null;
-			if( $row['dispatcher'] > 0 && $row['status_id'] != SCHEDULED && $row['status_id'] == OPEN ) {
+			if( $row['dispatcher'] > 0 && $row['status_id'] != SCHEDULEDGS && $row['status_id'] == OPENGS ) {
 				if( $this->isQueuableTask($row['task_list']) )	// check queuable task
 					$last_task = $this->getRunningTicket($row['property_id'], $row['dispatcher'], 0, $row['location_id']);
 			}
@@ -5038,7 +5038,7 @@ class GuestserviceController extends Controller
 			if($row["feedback_flag"] === null) $row["feedback_flag"] = "";
 			$id = DB::table('services_task')->insertGetId($row);
 
-			if( $row['dispatcher'] < 1 && $row['status_id'] != SCHEDULED )
+			if( $row['dispatcher'] < 1 && $row['status_id'] != SCHEDULEDGS )
 			{
 				$this->sendNoStaffMail($id,$task_info);
 			}
@@ -5107,8 +5107,8 @@ class GuestserviceController extends Controller
 	public function changeTask(Request $request)
 	{
 		$task_id = $request->get('task_id', 0);
-		$status_id = $request->get('status_id', OPEN);
-		$original_status_id = $request->get('original_status_id', OPEN);
+		$status_id = $request->get('status_id', OPENGS);
+		$original_status_id = $request->get('original_status_id', OPENGS);
 		$max_time = $request->get('max_time', 10);
 		$user_id = $request->get('user_id', 0);
 		$comment = $request->get('comment', '');
@@ -5166,7 +5166,7 @@ class GuestserviceController extends Controller
 		$notify_user_id = $user_id;	// operator
 
 		$task_notify = array();
-		if ($status_id == COMPLETED)    // Complete action
+		if ($status_id == COMPLETEDGS)    // Complete action
 		{
 			$ret = $this->checkCompleteComment($task, $comment);
 
@@ -5178,13 +5178,13 @@ class GuestserviceController extends Controller
 			$save_log_type = 'Completed';
 			$status = 'Completed';
 		}
-		else if ($status_id == CANCELED || ($log_type=='Canceled') )    // cancel action
+		else if ($status_id == CANCELEDGS || ($log_type=='Canceled') )    // cancel action
 		{
 			$task_notify = $this->changeTaskToCancel($task_id, $cur_time, $comment);	// what task, when, why reason
 			$save_log_type = 'Canceled';
 			$status = 'Canceled';
 		}
-		else if ($status_id == OPEN)    // Open
+		else if ($status_id == OPENGS)    // Open
 		{
 			$assign_id = $request->get('assign_id', 0);
 			if( $log_type == 'Assigned' && empty($assign_id) )	// Schedule to Open
@@ -5261,7 +5261,7 @@ class GuestserviceController extends Controller
 				$notify_user_id = $user_id;	// assigner
 			}
 		}
-		else if ($status_id == ESCALATED)    // Escalated
+		else if ($status_id == ESCALATEDGS)    // Escalated
 		{
 			if( $log_type == 'On-Hold' )	// Escalated to Hold
 			{
@@ -5279,13 +5279,13 @@ class GuestserviceController extends Controller
 				// 	$notify_user_id = $task_notify->user_id;	// runner
 			}
 		}
-		else if ($status_id == SCHEDULED)	// Scheduled
+		else if ($status_id == SCHEDULEDGS)	// Scheduled
 		{
 			$task_notify = $this->changeTaskToSchedule($task_id, $start_date_time, $max_time, $repeat_flag, $until_checkout_flag, $repeat_end_date);	// what task, when to start, during
 			$save_log_type = 'Modify(Scheduled)';
 			$status = 'Scheduled';
 		}
-		else if ($status_id == TIMEOUT)    // cancel action
+		else if ($status_id == TIMEOUTGS)    // cancel action
 		{
 			if($log_type!='Comment')
 			{
@@ -5299,7 +5299,7 @@ class GuestserviceController extends Controller
 			$task_notify = $task;
 		}
 
-		if( ($status_id == OPEN || $status_id == ESCALATED) && $task->running == 0 )
+		if( ($status_id == OPENGS || $status_id == ESCALATEDGS) && $task->running == 0 )
 			$status = 'Hold';
 
 		if( $source == 0 )
@@ -5413,7 +5413,7 @@ class GuestserviceController extends Controller
 
 		$task = Task::find($task_id);
 
-		$task->status_id	= COMPLETED;		// set complete state
+		$task->status_id	= COMPLETEDGS;		// set complete state
 		$task->finisher = $user_id;		// set finisher(most equal dispatcher)
 		$task->end_date_time = $cur_time;	// finish time
 		$task->running = 0;				// set running to 0
@@ -5454,7 +5454,7 @@ class GuestserviceController extends Controller
 		$task = Task::find($task_id);
 
 		// update services_task
-		$task->status_id	= CANCELED;		// set cancel state
+		$task->status_id	= CANCELEDGS;		// set cancel state
 		$task->end_date_time = $cur_time;	// cancel time
 		$task->running = 0;
 		$task->custom_message = $comment; // set running to 0
@@ -5488,7 +5488,7 @@ class GuestserviceController extends Controller
 		$dispatcher = $this->getStaffForTicket($task_id);
 
 		// update services_task
-		$task->status_id	= OPEN;		// set sechduel task
+		$task->status_id	= OPENGS;		// set sechduel task
 		$task->start_date_time = $start_time;
 		$task->max_time = $max_time;
 		$task->dispatcher = $dispatcher;
@@ -5520,7 +5520,7 @@ class GuestserviceController extends Controller
 		$old_dispatcher = $task->dispatcher;
 
 		// update services_task
-		$task->status_id	= OPEN;		// set open task
+		$task->status_id	= OPENGS;		// set open task
 		$task->start_date_time = $start_time;
 		$task->max_time = $max_time;
 		$task->dispatcher = $assign_id;
@@ -5574,7 +5574,7 @@ class GuestserviceController extends Controller
 		$task = Task::find($task_id);
 
 		// update services_task
-		$task->status_id	= OPEN;		// set sechduel task
+		$task->status_id	= OPENGS;		// set sechduel task
 		$task->start_date_time = $start_time;
 		$task->max_time = $max_time;
 
@@ -5647,7 +5647,7 @@ class GuestserviceController extends Controller
 		if( $task_state->running != 1 )	// already hold
 			return array();
 
-		if( $task_state->status_id != OPEN &&  $task_state->status_id != ESCALATED )
+		if( $task_state->status_id != OPENGS &&  $task_state->status_id != ESCALATEDGS )
 			return array();
 
 		$task_state->elaspse_time = $task_state->getElapseTime();
@@ -5689,7 +5689,7 @@ class GuestserviceController extends Controller
 		$task = Task::find($task_id);
 
 		// update services_task
-		$task->status_id	= OPEN;		// set sechduel task
+		$task->status_id	= OPENGS;		// set sechduel task
 		$task->max_time = $max_time;
 		$task->running = 1;
 		$task->save();
@@ -5765,7 +5765,7 @@ class GuestserviceController extends Controller
 		$task = Task::find($task_id);
 
 		// update services_task
-		$task->status_id	= SCHEDULED;		// set sechduel task
+		$task->status_id	= SCHEDULEDGS;		// set sechduel task
 		$task->start_date_time = $start_date_time;
 		$task->max_time = $max_time;
 		$task->running = 0;
@@ -6062,9 +6062,9 @@ class GuestserviceController extends Controller
 			$assigned_flag = Task::whereRaw('DATE(start_date_time) = CURDATE()')
 					->where('dispatcher', $row->user_id)
 					->where(function ($query) use ($datetime, $task) {
-						$query->whereIn('status_id', array(OPEN, ESCALATED))
+						$query->whereIn('status_id', array(OPENGS, ESCALATEDGS))
 								->orWhere(function ($subquery) use ($datetime, $task) {	// vacation period
-									$subquery->where('status_id', SCHEDULED)
+									$subquery->where('status_id', SCHEDULEDGS)
 											->whereRaw("TIME_TO_SEC(TIMEDIFF(start_date_time, '$datetime')) < $task->max_time");
 								});
 					})
@@ -6077,9 +6077,9 @@ class GuestserviceController extends Controller
 						->whereRaw('DATE(start_date_time) = CURDATE()')
 						->where('dispatcher', $row->user_id)
 						->where(function ($query) use ($datetime, $task) {
-							$query->whereIn('status_id', array(COMPLETED, TIMEOUT, CANCELED))
+							$query->whereIn('status_id', array(COMPLETEDGS, TIMEOUTGS, CANCELEDGS))
 									->orWhere(function ($subquery) use ($datetime, $task) {	// vacation period
-										$subquery->where('status_id', SCHEDULED)
+										$subquery->where('status_id', SCHEDULEDGS)
 												->whereRaw("TIME_TO_SEC(TIMEDIFF(start_date_time, '$datetime')) >= $task->max_time");
 									});
 						})
@@ -6102,9 +6102,9 @@ class GuestserviceController extends Controller
 						->whereRaw('DATE(start_date_time) = CURDATE()')
 						->where('dispatcher', $row->user_id)
 						->where(function ($query) use ($datetime, $task) {
-							$query->whereIn('status_id', array(OPEN, ESCALATED))
+							$query->whereIn('status_id', array(OPENGS, ESCALATEDGS))
 									->orWhere(function ($subquery) use ($datetime, $task) {	// vacation period
-										$subquery->where('status_id', SCHEDULED)
+										$subquery->where('status_id', SCHEDULEDGS)
 												->whereRaw("TIME_TO_SEC(TIMEDIFF(start_date_time, '$datetime')) < $task->max_time");
 									});
 						})
@@ -6486,7 +6486,7 @@ class GuestserviceController extends Controller
 						$task_log->comment = $tasklist[$i]->custom_message;
 						$task_log->log_type = $this->getLogType($tasklist[$i]);
 						$task_log->log_time = $cur_time;
-						if( $tasklist[$i]->status_id == OPEN )
+						if( $tasklist[$i]->status_id == OPENGS )
 							$task_log->status = 'Open';
 
 						if( !empty($task_notify) )
