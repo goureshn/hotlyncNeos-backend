@@ -6,6 +6,7 @@ use App\Http\Controllers\Frontend\CallController;
 use App\Http\Controllers\Frontend\ComplaintController;
 use App\Http\Controllers\Frontend\GuestserviceController;
 use App\Http\Controllers\FrontendController;
+use App\Http\Controllers\Intface\ProcessController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -65,14 +66,34 @@ Route::prefix('guestservice')->group(function () {
         Route::any('cancelrepeat', 'cancelRepeat');
         Route::any('addtask', 'addTask');
         Route::any('createmanagedtasklist', 'createManagedTaskList');
+        Route::any('guestlist', 'getGuestInfoList');
+        Route::any('getguestsmshistory', 'getGuestSMSHisotry');
+        Route::any('sendguestsms', 'sendGuestSMS');
+        Route::any('getguestloglist', 'getGuestLogList');
+        Route::any('facilitylog', 'facilityLog');
+        Route::any('getguestloghistory', 'getfacilityLog');
+        Route::any('guestexit', 'guestExit');
+        Route::any('tablecheck', 'getTablecheck');
+        Route::any('tablecheckupdate', 'getTablecheckupdate');
+        Route::any('tablecheckwalkin', 'getTablecheckWalkin');
+        Route::any('guestreservationlist', 'getReservationList');
+        Route::any('createguestreservation', 'createReservation');
+        Route::any('getguestsmstemplate', 'getGuestSmsTemplate');
+        Route::any('saveguestsmstemplate', 'saveGuestSmsTemplate');
+        Route::any('awcroomlist', 'getAWCRoomList');
+        Route::any('shiftinfolist', 'getInformationForShift');
+        Route::any('taskgrouplist', 'getTaskgrouplist');
+        Route::any('createshiftgrouplist', 'createShiftGroupList');
+        Route::any('alarmlistten', 'getAlarmListTen');
+        Route::any('alarmlist', 'getAlarmList');
+        Route::any('alarmgroup', 'getAlarmGroupList'); 
+        Route::any('sendalarm', 'sendAlarm');
     });
-
-    Route::any('chatroomlist', [ChatController::class, 'getChatSessionList']);
-
+    
+    Route::any('manualpost', [ProcessController::class, 'postManual']);
 });
 
 Route::prefix('complaint')->group(function () {
-
     Route::controller(ComplaintController::class)->group(function () {
         Route::any('stafflist', 'getStaffList');
         Route::any('id', 'getID');
@@ -88,6 +109,5 @@ Route::prefix('complaint')->group(function () {
         Route::any('changeseverity', 'changeSeverity');
         Route::any('post', 'create');
         Route::any('uploadfiles', 'uploadFiles');
-        Route::any('uploadguestimage', 'uploadFileGuest'); 
     });
 });

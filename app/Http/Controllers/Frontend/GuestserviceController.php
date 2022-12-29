@@ -7,6 +7,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Common\CommonUser;
 use App\Models\Common\CommonUserGroup;
 use App\Models\Common\Department;
+use App\Models\Common\Guest;
+use App\Models\Common\GuestAdvancedDetail;
+use App\Models\Common\GuestLog;
+use App\Models\Common\GuestSmsTemplate;
 use App\Models\Common\PropertySetting;
 use App\Models\Common\Room;
 use App\Models\Common\SystemNotification;
@@ -6511,5 +6515,1041 @@ class GuestserviceController extends Controller
 				}
 			}
 		}
+	}
+
+	public function getGuestInfoList(Request $request) 
+	{
+		$page = $request->get('page', 0);
+		$pageSize = $request->get('pagesize', 20);
+		$skip = $page;
+		$orderby = $request->get('field', 'id');
+		$sort = $request->get('sort', 'asc');
+		$property_id = $request->get('property_id', '0');
+		$checkout_flag = $request->get('checkout_flag', 'All');
+		$searchoption = $request->get('searchoption','');
+		$filter = $request->get('filter','');
+
+		if($pageSize < 0 )
+			$pageSize = 20;
+
+		$ret = array();
+
+		$query = DB::table('common_guest as cg')
+				->join('common_room as cr', 'cg.room_id', '=', 'cr.id')
+				->join('common_floor as cf', 'cr.flr_id', '=', 'cf.id')
+				->join('common_building as cb', 'cf.bldg_id', '=', 'cb.id')
+				->join('common_vip_codes as vc', 'vc.vip_code', '=', 'cg.vip')
+				->leftJoin('common_guest_advanced_detail as gad', 'cg.id', '=', 'gad.id')
+				->where('cb.property_id', $property_id);
+
+		// get building ids
+		$user_id = $request->get('user_id', 0);
+		$building_ids = CommonUser::getBuildingIds($user_id);
+
+		if( !empty($building_ids) )
+		{
+			$building_ids = explode(',', $building_ids);
+			$query->whereIn('cf.bldg_id', $building_ids);
+		}
+
+		if( $filter != 'Total' )
+			{
+			if( $filter == 1 )	// On Route
+				$query->where('cg.checkout_flag', 'checkin');
+			if( $filter == 2 )
+				$query->where('cg.checkout_flag', 'checkout');
+			if( $filter == 3 )
+				$query->where('cg.fac_flag', 1);
+			}
+
+
+		if($searchoption == '') {
+
+			if( $checkout_flag != 'All')
+				$query->where('checkout_flag', $checkout_flag);
+
+		}else {
+			if( $checkout_flag != 'All')
+				$query->where('checkout_flag', $checkout_flag);
+			$where = sprintf(" (cr.room like '%%%s%%' or								
+								cg.guest_name like '%%%s%%' or								
+								cg.arrival like '%%%s%%' or
+								cg.departure like '%%%s%%' or
+								cg.vip like '%%%s%%' or
+								vc.name like '%%%s%%' or
+								cg.guest_id like '%%%s%%')",
+				$searchoption, $searchoption, $searchoption, $searchoption, $searchoption, $searchoption,$searchoption
+			);
+			$query->whereRaw($where);
+
+		}
+
+
+		$data_query = clone $query;
+
+		$detail = new GuestAdvancedDetail();
+		$attrs = array_slice($detail->getTableColumns(), 4, -2);
+
+		$column = '';
+        foreach($attrs as $i => $key)
+        {
+        	if($i > 0)
+        		$column .= ',';
+        	$column .=  'gad.' . $key;
+        }
+
+		$alarm_list = $data_query
+				->orderBy($orderby, $sort)
+				->select(DB::raw('cg.*, vc.name as vip_name, cb.name as building, cr.room, ' . $column))
+				->skip($skip)->take($pageSize)
+				->get();
+
+				foreach($alarm_list as $key => $row) {
+			$alarm_list[$key]->active_fac = GuestLog::activeList($row->id);
+		}
+
+		$count_query = clone $query;
+		$totalcount = $count_query->count();
+
+		$ret['guestlist'] = $alarm_list;
+		$ret['totalcount'] = $totalcount;
+		$ret['column'] = $column;
+
+		return Response::json($ret);
+
+	}
+
+	public function getGuestSMSHisotry(Request $request) 
+	{
+		$guest_id = $request->get('id' , 0) ;
+		$history_list = DB::table('common_guest_sms_history as cg')
+			->leftJoin('common_users as cu', 'cg.user_id', '=', 'cu.id')
+			->where('cg.guest_id', $guest_id)
+			->select(DB::raw('cg.*, CONCAT_WS(" ", cu.first_name, cu.last_name) as username'))
+			->get();
+		$ret = array();
+		$ret['history'] = $history_list;
+		return Response::json($ret);
+	}
+
+	public function sendGuestSMS(Request $request) 
+	{
+		$guest_id = $request->get('id',0);
+		$property_id = $request->get('property_id' , 0);
+		$user_id = $request->get('user_id' , 0);
+		$data = $this->sendToGuestSMS($guest_id,$property_id, $user_id);
+
+		return Response::json($data);
+	}
+
+	public function sendToGuestSMS($guest_id, $property_id, $user_id) 
+	{
+
+		$send_flag = true ;
+		$guest_data = DB::table('common_guest')
+			->where('id', $guest_id)
+			->where('property_id', $property_id)
+			->select(DB::raw('*'))
+			->first();
+		if(empty($guest_data))
+			return '0';
+
+		$mobile = $guest_data->mobile;
+		$guest_name = $guest_data->guest_name;
+		$ack = $guest_data->ack;
+		if ($user_id == 0) {
+			if ($ack == 2) $send_flag = false;
+		}
+
+		if( $send_flag == false )
+			return '0';
+
+		$settings = PropertySetting::getGuestServiceSetting($property_id);
+		$sms_flag = $settings['send_sms_to_guest'];
+
+		if($sms_flag == 'ON' ) {
+
+			$property = DB::table('common_property')
+				->where('id', $property_id)
+				->select(DB::raw('*'))
+				->first();
+			$property_name = $property->name;
+
+			$guest = (object)array();
+			$guest->guest_name = $guest_name;
+			$guest->mobile = $mobile;
+			$guest->property_name = $property_name;
+			$data = array();
+			$data['property_id'] = $property_id;
+			$data['guest'] = $guest;
+			$content = GuestSmsTemplate::generateTemplate($data);
+
+			date_default_timezone_set(config('app.timezone'));
+			$datetime = date('Y-m-d H:i:s');
+
+			if (!empty($mobile)) {
+				$input = array();
+				$input['guest_id'] = $guest_id;
+				$input['number'] = $mobile;
+				$input['status'] = 0;
+				$input['user_id'] = $user_id;
+				$input['created_at'] = $datetime;
+				$id = DB::table('common_guest_sms_history')
+					->insertGetId($input);
+				$payload = array();
+				$payload['ack'] = 1;
+				//$payload['table_name'] = 'common_guest';
+				$payload['table_name'] = 'common_guest_sms_history,common_guest';
+				$payload['property_id'] = $property_id;
+				$payload['notify_type'] = 'guestdetail';
+				$payload['notify_id'] = $guest_id;//for guest information refresh
+				$payload['table_id'] = $id . ',' . $guest_id;
+
+				$this->sendSMS(0, $mobile, $content, $payload);
+
+				if($user_id != 0) {
+					return '200';
+				}else {
+					return '0';
+				}
+			}else {
+				return '0';
+			}
+		}else {
+			return '0';
+		}
+	}
+
+	public function getGuestLogList(Request $request) 
+	{
+        $page = $request->get('page', 1);
+        $pageSize = $request->get('pagesize', 20);
+        $skip = ($page - 1) * $pageSize;
+        $orderby = $request->get('field', 'id');
+        $sort = $request->get('sort', 'asc');
+        $property_id = $request->get('property_id', '0');
+        $checkout_flag = $request->get('checkout_flag', 'All');
+        $searchoption = $request->get('searchoption','');
+        $filter = $request->get('filter','');
+        $guest_id = $request->get('guest_id', -1);
+
+        if($pageSize < 0 )
+            $pageSize = 20;
+
+        $ret = array();
+
+        $query = DB::table('common_guest_log')
+            ->where('guest_id', $guest_id)
+            ->where('property_id', $property_id);
+
+
+        if( $filter != 'Total' )
+        {
+            if( $filter == 1 )	// On Route
+                $query->where('checkout_flag', 'checkin');
+            if( $filter == 2 )
+                $query->where('checkout_flag', 'checkout');
+            if( $filter == 3 )
+                $query->where('fac_flag', 1);
+        }
+
+        if ($searchoption !== '') {
+	        $where = sprintf(" (								
+								guest_name like '%%%s%%' or	
+								first_name like '%%%s%%' or							
+								arrival like '%%%s%%' or
+								departure like '%%%s%%')",
+                $searchoption, $searchoption, $searchoption, $searchoption
+            );
+            $query->whereRaw($where);
+        }
+
+
+        $data_query = clone $query;
+
+        $detail = new GuestAdvancedDetail();
+        $attrs = array_slice($detail->getTableColumns(), 4, -2);
+
+        $column = '';
+        foreach($attrs as $i => $key)
+        {
+            if($i > 0)
+                $column .= ',';
+            $column .=  'gad.' . $key;
+        }
+
+        $alarm_list = $data_query
+            ->orderBy($orderby, $sort)
+            ->select(DB::raw('*'))
+            ->skip($skip)->take($pageSize)
+            ->get();
+
+        foreach($alarm_list as $key => $row) {
+            $alarm_list[$key]->active_fac = GuestLog::activeList($row->id);
+        }
+
+        $count_query = clone $query;
+        $totalcount = $count_query->count();
+
+        $ret['guestlist'] = $alarm_list;
+        $ret['totalcount'] = $totalcount;
+        $ret['column'] = $column;
+
+        return Response::json($ret);
+    }
+
+	public function getFacilityTotalListData($filter, $client_id)
+	{
+		$ret = array();
+
+		$property_list = DB::table('common_property')
+			->where('client_id', $client_id)
+			->get();
+
+		foreach($property_list as $property) {
+			$locationlist = $this->getFacilityListData($filter, $property->id);
+			$ret = array_merge($ret, $locationlist->toArray());
+		}
+
+		return $ret;
+	}
+
+	public function getFacilityListData($filter, $pro_id)
+	{
+		$ret = DB::table('services_location as sl')
+			->join('common_property as cp', 'sl.property_id', '=', 'cp.id')
+			->join('services_location_type as lt', 'sl.type_id', '=', 'lt.id')
+			->where('sl.property_id', $pro_id)
+			->where('sl.name', 'like', $filter)
+			->whereRaw("(lt.type = 'Common Area' OR lt.type = 'Outdoor')")
+			->select(DB::Raw('sl.*, sl.id as lg_id, sl.name, lt.type, cp.name as property'))
+			->get();
+
+		return $ret;
+	}
+
+	public function facilityLog(Request $request) 
+	{
+		$guest_id = $request->get('id' , 0);
+		$user_id = $request->get('user_id' , 0);
+		$entry = $request->get('entry_time', 0);
+		$kids = $request->get('quantity_2', 0);
+		$adults = $request->get('quantity_1', 0);
+		$extra = $request->get('quantity_3', 0);
+		$comment = $request->get('comment', '');
+		$location = $request->get('location', '');
+
+		date_default_timezone_set(config('app.timezone'));
+		$cur_time = date("Y-m-d H:i:s");
+		$cur_date = date("Y-m-d");
+
+
+		$guest_log = new GuestLog();
+		$guest_log->guest_id=$guest_id;
+		$guest_log->user_id=$user_id;
+		$guest_log->entry_time = $cur_date . ' ' .$entry;
+		$guest_log->kids=$kids;
+		$guest_log->adults=$adults;
+		$guest_log->extra=$extra;
+		$guest_log->comment=$comment;
+		$guest_log->location=$location;
+		$guest_log->save();
+
+		if($guest_log->exit_time == NULL)
+		{
+			$guest = Guest::find($guest_id);
+			$guest->fac_flag=1;
+			$guest->save();
+		}
+
+		$ret = array();
+
+		$ret['code'] = 200;
+		$ret['id'] = $guest_log->id;
+
+		return Response::json($ret);
+	}
+
+	public function getfacilityLog(Request $request) 
+	{
+		$guest_id = $request->get('id' , 0) ;
+		$history_list = DB::table('common_guest_facility_log as cg')
+			->leftJoin('common_users as cu', 'cg.user_id', '=', 'cu.id')
+			->where('cg.guest_id', $guest_id)
+			->select(DB::raw('cg.*, CONCAT_WS(" ", cu.first_name, cu.last_name) as username'))
+			->get();
+		$ret = array();
+		$ret['history'] = $history_list;
+		return Response::json($ret);
+	}
+
+	public function guestExit(Request $request) 
+	{
+		$id = $request->get('id', 0) ;
+		date_default_timezone_set(config('app.timezone'));
+		$cur_time = date("Y-m-d H:i:s");
+		$cur_date = date("Y-m-d");
+
+		$guest_log = GuestLog::find($id);
+		$guest_log->exit_time=$cur_time;
+		$guest_log->save();
+		$active_list=array();
+		$active_list = GuestLog::activeList($guest_log->guest_id);
+		
+		if(empty($active_list))
+		{
+		    $guest = Guest::find($guest_log->guest_id);
+			$guest->fac_flag=0;
+			$guest->save();
+		}
+
+		$ret = array();
+		$ret['id'] = $guest_log->id;
+		return Response::json($ret);
+	}
+
+	public function getTablecheck(Request $request)
+	{
+		$testshopref = $request->get('testshopref', '');
+		$testdate = $request->get('testdate', '');
+
+		$ch = curl_init();
+
+
+		//	$url1 = `https://api.tablesolution.com/ts_api/shops/$testshopref/reservations/by_date/$testdate`;
+		//	$url3 = `https://api.tablesolution.com/ts_api/shops/5fd1bd793b3cbc0023b28952/reservations/by_date/2021-06-10`;
+
+		$url6 = 'https://api.tablesolution.com/ts_api/v2/shops/5fd1bd793b3cbc0023b28952/reservations';
+		$url2 = sprintf('https://api.tablesolution.com/ts_api/v2/shops/%s/reservations',$testshopref);
+
+		$url7 = 'https://api.tablesolution.com/ts_api/v2/shops/5fd1bd793b3cbc0023b28952/syncrequests';
+
+
+		$headers = [
+			'Content-Type: application/json',
+			'Authorization: 9QNYROG1SLG98YERBM9OUZ56IDTP5D55UD1PG9BW',
+		];
+
+
+		curl_setopt($ch,CURLOPT_URL,$url6);
+		curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
+		//	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
+		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+		$output=curl_exec($ch);
+
+		curl_close($ch);
+
+
+
+
+		return Response::json($output);
+	}
+
+	public function getTablecheckupdate(Request $request)
+	{
+
+		$testrefid = $request->get('testrefid', '');
+		$status = $request->get('status', '');
+
+		$ch = curl_init();
+		$data = array("status" => $status);
+
+		$data_string = json_encode($data);
+		$url = sprintf('https://api.tablesolution.com/ts_api/v2/shops/5fd1bd793b3cbc0023b28952/reservations/%s',$testrefid);
+		$url2 = 'https://api.tablesolution.com/ts_api/v2/shops/5fd1bd793b3cbc0023b28952/reservations/60c1d05a8be2db003c591331';
+		$url3 = 'https://api.tablesolution.com/ts_api/v2/shops/5fd1bd793b3cbc0023b28952/pos_journals/<journal_id>';
+
+		$headers = [
+			'Content-Type: application/json',
+			'Authorization: 9QNYROG1SLG98YERBM9OUZ56IDTP5D55UD1PG9BW',
+		];
+
+		curl_setopt($ch,CURLOPT_URL,$url);
+		curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
+		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT");
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+		$output=curl_exec($ch);
+
+		curl_close($ch);
+
+		return Response::json($output);
+	}
+
+	public function getTablecheckWalkin(Request $request)
+	{
+
+		date_default_timezone_set(config('app.timezone'));
+
+		$testadultno = $request->get('testadultno', '');
+		$testduration = $request->get('testduration', 0);
+		$testtabname = $request->get('testtabname', '');
+		$status = $request->get('status', '');
+		$cur_time = date("Y-m-d\TH:i:sP");
+		//	$iso_time = date_format(date_create('17 Oct 2008'), 'c');
+
+
+
+
+		$ch = curl_init();
+
+		$data = array("status" => $status,
+					  "duration" => $testduration * 3600,
+					  "num_people_adult" => $testadultno,
+					  "table_name" => [$testtabname],
+					  "source" => 'walk_in',
+					  "start_date" => $cur_time);
+
+
+		$data_string = json_encode($data);
+
+
+		/*
+		$url = sprintf('https://api.tablesolution.com/ts_api/v2/shops/5fd1bd793b3cbc0023b28952/reservations/%s',$testrefid);
+		$url2 = 'https://api.tablesolution.com/ts_api/v2/shops/5fd1bd793b3cbc0023b28952/reservations/60c1d05a8be2db003c591331';
+		$url3 = 'https://api.tablesolution.com/ts_api/v2/shops/5fd1bd793b3cbc0023b28952/pos_journals/<journal_id>';
+
+		$url4 = 'https://api.tablesolution.com/ts_api/v2/shops/5fd1bd793b3cbc0023b28952/reservations/res_00019';
+
+
+		$headers = [
+			'Content-Type: application/json',
+			'Authorization: 9QNYROG1SLG98YERBM9OUZ56IDTP5D55UD1PG9BW',
+		];
+
+
+		curl_setopt($ch,CURLOPT_URL,$url4);
+		curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
+		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT");
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+		$output=curl_exec($ch);
+
+		curl_close($ch);
+		*/
+
+		return Response::json($data);
+	}
+
+	public function getReservationList(Request $request)
+	{
+		$page = $request->get('page', 0);
+		$pageSize = $request->get('pagesize', 20);
+		$skip = $page;
+		$orderby = $request->get('field', 'id');
+		$sort = $request->get('sort', 'asc');
+		$property_id = $request->get('property_id', 0);
+		$searchoption = $request->get('searchtext', '');
+
+		if($pageSize < 0 )
+			$pageSize = 20;
+
+		$ret = array();
+
+		$query = DB::table('common_guest_reservation as cgr')
+				->leftJoin('common_room as cr', 'cgr.room_id', '=', 'cr.id')
+				->where('cgr.property_id', $property_id);
+
+		// get building ids
+		if( !empty($searchoption) )
+		{
+			$where = sprintf(" (cr.room like '%%%s%%' or								
+								cgr.guest_name like '%%%s%%' or								
+								cgr.start_date like '%%%s%%' or
+								cgr.end_date like '%%%s%%' or
+								cgr.res_id like '%%%s%%')",
+				$searchoption, $searchoption, $searchoption, $searchoption, $searchoption
+			);
+
+			$query->whereRaw($where);
+		}
+
+		$data_query = clone $query;
+
+		$list = $data_query
+				->orderBy($orderby, $sort)
+				->select(DB::raw('cgr.*, cr.room'))
+				->skip($skip)->take($pageSize)
+				->get();
+
+		$count_query = clone $query;
+		$totalcount = $count_query->count();
+
+		$ret['list'] = $list;
+		$ret['totalcount'] = $totalcount;
+
+		return Response::json($ret);
+	}
+
+	public function createReservation(Request $request)
+	{
+		$input = $request->except(['room']);
+
+		$ret = array();
+		$ret['code'] = 200;
+
+		$id = $request->get('id', 0);
+		$room_id = $request->get('room_id', 0);
+		if( $room_id > 0 )
+		{
+			if($input['status'] == 'Booking' )
+				$input['status'] = 'Arrival';
+		}
+
+		if( $id > 0 )	// update
+		{
+			DB::table('common_guest_reservation')
+				->where('id', $id)
+				->update($input);
+		}
+		else
+		{
+			DB::table('common_guest_reservation')
+				->insert($input);
+		}
+
+		return Response::json($ret);
+	}
+
+	public function getGuestSmsTemplate(Request $request) 
+	{
+		$user_id = $request->get('user_id', 0);
+		$property_id = $request->get('property_id', 0);
+
+		$ret = array();
+
+		$model = DB::table('common_guest_sms_template')
+			->where('property_id', $property_id)
+			->first();
+
+		if( empty($model) )
+			$ret['template'] = '';
+		else
+			$ret['template'] = $model->template;
+
+		$ret['temp_item_list'] = GuestSmsTemplate::getTemplateElementList();
+
+		$ret['code'] = 200;
+
+		return Response::json($ret);
+	}
+
+	public function saveGuestSmsTemplate(Request $request) 
+	{
+		$user_id = $request->get('user_id', 0);
+		$property_id = $request->get('property_id', 0);
+		$template = $request->get('template', '');
+
+		$ret = array();
+
+		$model = GuestSmsTemplate::where('property_id', $property_id)
+			->first();
+
+		if( empty($model) )
+		{
+			$model = new GuestSmsTemplate();
+			$model->property_id = $property_id;
+		}
+
+		$model->template = $template;
+		$model->modified_by = $user_id;
+		$model->save();
+
+		$ret['code'] = 200;
+
+		return Response::json($ret);
+	}
+
+	public function getAWCRoomList(Request $request)
+	{
+		// select room list with property id
+		$cur_date = date("Y-m-d");
+		$room = $request->get('room', '1001');
+		$property_id = $request->get('property_id', 4);
+		$roomlist = DB::table('common_room as cr')
+					->join('common_floor as cf', 'cr.flr_id', '=', 'cf.id')
+					->join('common_building as cb', 'cf.bldg_id', '=', 'cb.id')
+					->join('common_guest as cg', function($join) use ($cur_date) {
+						$join->on('cr.id', '=', 'cg.room_id');
+						$join->on('cg.departure','>=',DB::raw($cur_date));
+						$join->on('cg.checkout_flag','=', DB::raw("'checkin'"));
+					})
+					->where('cr.room', 'like', '%' . $room . '%')
+					->where('cb.property_id', $property_id)
+					->select(DB::raw('cr.*, cb.property_id'))
+					->get();
+
+		return Response::json($roomlist);
+	}
+
+	public function getInformationForShift(Request $request)
+	{
+		$dept_id = $request->get('dept_id', 0);
+
+		$users = DB::table('common_users as cu')
+				->where('dept_id', $dept_id)
+				->where('cu.deleted', 0)
+				->select(DB::raw('cu.*, CONCAT_WS(" ", cu.first_name, cu.last_name) as wholename'))
+				->get();
+
+		$dept_funcs = DB::table('services_dept_function as sdf')
+				->where('dept_id', $dept_id)
+				->get();
+
+		$shifts = DB::table('services_shift_group as sg')
+				->join('services_shifts as sh', 'sg.shift', '=', 'sh.id')
+				->where('sg.dept_id', $dept_id)
+				->select(['sg.*', 'sh.name as shname'])
+				->get();
+
+		$location_groups = DB::table('services_location_group as slg')
+				->get();
+
+		$shift_group_member = DB::table('services_shift_group_members as sgm')
+				->join('services_shift_group as sg', 'sgm.shift_group_id', '=', 'sg.id')
+				->join('common_users as cu', 'sgm.user_id', '=', 'cu.id')
+				->join('services_shifts as sh', 'sg.shift', '=', 'sh.id')
+				->where('sg.dept_id', $dept_id)
+				->select(DB::raw('sgm.*, sh.name as shname, sh.start_time, sh.end_time, CONCAT_WS(" ", cu.first_name, cu.last_name) as wholename'))
+				->get();
+
+		$task_group_list = DB::table('services_task_group as tg')
+				->join('services_dept_function as df', 'tg.dept_function', '=', 'df.id')
+				->where('df.dept_id', $dept_id)
+				->select('tg.*')
+				->get();
+
+
+		$ret = array();
+		$ret['staff_list'] = $users;
+		$ret['dept_func'] = $dept_funcs;
+		$ret['location_group'] = $location_groups;
+		$ret['shifts'] = $shifts;
+		$ret['shift_group_member'] = $shift_group_member;
+		$ret['task_group_list'] = $task_group_list;
+
+		return Response::json($ret);
+	}
+
+	public function getTaskgrouplist(Request $request)
+	{
+		$dept_func_list = $request->get('dept_func_list', array());
+
+		$task_group_list = DB::table('services_task_group')
+				->whereIn('dept_function', $dept_func_list)
+				->get();
+
+		return Response::json($task_group_list);
+	}
+
+	public function createShiftGroupList(Request $request)
+	{
+		$dept_id = $request->get('dept_id', 0);
+		$shift = $request->get('shift_id', 0);
+		$staff_list = $request->get('staff_list', 0);
+		$location_group_ids = $request->get('location_group_list', array());
+		$task_group_ids = $request->get('task_group_list', array());
+		$day_of_week = $request->get('day_of_week', array());
+		$vaca_start_date = $request->get('vaca_start_date', '');
+		$vaca_end_date = $request->get('vaca_end_date', '');
+
+		$shift_group = DB::table('services_shift_group')
+				->where('dept_id', $dept_id)
+				->where('shift', $shift)
+				->first();
+
+		if( empty($shift_group) )
+			return Response::json($dept_id);
+
+		for($i = 0; $i < count($staff_list); $i++)
+		{
+			$shift_group_member = ShiftGroupMember::find($staff_list[$i]);
+			if( empty($shift_group_member) )
+				$shift_group_member = new ShiftGroupMember();
+
+			$shift_group_member->user_id = 	$staff_list[$i];
+			$shift_group_member->shift_group_id = $shift_group->id;
+			$shift_group_member->device_id = 1;
+			$shift_group_member->location_grp_id = json_encode($location_group_ids);
+			$shift_group_member->task_group_id = json_encode($task_group_ids);
+			$shift_group_member->day_of_week = $day_of_week;
+			$shift_group_member->vaca_start_date = $vaca_start_date;
+			$shift_group_member->vaca_end_date = $vaca_end_date;
+
+			$shift_group_member->save();
+		}
+
+		return $this->getInformationForShift($request);
+	}
+
+	public function getAlarmListTen(Request $request) 
+	{
+		$property_id = $request->get('property_id', 0);
+		$ret = array();
+
+		$alarm_list = DB::table('services_alarm_groups as ag')
+				->whereNotNull('ag.pref')
+				->where('ag.enable',1)
+				->select(DB::raw('ag.*, ag.pref,ag.name as group_name'))
+				->get();
+
+		$ret['alarmlist'] = $alarm_list;
+
+		return Response::json($ret);
+	}
+
+	public function getAlarmList(Request $request) 
+	{
+		$page = $request->get('page', 0);
+		$pageSize = $request->get('pagesize', 20);
+		$skip = $page;
+		$orderby = $request->get('field', 'id');
+		$sort = $request->get('sort', 'asc');
+		$property_id = $request->get('property_id', 0);
+
+		if($pageSize < 0 )
+			$pageSize = 20;
+
+		$ret = array();
+
+		$query = DB::table('services_alarms_notifications as an')
+				->leftJoin('services_alarm_groups as ag', 'an.notification_group', '=', 'ag.id')
+				->leftJoin('common_users as cu', 'an.user_id', '=', 'cu.id')
+				->leftJoin('common_department as cd', 'cu.dept_id', '=', 'cd.id');
+		//	$where = sprintf('an.notification_group = %d', $alarm_group_id);
+
+		$data_query = clone $query;
+
+		$alarm_list = $data_query
+				->where('cd.property_id', $property_id)
+				->orderBy($orderby, $sort)
+				->select(DB::raw('an.*, ag.name as group_name, CONCAT_WS(" ", cu.first_name, cu.last_name) as wholename'))
+				->skip($skip)->take($pageSize)
+				->get();
+
+		$count_query = clone $query;
+		$totalcount = $count_query
+				->where('cd.property_id', $property_id)
+				->count();
+
+		$ret['alarmlist'] = $alarm_list;
+		$ret['totalcount'] = $totalcount;
+
+		return Response::json($ret);
+
+	}
+
+	public function getAlarmGroupList(Request $request)
+	{
+		$property_id = $request->get('property_id', '0');
+		$val = $request->get('val', '');
+
+		$alarm_groups = DB::table('services_alarm_groups as ag')
+				->where('ag.property', $property_id)
+				->where('ag.name', 'like', '%' . $val . '%')
+				->get();
+
+		return Response::json($alarm_groups);
+	}
+
+	public function sendAlarm(Request $request)
+	{
+		$input = $request->all();
+		$id = DB::table('services_alarms_notifications')->insertGetId($input);
+
+		$alarm_group_id = $request->get('notification_group', 0);
+		$comment = $request->get('message', '');
+		$location = $request->get('loc_id', '');
+
+		$info = $this->getLocationInfo($location);
+					if( !empty($info) )
+					{
+						$lgm_name = $info->name;
+						$lgm_type = $info->type;
+
+					}
+
+		$member_list = DB::table('common_users as cu')
+		    ->leftJoin('common_user_group_members as cgm', 'cgm.user_id', '=', 'cu.id')
+			->leftJoin('services_alarm_members as am', 'am.user_id', '=', 'cgm.group_id')
+			->where('am.alarm_group', '=', $request->get('notification_group', 0))
+			->where('cu.deleted', 0)
+			->select(DB::raw('cu.mobile,cu.email,cu.contact_pref_bus,cu.id'))
+			->get();
+
+		$alarm = DB::table('services_alarm_groups')
+			->where('id', $alarm_group_id)
+			->first();
+
+		if( empty($alarm) )
+		{
+			$ret['code'] = FAIL;
+			$ret['message'] = 'There is no valid alarm';
+			return Response::json($ret);
+		}
+
+		$ret = array();
+		if( empty($member_list) )
+		{
+			$ret['code'] = FAIL;
+			$ret['message'] = 'There is no member';
+			return Response::json($ret);
+		}
+
+		$number_array = "";
+		$user_id_array = "";
+		for($i = 0; $i < count($member_list); $i++)
+		{
+			if( $i > 0 )
+            {
+                $number_array .= "|";
+                $user_id_array .= "|";
+            }
+
+
+			$mobile_no = $member_list[$i]->mobile;
+            if(strlen($mobile_no) < 12)
+            {
+                if(substr($mobile_no, 0, 1) === '0')
+                {
+                    $mobile_no = substr($mobile_no, 1, strlen($mobile_no) - 1);
+                }
+                // Default country code : 971
+                $mobile_no = "971".$mobile_no;
+
+            }
+			$number_array .= $mobile_no;
+            $user_id_array .= $member_list[$i]->id;
+		}
+
+		$message = 'ALARM:' . $alarm->name ."\n". $alarm->description ."\n". ' CM:' . $comment ."\n";
+
+		$this->sendSMS(0, $number_array, $message, null);
+      	//  $this->sendDesktopNotification(0, $user_id_array, $message, null);
+
+		//$send_mode = 'SMS';
+		//foreach($member_list as $key => $user)
+		//{
+
+		//	$send_mode = $user->contact_pref_bus;
+		//
+		//	if($send_mode=="SMS")
+		//	{
+		//		$this->sendSMS(0, $number_array, $message, null);
+		//	}
+		//	else if($send_mode=="e-mail")
+		//	{
+		//		// echo json_encode($user);
+		//		$smtp = Functions::getMailSetting(4, '');
+		//		// $this->sendEmail($user->email, $type, $message, $smtp, $payload, $alarm->name );
+		//		$this->sendEmail($user->email, 'Hotlync', $message, $smtp,NULL,$alarm->name );
+
+		//	}
+		//	else if($send_mode=="Mobile")
+		//	{
+				// $setting = DeftFunction::getGSDeviceSetting($user->dept_id,$dept_func);
+		
+				// if($setting == 1 && $type!='Escalated')
+				// {
+				// 	$user->mobile = Device::getDeviceNumber($user->device_id);
+				// }
+		//	}
+		//}
+
+		$ret['code'] = SUCCESS;
+		$ret['count'] = count(($member_list));
+		return Response::json($ret);
+	}
+
+	private function getDeptIdsFromUserId($user_id) 
+	{
+        //        get dept ids from user_id
+        $deptList = DB::table('common_users')
+            ->where('id', $user_id)
+            ->groupBy('dept_id')
+            ->select('dept_id')
+            ->get();
+
+        $deptIds = [];
+        foreach ($deptList as $deptItem) {
+            $deptIds[] = $deptItem->dept_id;
+        }
+
+        return $deptIds;
+    }
+
+	public function changeMinibarTaskToComplete($room_id, $user_id, $from)
+	{
+		date_default_timezone_set(config('app.timezone'));
+		$cur_date = date("Y-m-d");
+		$cur_time = date("Y-m-d H:i:s");
+
+		$room_info = Room::getPropertyBuildingFloor($room_id);
+
+		if( empty($room_info) )
+			return array();
+
+		$check_minibar_task_type = PropertySetting::getCheckMinibarSystemTaskType($room_info->property_id);
+
+		$ret = array();
+
+		$tasklist = DB::table('services_task as st')
+				->leftJoin('services_task_list as tl', 'st.task_list', '=', 'tl.id')
+				->where('tl.type', $check_minibar_task_type)	// system task
+				->where('room', $room_id)
+				->whereRaw("DATE(st.start_date_time) = '$cur_date'")
+				->whereIn('st.status_id', array(OPENGS, ESCALATEDGS))
+				->select(DB::raw('st.*'))
+				->get();
+
+		$ids = [];
+
+		foreach($tasklist as $row)
+		{
+			$task = Task::find($row->id);
+			if( empty($task) )
+				continue;
+
+			$ids[] = $row->id;
+
+			$task->status_id	= COMPLETEDGS;		// set complete state
+			$task->finisher = $user_id;		// set finisher(most equal dispatcher)
+			$task->end_date_time = $cur_time;	// finish time
+			$task->running = 0;				// set running to 0
+			$task->custom_message = 'Minibar Items posted from ' . $from; // set message
+			$task->save();
+
+			// add services_task_notifications
+			$task_notify = $this->saveNotification($task->attendant, $task->id, 'Completed');		// send notify to finisher
+
+			// update services_task_state table
+			// remove task state with this task id
+			if( $task->type == 1 || $task->type == 2 || $task->type == 4 )
+				DB::table('services_task_state')->where('task_id', $row->id)->delete();
+			if( $task->type == 3 )
+				DB::table('services_complaint_state')->where('task_id', $row->id)->delete();
+
+			$this->saveSystemNotification($task, 'Complete');
+
+			// save log
+			$task_log = new Tasklog();
+			$task_log->task_id = $task->id;
+			$task_log->user_id = $user_id;
+			$task_log->comment = $task->custom_message;
+			$task_log->log_type = 'Completed';
+			$task_log->log_time = $cur_time;
+			$task_log->status = 'Completed';
+			$task_log->method = $from;
+
+			if( !empty($task_notify) )
+				$task_log->notify_id = $task_notify->id;
+
+			$task_log->save();
+		}
+
+		return $ids;
 	}
 }
