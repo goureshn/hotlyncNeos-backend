@@ -695,7 +695,7 @@ class DataController extends Controller
                     ->select(DB::raw('ta.*, CONCAT(ta.first_name, " ", COALESCE(ta.last_name,""), " - Custom User") as fullname, 2 as user_type'))
                     ->get();
 
-                $list = array_merge($hotel_list, $custom_list);
+                $list = array_merge($hotel_list->toArray(), $custom_list->toArray());
                 $model['item_user'] = $list;
 
                 // LNF Item Color

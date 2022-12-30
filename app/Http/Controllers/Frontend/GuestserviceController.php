@@ -7464,6 +7464,221 @@ class GuestserviceController extends Controller
 		return Response::json($ret);
 	}
 
+	public function getGuestFacilityList(Request $request)
+    {
+        date_default_timezone_set(config('app.timezone'));
+        $cur_time = date("Y-m-d H:i:s");
+
+        $page = $request->get('page', 0);
+        $pageSize = $request->get('pagesize', 20);
+        $skip = $page * $pageSize;
+        $orderby = $request->get('field', 'id');
+        $sort = $request->get('sort', 'asc');
+        $searchtext = $request->get('searchtext','');
+        $start_date = $request->get('start_date', '');
+        $end_date = $request->get('end_date', '');
+        $guest_type = $request->get('guest_type', 'All');
+        $room_ids = $request->get('room_ids', []);
+
+        if ($pageSize < 0)
+            $pageSize = 20;
+
+        $ret = array();
+        $query = DB::table('services_guest_facility as gf')
+				->leftJoin('common_room as cr', 'gf.room_id', '=', 'cr.id')
+				->leftJoin('common_guest as gp', 'gf.guest_id', '=', 'gp.guest_id')
+				->leftJoin('common_guest_facility as cgf', 'gf.guest_id', '=', 'cgf.id');
+
+
+        $query->whereRaw(sprintf("DATE(gf.created_at) >= '%s' and DATE(gf.created_at) <= '%s'", $start_date, $end_date));
+
+
+        if($searchtext != '')
+        {
+            $query->where(function ($query) use ($searchtext) {
+                $value = '%' . $searchtext . '%';
+                $query->where('gf.id', 'like', $value)
+                    ->orWhere('gf.guest_id', 'like', $value)
+					->orWhere('gf.guest_type', 'like', $value)
+					->orWhere('gf.table_no', 'like', $value)
+					->orWhere('cr.room', 'like', $value)
+                    ->orWhere('gp.guest_name', 'like', $value)
+                    ->orWhere('gp.first_name', 'like', $value)
+                    ->orWhere('gp.email', 'like', $value)
+					->orWhere('gp.mobile', 'like', $value)
+                    ->orWhere('gp.vip', 'like', $value)
+					->orWhere('cgf.guest_name', 'like', $value)
+                    ->orWhere('cgf.first_name', 'like', $value)
+                    ->orWhere('cgf.email', 'like', $value)
+                    ->orWhere('cgf.mobile', 'like', $value);
+
+            });
+        }
+
+		if( $guest_type != 'All' )
+            $query->where('gf.guest_type', $guest_type);
+
+		 // room filter
+        if( !empty($room_ids) )
+        {
+            $room_id_list = explode(',', $room_ids);
+            $query->whereIn('gf.room_id', $room_id_list);
+        }
+
+        $data_query = clone $query;
+        $data_list = $data_query
+            ->orderBy($orderby, $sort)
+            ->orderBy('gf.created_at', 'desc')
+            ->select(DB::raw('gf.*, cr.room'))
+            ->skip($skip)->take($pageSize)
+            ->groupBy('gf.id')
+            ->get();
+
+
+        foreach($data_list as $row)
+        {
+            if ($row->guest_type == 'In-House'){
+				$guest = DB::table('common_guest as cg')
+						->where('cg.guest_id', $row->guest_id)
+						->first();
+
+			$row->guest_name = $guest->guest_name;
+			$row->vip = $guest->vip;
+			$row->stay = $guest->arrival . ' to ' . $guest->departure;
+			$row->email = $guest->email;
+			$row->mobile = $guest->mobile;
+
+
+			}else{
+
+				$guest = DB::table('common_guest_facility as cg')
+						->where('cg.id', $row->guest_id)
+						->first();
+				$row->guest_name = $guest->guest_name;
+				$row->vip = 'NA';
+				$row->stay = 'NA';
+				$row->email = $guest->email;
+				$row->mobile = $guest->mobile;
+				$row->room = 'NA';
+
+			}
+
+        }
+
+        $count_query = clone $query;
+        $totalcount = $count_query->count();
+
+        $ret['code'] = 200;
+        $ret['message'] = '';
+        $ret['datalist'] = $data_list;
+        $ret['totalcount'] = $totalcount;
+
+
+
+        $end = microtime(true);
+
+        return Response::json($ret);
+    }
+
+	public function createGuestFacility(Request $request)
+    {
+        date_default_timezone_set(config('app.timezone'));
+        $cur_date = date("Y-m-d");
+        $cur_time = date("Y-m-d H:i:s");
+
+    	//    $user_id = $request->get('user_id', 0);
+
+        $input = array();
+        $input["room_id"] = $request->get('room_id', 0);
+        $input["guest_id"] = $request->get('guest_id', 0);
+        $input["guest_type"] = $request->get('guest_type', '');
+        $input["table_no"] = $request->get('table', 0);
+        $input["bmeal"] = $request->get('bmeal', 0);
+		$input["adult"] = $request->get('adult', 0);
+        $input["child"] = $request->get('child', 0);
+		$input["remark"] = $request->get('remarks', '');
+
+		$ret = array();
+
+		$table = DB::table('services_guest_facility')
+				 ->where('table_no', $input["table_no"])
+				 ->where('exit_flag','!=', 1)
+				 ->first();
+
+		if (!empty($table)){
+
+			if ($table->guest_type == 'In-House'){
+				$guest = DB::table('common_guest as cg')
+						->leftJoin('common_room as cr', 'cg.room_id', '=', 'cr.id')
+						->where('cg.guest_id', $table->guest_id)
+						->select(DB::raw('cg.*, cr.room'))
+						->first();
+
+
+				$ret['code'] = 203;
+				$ret['message'] = 'The table ' . $input["table_no"] . ' has already been occupied by an In-House Guest ' . $guest->guest_name . ' from Room ' . $guest->room;
+
+
+			}else{
+
+				$guest = DB::table('common_guest_facility as cg')
+						->where('cg.id', $table->guest_id)
+						->first();
+
+				$ret['code'] = 203;
+				$ret['message'] = 'The table ' . $input["table_no"] . ' has already been occupied by a Walkin Guest ' . $guest->guest_name;
+
+			}
+
+			return Response::json($ret);
+
+		}
+
+
+
+
+
+		if ($input["guest_type"] == 'Walkin'){
+
+			$guest = array();
+
+			$guest["guest_name"] = $request->get('guest_name', '');
+			$guest["first_name"] = $request->get('first_name', '');
+			$guest["email"] = $request->get('email', '');
+			$guest["mobile"] = $request->get('mobile', '');
+			$guest["adult"] = $request->get('adult', 0);
+			$guest["child"] = $request->get('child', 0);
+
+			$guest_id = DB::table('common_guest_facility')->insertGetId($guest);
+
+			$input["guest_id"] = $guest_id;
+			$input["room_id"] = 0;
+
+		}
+
+        $facility_id = DB::table('services_guest_facility')->insertGetId($input);
+
+
+
+        $ret['code'] = 200;
+        $ret['id'] = $facility_id;
+        $ret['content'] = $facility_id;
+
+        return Response::json($ret);
+    }
+
+	public function exitGuest(Request $request)
+	{
+		$id = $request->get('id', 0);
+		$cur_time = date("Y-m-d H:i:s");
+
+		$model =DB::table('services_guest_facility')->where('id', $id);
+
+		$model->update(['exit_flag' => 1,'exit_time' => $cur_time]);
+
+		return Response::json($model);
+	}
+
 	private function getDeptIdsFromUserId($user_id) 
 	{
         //        get dept ids from user_id
@@ -7551,5 +7766,116 @@ class GuestserviceController extends Controller
 		}
 
 		return $ids;
+	}
+
+	private function getRoomDetails($room_id,$property_id)
+	{
+		$cur_date = date("Y-m-d");
+		$hskproom_status = HskpRoomStatus::find($room_id);
+
+		if(empty($hskproom_status)) {
+			$vacant_dirty = DB::table('services_hskp_status as hs')
+				->join('common_building as cb', 'hs.bldg_id', '=', 'cb.id')
+				->where('cb.property_id', $property_id)
+				->where('hs.status', 'Vacant Dirty')
+				->select(DB::raw('hs.*'))
+				->first();
+
+			$occupied_dirty = DB::table('services_hskp_status as hs')
+				->join('common_building as cb', 'hs.bldg_id', '=', 'cb.id')
+				->where('cb.property_id', $property_id)
+				->where('hs.status', 'Occupied Dirty')
+				->select(DB::raw('hs.*'))
+				->first();
+
+			$vacant_dirty_ids = array();
+			$occupied_dirty_ids = array();
+
+			$guest = DB::table('common_guest')
+				->where('room_id', $room_id)
+				->where('departure', '>=', $cur_date)
+				->where('checkout_flag', 'checkin')
+				->orderBy('departure', 'desc')
+				->orderBy('arrival', 'desc')
+				->first();
+
+			$hskp_room_status = new HskpRoomStatus();
+
+			$hskp_room_status->id = $room_id;
+			$hskp_room_status->property_id = $property_id;
+
+			if (!empty($guest)) {
+				array_push($occupied_dirty_ids, $room_id);
+				$hskp_room_status->occupancy = OCCUPIED;
+			} else {
+				array_push($vacant_dirty_ids, $room_id);
+				$hskp_room_status->occupancy = VACANT;
+			}
+
+			if (!empty($guest) && $guest->pre_checkin == 1)
+				$hskp_room_status->arrival = 1;
+			else
+				$hskp_room_status->arrival = 0;
+
+			if (!empty($guest) && $guest->departure == $cur_date)
+				$hskp_room_status->due_out = 1;
+			else
+				$hskp_room_status->due_out = 0;
+
+			$hskp_room_status->working_status = CLEANING_NOT_ASSIGNED;
+			$hskp_room_status->priority = 0;    // Highest
+			$hskp_room_status->save();
+
+			// save turn down service status
+			if( $hskp_room_status->occupancy == OCCUPIED && $hskp_room_status->due_out == 0)	// checkin and not due out
+			{
+				$hskp_turndown_status = new HskpTurndownStatus();
+				$hskp_turndown_status->id = $room_id;
+				$hskp_turndown_status->property_id = $property_id;
+				$hskp_turndown_status->working_status = CLEANING_NOT_ASSIGNED;
+
+				$hskp_turndown_status->save();
+			}
+
+			if( !empty($vacant_dirty) )
+			{
+				DB::table('common_room')
+					->whereIn('id', $vacant_dirty_ids)
+					->update(['hskp_status_id' => $vacant_dirty->id]);
+			}
+
+			if( !empty($occupied_dirty) )
+			{
+				DB::table('common_room')
+					->whereIn('id', $occupied_dirty_ids)
+					->update(['hskp_status_id' => $occupied_dirty->id]);
+			}
+		}
+
+		$roomlist = DB::table('services_room_status as rs')
+			->join('common_room as cr', 'rs.id', '=', 'cr.id')
+			->join('common_floor as cf', 'cr.flr_id', '=', 'cf.id')
+			->join('common_building as cb', 'cf.bldg_id', '=', 'cb.id')
+			->join('common_room_type as rt', 'cr.type_id', '=', 'rt.id')
+			->leftJoin('services_hskp_status as hs', 'cr.hskp_status_id', '=', 'hs.id')
+			->leftJoin('common_guest as cg', function($join) use ($cur_date) {
+					$join->on('cr.id', '=', 'cg.room_id');
+					$join->on('cg.departure','>=',DB::raw($cur_date));
+					$join->on('cg.checkout_flag','=', DB::raw("'checkin'"));
+				})
+			->leftJoin('common_guest_remark_log as grl', function($join) use ($cur_date) {
+					$join->on('grl.room_id', '=', 'cg.room_id');
+					$join->on('grl.guest_id', '=', 'cg.guest_id');
+					$join->where('grl.expire_date','>=', DB::raw($cur_date));
+					//$join->on('grl.expire_date','>=', 'grl.created_on');
+
+
+				})
+			->where('cr.id', '=',  $room_id)
+			->where('cb.property_id', $property_id)
+			->select(DB::raw('cr.*,cf.floor, cb.property_id, hs.status, grl.remark, cg.pref,cg.adult,cg.chld, rt.type as room_type, rs.working_status, rs.room_status, rs.td_flag, rs.td_working_status,rs.priority, cg.checkout_flag, rs.occupancy'))
+			->first();
+
+		return $roomlist;
 	}
 }

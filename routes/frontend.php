@@ -5,6 +5,7 @@ use App\Http\Controllers\DataController;
 use App\Http\Controllers\Frontend\CallController;
 use App\Http\Controllers\Frontend\ComplaintController;
 use App\Http\Controllers\Frontend\GuestserviceController;
+use App\Http\Controllers\Frontend\WakeupController;
 use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\Intface\ProcessController;
 use Illuminate\Support\Facades\Route;
@@ -88,9 +89,20 @@ Route::prefix('guestservice')->group(function () {
         Route::any('alarmlist', 'getAlarmList');
         Route::any('alarmgroup', 'getAlarmGroupList'); 
         Route::any('sendalarm', 'sendAlarm');
+        Route::any('guestfacilitylist', 'getGuestFacilityList');
+        Route::any('createguestfacility', 'createGuestFacility');
+        Route::any('exitguest', 'exitGuest');
     });
     
     Route::any('manualpost', [ProcessController::class, 'postManual']);
+    
+    Route::controller(ChatController::class)->group(function () {        
+        Route::any('getinitinfofortemplate', 'getInitInfoForTemplate');
+        Route::post('getchattemplatelist', 'getChatTemplateList');
+        Route::post('savetemplatedata', 'saveTemplateData');
+        Route::post('updatetemplaterow', 'updateTemplateRow');
+        Route::post('deletetemplaterow', 'deleteTemplateRow');
+    });
 });
 
 Route::prefix('complaint')->group(function () {
@@ -109,5 +121,19 @@ Route::prefix('complaint')->group(function () {
         Route::any('changeseverity', 'changeSeverity');
         Route::any('post', 'create');
         Route::any('uploadfiles', 'uploadFiles');
+        Route::any('uploadguestimage', 'uploadFileGuest');
+    });
+});
+
+Route::prefix('wakeup')->group(function () {
+    Route::controller(WakeupController::class)->group(function () {
+        Route::any('list', 'getList');
+        Route::any('create', 'create');
+        Route::any('update', 'update');
+        Route::any('cancel', 'cancel');
+        Route::any('guestgroups', 'getGuestGroups');
+        Route::any('roomlist', 'getRoomList');
+        Route::any('createmultiple', 'createMultiple');
+        Route::any('logs', 'getLogs');
     });
 });
