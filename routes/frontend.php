@@ -1,13 +1,21 @@
 <?php
 
+use App\Http\Controllers\Backoffice\Guest\HSKPController;
+use App\Http\Controllers\Backoffice\Guest\MinibarController;
+use App\Http\Controllers\Backoffice\Guest\MinibarItemController;
+use App\Http\Controllers\Backoffice\Property\BuildingWizardController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\DataController;
+use App\Http\Controllers\Frontend\CallaccountController;
 use App\Http\Controllers\Frontend\CallController;
 use App\Http\Controllers\Frontend\ComplaintController;
 use App\Http\Controllers\Frontend\GuestserviceController;
+use App\Http\Controllers\Frontend\LNFController;
+use App\Http\Controllers\Frontend\ReportController;
 use App\Http\Controllers\Frontend\WakeupController;
 use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\Intface\ProcessController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -92,16 +100,38 @@ Route::prefix('guestservice')->group(function () {
         Route::any('guestfacilitylist', 'getGuestFacilityList');
         Route::any('createguestfacility', 'createGuestFacility');
         Route::any('exitguest', 'exitGuest');
+        Route::any('getguestchatsettinginfo', 'getGuestChatSettingInfo');
+        Route::any('getjobrolelist', 'getJobRoleList');
+        Route::any('saveguestchatsettinginfo', 'saveGuestChatSettingInfo');
     });
     
     Route::any('manualpost', [ProcessController::class, 'postManual']);
     
-    Route::controller(ChatController::class)->group(function () {        
+    Route::controller(ChatController::class)->group(function () {
+        Route::any('chatroomlist', 'getChatSessionList');
         Route::any('getinitinfofortemplate', 'getInitInfoForTemplate');
         Route::post('getchattemplatelist', 'getChatTemplateList');
         Route::post('savetemplatedata', 'saveTemplateData');
         Route::post('updatetemplaterow', 'updateTemplateRow');
         Route::post('deletetemplaterow', 'deleteTemplateRow');
+        Route::any('chatsessionlistnew', 'getChatSessionListNew');
+        Route::any('getpresetmessages', 'getPresetMessages');
+        Route::any('savepresetmessages', 'savePresetMessages');
+    });
+});
+
+Route::prefix('chat')->group(function () {
+    Route::controller(ChatController::class)->group(function () {
+        Route::any('agentlist', 'getChatAgentList');
+        Route::any('agentconversationhistory', 'getAgentConversationHistory');
+        Route::any('group/list', 'getGroupChatList');
+        Route::any('setreadflag', 'setReadFlag');
+        Route::any('agentchathistory', 'getAgentChatHistory');
+        Route::any('groupchathistory', 'getGroupChatHistory');
+        Route::any('group/detail', 'detailGroupChat');
+        Route::any('group/create', 'createNewGroup');
+        Route::any('group/uploadprofileimage', 'uploadProfilePicture');
+        Route::any('group/update', 'updateGroupChat');
     });
 });
 

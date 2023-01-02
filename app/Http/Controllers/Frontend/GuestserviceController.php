@@ -19,13 +19,18 @@ use App\Models\Service\Device;
 use App\Models\Service\Escalation;
 use App\Models\Service\HskpRoomStatus;
 use App\Models\Service\Location;
+use App\Models\Service\LocationGroup;
+use App\Models\Service\LocationGroupMember;
 use App\Models\Service\LocationType;
+use App\Models\Service\MinibarRosterList;
+use App\Models\Service\MinibarRosterLog;
 use App\Models\Service\Priority;
 use App\Models\Service\RosterList;
 use App\Models\Service\ShiftGroupMember;
 use App\Models\Service\ShiftUser;
 use App\Models\Service\Task;
 use App\Models\Service\TaskGroup;
+use App\Models\Service\TaskGroupPivot;
 use App\Models\Service\TaskList;
 use App\Models\Service\Tasklog;
 use App\Models\Service\TaskNotification;
@@ -2326,12 +2331,14 @@ class GuestserviceController extends Controller
 		{
 			if( $task->status_id != COMPLETEDGS && $task->status_id != TIMEOUTGS || $type == 'Forward' )
 			{
-
 				$email_content = $this->getNotifyEmailMessage($task, $user_id, $type);
 
 				$new_modes = $this->sendNotification($user_id, $task_id,$task->dept_func, $task->task_list, $type, $task_notify->notification, $email_content, $send_mode, $task_notify->id, 0,0);
-
-				$task_notify->mode = implode(",", $new_modes);
+				
+				if($new_modes === "None")
+					$task_notify->mode = $new_modes;
+				else
+					$task_notify->mode = implode(",", $new_modes);
 			}
 		}
 
@@ -7695,6 +7702,216 @@ class GuestserviceController extends Controller
 
         return $deptIds;
     }
+
+	public function getGuestChatSettingInfo(Request $request) 
+	{
+        $property_id = $request->get('property_id', 4);
+
+        $warning_time = 0;
+        $critical_time = 0;
+        $job_role_ids = '';
+        $end_chat = '';
+        $no_answer = '';
+        $accept_chat = '';
+
+        $result = DB::table('property_setting')
+            ->where('property_id', $property_id)
+            ->where('settings_key', 'guestchat_setting_warning_time')
+            ->select(['value'])
+            ->first();
+
+        if (!empty($result)) {
+            $warning_time = $result->value;
+        }
+
+        $result = DB::table('property_setting')
+            ->where('property_id', $property_id)
+            ->where('settings_key', 'guestchat_setting_critical_time')
+            ->select(['value'])
+            ->first();
+
+        if (!empty($result)) {
+            $critical_time = $result->value;
+        }
+
+        $result = DB::table('property_setting')
+            ->where('property_id', $property_id)
+            ->where('settings_key', 'guestchat_setting_job_role_ids')
+            ->select(['value'])
+            ->first();
+
+        if (!empty($result)) {
+            $job_role_ids = $result->value;
+        }
+
+        // end chat
+        $result = DB::table('property_setting')
+            ->where('property_id', $property_id)
+            ->where('settings_key', 'guestchat_setting_end_chat')
+            ->select(['value'])
+            ->first();
+
+        if (!empty($result)) {
+            $end_chat = $result->value;
+        }
+
+        // no answer
+        $result = DB::table('property_setting')
+            ->where('property_id', $property_id)
+            ->where('settings_key', 'guestchat_setting_no_answer')
+            ->select(['value'])
+            ->first();
+
+        if (!empty($result)) {
+            $no_answer = $result->value;
+        }
+
+        // accept_chat
+        $result = DB::table('property_setting')
+            ->where('property_id', $property_id)
+            ->where('settings_key', 'guestchat_setting_accept_chat')
+            ->select(['value'])
+            ->first();
+
+        if (!empty($result)) {
+            $accept_chat = $result->value;
+        }
+
+        $ret = [
+            'warning_time' => $warning_time,
+            'critical_time' => $critical_time,
+            'job_role_ids' => $job_role_ids,
+            'end_chat' => $end_chat,
+            'no_answer' => $no_answer,
+            'accept_chat' => $accept_chat
+        ];
+
+        return Response::json($ret);
+    }
+
+	public function getJobRoleList(Request $request) 
+	{
+	    $property_id = $request->get('property_id', 4);
+
+	    $job_roles = DB::table('common_job_role')
+            ->where('property_id', $property_id)
+            ->select(['id', 'job_role as label'])
+            ->orderBy('job_role')
+            ->get();
+
+	    return Response::json($job_roles);
+    }
+
+	public function saveGuestChatSettingInfo(Request $request) 
+	{
+        $property_id = $request->get('property_id', 4);
+        $warning_time = $request->get('warning_time', 0);
+        $critical_time = $request->get('critical_time', 0);
+        $job_role_ids = $request->get('job_role_ids', '');
+        $end_chat = $request->get('end_chat', '');
+        $no_answer = $request->get('no_answer', '');
+        $accept_chat = $request->get('accept_chat', '');
+
+        $ret = [
+            'success' => true,
+            'message' => ''
+        ];
+
+        $count = DB::table('property_setting')
+            ->where('property_id', $property_id)
+            ->where('settings_key', 'guestchat_setting_warning_time')
+            ->count();
+
+        if ($count < 1) {
+            DB::table('property_setting')
+                ->insert(['property_id' => $property_id, 'settings_key' => 'guestchat_setting_warning_time', 'value' => $warning_time]);
+        } else {
+            DB::table('property_setting')
+                ->where('property_id', $property_id)
+                ->where('settings_key', 'guestchat_setting_warning_time')
+                ->update(['value' => $warning_time]);
+        }
+
+        $count = DB::table('property_setting')
+            ->where('property_id', $property_id)
+            ->where('settings_key', 'guestchat_setting_critical_time')
+            ->count();
+
+        if ($count < 1) {
+            DB::table('property_setting')
+                ->insert(['property_id' => $property_id, 'settings_key' => 'guestchat_setting_critical_time', 'value' => $critical_time]);
+        } else {
+            DB::table('property_setting')
+                ->where('property_id', $property_id)
+                ->where('settings_key', 'guestchat_setting_critical_time')
+                ->update(['value' => $critical_time]);
+        }
+
+        $count = DB::table('property_setting')
+            ->where('property_id', $property_id)
+            ->where('settings_key', 'guestchat_setting_job_role_ids')
+            ->count();
+
+        if ($count < 1) {
+            DB::table('property_setting')
+                ->insert(['property_id' => $property_id, 'settings_key' => 'guestchat_setting_job_role_ids', 'value' => $job_role_ids]);
+        } else {
+            DB::table('property_setting')
+                ->where('property_id', $property_id)
+                ->where('settings_key', 'guestchat_setting_job_role_ids')
+                ->update(['value' => $job_role_ids]);
+        }
+
+        // end chat
+        $count = DB::table('property_setting')
+            ->where('property_id', $property_id)
+            ->where('settings_key', 'guestchat_setting_end_chat')
+            ->count();
+
+        if ($count < 1) {
+            DB::table('property_setting')
+                ->insert(['property_id' => $property_id, 'settings_key' => 'guestchat_setting_end_chat', 'value' => $end_chat]);
+        } else {
+            DB::table('property_setting')
+                ->where('property_id', $property_id)
+                ->where('settings_key', 'guestchat_setting_end_chat')
+                ->update(['value' => $end_chat]);
+        }
+
+        // no answer
+        $count = DB::table('property_setting')
+            ->where('property_id', $property_id)
+            ->where('settings_key', 'guestchat_setting_no_answer')
+            ->count();
+
+        if ($count < 1) {
+            DB::table('property_setting')
+                ->insert(['property_id' => $property_id, 'settings_key' => 'guestchat_setting_no_answer', 'value' => $no_answer]);
+        } else {
+            DB::table('property_setting')
+                ->where('property_id', $property_id)
+                ->where('settings_key', 'guestchat_setting_no_answer')
+                ->update(['value' => $no_answer]);
+        }
+
+        // accept chat
+        $count = DB::table('property_setting')
+            ->where('property_id', $property_id)
+            ->where('settings_key', 'guestchat_setting_accept_chat')
+            ->count();
+
+        if ($count < 1) {
+            DB::table('property_setting')
+                ->insert(['property_id' => $property_id, 'settings_key' => 'guestchat_setting_accept_chat', 'value' => $accept_chat]);
+        } else {
+            DB::table('property_setting')
+                ->where('property_id', $property_id)
+                ->where('settings_key', 'guestchat_setting_accept_chat')
+                ->update(['value' => $accept_chat]);
+        }
+
+        return Response::json($ret);
+	}
 
 	public function changeMinibarTaskToComplete($room_id, $user_id, $from)
 	{
