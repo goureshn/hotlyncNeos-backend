@@ -7686,6 +7686,55 @@ class GuestserviceController extends Controller
 		return Response::json($model);
 	}
 
+	public function getSettingLocationgroupList(Request $request) 
+	{
+
+        $user_id = $request->get('user_id', 0);
+
+        // get dept ids
+        $deptIds = $this->getDeptIdsFromUserId($user_id);
+        $page = $request->get('page', 0);
+        $pageSize = $request->get('pagesize', 20);
+        $skip = $page;
+        $orderby = $request->get('field', 'lg.id');
+        $sort = $request->get('sort', 'asc');
+        $searchText = $request->get('searchText', '');
+
+        // get location group infos
+        $query = DB::table('services_location_group as lg')
+            ->leftJoin('common_chain as cc', 'lg.client_id', '=', 'cc.id');
+
+        if (!empty($searchText)) {
+            $where = sprintf("(lg.id like '%%%s%%' or 
+            cc.name like '%%%s%%' or
+            lg.name like '%%%s%%' or 
+            lg.description like '%%%s%%')",
+                $searchText,$searchText,
+                $searchText,$searchText
+            );
+
+            $query->whereRaw($where);
+        }
+
+        $data_query = clone $query;
+
+        $location_group_list = $data_query
+            ->orderBy($orderby, $sort)
+            ->select(DB::raw('lg.*, cc.name as ccname'))
+            ->skip($skip)->take($pageSize)
+            ->get();
+
+        $totalCount = $query->count();
+
+        $ret = [];
+
+        $ret['code'] = 200;
+        $ret['content'] = $location_group_list;
+        $ret['totalcount'] = $totalCount;
+
+        return Response::json($ret);
+    }
+
 	private function getDeptIdsFromUserId($user_id) 
 	{
         //        get dept ids from user_id
@@ -7701,6 +7750,192 @@ class GuestserviceController extends Controller
         }
 
         return $deptIds;
+    }
+
+	public function getSettingTaskgroupList(Request $request) 
+	{
+
+        $user_id = $request->get('user_id', 0);
+
+        // get dept ids
+        $deptIds = $this->getDeptIdsFromUserId($user_id);
+        $page = $request->get('page', 0);
+        $pageSize = $request->get('pagesize', 20);
+        $skip = $page;
+        $orderby = $request->get('field', 'tg.id');
+        $sort = $request->get('sort', 'asc');
+        $searchText = $request->get('searchText', '');
+
+        $query = DB::table('services_task_group as tg')
+            ->leftJoin('services_dept_function as df', 'tg.dept_function', '=', 'df.id')
+            ->leftJoin('common_user_group as cug', 'tg.user_group', '=', 'cug.id')
+            ->whereIn('df.dept_id', $deptIds);
+
+        if (!empty($searchText)) {
+            $where = sprintf("(tg.id like '%%%s%%' or 
+            df.function like '%%%s%%' or
+            tg.name like '%%%s%%' or 
+            cug.name like '%%%s%%' or
+            tg.max_time like '%%%s%%' or
+            tg.request_reminder like '%%%s%%' or 
+            tg.escalation like '%%%s%%' or 
+            tg.by_guest_flag like '%%%s%%'
+            )",
+                $searchText,$searchText,
+                $searchText,$searchText,
+                $searchText,$searchText,
+                $searchText,$searchText
+            );
+
+            $query->whereRaw($where);
+        }
+
+        $data_query = clone $query;
+
+        $datalist = $data_query
+            ->orderBy($orderby, $sort)
+            ->select(DB::Raw('tg.*, df.function, cug.name as ugname'))
+            ->skip($skip)->take($pageSize)
+            ->get();
+        $totalCount = $query->count();
+
+        $ret = [];
+
+        $ret['code'] = 200;
+        $ret['content'] = $datalist;
+        $ret['totalcount'] = $totalCount;
+
+	    return Response::json($ret);
+    }
+
+	public function getSettingTaskList(Request $request) 
+	{
+        $user_id = $request->get('user_id', 0);
+
+		// get dept ids
+        $deptIds = $this->getDeptIdsFromUserId($user_id);
+
+        $page = $request->get('page', 0);
+        $pageSize = $request->get('pagesize', 20);
+        $skip = $page;
+        $orderby = $request->get('field', 'tl.id');
+
+        $sort = $request->get('sort', 'asc');
+        $searchText = $request->get('searchText', '');
+
+        $query = DB::table('services_task_list as tl')
+            ->leftJoin('services_task_group_members as tgm', 'tgm.task_list_id', '=', 'tl.id')
+            ->leftJoin('services_task_group as tg', 'tgm.task_grp_id', '=', 'tg.id')
+            ->leftJoin('services_dept_function as df', 'tg.dept_function', '=', 'df.id')
+            ->whereIn('df.dept_id', $deptIds);
+
+        if (!empty($searchText)) {
+            $where = sprintf("(tl.id like '%%%s%%' or 
+            tg.name like '%%%s%%' or
+            tl.task like '%%%s%%'
+            )",
+                $searchText,$searchText,
+                $searchText
+            );
+
+            $query->whereRaw($where);
+        }
+
+        $data_query = clone $query;
+
+        $datalist = $data_query
+            ->orderBy($orderby, $sort)
+            ->select(DB::Raw('tl.*, tg.name as tgname'))
+            ->skip($skip)->take($pageSize)
+            ->get();
+        $totalCount = $query->count();
+        $ret = [];
+
+        $ret['code'] = 200;
+        $ret['content'] = $datalist;
+        $ret['totalcount'] = $totalCount;
+
+        return Response::json($ret);
+    }
+
+	public function getSettingDeptFuncList(Request $request) 
+	{
+	    $user_id = $request->get('user_id', 0);
+
+		// get dept ids by user_id
+        $deptIds = $this->getDeptIdsFromUserId($user_id);
+
+	    $datalist = DB::table('services_dept_function as df')
+            ->whereIn('df.dept_id', $deptIds)
+            ->get();
+
+        return Response::json($datalist);
+    }
+
+	public function getSettingUsergroupList(Request $request) 
+	{
+        $usergroups = DB::table('common_user_group')
+            ->get();
+
+        return Response::json($usergroups);
+    }
+
+	public function getSettingJobroleList(Request $request) 
+	{
+	    $user_id = $request->get('user_id', 0);
+        $property_id = $request->get('property_id', 0);
+
+        $deptIds = $this->getDeptIdsFromUserId($user_id);
+
+        $query = DB::table('common_job_role');
+        if( $property_id > 0 )
+            $query->where('property_id', $property_id);
+
+        $query->whereIn('dept_id', $deptIds);
+
+        $dataList = $query->get();
+
+        return Response::json($dataList);
+    }
+
+	public function addSettingTaskGroup(Request $request) 
+	{
+        $input = $request->except('id');
+        TaskGroup::create($input);
+
+        $ret = [
+            'code' => 200
+        ];
+
+        return Response::json($ret);
+    }
+
+	public function editSettingTaskGroup(Request $request) 
+	{
+
+	    $id = $request->get('id', 0);
+        $input = $request->all();
+
+        $model = TaskGroup::find($id);
+
+        $model->update($input);
+
+        $ret = [
+            'code' => 200
+        ];
+
+        return Response::json($ret);
+    }
+
+	public function deleteSettingTaskgroupRow(Request $request) 
+	{
+	    $delete_id = $request->get('delete_id', 0);
+        $model = TaskGroup::find($delete_id);
+        $model->delete();
+        $ret = [
+            'code' => 200,
+        ];
+        return Response::json($ret);
     }
 
 	public function getGuestChatSettingInfo(Request $request) 
@@ -8094,5 +8329,14 @@ class GuestserviceController extends Controller
 			->first();
 
 		return $roomlist;
+	}
+
+	public function getTaskInfoWithAssign(Request $request)
+	{
+		$task_id = $request->get('task_id', '0');
+		$location_id = $request->get('location_id', '0');
+		$ret = $this->getTaskShiftInfoReassign($task_id, $location_id,1);
+
+		return Response::json($ret);
 	}
 }

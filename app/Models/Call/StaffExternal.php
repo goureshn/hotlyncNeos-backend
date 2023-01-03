@@ -31,15 +31,15 @@ class StaffExternal extends Model
 		foreach($user_group as $row) {
 			$group_ids[] = $row->group_id;
 		}
-
+		
 		$ext_list = StaffExternal::where('bc_flag', 0)
 				->where(function ($query) use ($user_id, $group_ids) {
 					$query->where('user_id', $user_id)
 							->orWhereIn('user_group_id', $group_ids);
 				})
 				->select(DB::raw('id'))
-				->get()->lists('id');
-
+				->get()->pluck('id');
+				
 		return $ext_list;
 	}
 

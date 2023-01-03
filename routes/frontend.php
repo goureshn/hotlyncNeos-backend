@@ -1,21 +1,14 @@
 <?php
 
-use App\Http\Controllers\Backoffice\Guest\HSKPController;
-use App\Http\Controllers\Backoffice\Guest\MinibarController;
-use App\Http\Controllers\Backoffice\Guest\MinibarItemController;
 use App\Http\Controllers\Backoffice\Property\BuildingWizardController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\DataController;
-use App\Http\Controllers\Frontend\CallaccountController;
 use App\Http\Controllers\Frontend\CallController;
 use App\Http\Controllers\Frontend\ComplaintController;
 use App\Http\Controllers\Frontend\GuestserviceController;
-use App\Http\Controllers\Frontend\LNFController;
-use App\Http\Controllers\Frontend\ReportController;
 use App\Http\Controllers\Frontend\WakeupController;
 use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\Intface\ProcessController;
-use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -103,6 +96,13 @@ Route::prefix('guestservice')->group(function () {
         Route::any('getguestchatsettinginfo', 'getGuestChatSettingInfo');
         Route::any('getjobrolelist', 'getJobRoleList');
         Route::any('saveguestchatsettinginfo', 'saveGuestChatSettingInfo');
+        Route::any('getsettingtaskgrouplist', 'getSettingTaskgroupList');//add
+        Route::any('getsettingdeftfunclist', 'getSettingDeptFuncList');//add
+        Route::any('getsettingusergrouplist', 'getSettingUsergroupList');//add
+        Route::any('getsettingjobrolelist', 'getSettingJobroleList');//add
+        Route::any('addsettingtaskgroup', 'addSettingTaskGroup');//add
+        Route::any('editsettingtaskgroup', 'editSettingTaskGroup');//add
+        Route::any('deletesettingtaskgrouprow', 'deleteSettingTaskgroupRow');//add
     });
     
     Route::any('manualpost', [ProcessController::class, 'postManual']);
