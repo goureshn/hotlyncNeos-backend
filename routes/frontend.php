@@ -96,13 +96,28 @@ Route::prefix('guestservice')->group(function () {
         Route::any('getguestchatsettinginfo', 'getGuestChatSettingInfo');
         Route::any('getjobrolelist', 'getJobRoleList');
         Route::any('saveguestchatsettinginfo', 'saveGuestChatSettingInfo');
-        Route::any('getsettingtaskgrouplist', 'getSettingTaskgroupList');//add
-        Route::any('getsettingdeftfunclist', 'getSettingDeptFuncList');//add
-        Route::any('getsettingusergrouplist', 'getSettingUsergroupList');//add
-        Route::any('getsettingjobrolelist', 'getSettingJobroleList');//add
-        Route::any('addsettingtaskgroup', 'addSettingTaskGroup');//add
-        Route::any('editsettingtaskgroup', 'editSettingTaskGroup');//add
-        Route::any('deletesettingtaskgrouprow', 'deleteSettingTaskgroupRow');//add
+        Route::any('getsettingtaskgrouplist', 'getSettingTaskgroupList');
+        Route::any('getsettingdeftfunclist', 'getSettingDeptFuncList');
+        Route::any('getsettingusergrouplist', 'getSettingUsergroupList');
+        Route::any('getsettingjobrolelist', 'getSettingJobroleList');
+        Route::any('addsettingtaskgroup', 'addSettingTaskGroup');
+        Route::any('editsettingtaskgroup', 'editSettingTaskGroup');
+        Route::any('deletesettingtaskgrouprow', 'deleteSettingTaskgroupRow'); 
+        Route::any('taskinfowithassign', 'getTaskInfoWithAssign');
+        Route::any('getsettinglocationgrouplist', 'getSettingLocationgroupList');
+        Route::any('getsettingtasklist', 'getSettingTaskList');
+        Route::any('getsettingtaskgroups', 'getSettingTaskGroups');
+        Route::any('getsettingtaskcategories', 'getTaskCategoryList');
+        Route::any('getsettinguserlanglist', 'getSettingLangList');
+        Route::any('addsettingtask', 'addSettingTask');
+        Route::any('editsettingtask', 'editSettingTask');
+        Route::any('deletesettingtaskrow', 'deleteSettingTaskRow');
+        Route::any('getsettinglocationgroupdetaillist', 'getSettingLocationGroupDetailList');
+        Route::any('getsettingclientlist', 'getSettingClientList');
+        Route::any('getsettinglocationtypelist', 'getSettingLocationTypeList');
+        Route::any('addsettinglocationgroup', 'addSettingLocationGroup');
+        Route::any('updatesettinglocationgroup', 'updateSettingLocationGroup');
+        Route::any('deletesettinglocationgrouprow', 'deleteSettingLocationgroupRow');
     });
     
     Route::any('manualpost', [ProcessController::class, 'postManual']);

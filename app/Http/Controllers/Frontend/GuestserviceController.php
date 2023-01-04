@@ -7938,6 +7938,280 @@ class GuestserviceController extends Controller
         return Response::json($ret);
     }
 
+	public function getSettingTaskGroups(Request $request) 
+	{
+        $user_id = $request->get('user_id', 0);
+
+        $dept_ids = $this->getDeptIdsFromUserId($user_id);
+        $dataList = DB::table('services_task_group as tg')
+            ->leftJoin('services_dept_function as df', 'tg.dept_function', '=', 'df.id')
+            ->whereIn('df.dept_id', $dept_ids)
+            ->get();
+
+        return Response::json($dataList);
+    }
+
+	public function getTaskCategoryList(Request $request)
+	{
+		$name = $request->get('taskcategory', '');
+		$category = DB::table('services_task_category as stc')
+					->select(DB::raw('stc.id,stc.name'))
+					->whereRaw("stc.name like '%$name%'")
+					->get();
+
+		return Response::json($category);
+	}
+
+	public function getSettingLangList(Request $request) 
+	{
+        $datalist = DB::table('common_user_language')->get();
+        // $model = UserGroup::all();
+
+        return Response::json($datalist);
+    }
+
+	public function addSettingTask(Request $request) 
+	{
+
+        $input = $request->all();
+
+        $model = new TaskList();
+
+        $model->task = $request->get('tasklist_name', '');
+        $model->category_id = $request->get('category_id', '0');
+        $model->cost = $request->get('cost', '0');
+        $model->status = $request->get('status', '0');
+        $model->lang = json_encode($request->get('lang', '0'));
+        $model->save();
+
+        $tasklist_id = $model->id;
+
+        $pivot = new TaskGroupPivot();
+        $pivot->task_grp_id = $request->get('taskgroup_id', '0');
+        $pivot->task_list_id = $tasklist_id;
+
+        $pivot->save();
+
+        return Response::json($model);
+    }
+
+	public function editSettingTask(Request $request) 
+	{
+        $input = $request->all();
+
+        $id = $request->get('id', 0);
+
+        $model = TaskList::find($id);
+        if( empty($model) )
+            return Response::json($model);
+
+        $model->task = $request->get('tasklist_name', '0');
+        $model->category_id = $request->get('category_id', '0');
+        $model->cost = $request->get('cost', '0');
+        $model->status = $request->get('status', '0');
+        $model->lang = json_encode($request->get('lang', '0'));
+        $model->save();
+
+        TaskGroupPivot::where('task_list_id', $id)->delete();
+
+        $pivot = new TaskGroupPivot();
+        $pivot->task_grp_id = $request->get('taskgroup_id', '0');
+        $pivot->task_list_id = $id;
+
+        $pivot->save();
+
+        return Response::json($model);
+    }
+
+	public function deleteSettingTaskRow(Request $request) 
+	{
+        $delete_id = $request->get('delete_id', 0);
+        $model = TaskList::find($delete_id);
+        $model->delete();
+
+        $ret = [
+            'code' => 200,
+        ];
+        return Response::json($ret);
+    }
+
+	public function getSettingLocationGroupDetailList(Request $request) 
+	{
+	    $group_id = $request->get('group_id', 0);
+        $user_id = $request->get('user_id', 0);
+
+        $type_list = LocationType::all();
+
+        $ret = [];
+
+        foreach ($type_list as $type_info) {
+            $temp_arr = [];
+
+            $temp_arr["type_id"] = $type_info->id;
+            $temp_arr["type"] = $type_info->type;
+
+            $temp_arr["locations"] = [];
+
+            $selected_member = DB::table('services_location as sl')
+                ->join('services_location_type as slt', 'sl.type_id', '=', 'slt.id')
+                ->join('services_location_group_members as lgm', 'lgm.loc_id', '=', 'sl.id')
+                ->where('lgm.location_grp', $group_id)
+                ->where('sl.type_id', $type_info->id)
+                ->select(DB::raw('sl.*, slt.type'))
+                ->get();
+
+            $list_id = [0];
+            foreach($selected_member as $row)
+                $list_id[] = $row->id;
+
+            $unselected_member = DB::table('services_location as sl')
+                ->join('services_location_type as slt', 'sl.type_id', '=', 'slt.id')
+                ->where('sl.type_id', $type_info->id)
+                ->whereNotIn('sl.id', $list_id)
+                ->select(DB::raw('sl.*, slt.type'))
+                ->get();
+
+            $temp_arr["locations"]["unselected_member"] = $unselected_member;
+            $temp_arr["locations"]["selected_member"] = $selected_member;
+
+            $ret[] = $temp_arr;
+        }
+
+        return Response::json($ret);
+    }
+
+	public function getSettingClientList(Request $request) 
+	{
+        $user_id = $request->get('user_id', 0);
+        $result = DB::table('common_chain')->get();
+
+        return Response::json($result);
+    }
+
+	public function getSettingLocationTypeList(Request $request) 
+	{
+	    $user_id = $request->get('user_id', 0);
+	    $typelist = LocationType::all();
+
+	    $ret = [];
+	    foreach ($typelist as $typeInfo) {
+	        $type_id = $typeInfo->id;
+
+            $unselected_member = DB::table('services_location as sl')
+                ->join('services_location_type as slt', 'sl.type_id', '=', 'slt.id')
+                ->where('sl.type_id', $type_id)
+                ->select(DB::raw('sl.*, slt.type'))
+                ->get();
+
+            $temp = [];
+            $temp["type_id"] = $type_id;
+            $temp["type"] = $typeInfo->type;
+            $temp["all_locations"] = $unselected_member;
+
+            $ret[$type_id] = $temp;
+        }
+
+	    return Response::json($ret);
+    }
+
+	public function addSettingLocationGroup(Request $request) 
+	{
+        $client_id = $request->get('client_id', 0);
+        $name = $request->get('name', "");
+        $description = $request->get('description', "");
+
+
+        $input = [
+            "client_id" => $client_id,
+            "name" => $name,
+            "description" => $description
+        ];
+
+        $model = LocationGroup::create($input);
+        $locations = $request->get('locations', []);
+
+        $group_id = $model->id;
+
+        foreach ($locations as $type_id => $locationInfo) {
+
+            $mainLocations = empty($locationInfo["locations"]) ? [] : $locationInfo["locations"];
+
+            foreach ($mainLocations as $mainLocation) {
+                $model = new LocationGroupMember();
+                $model->location_grp = $group_id;
+                $model->loc_id = $mainLocation["id"];
+
+                $model->save();
+            }
+        }
+
+        $ret = [
+            'code' => 200
+        ];
+
+        return Response::json($ret);
+    }
+
+	public function updateSettingLocationGroup(Request $request) 
+	{
+	    $id = $request->get('id', 0);
+        $client_id = $request->get('client_id', 0);
+        $name = $request->get('name', "");
+        $description = $request->get('description', "");
+
+        $input = [
+            "id" => $id,
+            "client_id" => $client_id,
+            "name" => $name,
+            "description" => $description
+        ];
+
+        $model = LocationGroup::find($id);
+
+        $model->update($input);
+
+        $locations = $request->get('locations', []);
+        $group_id = $id;
+        DB::table('services_location_group_members')
+            ->where('location_grp', $group_id)
+            ->delete();
+
+        foreach ($locations as $type_id => $locationInfo) {
+
+            $mainLocations = empty($locationInfo["locations"]) ? [] : $locationInfo["locations"];
+
+            foreach ($mainLocations as $mainLocation) {
+                $model = new LocationGroupMember();
+                $model->location_grp = $group_id;
+                $model->loc_id = $mainLocation["id"];
+
+                $model->save();
+            }
+        }
+
+        $ret = [
+            'code' => 200
+        ];
+
+        return Response::json($ret);
+    }
+
+	public function deleteSettingLocationgroupRow(Request $request) 
+	{
+        $delete_id = $request->get('delete_id', 0);
+        $model = LocationGroup::find($delete_id);
+        $model->delete();
+
+        // delete services_location_group_members table record for location group
+        DB::table('services_location_group_members')
+            ->where('location_grp', $delete_id)
+            ->delete();
+
+        $ret['code'] = 200;
+
+        return Response::json($ret);
+    }
+
 	public function getGuestChatSettingInfo(Request $request) 
 	{
         $property_id = $request->get('property_id', 4);
