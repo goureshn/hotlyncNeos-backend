@@ -1,11 +1,13 @@
 <?php
 
+use App\Http\Controllers\Backoffice\Guest\HSKPController;
 use App\Http\Controllers\Backoffice\Property\BuildingWizardController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\DataController;
 use App\Http\Controllers\Frontend\CallController;
 use App\Http\Controllers\Frontend\ComplaintController;
 use App\Http\Controllers\Frontend\GuestserviceController;
+use App\Http\Controllers\Frontend\ReportController;
 use App\Http\Controllers\Frontend\WakeupController;
 use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\Intface\ProcessController;
@@ -27,6 +29,7 @@ use Illuminate\Support\Facades\Route;
 Route::any('/call/agentstatus', [CallController::class, 'getAgentStatus']);
 Route::any('/chat/unreadcount', [DataController::class, 'getChatUnreadCount']);
 Route::any('getfavouritemenu', [FrontendController::class, 'getFavouriteMenus']);
+Route::any('/report/filterlist', [ReportController::class, 'getFilterList']);//add
 
 Route::prefix('guestservice')->group(function () {
     
@@ -102,9 +105,9 @@ Route::prefix('guestservice')->group(function () {
         Route::any('getsettingjobrolelist', 'getSettingJobroleList');
         Route::any('addsettingtaskgroup', 'addSettingTaskGroup');
         Route::any('editsettingtaskgroup', 'editSettingTaskGroup');
-        Route::any('deletesettingtaskgrouprow', 'deleteSettingTaskgroupRow'); 
+        Route::any('deletesettingtaskgrouprow', 'deleteSettingTaskgroupRow');
         Route::any('taskinfowithassign', 'getTaskInfoWithAssign');
-        Route::any('getsettinglocationgrouplist', 'getSettingLocationgroupList');
+        Route::any('getsettinglocationgrouplist', 'getSettingLocationgroupList');        
         Route::any('getsettingtasklist', 'getSettingTaskList');
         Route::any('getsettingtaskgroups', 'getSettingTaskGroups');
         Route::any('getsettingtaskcategories', 'getTaskCategoryList');
@@ -180,5 +183,39 @@ Route::prefix('wakeup')->group(function () {
         Route::any('roomlist', 'getRoomList');
         Route::any('createmultiple', 'createMultiple');
         Route::any('logs', 'getLogs');
+    });
+});
+
+Route::prefix('hskp')->group(function () {
+    Route::controller(HSKPController::class)->group(function () {
+        Route::any('statistics', 'getStatisticInfo');
+        Route::any('logs', 'getHskpLogs');
+        Route::any('checklistitem', 'getChecklistItems');
+        Route::any('getchecklistlist', 'getCheckListList');
+        Route::any('getschedulelist', 'getScheduleList');
+        Route::any('getrulelist', 'getRuleList');
+        Route::any('triggertasklist', 'getTriggerTaskList');
+        Route::any('getlinensettinglist', 'getLinenSettingList');
+        Route::any('activetriggertask', 'activeTriggerTask');
+        Route::any('createtriggertask', 'createTriggerTask');
+        Route::any('deletetriggertask', 'deleteTriggerTask');
+        Route::any('updatechecklist', 'updateCheckList');
+        Route::any('getchecklist', 'getCheckList');
+        Route::any('addchecklistitemtogroup', 'addChecklistItemToGroup');
+        Route::any('removechecklistitemfromgroup', 'removeChecklistItemFromGroup');
+        Route::any('deletechecklistwithgroup', 'deleteChecklistWithGroup');
+        Route::any('createchecklistwithgroup', 'createChecklistWithGroup');
+        Route::any('createchecklistgroup', 'createChecklistGroup');
+        Route::any('checklistgrouplist', 'getChecklistGroupList');
+        Route::any('createchecklist', 'createCheckList');
+        Route::any('createrulelist', 'createRuleList');
+        Route::any('updaterule', 'updateRule');
+        Route::any('removerule', 'deleteRule');
+        Route::any('createschedulelist', 'createScheduleList');
+        Route::any('updateschedule', 'updateSchedule');
+        Route::any('removeschedule', 'deleteSchedule');
+        Route::any('createlinensetting', 'createLinenSetting'); // added column "qty" in "services_linen_setting" table to resolve error
+        Route::any('updatelinensetting', 'updateLinenSetting');
+        Route::any('removelinensetting', 'deleteLinenSetting');
     });
 });

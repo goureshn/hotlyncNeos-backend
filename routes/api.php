@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Backoffice\Guest\HSKPController;
 use App\Http\Controllers\Backoffice\Property\LicenseWizardController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
@@ -24,3 +25,11 @@ Route::post('/hotlync/checklicense', [LicenseWizardController::class, "checkLice
 Route::post('/auth/getcompareflag', [UserController::class, 'GetCompareFlag']);
 Route::post('/auth/login', [UserController::class, 'login']);
 
+Route::any('/hskp/publicAreaGetTasksMain', [HSKPController::class, 'publicAreaGetTasksMain']);
+Route::any('/hskp/publicAreaAddTaskMain', [HSKPController::class, 'publicAreaAddTaskMain']);
+Route::any('/hskp/publicAreaEditTaskMain', [HSKPController::class, 'publicAreaEditTaskMain']);
+Route::any('/hskp/publicAreaGetTasksByMainId', [HSKPController::class, 'publicAreaGetTasksByMainId']);
+Route::any('/hskp/publicAreaGetLocationsWithIds', [HSKPController::class, 'publicAreaGetLocationsWithIds']);
+Route::any('/hskp/publicAreaEditTask', [HSKPController::class, 'publicAreaEditTask']);
+Route::any('/hskp/publicAreaEditTaskActive', [HSKPController::class, 'publicAreaEditTaskActive']);
+Route::any('/hskp/publicAreaAddTask', [HSKPController::class, 'publicAreaAddTask']);

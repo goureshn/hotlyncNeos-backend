@@ -328,7 +328,7 @@ class CommonUser extends Model
 
 	public static function getProertyIdsByClient($client_id) {
 		return Property::where('client_id', $client_id)
-		    ->select(DB::raw('id'))->get()->lists('id');
+		    ->select(DB::raw('id'))->get()->pluck('id');
 	}
 
 	public static function getBuildingIds($id) {
