@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Backoffice\Guest\HSKPController;
+use App\Http\Controllers\Backoffice\Guest\MinibarController;
+use App\Http\Controllers\Backoffice\Guest\MinibarItemController;
 use App\Http\Controllers\Backoffice\Property\BuildingWizardController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\DataController;
@@ -29,7 +31,7 @@ use Illuminate\Support\Facades\Route;
 Route::any('/call/agentstatus', [CallController::class, 'getAgentStatus']);
 Route::any('/chat/unreadcount', [DataController::class, 'getChatUnreadCount']);
 Route::any('getfavouritemenu', [FrontendController::class, 'getFavouriteMenus']);
-Route::any('/report/filterlist', [ReportController::class, 'getFilterList']);//add
+Route::any('/report/filterlist', [ReportController::class, 'getFilterList']);
 
 Route::prefix('guestservice')->group(function () {
     
@@ -217,5 +219,19 @@ Route::prefix('hskp')->group(function () {
         Route::any('createlinensetting', 'createLinenSetting'); // added column "qty" in "services_linen_setting" table to resolve error
         Route::any('updatelinensetting', 'updateLinenSetting');
         Route::any('removelinensetting', 'deleteLinenSetting');
+    });
+});
+
+Route::prefix('minibar')->group(function () {
+
+    Route::controller(MinibarItemController::class)->group(function () {
+        Route::any('logs', 'getMinibarLogs');
+        Route::any('guest', 'getMinibarGuest');
+        Route::any('detail', 'getMininbarDetail');
+        Route::any('stocks', 'getMinibarStock');
+    });
+
+    Route::controller(MinibarController::class)->group(function () {
+        Route::any('repost', 'postMinibarItemList');
     });
 });
