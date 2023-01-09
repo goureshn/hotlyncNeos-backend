@@ -9,6 +9,7 @@ use App\Http\Controllers\DataController;
 use App\Http\Controllers\Frontend\CallController;
 use App\Http\Controllers\Frontend\ComplaintController;
 use App\Http\Controllers\Frontend\GuestserviceController;
+use App\Http\Controllers\Frontend\LNFController;
 use App\Http\Controllers\Frontend\ReportController;
 use App\Http\Controllers\Frontend\WakeupController;
 use App\Http\Controllers\FrontendController;
@@ -123,6 +124,14 @@ Route::prefix('guestservice')->group(function () {
         Route::any('addsettinglocationgroup', 'addSettingLocationGroup');
         Route::any('updatesettinglocationgroup', 'updateSettingLocationGroup');
         Route::any('deletesettinglocationgrouprow', 'deleteSettingLocationgroupRow');
+        Route::any('devicelist', 'getDeviceList'); //add
+        Route::any('getroomservicelist', 'getRoomServiceList'); //add
+        Route::any('getroomservicecategorylist', 'getRoomServiceCategoryList'); //add
+        Route::any('getroomlistassign', 'getRoomListforDeviceAssign'); // add
+        Route::any('getfloorlist', 'getFloorList'); // add
+        Route::any('getrosters_minibar', 'getRostersMinibarDeptFunc'); //add
+        Route::any('getroomlistunassign', 'getUnassignedRoomList'); //add
+        Route::any('createrosterdevice_minibar', 'createRosterMinibarForDevice'); //add
     });
     
     Route::any('manualpost', [ProcessController::class, 'postManual']);
@@ -233,5 +242,16 @@ Route::prefix('minibar')->group(function () {
 
     Route::controller(MinibarController::class)->group(function () {
         Route::any('repost', 'postMinibarItemList');
+        Route::any('postminibaritemstatuschange', 'postMinibarItemStatusChange'); //add
+        Route::any('postminibaritem', 'postMinibarItemList'); // add
+    });
+});
+
+Route::prefix('lnf')->group(function () {
+    Route::controller(LNFController::class)->group(function () {
+        Route::any('getSearchTagsAll', 'getSearchTagsAll'); //add
+        Route::any('inquirylist', 'getInquiryItems'); //add
+        Route::any('availablelist', 'getAvailableItems'); //add
+        Route::any('getLnfAllItems', 'getLnfAllItems'); //add
     });
 });

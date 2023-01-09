@@ -8494,6 +8494,368 @@ class GuestserviceController extends Controller
 		return $ids;
 	}
 
+	public function getDeviceList(Request $request) 
+	{
+		$property_id = $request->get('property_id', '0');
+		$dept_id = $request->get('dept_id', '0');
+		$dept_func = $request->get('dept_func', '0');
+		$name = $request->get('name', '');
+        $case_type = $request->get('case_type', '');
+        $device_id = $request->get('device_id', '');
+        $active_flag = $request->get('active_flag', 0);
+
+		$hskp_role = DeftFunction::getHskpRole($dept_func);
+		$deptfunc_minibar_id = 0;
+
+		$devicelist = array();
+		if( $dept_func > 0 )
+		{
+			$query = DB::table('services_devices as sd')
+					->leftJoin('services_roster_list as rs','sd.id', '=', 'rs.device')
+					->leftJoin('common_users as cu', 'cu.device_id', '=', 'sd.device_id');
+
+			if( $hskp_role == 'Attendant' )
+				$query->leftJoin('services_room_status as b', 'rs.id', '=', 'b.attendant_id');
+
+			if( $hskp_role == 'Supervisor' )
+				$query->leftJoin('services_room_status as b', 'rs.id', '=', 'b.supervisor_id');
+
+			if( $active_flag == 1 ){
+				$query->where('cu.active_status', 1);
+
+			$devicelist = $query
+					->whereRaw("FIND_IN_SET($dept_func, sd.dept_func_array_id)")
+					->whereRaw("sd.name like '%$name%'")
+					->where('cu.deleted', 0)
+					->select(DB::raw('sd.*, CONCAT_WS(" ", cu.first_name, cu.last_name) as wholename,cu.active_status,cu.picture,
+								rs.supervisor_id, count(b.id) as room_count, rs.id as roster_id'))
+					->orderByRaw('sd.name asc')
+					->groupBy('sd.id')
+					->get();
+			}
+			else{
+				$devicelist = $query
+					->whereRaw("FIND_IN_SET($dept_func, sd.dept_func_array_id)")
+					->whereRaw("sd.name like '%$name%'")
+				//	->where('cu.deleted', 0)
+					->select(DB::raw('sd.*,CONCAT_WS(" ", cu.first_name, cu.last_name) as wholename,cu.active_status,cu.picture,
+								rs.supervisor_id, count(b.id) as room_count, rs.id as roster_id'))
+					->orderByRaw('sd.name asc')
+					->groupBy('sd.id')
+					->get();
+			}
+			foreach($devicelist as $row)
+			{
+				if(empty($row->roster_id))
+				{
+					$roster = new RosterList();
+
+					$roster->device = $row->id;
+					$roster->repeat_flag = 0;
+					$roster->name= $row->name;
+					$roster->total_credits = 0;
+
+					$roster->save();
+
+					$row->roster_id = $roster->id;
+				}
+
+				$row->total_credits = RosterList::getTotalCredits($hskp_role, $row->roster_id, 0, $property_id);
+			}
+
+            $arr=[];
+
+		}else if($case_type == 'Minibar'){
+
+		    if($device_id != "" ){
+		        if( $device_id != "0" )
+                {
+                    $devicelist = DB::table('services_devices as sd')
+                        ->leftJoin('services_minibar_roster_list as rs','sd.id', '=', 'rs.device')
+                        ->leftJoin('common_users as cu', 'cu.device_id', '=', 'sd.device_id')
+                        ->where("sd.device_id",$device_id)
+                        ->select(DB::raw('sd.*, CONCAT_WS(" ", cu.first_name, cu.last_name) as wholename,cu.active_status,cu.picture,cu.id as user_id, rs.total_credits'))
+                        ->orderByRaw('length(sd.name), sd.name asc')
+                        //->groupBy('sd.id')
+                        ->get();
+                }
+            }
+		    else{
+
+                $filter = '%' . 'Minibar' . '%';
+                $query = DB::table('services_dept_function as sdf')
+                    ->where('sdf.function', 'like', $filter);
+                $deptfunc_minibar = $query->select(DB::raw('sdf.id as dept_func_id, sdf.function, sdf.default_task_group_id'))
+                    ->first();
+
+                $deptfunc_minibar_id = $deptfunc_minibar->dept_func_id;
+                /*$devicelist_all = DB::table('services_devices as sd')
+                    ->whereRaw("sd.name like '%$name%'")
+                    ->select(DB::raw('sd.*'))
+                    ->orderByRaw('length(sd.name), sd.name asc')
+                    ->get();*/
+
+                $devicelist_all = DB::table('services_devices as sd')
+                    ->leftJoin('services_minibar_roster_list as rs','sd.id', '=', 'rs.device')
+                    ->leftJoin('common_users as cu', 'cu.device_id', '=', 'sd.device_id')
+                    ->whereRaw("sd.name like '%$name%'")
+                    ->where("sd.device_id",'<>',"")
+                    ->where("sd.device_id",'<>',NULL)
+                    ->select(DB::raw('sd.*, CONCAT_WS(" ", cu.first_name, cu.last_name) as wholename,cu.active_status,cu.picture,cu.id as user_id, rs.location_list,rs.total_credits'))
+                    ->orderByRaw('length(sd.name), sd.name asc')
+                    //->groupBy('sd.id')
+                    ->get();
+
+
+                $devicelist = array();
+
+                for( $i = 0 ; $i < count($devicelist_all) ; $i++) {
+
+                    if($devicelist_all[$i]->user_id == null)
+                        continue;
+
+                    if($deptfunc_minibar_id == $devicelist_all[$i]->dept_func )
+                    {
+                        $devicelist[] = $devicelist_all[$i];
+                    } else
+                    {
+                        $dept_sub_func_list = explode(",",$devicelist_all[$i]->sec_dept_func);
+
+                        for( $j = 0 ; $j < count($dept_sub_func_list) ; $j++ )
+                        {
+                            if( $deptfunc_minibar_id."" == trim($dept_sub_func_list[$j]) )
+                            {
+                                $devicelist[] = $devicelist_all[$i];
+                                break;
+                            }
+                        }
+                    }
+                }
+
+			}
+
+			foreach ($devicelist as $key => $value) {
+				$arr = json_decode($value->location_list);
+				$devicelist[$key]->room_count = 0;
+				if(!empty($arr))
+					$devicelist[$key]->room_count = count($arr);
+			}
+        }
+
+
+		$ret = array();
+		$ret['device_list'] = $devicelist;
+        $ret['minibar_dept_func_id']  = $deptfunc_minibar_id;
+		return Response::json($ret);
+	}
+
+	public function getRoomServiceList(Request $request)
+    {
+        $category_id = $request->get('category_id', 0);
+        $query = DB::table('services_rm_srv_itm')->where('active_status', 1);
+        if($category_id > 0)
+            $query->where('room_service_group' , $category_id);
+        $item_list = $query->get();
+        $ret = array();
+        $ret["datalist"] = $item_list;
+        return Response::json($ret);
+    }
+
+	public function getRoomServiceCategoryList(Request $request)
+    {
+        $item_list = DB::table('services_rm_srv_grp')
+            ->get();
+        $ret = array();
+        $ret["datalist"] = $item_list;
+        return Response::json($ret);
+
+    }
+
+	public function getRoomListforDeviceAssign(Request $request) 
+	{
+        $property_id = $request->get('property_id', '0');
+        $dept_func = $request->get('dept_func', 0);
+        $room_name = $request->get('room_name', "");
+        $filter = $request->get('filter', '');
+        $room_id_list = $request->get('room_id_list', []);
+        $status_ids =  $request->get('status_ids', []);
+        $last_id = $request->get('last_id', 0);
+        $ret = array();
+        $cur_date = date("Y-m-d");
+        $query = DB::table('services_room_status as rs')
+            ->join('common_room as cr', 'rs.id', '=', 'cr.id')
+            ->join('common_floor as cf', 'cr.flr_id', '=', 'cf.id')
+            ->join('common_building as cb', 'cf.bldg_id', '=', 'cb.id')
+            ->join('common_room_type as rt', 'cr.type_id', '=', 'rt.id')
+           // ->leftJoin('services_hskp_status as hs', 'cr.hskp_status_id', '=', 'hs.id')
+            ->leftJoin('common_guest as cg', function($join) use ($cur_date) {
+                $join->on('cr.id', '=', 'cg.room_id');
+                $join->on('cg.departure','>=',DB::raw($cur_date));
+                $join->on('cg.checkout_flag','=', DB::raw("'checkin'"));
+            })
+           /*->leftJoin('services_minibar_log as sml', function ($q) {
+                $q->on('sml.room_id', '=', 'cr.id')
+                    ->on('sml.created_at', '=',  DB::raw('(select max(created_at) from services_minibar_log where room_id = cr.id)'));
+            })*/
+            ->leftJoin('services_minibar_posting_status as mps', 'mps.id', '=', 'rs.minibar_post_status')
+            ->leftJoin('common_users as cu1', 'cu1.id', '=', 'rs.minibar_posted_by')  // posted_by
+            ->where('cb.property_id', $property_id);
+        if( !empty($room_name) )
+            $query->where('cr.room', 'like', '%' . $room_name . '%');
+        if(!empty($filter['occupied']) && $filter['occupied'] ==true)
+        {
+            if(!empty($filter['vacant']) && $filter['vacant'] ==true)
+            {
+                $query->whereIn('rs.occupancy', ['Occupied','Vacant'] );
+            } else
+                $query->where('rs.occupancy', 'Occupied' );
+        } else if(!empty($filter['vacant']) && $filter['vacant'] ==true)
+        {
+            $query->where('rs.occupancy', 'Vacant' );
+        }
+      if( count($room_id_list) )
+            $query->whereIn('cr.id', $room_id_list);
+        if( count($status_ids) )
+            $query->whereIn('rs.minibar_post_status', $status_ids);
+        if($last_id > 0)
+            $query->where('cr.id','>', $last_id );
+        $data_query = clone $query;
+        $data_list = $data_query
+            ->select(DB::raw("cr.id,cr.room ,rs.minibar_post_status as posting_status_id,rs.minibar_posted_by,rs.minibar_post_id as post_id,rs.updated_at as last_post, mps.posting_status as posting_status_name, rs.room_status, rs.occupancy,cf.floor,CONCAT_WS(' ', cu1.first_name, cu1.last_name) as wholename, cg.guest_name,cg.arrival,cg.departure,cg.pref,cg.adult,cg.chld,cg.share,cg.checkout_flag"))
+            //->groupby('cr.id')   // sml.posting_status as posting_status_id,sml.id as post_id , sml.posted_by,,rt.type as room_type,hs.status,
+            ->orderBy('cr.id', 'asc')
+            ->take(25)
+            //->orderBy('sml.created_at','asc')
+            ->get();
+        //Guest::getGuestDetail($data_list);
+        /*foreach ($data_list as $key => $value) {
+            $rooms[]=$value->room;
+            $data_list[$key]->assigned_device_count=0;
+            $data_list[$key]->assigned_device_list=[];
+        }*/
+        if( empty($data_list) || count($data_list) < 1 )
+        {
+            $last_id = -1;
+        }
+        else
+        {
+            $last_id = $data_list[count($data_list) - 1]->id;
+        }
+        $ret['last_id'] = $last_id;
+        $ret['datalist'] = $data_list;
+        return Response::json($ret);
+    }
+
+	public function getFloorList(Request $request) 
+	{
+		$property_id = $request->get('property_id', '');
+		$building_id = $request->get('building_id', '');
+		$dept_func_id = $request->get('dept_func_id', '0');
+		$job_role_id = $request->get('job_role_id', '0');
+		$floor_name = $request->get('floor_name', '');
+		$filter = $request->get('filter', '');
+		$filter1 = $request->get('occupfilter', '');
+		$device_flag = $request->get('device_flag', 1);
+
+		$tm1 = microtime(true);
+
+		$hksp_role = 'None';
+		if( $device_flag == 1 )
+			$hskp_role = DeftFunction::getHskpRole($dept_func_id);
+		if( $device_flag == 0 )
+			$hskp_role = CommonJobrole::getHskpRole($job_role_id);
+
+		$floor_list = RosterList::getUnassignedFloorRooms($hskp_role, $filter, $filter1, $building_id, $floor_name);
+		foreach($floor_list as $row)
+		{
+			$row->unassigned_list = DB::table('common_room')
+										->whereIn('id', explode(",", $row->room_list))
+										->select(DB::raw('id, room'))
+										->get();
+
+			$row->room_count = DB::table('common_room')
+										->where('flr_id', $row->id)
+										->count();
+
+		}
+		$tm2 = microtime(true);
+
+		$time = array(
+			'tm1' => $tm2 - $tm1
+		);
+
+		$ret = array();
+		$ret['floor_list'] = $floor_list;
+		$ret['time'] = $time;
+
+
+		return Response::json($ret);
+	}
+
+	public function getRostersMinibarDeptFunc(Request $request)
+    {
+        //$start = microtime(true);
+
+        //date_default_timezone_set(config('app.timezone'));
+        //1$cur_time = date("Y-m-d H:i:s");
+
+        //$page = $request->get('page', 0);
+        //$pageSize = $request->get('pagesize', 20);
+        //$skip = $page;
+        //$orderby = $request->get('field', 'id');
+        //$sort = $request->get('sort', 'asc');
+        $property_id = $request->get('property_id', '0');
+        //$filter = $request->get('filter');
+        $dept_func_id = $request->get('dept_func_id', '');
+        $device_id = $request->get('device_id', '');
+        //$end_date = $request->get('end_date', '');
+        //$user_id = $request->get('user_id', 0);
+        //$property_ids_by_jobrole = $request->get('property_ids_by_jobrole', []);
+
+        //$last24 = date('Y-m-d H:i:s', strtotime("-1 days"));
+
+        //if ($pageSize < 0)
+        //$pageSize = 20;
+        $ret = array();
+
+        //$data_query = clone $query;
+
+        $roster_list = DB::table('services_minibar_roster_list as rs')
+            ->leftJoin('services_devices as sd', 'sd.id', '=', 'rs.device')
+            ->where('rs.device',$device_id)
+            ->select(DB::raw('rs.*, sd.name as device_name, sd.number, sd.loc_grp_id, sd.device_id'))
+			->get();
+
+		Functions::getDeptFuncInfo($roster_list);
+
+		$arr=[];
+		$data_list = array();
+
+		if( count($roster_list)  > 0 )
+        {
+			$data_list = $roster_list;
+
+			foreach ($data_list as $list) {
+            	$arr = json_decode($list->location_list);
+            	$loc_arr=[];
+            	foreach ($arr as  $value) {
+            	    $val= $this->getRoomDetails($value,$property_id);
+            	    if($val->td_flag ==1)
+            	        $val->room_status="Turndown";
+            	    $loc_arr[]=$val;
+            	}
+            	$list->locations=$loc_arr;
+			}
+		}
+
+        $ret['datalist'] = $data_list;
+
+        $ret['code'] = 200;
+        $ret['message'] = '';
+
+        return Response::json($ret);
+    }
+
 	private function getRoomDetails($room_id,$property_id)
 	{
 		$cur_date = date("Y-m-d");
@@ -8604,6 +8966,203 @@ class GuestserviceController extends Controller
 
 		return $roomlist;
 	}
+
+	public function getUnassignedRoomList(Request $request) 
+	{
+		$property_id = $request->get('property_id', '0');
+		$dept_func = $request->get('dept_func', '0');
+		$job_role_id = $request->get('job_role_id', '0');
+		$floor_list = $request->get('floors', array());
+		$room_name = $request->get('room_name', array());
+		$building_id = $request->get('building_id', '0');
+		$dispatcher = $request->get('dispatcher', 0);
+		$device_flag = $request->get('device_flag', 0);
+		$filter = $request->get('filter', '');
+		$filter1 = $request->get('occupfilter', '');
+		$exceptions_list = $request->get('exceptions_list', []);
+
+		$serviceStateList = $request->get('serviceStateList', []);
+
+		$ret = array();
+		$cur_date = date("Y-m-d");
+		$query = HskpRoomStatus::getRoomStatusQuery1();
+
+		if(!empty($exceptions_list))
+			$query->whereNotIn('rs.id', $exceptions_list );
+
+		if( $building_id > 0 )
+			$query->where('cf.bldg_id', $building_id);
+
+		if( count($floor_list) )
+			$query->whereIn('flr_id', $floor_list);
+
+		if( !empty($room_name) )
+			$query->where('cr.room', 'like', '%' . $room_name . '%');
+
+		if (!empty($serviceStateList)) {
+            $query->whereIn('rs.service_state', $serviceStateList);
+        }
+
+		$hskp_role = 'None';
+		if( $device_flag == 1 )
+			$hskp_role = DeftFunction::getHskpRole($dept_func);
+
+		if( $device_flag == 0 )
+			$hskp_role = CommonJobrole::getHskpRole($job_role_id);
+
+		if( $hskp_role == 'Attendant' )
+			$query->where('rs.attendant_id', 0);
+
+		if( $hskp_role == 'Supervisor' )
+			$query->where('rs.supervisor_id', 0);
+
+		if(!empty($filter['dirty']) && $filter['dirty'] ==true)
+		{
+			if(!empty($filter['clean']) && $filter['clean'] ==true)
+			{
+				if(!empty($filter['inspected']) && $filter['inspected'] ==true)
+				{
+					$query->whereIn('rs.room_status', ['Dirty','Clean', 'Inspected'] );
+				}
+				else{
+					$query->whereIn('rs.room_status', ['Dirty','Clean'] );
+				}
+			}
+			elseif(!empty($filter['inspected']) && $filter['inspected'] ==true){
+				$query->whereIn('rs.room_status', ['Dirty', 'Inspected'] );
+			}
+			else{
+				$query->whereIn('rs.room_status', ['Dirty'] );
+			}
+		}
+		elseif(!empty($filter['clean']) && $filter['clean'] ==true)
+		{
+			if(!empty($filter['inspected']) && $filter['inspected'] ==true)
+			{
+			$query->whereIn('rs.room_status', ['Clean', 'Inspected'] );
+			}
+			else{
+				$query->whereIn('rs.room_status', ['Clean'] );
+			}
+		}
+		elseif(!empty($filter['inspected']) && $filter['inspected'] ==true){
+			$query->whereIn('rs.room_status', ['Inspected'] );
+		}
+
+		if(!empty($filter['dueout']) && $filter['dueout'] ==true)
+		{
+			$query->where('cg.departure', $cur_date);
+		}
+
+        if(!empty($filter1['occupied']) && $filter1['occupied'] ==true)
+        {
+            if(!empty($filter1['vacant']) && $filter1['vacant'] ==true)
+            {
+                $query->whereIn('rs.occupancy', ['Occupied','Vacant'] );
+            } else
+                $query->where('rs.occupancy', 'Occupied' );
+        } else if(!empty($filter1['vacant']) && $filter1['vacant'] ==true)
+        {
+            $query->where('rs.occupancy', 'Vacant' );
+		}
+
+		$data_query = HskpRoomStatus::getRoomStatusQuery2($query);
+
+		$data_list = $data_query
+                ->groupBy('cr.room')
+				->orderBy('cr.room')
+				->get();
+
+		foreach($data_list as $row){
+
+			$schedule = DB::table('services_hskp_schedule')
+						->where('id', $row->schedule)
+						->select(DB::raw('days'))
+						->first();
+
+			if (!empty($schedule)){
+				if ($row->working_status == 11){
+					$row->cleaning = "No Service";
+				}
+				else{
+					$row->cleaning = "Full Service";
+				}
+			}
+			else{
+				if ($row->occupancy == 'Occupied'){
+
+					if ($row->full_clean_date == $cur_date){
+
+						$row->cleaning = "Full";
+					}
+					else{
+
+						$row->cleaning = "Partial";
+					}
+				}
+				else{
+					$row->cleaning = '';
+				}
+			}
+		}
+
+
+		$ret['datalist'] = $data_list;
+		//$ret['sub_count'] = $sub_count;
+
+		return Response::json($ret);
+	}
+
+	public function createRosterMinibarForDevice(Request $request) 
+	{
+        date_default_timezone_set(config('app.timezone'));
+        $cur_time = date("Y-m-d H:i:s");
+        $cur_date = date("Y-m-d");
+
+        $device = $request->get('device', 186);
+        $updated_by = $request->get('updated_by', 0);
+        $assigned_list = $request->get('assigned_list', [8]);
+        $td_list = $request->get('td_list', [8]);
+        $property_id = $request->get('property_id', 4);
+        $begin_date_time=$request->get('begin_date_time','');
+        $end_date_time=$request->get('end_date_time','');
+        $roster_name = $request->get('roster_name', '');
+        $total_credits = $request->get('total_credits', '');
+        $casual_staff = $request->get('casual_staff', '');
+
+        $roster = new MinibarRosterList();
+        $roster->device=$device;
+        $roster->repeat_flag=0;
+        $roster->location_list=json_encode($assigned_list);
+        $roster->begin_date_time=$begin_date_time;
+        $roster->end_date_time= $end_date_time;
+        $roster->name= $roster_name;
+        $roster->total_credits = $total_credits;
+        $roster->save();
+
+
+        $rosterlog = new MinibarRosterLog();
+        $rosterlog->device=$device;
+        $rosterlog->roster_id=$roster->id;
+        $rosterlog->updated_by=$updated_by;
+        //echo $updated_by;
+        $rosterlog->time=$cur_time;
+        $rosterlog->location_list=json_encode($assigned_list);
+        $rosterlog->begin_date_time=$begin_date_time;
+        $rosterlog->end_date_time= $end_date_time;
+        $rosterlog->roster_name= $roster_name;
+        $rosterlog->total_credits = $total_credits;
+        $rosterlog->save();
+
+        $ret = array();
+
+        $ret['code'] = 200;
+        $ret['message'] = 'Roster is created successfully';
+        $ret['content'] = $roster;
+
+        return Response::json($ret);
+
+    }
 
 	public function getTaskInfoWithAssign(Request $request)
 	{

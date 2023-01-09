@@ -775,6 +775,11 @@ class DataController extends Controller
                 $model = PropertySetting::getEngSetting($property_id);
                 break;
 
+            case 'hskpsetting':
+                $property_id = $request->get('property_id', 0);
+                $model = PropertySetting::getHskpSettingValue($property_id);
+                break;
+
             case 'itcategory':
                 $model = DB::table('services_it_category')
                     ->get();

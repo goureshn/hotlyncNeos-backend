@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Backoffice\Guest\HSKPController;
 use App\Http\Controllers\Backoffice\Property\LicenseWizardController;
+use App\Http\Controllers\DataController;
+use App\Http\Controllers\Intface\ProcessController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -21,6 +23,10 @@ use Illuminate\Support\Facades\Route;
 //     return $request->user();
 // });
 
+Route::get('/getcurrency', [DataController::class, 'getCurrency']);
+Route::any('/build/list', [DataController::class, 'getBuildList']);
+Route::any('/floor/list', [DataController::class, 'getFloorList']);
+
 Route::post('/hotlync/checklicense', [LicenseWizardController::class, "checkLicense"]);
 Route::post('/auth/getcompareflag', [UserController::class, 'GetCompareFlag']);
 Route::post('/auth/login', [UserController::class, 'login']);
@@ -33,3 +39,14 @@ Route::any('/hskp/publicAreaGetLocationsWithIds', [HSKPController::class, 'publi
 Route::any('/hskp/publicAreaEditTask', [HSKPController::class, 'publicAreaEditTask']);
 Route::any('/hskp/publicAreaEditTaskActive', [HSKPController::class, 'publicAreaEditTaskActive']);
 Route::any('/hskp/publicAreaAddTask', [HSKPController::class, 'publicAreaAddTask']);
+
+// Interface
+Route::group(['prefix' => 'interface/', 'middleware' => ['interface_auth_group']], function () {
+    Route::any('/process/{action}', [ProcessController::class, 'process']);
+});
+
+Route::controller(DataController::class)->group(function () {
+    
+    Route::get('/list/{name}', 'getList');
+    
+});
