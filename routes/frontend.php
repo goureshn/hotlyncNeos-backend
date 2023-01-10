@@ -124,14 +124,14 @@ Route::prefix('guestservice')->group(function () {
         Route::any('addsettinglocationgroup', 'addSettingLocationGroup');
         Route::any('updatesettinglocationgroup', 'updateSettingLocationGroup');
         Route::any('deletesettinglocationgrouprow', 'deleteSettingLocationgroupRow');
-        Route::any('devicelist', 'getDeviceList'); //add
-        Route::any('getroomservicelist', 'getRoomServiceList'); //add
-        Route::any('getroomservicecategorylist', 'getRoomServiceCategoryList'); //add
-        Route::any('getroomlistassign', 'getRoomListforDeviceAssign'); // add
-        Route::any('getfloorlist', 'getFloorList'); // add
-        Route::any('getrosters_minibar', 'getRostersMinibarDeptFunc'); //add
-        Route::any('getroomlistunassign', 'getUnassignedRoomList'); //add
-        Route::any('createrosterdevice_minibar', 'createRosterMinibarForDevice'); //add
+        Route::any('devicelist', 'getDeviceList');
+        Route::any('getroomservicelist', 'getRoomServiceList');
+        Route::any('getroomservicecategorylist', 'getRoomServiceCategoryList');
+        Route::any('getroomlistassign', 'getRoomListforDeviceAssign');
+        Route::any('getfloorlist', 'getFloorList');
+        Route::any('getrosters_minibar', 'getRostersMinibarDeptFunc');
+        Route::any('getroomlistunassign', 'getUnassignedRoomList');
+        Route::any('createrosterdevice_minibar', 'createRosterMinibarForDevice');
     });
     
     Route::any('manualpost', [ProcessController::class, 'postManual']);
@@ -242,16 +242,37 @@ Route::prefix('minibar')->group(function () {
 
     Route::controller(MinibarController::class)->group(function () {
         Route::any('repost', 'postMinibarItemList');
-        Route::any('postminibaritemstatuschange', 'postMinibarItemStatusChange'); //add
-        Route::any('postminibaritem', 'postMinibarItemList'); // add
+        Route::any('postminibaritemstatuschange', 'postMinibarItemStatusChange');
+        Route::any('postminibaritem', 'postMinibarItemList');
     });
 });
 
 Route::prefix('lnf')->group(function () {
     Route::controller(LNFController::class)->group(function () {
-        Route::any('getSearchTagsAll', 'getSearchTagsAll'); //add
-        Route::any('inquirylist', 'getInquiryItems'); //add
-        Route::any('availablelist', 'getAvailableItems'); //add
-        Route::any('getLnfAllItems', 'getLnfAllItems'); //add
+        Route::any('getSearchTagsAll', 'getSearchTagsAll');
+        Route::any('inquirylist', 'getInquiryItems');
+        Route::any('availablelist', 'getAvailableItems');
+        Route::any('getLnfAllItems', 'getLnfAllItems');
+        Route::any('searchguestlist', 'searchGuestList');
+        Route::any('create_lnf', 'createLNF');
+        Route::any('create_lnf_item', 'createLNFItem');
+        Route::any('uploadfiles', 'uploadfiles');
+        Route::any('completepostitem', 'completePostItem');
+        Route::any('createitemcustomuser', 'createItemCustomUser');
+        Route::any('createitemtype', 'createItemType');
+        Route::any('createitemcategory', 'createItemCategory');        
+        Route::any('deleteitemcategory', 'deleteItemCategory');
+        Route::any('createstoredlocation', 'createStoredLocation');
+        Route::any('savereturn', 'saveReturnStatus');
+        Route::any('savediscarded', 'saveDiscardedStatus');
+        Route::any('savesurrendered', 'saveSurrenderedStatus');
+        Route::any('closeitem', 'closeItem');
+        Route::any('getLnfItemHistory', 'getLnfItemHistory');
+        Route::any('getLnfItemComment', 'getLnfItemComment');
+        Route::any('getLnfItems', 'getLnfItems');
+        Route::any('createitembrand', 'createItemBrand');
+        Route::any('submit_comment', 'submit_comment');
+        Route::any('update_lnf_item', 'updateLnfItem');
+        Route::any('matchitems', 'matchItems');
     });
 });

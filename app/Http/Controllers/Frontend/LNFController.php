@@ -27,6 +27,51 @@ define("OVER_DUE", 'Found Lost');
 
 class LNFController extends Controller
 {
+    public function createLNF(Request $request) {
+
+        $lnf = new LNFList();
+        //$lnf->property_id = $request->get('property_id','');
+
+        $lnf->location_type = $request->get('location_type', 'Room');
+        $lnf->location_id = $request->get('location_id', 0);        
+        $lnf->lnf_time = $request->get('lnf_time','');
+        $lnf->lnf_type = $request->get('lnf_type','');
+        if( $request->get('user_type', 1) )
+        {
+            $lnf->found_by = $request->get('found_by', 0);
+            $lnf->custom_user = 0;
+        }
+        else
+        {
+            $lnf->found_by = 0;
+            $lnf->custom_user = $request->get('custom_user', 0);
+        }
+
+        $lnf->received_by = $request->get('received_by','');
+        $lnf->received_time = $request->get('received_time','');
+        $lnf->guest_type = $request->get('guest_type', 1);
+        if( $lnf->guest_type == 1 )
+        {
+            $lnf->guest_id = $request->get('guest_id', 0);
+            $lnf->custom_guest = 0;
+        }
+        else
+        {
+            $lnf->guest_id = 0;
+            $lnf->custom_guest = $request->get('custom_guest', 0);
+        }
+        
+        $lnf->employee_id = $request->get('auth_id',0);
+
+        $lnf->save();
+
+        $ret = array();
+
+        $ret['id'] = $lnf->id;
+
+        return Response::json($ret);
+    }
+
     public function ChangeLNFStatus(Request $request) {
         $lnf_id = $request->get('lnf_id',0);
         $status_name = $request->get('status_name','');
@@ -37,6 +82,90 @@ class LNFController extends Controller
         $ret =array();
         $ret['id'] = $lnf->id;
         
+        return Response::json($ret);
+    }
+
+    public function createLNFItem(Request $request) {
+        $user_id = $request->get('user_id', 0);       
+        
+        $item = new LNFItemList();
+        $item->lnf_id = $request->get('lnf_id', 0);       
+
+        $lnf = DB::table('services_lnf')->where('id', $item->lnf_id)->first();
+        if( $lnf->lnf_type == 'Found' )        
+            $item->status_name = 'Available';
+        else
+            $item->status_name = 'Inquired';
+
+        $item->matched_id = '';
+    
+        $item_info = $request->get('item', []);
+        if(count($item_info) > 0)
+        {
+            if(empty($item_info["type_id"])) 
+                $item_info["type_id"] = '';
+
+            if(empty($item_info["comment"])) 
+                $item_info["comment"] = '';
+
+            if(empty($item_info["brand_id"]))
+                $item_info["brand_id"] = 0;
+
+            if(empty($item_info["stored_location_id"])) 
+                $item_info["stored_location_id"] = 0;
+
+            $item->stored_location_id = $item_info["stored_location_id"];    
+
+            if(empty($item_info["stored_time"])) 
+                $item_info["stored_time"] = '';    
+
+            if(empty($item_info["category_id"])) 
+                $item_info["category_id"] = 0;        
+
+            $item->stored_time = $item_info["stored_time"];    
+
+            $item->type_id = $item_info["type_id"];
+            $item->category_id = $item_info["category_id"];
+            $item->quantity = $item_info["quantity"];
+            $item->comment = $item_info["comment"];
+            $item->brand_id = $item_info["brand_id"];
+            
+            $tag_str = "";
+
+            if($item_info["tags"] != "" && !empty($item_info["item_tag"]))
+            {
+                foreach($item_info["item_tag"] as $key => $tag)
+                {
+                    if( $key > 0 )
+                        $tag_str .= ',';
+                    $tag_str .= $tag["text"];
+                }
+            }
+
+            $item->tags = $tag_str;
+        }
+
+        $item->save();
+
+        DB::table('services_lnf_item_log')->insert(
+            [
+                'item_id' => $item->id,
+                'field_name' =>"Total",
+                'new_value' => '',
+                'old_value' => '',
+                'login_user'=>$user_id,
+                'action_by' =>$user_id,
+                'custom_user' => '',
+                'action'  =>"Created",
+                'comment'   => 'Item is Created',
+            ]
+        );
+
+
+        $ret =array();
+        
+        $ret['id'] = $item->id;
+
         return Response::json($ret);
     }
 
@@ -138,6 +267,12 @@ class LNFController extends Controller
         $ret['content'] = $item_list;
 
         return Response::json($ret);
+    }
+
+    public function completePostItem(Request $request)
+    {
+        $id = $request->get('lnf_id', 0);
+        $this->sendLnfEmail($id);
     }
 
     private function sendLnfEmail($id)
@@ -256,6 +391,49 @@ class LNFController extends Controller
         $this->sendLnfEmail($id);
     }
 
+    public function uploadFiles(Request $request) {
+
+        $output_dir = $_SERVER["DOCUMENT_ROOT"] . '/uploads/lnf/';
+        if(!file_exists($output_dir)) {
+            mkdir($output_dir, 0777);
+        }
+        $output_dir = "uploads/lnf/";
+        $ret = array();
+        $filekey = 'files';
+        $item_id = $request->get('item_id', 0);
+        // if($request->hasFile($filekey) === false )
+        // 	return "No input file";
+
+        //You need to handle  both cases
+        //If Any browser does not support serializing of multiple files using FormData()
+
+        $fileCount = count($_FILES[$filekey]["name"]);
+        $path = '';
+        for ($i = 0; $i < $fileCount; $i++)
+        {
+            $fileName = $_FILES[$filekey]["name"][$i];
+            $ext = pathinfo($fileName, PATHINFO_EXTENSION);
+            $filename1 = "lnf_" . $item_id . '_' . $i . '_' . $fileName;
+
+            $dest_path = $output_dir . $filename1;
+            move_uploaded_file($_FILES[$filekey]["tmp_name"][$i], $dest_path);
+            if( $i > 0 )
+                $path .= '|';
+
+            $path .=  $dest_path;
+        }
+
+        $lnf_item = LNFItemList::find($item_id);
+        if( !empty($lnf_item) )
+        {
+            if( !empty($lnf_item->images) )
+                $path = $lnf_item->images . '|' . $path;
+            $lnf_item->images = $path;
+            $lnf_item->save();
+        }
+
+        return Response::json($_FILES[$filekey]);
+    }
     public function getImage(Request $request) {
         $image_url = $request->get("image_url",'');
         if($image_url !='') {
@@ -494,6 +672,96 @@ class LNFController extends Controller
         return Response::json($ret);
     }
 
+    public function createStoredLocation(Request $request)
+    {
+        $input = $request->all();
+
+        $ret = array();
+
+        $data = array();        
+        $data['id'] = 0;
+        
+        $ret['code'] = 201;
+        $ret['content'] = $data;
+
+        if( DB::table('services_lnf_storedloc')
+                ->where('stored_loc', $request->get('stored_loc', ''))
+                ->first() )
+        {
+            return Response::json($ret);            
+        }
+
+        $id = DB::table('services_lnf_storedloc')->insertGetId($input);
+        $list = DB::table('services_lnf_storedloc')->get();
+
+        
+        $data['id'] = $id;
+        $data['list'] = $list;
+
+        $ret['code'] = 200;
+        $ret['content'] = $data;
+
+        return Response::json($ret);
+    }
+
+    public function createItemType(Request $request)
+    {
+        $input = $request->all();
+
+        $ret = array();
+        $ret['id'] = 0;
+
+        if( DB::table('services_lnf_item_type')
+                ->where('type', $request->get('type', ''))
+                ->first() )
+        {
+            return Response::json($ret);            
+        }
+
+        $id = DB::table('services_lnf_item_type')->insertGetId($input);
+        $list = DB::table('services_lnf_item_type')->get();
+
+        $ret['id'] = $id;
+        $ret['list'] = $list;
+
+        return Response::json($ret);
+    }
+
+    public function createItemCustomUser(Request $request)
+    {
+        $input = $request->all();
+
+        $ret = array();
+        $ret['id'] = 0;
+
+        if( DB::table('services_lnf_item_customuser')
+                ->where('first_name', $request->get('first_name', ''))
+                ->where('last_name', $request->get('last_name', ''))
+                ->where('department', $request->get('department', ''))
+                ->first() )
+        {
+            return Response::json($ret);            
+        }
+
+        $id = DB::table('services_lnf_item_customuser')->insertGetId($input);
+                
+        $hotel_list = Db::table('common_users as cu')
+						->leftJoin('common_department as cd', 'cu.dept_id', '=', 'cd.id')
+						->select(DB::raw('cu.*, cd.department, CONCAT(cu.first_name, " ", COALESCE(cu.last_name,""), " - Hotel User") as fullname, 1 as user_type'))
+						->get();                        
+
+        $custom_list = Db::table('services_lnf_item_customuser as ta')
+            ->select(DB::raw('ta.*, CONCAT(ta.first_name, " ", COALESCE(ta.last_name,""), " - Custom User") as fullname, 2 as user_type'))
+            ->get();
+
+        $list = array_merge($hotel_list->toArray() , $custom_list->toArray());	
+        
+        $ret['id'] = $id;
+        $ret['list'] = $list;
+
+        return Response::json($ret);
+    }
+
     public function createItemColor(Request $request)
     {
         $input = $request->all();
@@ -504,6 +772,77 @@ class LNFController extends Controller
         $ret = array();
         $ret['id'] = $id;
         $ret['list'] = $list;
+
+        return Response::json($ret);
+    }
+
+    public function createItemBrand(Request $request)
+    {
+        $input = $request->all();
+
+        $ret = array();
+        $ret['id'] = 0;
+
+        if( DB::table('services_lnf_item_brand')
+                ->where('brand', $request->get('brand', ''))
+                ->first() )
+        {
+            return Response::json($ret);            
+        }
+
+        $id = DB::table('services_lnf_item_brand')->insertGetId($input);
+        $list = DB::table('services_lnf_item_brand')->get();
+
+        $ret['id'] = $id;
+        $ret['list'] = $list;
+
+        return Response::json($ret);
+    }
+
+    public function createItemCategory(Request $request)
+    {
+        $id = $request->get('id', 0);
+        $input = $request->except(['id', 'notify_type', 'property_id', 'job_role']);
+        
+        // Notify List 
+        $notify_type = $request->get('notify_type', []);
+        $notify_type_list = array_map(function($item) {
+            return $item['text'];
+        }, $notify_type);
+
+        $input['notify_type'] = implode(",", $notify_type_list);
+
+        $ret = array();
+        $ret['id'] = 0;
+
+        if( DB::table('services_lnf_item_category')
+                ->where('name', $request->get('name', ''))
+                ->where('id', '<>', $id)
+                ->first() )
+        {
+            return Response::json($ret);            
+        }
+
+        if( $id > 0 )
+            DB::table('services_lnf_item_category')->where('id', $id)
+                ->update($input);
+        else
+            $id = DB::table('services_lnf_item_category')->insertGetId($input);
+        
+        $ret['id'] = $id;
+        $ret['list'] = LNFItemCategory::get();
+
+        return Response::json($ret);
+    }
+
+    public function deleteItemCategory(Request $request)
+    {
+        $id = $request->get('id');
+
+        DB::table('services_lnf_item_category')->where('id', $id)->delete();
+        
+        $ret['id'] = $id;
+        $ret['list'] = LNFItemCategory::get();
 
         return Response::json($ret);
     }
@@ -570,6 +909,24 @@ class LNFController extends Controller
         $ret = array();
 
         return $ret;
+    }
+    public function getLnfItems(Request $request)
+    {
+        $client_id = $request->get('client_id', 0);
+        $lnf_id = $request->get('lnf_id', 0);
+        $ret = array();
+        $query = DB::table('services_lnf_item as li');
+        $data_query = clone $query;
+        $data_list = $data_query
+            ->leftjoin('services_lnf_item_type as ty', 'ty.id', '=', 'li.type_id')
+            ->leftjoin('services_lnf_item_color as co', 'co.id', '=', 'li.color_id')
+            ->leftjoin('services_lnf_item_brand as br', 'br.id', '=', 'li.brand_id')
+            ->where('li.lnf_id',$lnf_id)
+            ->select(['li.id','li.lnf_id','li.quantity','li.tags','li.images','li.status_name', 'li.matched_id',
+                'li.comment','ty.type','co.color','br.brand',])
+            ->get();
+        $ret['datalist'] = $data_list;
+        return Response::json($ret);
     }
 
     private function generateItemQuery()
@@ -1010,6 +1367,24 @@ class LNFController extends Controller
 
     }
 
+
+    public function getLnfItemHistory(Request $request)
+    {
+        $client_id = $request->get('client_id', 0);
+        $lnf_id = $request->get('lnf_id', 0);
+        $ret = array();
+        $query = DB::table('services_lnf_item_log as hi');
+        $data_query = clone $query;
+        $data_list = $data_query
+            ->leftjoin('common_users as cu', 'cu.id', '=', 'hi.action_by')
+            ->where('hi.item_id',$lnf_id)
+            ->select(['hi.id','hi.item_id','hi.comment','hi.created_at','cu.first_name','cu.last_name',])
+            ->orderBy('hi.created_at','desc')
+            ->get();
+        $ret['datalist'] = $data_list;
+        return Response::json($ret);
+    }
+
     public function getLnfItemStatusDetail(Request $request)
     {
         $lnf_id = $request->get('lnf_id', 0);
@@ -1030,6 +1405,23 @@ class LNFController extends Controller
                 'cus.first_name as custom_action_firstname' , 'cus.last_name as custom_action_lastname'])
             ->orderBy('hi.created_at','desc')
             ->first();
+        $ret['datalist'] = $data_list;
+        return Response::json($ret);
+    }
+
+    public function getLnfItemComment(Request $request)
+    {
+        $client_id = $request->get('client_id', 0);
+        $lnf_id = $request->get('lnf_id', 0);
+        $ret = array();
+        $query = DB::table('services_lnf_item_comment as co');
+        $data_query = clone $query;
+        $data_list = $data_query
+            ->leftjoin('common_users as cu', 'cu.id', '=', 'co.user_id')
+            ->where('co.lnf_item_id',$lnf_id)
+            ->select(['co.id','co.lnf_item_id','co.comment','co.created_at','cu.first_name','cu.last_name','cu.picture'])
+            ->orderBy('co.created_at','desc')
+            ->get();
         $ret['datalist'] = $data_list;
         return Response::json($ret);
     }
@@ -1066,6 +1458,29 @@ class LNFController extends Controller
         return Response::json($list);
     }
 
+    public function submit_comment(Request $request)
+    {
+        $input = $request->all();
+        $item_id = $request->get('lnf_item_id', 0);
+
+        $id = DB::table('services_lnf_item_comment')->insertGetId($input);
+
+        $query = DB::table('services_lnf_item_comment as co');
+        $data_query = clone $query;
+        $data_list = $data_query
+            ->leftjoin('common_users as cu', 'cu.id', '=', 'co.user_id')
+            ->where('co.lnf_item_id',$item_id)
+            ->select(['co.id','co.lnf_item_id','co.comment','co.created_at','cu.first_name','cu.last_name','cu.picture'])
+            ->orderBy('co.created_at','desc')
+            ->get();
+
+        $ret = array();
+        $ret['id'] = $id;
+        $ret['item_id'] = $item_id;
+        $ret['list'] = $data_list;
+
+        return Response::json($ret);
+    }
     public function createNewGuest(Request $request)
     {
         $input = $request->all();
@@ -1144,6 +1559,140 @@ class LNFController extends Controller
         return Response::json($ret);
     }
 
+    public function saveReturnStatus(Request $request)
+    {
+        $item_id = $request->get('item_id', 0);
+
+        $old_status = DB::table('services_lnf_item as it')
+            ->where('it.id', $item_id)
+            ->select(['it.status_name'])
+            ->first();
+
+        $old_status_name = $old_status->status_name;
+
+        // get return status
+        $status_name = 'Returned';
+
+        $custom_user = $request->get('custom_user', 0);
+        $login_user = $request->get('user_id', 0);
+        $action_by = $request->get('user_id', 0);
+        
+        DB::table('services_lnf_item')->where('id', $item_id)->update(
+            [
+                'status_name' => $status_name,
+                'return_date' => $request->get('return_date', ''),
+                'return_mode' => $request->get('return_mode', ''),
+                'return_guest_id' => $request->get('guest_id', ''),
+                'staff_id_no' => $request->get('staff_id_no', ''),
+                'staff_name' => $request->get('staff_name', ''),
+                'staff_email' => $request->get('staff_email', ''),
+                'staff_contact_no' => $request->get('contact_no', ''),
+                'courier_company' => $request->get('courier_company', ''),
+                'courier_awb' => $request->get('courier_awb', ''),
+                'return_comment' => $request->get('comment', ''),
+            ]
+        );
+
+        $comment = 'Status changed from '.$old_status_name.' to '.$status_name;
+        DB::table('services_lnf_item_log')->insert(
+            [
+                'item_id' => $item_id,
+                'field_name' =>"Status",
+                'new_value' => $status_name,
+                'old_value' => $old_status_name,
+                'login_user'=>$login_user,
+                'action_by' =>$action_by,
+                'custom_user' => '',
+                'action'  =>"Change",
+                'comment'   => $comment,
+            ]
+        );
+
+        // change matched item
+        $item = DB::table('services_lnf_item as sli')
+            ->where('id', $item_id)
+            ->first();
+        
+        $inquired_item_ids = [];    
+        if( !empty($item->matched_id) )
+        {
+            $inquired_item_ids = explode(',', $item->matched_id);
+        }    
+        
+        // find inquiried items which matched this found item
+        $ids = DB::table('services_lnf_item as sli')
+            ->join('services_lnf as sl', 'sli.lnf_id', '=', 'sl.id')
+            ->where('sl.lnf_type', 'Inquiry')
+            ->whereRaw('FIND_IN_SET('.$item_id.', sli.matched_id)')
+            ->select(DB::raw('sli.id'))
+            ->get();			
+        foreach($ids as $row)
+        {
+            $inquired_item_ids[] = $row->id;
+        }    
+
+        $inquired_item_ids = array_unique($inquired_item_ids, SORT_REGULAR);
+        $inquired_item_ids = array_merge($inquired_item_ids, array());
+        
+        foreach($inquired_item_ids as $row)
+        {
+            $old_status = DB::table('services_lnf_item as it')
+                ->where('it.id', $row)
+                ->select(['it.status_name'])
+                ->first();
+
+            $old_status_name = $old_status->status_name;
+
+            // get return status
+            $status_name = 'Completed';
+            
+            DB::table('services_lnf_item')->where('id', $row)->update(
+                [
+                    'status_name' => $status_name,
+                    'return_date' => $request->get('return_date', ''),
+                    'return_mode' => $request->get('return_mode', ''),
+                    'return_guest_id' => $request->get('guest_id', ''),
+                    'staff_id_no' => $request->get('staff_id_no', ''),
+                    'staff_name' => $request->get('staff_name', ''),
+                    'staff_email' => $request->get('staff_email', ''),
+                    'staff_contact_no' => $request->get('contact_no', ''),
+                    'courier_company' => $request->get('courier_company', ''),
+                    'courier_awb' => $request->get('courier_awb', ''),
+                    'return_comment' => $request->get('comment', ''),
+                ]
+            );
+
+            $comment = 'Status changed from '.$old_status_name.' to '.$status_name;
+            DB::table('services_lnf_item_log')->insert(
+                [
+                    'item_id' => $row,
+                    'field_name' =>"Status",
+                    'new_value' => $status_name,
+                    'old_value' => $old_status_name,
+                    'login_user'=>$login_user,
+                    'action_by' =>$action_by,
+                    'custom_user' => '',
+                    'action'  =>"Change",
+                    'comment'   => $comment,
+                ]
+            );
+        }
+
+        $ret = array();
+        $query = DB::table('services_lnf_item_log as hi');
+        $data_query = clone $query;
+        $data_list = $data_query
+            ->leftjoin('common_users as cu', 'cu.id', '=', 'hi.login_user')
+            ->where('hi.item_id', $item_id)
+            ->select(['hi.id','hi.item_id','hi.comment','hi.created_at','cu.first_name','cu.last_name',])
+            ->orderBy('hi.created_at','desc')
+            ->get();
+
+        $ret['datalist'] = $data_list;
+
+        return Response::json($ret);
+    }
+
     public function saveMatchedItem(Request $request)
     {
         $item_id = $request->get('item_id', 0);
@@ -1199,6 +1748,327 @@ class LNFController extends Controller
         return Response::json($ret);
     }
 
+    public function matchItems(Request $request)
+    {
+        $inquired_str = $request->get('inquired_str', '');
+        $found_str = $request->get('found_str', '');
+
+        $inquired_list = explode(',', $inquired_str);
+        $found_list = explode(',', $found_str);
+
+        // get return status
+        $status_name = 'Matched';
+
+        $login_user = $request->get('user_id', 0);
+        $action_by = $request->get('user_id', 0);
+
+        // Log
+        $comment = 'Inquired Items ('. $inquired_str . ') is matched with found items ('. $found_str . ')';
+
+        foreach($inquired_list as $row)
+        {
+            $old_status = DB::table('services_lnf_item as it')
+                ->where('it.id', $row)
+                ->first();
+
+            DB::table('services_lnf_item_log')->insert(
+                [
+                    'item_id' => $row,
+                    'field_name' =>"Status",
+                    'new_value' => $status_name,
+                    'old_value' => $old_status->status_name,
+                    'login_user'=>$login_user,
+                    'action_by' =>$action_by,
+                    'custom_user' => '',
+                    'action'  =>"Change",
+                     'comment'   => $comment,
+                ]
+            );
+        }
+
+        foreach($found_list as $row)
+        {
+            $old_status = DB::table('services_lnf_item as it')
+                ->where('it.id', $row)
+                ->first();
+
+            DB::table('services_lnf_item_log')->insert(
+                [
+                    'item_id' => $row,
+                    'field_name' =>"Status",
+                    'new_value' => $status_name,
+                    'old_value' => $old_status->status_name,
+                    'login_user'=>$login_user,
+                    'action_by' =>$action_by,
+                    'custom_user' => '',
+                    'action'  =>"Change",
+                     'comment'   => $comment,
+                ]
+            );
+        }
+        
+        DB::table('services_lnf_item')->whereIn('id', $inquired_list)->update(
+            [
+                'status_name' => $status_name,           
+                'matched_id' => $found_str,           
+            ]
+        );
+
+        DB::table('services_lnf_item')->whereIn('id', $found_list)->update(
+            [
+                'status_name' => $status_name,           
+                'matched_id' => $inquired_str,           
+            ]
+        );
+
+        $ret = array();
+
+        $ret['code'] = 200;
+
+        return Response::json($ret);
+    }
+
+    public function closeItem(Request $request)
+    {
+        $item_id = $request->get('item_id', 0);
+        $closed_comment = $request->get('closed_comment', '');
+        
+        $login_user = $request->get('user_id', 0);
+        $action_by = $request->get('user_id', 0);
+        
+        DB::table('services_lnf_item')->where('id', $item_id)->update(
+            [
+                'status_name' => 'Closed',                                  
+                'closed_comment' => $closed_comment,                                  
+            ]
+        );
+
+        $comment = 'Status changed from Inquiry to Closed';
+        DB::table('services_lnf_item_log')->insert(
+            [
+                'item_id' => $item_id,
+                'field_name' =>"Status",
+                'new_value' => 'Closed',
+                'old_value' => 'Inquired',
+                'login_user'=>$login_user,
+                'action_by' =>$action_by,
+                'custom_user' => '',
+                'action'  =>"Change",
+                'comment'   => $comment,
+            ]
+        );
+
+        $ret = array();
+        $query = DB::table('services_lnf_item_log as hi');
+        $data_query = clone $query;
+        $data_list = $data_query
+            ->leftjoin('common_users as cu', 'cu.id', '=', 'hi.login_user')
+            ->where('hi.item_id', $item_id)
+            ->select(['hi.id','hi.item_id','hi.comment','hi.created_at','cu.first_name','cu.last_name',])
+            ->orderBy('hi.created_at','desc')
+            ->get();
+
+        $ret['datalist'] = $data_list;
+
+        return Response::json($ret);
+    }
+
+    public function saveSurrenderedStatus(Request $request)
+    {
+        $item_id = $request->get('item_id', 0);
+
+        $old_status = DB::table('services_lnf_item as it')
+            ->where('it.id', $item_id)
+            ->select(['it.status_name'])
+            ->first();
+
+        $old_status_name = $old_status->status_name;
+
+        // get return status
+        $status_name = 'Surrendered';
+
+        $login_user = $request->get('user_id', 0);
+        $action_by = $request->get('user_id', 0);
+        
+        DB::table('services_lnf_item')->where('id', $item_id)->update(
+            [
+                'status_name' => $status_name,
+                'surrendered_date' => $request->get('surrendered_date', ''),
+                'surrendered_department' => $request->get('department_tag', ''),
+                'surrendered_to' => $request->get('to_tag', ''),                
+                'surrendered_location' => $request->get('location_tag', ''),                
+                'surrendered_comment' => $request->get('comment', ''),
+            ]
+        );
+
+        $comment = 'Status changed from '.$old_status_name.' to '.$status_name;
+        DB::table('services_lnf_item_log')->insert(
+            [
+                'item_id' => $item_id,
+                'field_name' =>"Status",
+                'new_value' => $status_name,
+                'old_value' => $old_status_name,
+                'login_user'=>$login_user,
+                'action_by' =>$action_by,
+                'custom_user' => '',
+                'action'  =>"Change",
+                'comment'   => $comment,
+            ]
+        );
+
+        $ret = array();
+        $query = DB::table('services_lnf_item_log as hi');
+        $data_query = clone $query;
+        $data_list = $data_query
+            ->leftjoin('common_users as cu', 'cu.id', '=', 'hi.login_user')
+            ->where('hi.item_id', $item_id)
+            ->select(['hi.id','hi.item_id','hi.comment','hi.created_at','cu.first_name','cu.last_name',])
+            ->orderBy('hi.created_at','desc')
+            ->get();
+
+        $ret['datalist'] = $data_list;
+
+        return Response::json($ret);
+    }
+
+    public function saveDiscardedStatus(Request $request)
+    {
+        $item_id = $request->get('item_id', 0);
+
+        $old_status = DB::table('services_lnf_item as it')
+            ->where('it.id', $item_id)
+            ->select(['it.status_name'])
+            ->first();
+
+        $old_status_name = $old_status->status_name;
+
+        // get return status
+        $status_name = $request->get('status_name', 'Discarded');
+
+        $login_user = $request->get('user_id', 0);
+        $action_by = $request->get('user_id', 0);
+        
+        DB::table('services_lnf_item')->where('id', $item_id)->update(
+            [
+                'status_name' => $status_name,
+                'discarded_date' => $request->get('discarded_date', ''),
+                'discarded_by' => $request->get('discarded_by_tag', ''),
+                'discarded_comment' => $request->get('comment', ''),
+            ]
+        );
+
+        $comment = 'Status changed from '.$old_status_name.' to '.$status_name;
+        DB::table('services_lnf_item_log')->insert(
+            [
+                'item_id' => $item_id,
+                'field_name' =>"Status",
+                'new_value' => $status_name,
+                'old_value' => $old_status_name,
+                'login_user'=>$login_user,
+                'action_by' =>$action_by,
+                'custom_user' => '',
+                'action'  =>"Change",
+                'comment'   => $comment,
+            ]
+        );
+
+        $ret = array();
+        $query = DB::table('services_lnf_item_log as hi');
+        $data_query = clone $query;
+        $data_list = $data_query
+            ->leftjoin('common_users as cu', 'cu.id', '=', 'hi.login_user')
+            ->where('hi.item_id', $item_id)
+            ->select(['hi.id','hi.item_id','hi.comment','hi.created_at','cu.first_name','cu.last_name',])
+            ->orderBy('hi.created_at','desc')
+            ->get();
+
+        $ret['datalist'] = $data_list;
+
+        return Response::json($ret);
+    }
+
+    public function updateLnfItem(Request $request)
+    {
+        $lnf = $request->get('lnf', array());
+        $lnf_item = $request->get('lnf_item', array());
+
+        $lnf_id = $lnf['id'];
+        $item_id = $lnf_item['item_id'];
+
+        $lnf_model = LNFList::find($lnf_id);
+        if( empty($lnf_model) )
+            $lnf_model = new LNFList();
+
+        $lnf_model->location_type = $lnf['location_type'];
+        $lnf_model->location_id = $lnf['location_id'];
+        $lnf_model->lnf_time = $lnf['lnf_time'];
+        // $lnf_model->lnf_type = $lnf['lnf_type'];
+        $lnf_model->found_by = $lnf['found_by'];
+        $lnf_model->received_by = $lnf['received_by'];
+        $lnf_model->received_time = $lnf['received_time'];
+        $lnf_model->custom_user = $lnf['custom_user'];
+        $lnf_model->guest_type = $lnf['guest_type'];
+        $lnf_model->custom_guest = $lnf['custom_guest'];
+        $lnf_model->guest_id = $lnf['guest_id'];
+        $lnf_model->employee_id = $lnf['employee_id'];
+        
+        $lnf_model->save();
+
+        $lnf_item_model = LNFItemList::find($item_id);
+        if( empty($lnf_item_model) )
+            $lnf_item_model = new LNFItemList();
+        
+        $lnf_item_model->lnf_id = $lnf_item['lnf_id'];
+        $lnf_item_model->brand_id = $lnf_item['brand_id'];
+        $lnf_item_model->type_id = $lnf_item['type_id'];
+        $lnf_item_model->category_id = $lnf_item['category_id'];
+        $lnf_item_model->quantity = $lnf_item['quantity'];
+        $lnf_item_model->tags = $lnf_item['tags'];
+        $lnf_item_model->stored_location_id = $lnf_item['stored_location_id'];
+        $lnf_item_model->stored_time = $lnf_item['stored_time'];
+        $lnf_item_model->comment = $lnf_item['comment'];
+        $lnf_item_model->status_name = $lnf_item['status_name'];
+        $lnf_item_model->closed_flag = $lnf_item['closed_flag'];
+        $lnf_item_model->images = $lnf_item['images'];            
+        
+        $lnf_item_model->save();
+
+        $comment = 'Update Item Information';
+        $login_user = $request->get('user_id', 0);
+        $action_by = $request->get('user_id', 0);
+
+        DB::table('services_lnf_item_log')->insert(
+            [
+                'item_id' => $item_id,
+                'field_name' =>"Status",
+                'new_value' => '',
+                'old_value' => '',
+                'login_user'=>$login_user,
+                'action_by' =>$action_by,
+                'custom_user' => '',
+                'action'  =>"Change",
+                'comment'   => $comment,
+            ]
+        );
+
+
+        $ret = array();
+
+        $query = DB::table('services_lnf_item_log as hi');
+
+        $data_query = clone $query;
+        $data_list = $data_query
+            ->leftjoin('common_users as cu', 'cu.id', '=', 'hi.login_user')
+            ->where('hi.item_id',$item_id)
+            ->select(['hi.id','hi.item_id','hi.comment','hi.created_at','cu.first_name','cu.last_name',])
+            ->orderBy('hi.created_at','desc')
+            ->get();
+
+        $ret['datalist'] = $data_list;
+        $ret['lnf_time'] = $lnf['lnf_time'];
+        return Response::json($ret);
+    }
+
     public function getLnfDetail(Request $request)
     {
         $id = $request->get("id", 0);
@@ -1233,6 +2103,61 @@ class LNFController extends Controller
 
         return $data;
 
+    }
+
+    public function searchGuestList(Request $request) {
+        $client_id = $request->get('client_id', 4);
+        $property_id = $request->get('property_id', 4);
+        $loc_id = $request->get('loc_id', 0);
+
+        date_default_timezone_set(config('app.timezone'));
+
+        $loc = Location::getLocationInfo($loc_id);
+        if( empty($loc) )
+            $loc_id = 0;
+        else 
+        {
+            if( $loc->type != 'Room' )
+                $loc_id = 0;    
+        }    
+
+        if( !($loc_id > 0) )
+        {
+            $guest_list = DB::table('common_guest as cg')
+                ->leftJoin('common_guest_profile as gp', 'cg.guest_id', '=', 'gp.guest_id')
+                ->where('gp.client_id', $client_id)                
+                ->select(DB::raw('cg.*, gp.mobile, gp.email, 0 as custom_guest, 1 as guest_type'))   
+                ->orderBy('cg.departure', 'desc')
+                ->orderBy('cg.arrival', 'desc')             
+                ->get();
+
+            $custom_guest_list = DB::table('services_lnf_customguest')    
+                ->select(DB::raw('0 as guest_id, id as custom_guest, CONCAT(first_name, " ", last_name) as guest_name, contact_no as mobile, 2 as guest_type'))
+                ->get();
+
+		    $guest_list = array_merge($guest_list->toArray(), $custom_guest_list->toArray());
+        }
+        else
+        {
+            $query = DB::table('common_guest as cg')
+                ->leftJoin('common_guest_profile as gp', 'cg.guest_id', '=', 'gp.guest_id')
+                ->where('cg.room_id', $loc->room_id)
+                ->where('cg.property_id', $loc->property_id)
+                ->whereIn('cg.checkout_flag', ['checkin','checkout'] )
+                ->take(3)
+                ->orderBy('cg.departure', 'desc')
+                ->orderBy('cg.arrival', 'desc');
+
+            $guest_list = $query
+                ->select(DB::raw('cg.*, gp.mobile, gp.email, 0 as custom_guest, 1 as guest_type'))
+                ->get();
+        }
+
+        $ret = array();
+        $ret['code'] = 200;
+        $ret['content'] = $guest_list;
+
+        return Response::json($ret);
     }
 
     public function applyComplaintFilter($user_id, $filter){

@@ -97,7 +97,7 @@ class CommonUser extends Model
 				->get();
 
 		// if(!empty($users)) 
-			return $users;
+			return $users->toArray();
 		// else 
 		// 	return false;
 	}
@@ -111,7 +111,7 @@ class CommonUser extends Model
 				->select(DB::raw('cu.*, CONCAT_WS(" ", cu.first_name, cu.last_name) as wholename'))				
 				->get();
 
-		return $users;		
+		return $users->toArray();		
 	}
 
 	public static function getUserListByEmailFromUserGroup($user_group_ids) {
@@ -125,7 +125,7 @@ class CommonUser extends Model
             ->groupBy('cu.email')
 			->get();
 			
-		return $user_list;	
+		return $user_list->toArray();	
 	}
 
 	public static function getUserListNamesByEmailFromUserGroup($user_group_ids) {
@@ -139,7 +139,7 @@ class CommonUser extends Model
          //   ->groupBy('cu.email')
 			->get();
 			
-		return $user_list;	
+		return $user_list->toArray();	
 	}
 
 	public static function getCategoryUserListByEmailFromUserGroup($category) {
@@ -155,7 +155,7 @@ class CommonUser extends Model
             ->groupBy('cu.email')
 			->get();
 			
-		return $user_list;	
+		return $user_list->toArray();	
 	}
 
 	public static function addNotifyCount($property_id, $permission_name) {

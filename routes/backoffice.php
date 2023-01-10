@@ -3,6 +3,7 @@
 use App\Http\Controllers\Backoffice\Configuration\GeneralController;
 use App\Http\Controllers\Backoffice\Guest\AlarmController;
 use App\Http\Controllers\Backoffice\Property\BuildingWizardController;
+use App\Http\Controllers\Backoffice\Property\LicenseWizardController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -23,9 +24,13 @@ Route::prefix('property/wizard')->group(function () {
     Route::controller(BuildingWizardController::class)->group(function () {
         Route::get('buildlist', 'getBuildingList');
     });
+    
+    Route::resource('license', LicenseWizardController::class);
+    Route::post('uploadlicense', [LicenseWizardController::class, 'uploadLicense']);
 });
 
-Route::prefix('guestservice/wizard')->group(function () {
+Route::group(['prefix'=>'guestservice/wizard','as'=>'guestservice.wizard.'], function () {
+
     Route::prefix('alarmgroup')->controller(AlarmController::class)->group(function () {
         Route::get('userlist', 'getUserList');
     });
