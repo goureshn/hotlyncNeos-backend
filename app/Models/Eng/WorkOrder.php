@@ -38,7 +38,7 @@ class WorkOrder extends Model
                         ->select(DB::raw('cu.*, cu.id as assignee, CONCAT_WS(" ", cu.first_name, cu.last_name) as assignee_name'))
                         ->get();
 
-                    $assign_list = array_merge($assign_list, $user_list);    
+                    $assign_list = array_merge($assign_list, $user_list->toArray());    
                 }
                 else
                 {
@@ -47,7 +47,7 @@ class WorkOrder extends Model
                         ->select(DB::raw('cu.*, cu.id as assignee, CONCAT_WS(" ", cu.first_name, cu.last_name) as assignee_name'))
                         ->get();
 
-                    $assign_list = array_merge($assign_list, $user_list);       
+                    $assign_list = array_merge($assign_list, $user_list->toArray());       
                 }
             }
         }
@@ -83,7 +83,7 @@ class WorkOrder extends Model
 
                         $user_group = implode(",", array_map(function($item) {
                             return $item->assignee_name;
-                        }, $user_list));
+                        }, $user_list->toArray()));
 
                     $assign_list .= $user_group . ',';    
                   
@@ -97,7 +97,7 @@ class WorkOrder extends Model
 
                         $user_group = implode(",", array_map(function($item) {
                             return $item->assignee_name;
-                        }, $user_list));
+                        }, $user_list->toArray()));
                   
                     $assign_list .= $user_group . ','; 
                         

@@ -759,6 +759,23 @@ class UserController extends Controller
         $ret['lock'] = $is_lock;
         return Response::json($ret);
     }
+
+    public function setActiveStatus(Request $request)
+    {
+        $id = $request->get('id', 0);
+        $active_status = $request->get('active_status', 0);
+
+        $user = CommonUser::find($id);
+        if (!empty($user)) {
+            $user->active_status = $active_status;
+            $user->save();
+        }
+
+        $ret = array();
+        $ret['code'] = 200;
+
+        return Response::json($ret);
+    }
 }
 
 

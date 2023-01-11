@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Backoffice\Configuration\GeneralController;
+use App\Http\Controllers\Backoffice\Configuration\EngController;
 use App\Http\Controllers\Backoffice\Guest\AlarmController;
 use App\Http\Controllers\Backoffice\Property\BuildingWizardController;
 use App\Http\Controllers\Backoffice\Property\LicenseWizardController;
@@ -38,4 +39,5 @@ Route::group(['prefix'=>'guestservice/wizard','as'=>'guestservice.wizard.'], fun
 
 Route::prefix('configuration/wizard')->group(function () {
     Route::post('general', [GeneralController::class, 'getGeneral']);
+    Route::post('getrepairrequest', [EngController::class, 'getRepairRequest']);
 });

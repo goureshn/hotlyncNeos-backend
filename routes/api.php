@@ -3,6 +3,7 @@
 use App\Http\Controllers\Backoffice\Guest\HSKPController;
 use App\Http\Controllers\Backoffice\Property\LicenseWizardController;
 use App\Http\Controllers\DataController;
+use App\Http\Controllers\GuestController;
 use App\Http\Controllers\Intface\ProcessController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
@@ -30,6 +31,7 @@ Route::any('/floor/list', [DataController::class, 'getFloorList']);
 Route::post('/hotlync/checklicense', [LicenseWizardController::class, "checkLicense"]);
 Route::post('/auth/getcompareflag', [UserController::class, 'GetCompareFlag']);
 Route::post('/auth/login', [UserController::class, 'login']);
+Route::any('/guest/roomlist', [GuestController::class, 'getRoomList']);
 
 Route::any('/hskp/publicAreaGetTasksMain', [HSKPController::class, 'publicAreaGetTasksMain']);
 Route::any('/hskp/publicAreaAddTaskMain', [HSKPController::class, 'publicAreaAddTaskMain']);

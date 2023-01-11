@@ -4,6 +4,7 @@ use App\Http\Controllers\Backoffice\Guest\HSKPController;
 use App\Http\Controllers\Backoffice\Guest\MinibarController;
 use App\Http\Controllers\Backoffice\Guest\MinibarItemController;
 use App\Http\Controllers\Backoffice\Property\BuildingWizardController;
+use App\Http\Controllers\Backoffice\Property\RoomtypeWizardController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\DataController;
 use App\Http\Controllers\Frontend\CallController;
@@ -12,8 +13,11 @@ use App\Http\Controllers\Frontend\GuestserviceController;
 use App\Http\Controllers\Frontend\LNFController;
 use App\Http\Controllers\Frontend\ReportController;
 use App\Http\Controllers\Frontend\WakeupController;
+use App\Http\Controllers\Frontend\EquipmentController;
+use App\Http\Controllers\Frontend\RepairRequestController;
 use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\Intface\ProcessController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -33,6 +37,8 @@ Route::any('/call/agentstatus', [CallController::class, 'getAgentStatus']);
 Route::any('/chat/unreadcount', [DataController::class, 'getChatUnreadCount']);
 Route::any('getfavouritemenu', [FrontendController::class, 'getFavouriteMenus']);
 Route::any('/report/filterlist', [ReportController::class, 'getFilterList']);
+Route::get('/buildsomelist', [BuildingWizardController::class, 'getBuildingSomeList']);
+Route::any('/user/setactivestatus', [UserController::class, 'setActiveStatus']);
 
 Route::prefix('guestservice')->group(function () {
     
@@ -135,6 +141,7 @@ Route::prefix('guestservice')->group(function () {
     });
     
     Route::any('manualpost', [ProcessController::class, 'postManual']);
+    Route::get('roomtypelist',  [RoomtypeWizardController::class, 'getRoomTypeList']);
     
     Route::controller(ChatController::class)->group(function () {
         Route::any('chatroomlist', 'getChatSessionList');
@@ -274,5 +281,27 @@ Route::prefix('lnf')->group(function () {
         Route::any('submit_comment', 'submit_comment');
         Route::any('update_lnf_item', 'updateLnfItem');
         Route::any('matchitems', 'matchItems');
+    });
+});
+
+Route::prefix('eng')->group(function () {
+    Route::controller(RepairRequestController::class)->group(function () {
+        Route::any('requestorlist', 'getRequestorList');
+        Route::any('repairrequest_getcategory_list', 'getCategoryList');
+        Route::any('repairrequestlist', 'repairrequestList');
+        Route::any('getrepaircomment', 'getCommentList');
+        Route::any('stafflist', 'getStaffList');
+        Route::any('repairrequest_getsubcategory_list', 'getSubcategoryList');
+        Route::any('repairrequest_savecategory', 'saveCategory');
+    });
+
+    Route::controller(EquipmentController::class)->group(function () {
+        Route::any('getstaffgrouplist', 'getStaffGroupList');
+    });
+});
+
+Route::prefix('equipment')->group(function () {
+    Route::controller(EquipmentController::class)->group(function () {
+        Route::any('idlist', 'getEquipIdList');
     });
 });

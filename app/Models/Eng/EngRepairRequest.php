@@ -54,7 +54,7 @@ class EngRepairRequest extends Model
 
             $data->assignee_name = implode(",", array_map(function($item) {
                 return $item->name;
-            }, $data->staff_groups));
+            }, $data->staff_groups->toArray()));
             
         return $data;    
     }
