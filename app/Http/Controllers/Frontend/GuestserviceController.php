@@ -7496,9 +7496,8 @@ class GuestserviceController extends Controller
 				->leftJoin('common_guest as gp', 'gf.guest_id', '=', 'gp.guest_id')
 				->leftJoin('common_guest_facility as cgf', 'gf.guest_id', '=', 'cgf.id');
 
-
-        $query->whereRaw(sprintf("DATE(gf.created_at) >= '%s' and DATE(gf.created_at) <= '%s'", $start_date, $end_date));
-
+		if(!empty($start_date))
+        	$query->whereRaw(sprintf("DATE(gf.created_at) >= '%s' and DATE(gf.created_at) <= '%s'", $start_date, $end_date));
 
         if($searchtext != '')
         {
