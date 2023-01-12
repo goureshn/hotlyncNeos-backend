@@ -194,6 +194,25 @@ class DataController extends Controller
                     $query->where('client_id', $client_id);
                 $model = $query->get();
                 break;
+            case 'propertylist':
+                $property_id = $request->get('property_id', 0);
+                if($property_id == 0){
+                    $query = DB::table('common_property');
+                }else{
+                    $query = DB::table('common_property')->where('id',$property_id);
+                }
+                $model = $query->get();
+                break;
+            case 'propertybyuser':
+                $user_id = $request->get('user_id', 0);
+                $property_list = CommonUser::getPropertyIdsByJobroleids($user_id);
+                if($user_id == 0){
+                    $query = DB::table('common_property');
+                }else{
+                    $query = DB::table('common_property')->whereIn('id', $property_list);
+                }
+                $model = $query->get();
+                break;
             case 'category':
                 $property_id = $request->get('property_id', 0);
                 $query = DB::table('eng_request_category');
@@ -206,6 +225,13 @@ class DataController extends Controller
                 break;
             case 'department':
                 $model = DB::table('common_department')->get();
+                // $model = Department::all();
+                break;
+            case 'departmentbyproperty':
+                $property_id = $request->get('property_id', 0);
+                $model = DB::table('common_department')
+                        ->where('property_id', $property_id)
+                        ->get();
                 // $model = Department::all();
                 break;
             case 'division':

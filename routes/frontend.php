@@ -293,15 +293,39 @@ Route::prefix('eng')->group(function () {
         Route::any('stafflist', 'getStaffList');
         Route::any('repairrequest_getsubcategory_list', 'getSubcategoryList');
         Route::any('repairrequest_savecategory', 'saveCategory');
+        Route::any('repairrequest_savesubcategory', 'saveSubcategory');
+        Route::any('postrepaircomment', 'postComment');
+        Route::any('updaterepairrequest', 'updateRequest');
+        Route::any('repairrequest_tenant_list', 'getTenantList');
+        Route::any('repairrequest_savetenant', 'saveTenant');
+        Route::any('createrepairrequest', 'createRequest');
+        Route::any('upload_repair_attach', 'uploadFiles');
+        Route::any('deleterepairrequest', 'deleteRequest');
     });
 
     Route::controller(EquipmentController::class)->group(function () {
+        Route::any('getequipmentorgrouplist', 'getEquipmentOrGroupList');
         Route::any('getstaffgrouplist', 'getStaffGroupList');
+        Route::any('getPreventivestatusList', 'PreventivestatusList');
+        Route::any('getpreventivemaintenancelist', 'getPreventiveMaintenanceList');
+        Route::any('getchecklistfrompreventive', 'getCheckListFromPreventive');
+        Route::any('createpreventivemaintenance', 'createPreventiveMaintenance');
+        Route::any('deletepreventivemaintenance', 'deletePreventiveMaintenance');
+        Route::any('createworkordermanual', 'createWorkorderManual');
     });
 });
 
 Route::prefix('equipment')->group(function () {
     Route::controller(EquipmentController::class)->group(function () {
         Route::any('idlist', 'getEquipIdList');
+        Route::any('partgrouplist', 'getOnlyPartList');
+        Route::any('getengchecklistnames', 'getEngCheckListNames');
+        Route::any('categorylist', 'getCategoryList');
+        Route::any('getchecklistitemlist', 'getChecklistItemList');
+        Route::any('createchecklistitem', 'createChecklistItem');
+        Route::any('deletechecklistitem', 'deleteCheckListItem');
+        Route::any('grouplist', 'getEquipGroupList');
+        Route::any('createequipcheckList', 'createEquipCheckList');
+        Route::any('deletequipchecklist', 'deletEquipChecklist');
     });
 });

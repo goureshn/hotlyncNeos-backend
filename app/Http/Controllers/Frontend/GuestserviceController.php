@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 
 use App\Models\Common\CommonUser;
 use App\Models\Common\CommonUserGroup;
+use App\Models\Common\CommonJobrole;
 use App\Models\Common\Department;
 use App\Models\Common\Guest;
 use App\Models\Common\GuestAdvancedDetail;
@@ -24,6 +25,7 @@ use App\Models\Service\LocationGroupMember;
 use App\Models\Service\LocationType;
 use App\Models\Service\MinibarRosterList;
 use App\Models\Service\MinibarRosterLog;
+use App\Models\Service\RosterLog;
 use App\Models\Service\Priority;
 use App\Models\Service\RosterList;
 use App\Models\Service\ShiftGroupMember;
@@ -6850,15 +6852,14 @@ class GuestserviceController extends Controller
 		$cur_time = date("Y-m-d H:i:s");
 		$cur_date = date("Y-m-d");
 
-
 		$guest_log = new GuestLog();
 		$guest_log->guest_id=$guest_id;
 		$guest_log->user_id=$user_id;
 		$guest_log->entry_time = $cur_date . ' ' .$entry;
-		$guest_log->kids=$kids;
-		$guest_log->adults=$adults;
-		$guest_log->extra=$extra;
-		$guest_log->comment=$comment;
+		$guest_log->kids=$kids || 0;
+		$guest_log->adults=$adults || 0;
+		$guest_log->extra=$extra || 0;
+		$guest_log->comment=$comment || "";
 		$guest_log->location=$location;
 		$guest_log->save();
 
