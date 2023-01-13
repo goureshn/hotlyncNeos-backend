@@ -48,6 +48,7 @@ use DB;
 use Response;
 use Log;
 use Redis;
+use File;
 
 // define("CLEANING_NOT_ASSIGNED", 100);
 // define("CLEANING_PENDING", 0);
@@ -5049,6 +5050,7 @@ class GuestserviceController extends Controller
 			//$ret['test']=$all_dept_setting->all_dept_setting;
 			if($row["custom_message"] === null) $row["custom_message"] = "";
 			if($row["feedback_flag"] === null) $row["feedback_flag"] = "";
+			if($row["dispatcher"] === null) $row["dispatcher"] = "";
 			$id = DB::table('services_task')->insertGetId($row);
 
 			if( $row['dispatcher'] < 1 && $row['status_id'] != SCHEDULEDGS )
@@ -5088,6 +5090,10 @@ class GuestserviceController extends Controller
 	public function uploadFiles(Request $request) 
 	{
         $output_dir = "uploads/picture/";
+
+		if(!File::isDirectory(public_path($output_dir)))
+			File::makeDirectory(public_path($output_dir), 0777, true, true);
+
         $filekey = 'files';
         $id = $request->get('id', 0);
 
@@ -6414,6 +6420,8 @@ class GuestserviceController extends Controller
 			if( !empty($row['dispatcher']) && $row['dispatcher'] < 1 )
 				$noassigned_flag = true;
 			$row['created_time'] = date('Y-m-d H:i:s');
+			if(empty($row['custom_message'])) $row['custom_message'] = "";
+			
             DB::table('services_task')->insert($row);
 		}
 
@@ -6496,7 +6504,7 @@ class GuestserviceController extends Controller
 						$task_log = new Tasklog();
 						$task_log->task_id = $tasklist[$i]->id;
 						$task_log->user_id = $tasklist[$i]->dispatcher;
-						$task_log->comment = $tasklist[$i]->custom_message;
+						$task_log->comment = $tasklist[$i]->custom_message || "";
 						$task_log->log_type = $this->getLogType($tasklist[$i]);
 						$task_log->log_time = $cur_time;
 						if( $tasklist[$i]->status_id == OPENGS )
@@ -6856,10 +6864,10 @@ class GuestserviceController extends Controller
 		$guest_log->guest_id=$guest_id;
 		$guest_log->user_id=$user_id;
 		$guest_log->entry_time = $cur_date . ' ' .$entry;
-		$guest_log->kids=$kids || 0;
-		$guest_log->adults=$adults || 0;
-		$guest_log->extra=$extra || 0;
-		$guest_log->comment=$comment || "";
+		$guest_log->kids=$kids ?? 0;
+		$guest_log->adults=$adults ?? 0;
+		$guest_log->extra=$extra ?? 0;
+		$guest_log->comment=$comment ?? "";
 		$guest_log->location=$location;
 		$guest_log->save();
 
@@ -9171,5 +9179,19 @@ class GuestserviceController extends Controller
 		$ret = $this->getTaskShiftInfoReassign($task_id, $location_id,1);
 
 		return Response::json($ret);
+	}
+
+	public function getDepartmentSearchList(Request $request)
+	{
+		$department = $request->get('department', '');
+		$property_id = $request->get('property_id', 4);
+
+		$deptlist = DB::table('common_department as cd')
+			->where('cd.department', 'like', '%' . $department . '%')
+			->where('cd.property_id', $property_id)
+			->select(DB::raw('cd.*'))
+			->get();
+
+		return Response::json($deptlist);
 	}
 }

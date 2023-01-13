@@ -62,6 +62,7 @@ use Redis;
 use Response;
 use Curl;
 use Log;
+use File;
 
 define("C_PENDING", 'Pending');
 define("C_RESOLVED", 'Resolved');
@@ -10989,6 +10990,9 @@ class ComplaintController extends Controller
  	public function uploadFiles(Request $request) {
  		$output_dir = "uploads/complaint/";
 		
+		if(!File::isDirectory(public_path($output_dir)))
+			File::makeDirectory(public_path($output_dir), 0777, true, true);
+
 		$ret = array();
 
 		$filekey = 'files';
@@ -11066,6 +11070,9 @@ class ComplaintController extends Controller
 	 
 	 public function uploadFileGuest(Request $request) {
  		$output_dir = "uploads/complaint/";
+
+		if(!File::isDirectory(public_path($output_dir)))
+			File::makeDirectory(public_path($output_dir), 0777, true, true);
 		
 		$ret = array();
 
@@ -11109,6 +11116,10 @@ class ComplaintController extends Controller
 
  	public function uploadFilesToSubcomplaint(Request $request) {
  		$output_dir = "uploads/complaint/";
+
+		if(!File::isDirectory(public_path($output_dir)))
+			File::makeDirectory(public_path($output_dir), 0777, true, true);
+
  		$user_id = $request->get('user_id', 0);
 		
 		$ret = array();

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Response;
+use File;
 
 
 class UploadController extends Controller
@@ -31,6 +32,9 @@ class UploadController extends Controller
         ini_set("upload_max_filesize", "1024M");
         ini_set("memory_limit", "1024M");
         $output_dir = "uploads/csv/";
+
+        if(!File::isDirectory(public_path($output_dir)))
+            File::makeDirectory(public_path($output_dir), 0777, true, true);
 
         $ret = array();
 
@@ -78,6 +82,9 @@ class UploadController extends Controller
     function mobileprofilephoto(Request $request)
     {
         $output_dir = "uploads/picture/";
+
+        if(!File::isDirectory(public_path($output_dir)))
+            File::makeDirectory(public_path($output_dir), 0777, true, true);
 
         $ret = array();
 
@@ -137,6 +144,9 @@ class UploadController extends Controller
     function uploadpicture(Request $request)
     {
         $output_dir = "uploads/picture/";
+
+        if(!File::isDirectory(public_path($output_dir)))
+            File::makeDirectory(public_path($output_dir), 0777, true, true);
 
         $ret = array();
 

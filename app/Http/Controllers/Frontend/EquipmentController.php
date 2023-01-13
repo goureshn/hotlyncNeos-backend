@@ -1197,6 +1197,9 @@ class EquipmentController extends Controller
     public function uploadFiles(Request $request) {
         $output_dir = "uploads/equip/";
 
+        if(!File::isDirectory(public_path($output_dir)))
+            File::makeDirectory(public_path($output_dir), 0777, true, true);
+
         $ret = array();
 
         $filekey = 'files';
@@ -1770,7 +1773,7 @@ class EquipmentController extends Controller
         $output_dir = $_SERVER["DOCUMENT_ROOT"] . '/uploads/equip/';
 
         if(!file_exists($output_dir)) {
-            mkdir($output_dir, 0777);
+            mkdir($output_dir, 0777, true);
         }
 
         $filekey = 'files';
@@ -4447,6 +4450,9 @@ class EquipmentController extends Controller
 
         $filekey = 'files';
         $output_dir = "uploads/eng/";
+
+        if(!File::isDirectory(public_path($output_dir)))
+            File::makeDirectory(public_path($output_dir), 0777, true, true);
 
         $fileCount = count($_FILES[$filekey]["name"]);
 

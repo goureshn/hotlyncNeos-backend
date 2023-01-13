@@ -138,6 +138,7 @@ Route::prefix('guestservice')->group(function () {
         Route::any('getrosters_minibar', 'getRostersMinibarDeptFunc');
         Route::any('getroomlistunassign', 'getUnassignedRoomList');
         Route::any('createrosterdevice_minibar', 'createRosterMinibarForDevice');
+        Route::any('departsearchlist', 'getDepartmentSearchList');
     });
     
     Route::any('manualpost', [ProcessController::class, 'postManual']);
@@ -317,6 +318,7 @@ Route::prefix('eng')->group(function () {
 
 Route::prefix('equipment')->group(function () {
     Route::controller(EquipmentController::class)->group(function () {
+        Route::any('statistics', 'getStatisticInfo');
         Route::any('idlist', 'getEquipIdList');
         Route::any('partgrouplist', 'getOnlyPartList');
         Route::any('getengchecklistnames', 'getEngCheckListNames');
@@ -327,5 +329,18 @@ Route::prefix('equipment')->group(function () {
         Route::any('grouplist', 'getEquipGroupList');
         Route::any('createequipcheckList', 'createEquipCheckList');
         Route::any('deletequipchecklist', 'deletEquipChecklist');
+        Route::any('equipmentlist', 'getEquipmentList');
+        Route::any('statuslist', 'getStatusList');
+        Route::any('maintenancelist', 'getMaintenanceList');
+        Route::any('equipmentpartgrouplist', 'getPartGroupList');
+        Route::any('supplierlist', 'getSupplierList');
+        Route::any('createequipment', 'CreateEquipment');
+        Route::any('equipmentinformlist', 'getEquipmentInformList');
+        Route::any('equipmentworkorderlist', 'getEquipmentWorkorderList');
+        Route::any('createequipfile', 'createEquipmentFile');
+        Route::any('equipmentinfiledel', 'delEquipmentFile');
+        Route::any('getimage', 'getImage');
+        Route::any('updateequipment', 'updateEquipment');
+        Route::any('equipmentdelete', 'deleteEquipment');
     });
 });

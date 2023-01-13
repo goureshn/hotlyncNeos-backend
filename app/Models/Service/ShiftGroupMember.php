@@ -301,7 +301,7 @@ class ShiftGroupMember extends Model
 				->select(DB::raw('sgm.*, cu.*, CONCAT_WS(" ", cu.first_name, cu.last_name) as wholename, 1 as duty'))
 				->get();
 
-			$userlist = array_merge($userlist, $delegated_list);	
+			$userlist = array_merge($userlist->toArray(), $delegated_list->toArray());	
 		}		
 
 		return $userlist;		

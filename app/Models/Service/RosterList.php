@@ -271,7 +271,7 @@ class RosterList extends Model
 		
 		$roster->location_list = json_encode(array_map(function($item) {
 			return $item->id;
-		}, $room_list));
+		}, $room_list->toArray()));
 
 		$total_credits = 0;
 		$turn_down_list = [];
@@ -436,7 +436,7 @@ class RosterList extends Model
 
 		$this->location_list = json_encode(array_map(function($item) {
 			return $item->id;
-		}, $room_list));
+		}, $room_list->toArray()));
 
 		$turn_down_list = [];
 		foreach($room_list as $item)

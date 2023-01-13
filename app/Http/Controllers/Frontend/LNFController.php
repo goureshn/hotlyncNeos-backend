@@ -395,7 +395,7 @@ class LNFController extends Controller
 
         $output_dir = $_SERVER["DOCUMENT_ROOT"] . '/uploads/lnf/';
         if(!file_exists($output_dir)) {
-            mkdir($output_dir, 0777);
+            mkdir($output_dir, 0777, true);
         }
         $output_dir = "uploads/lnf/";
         $ret = array();

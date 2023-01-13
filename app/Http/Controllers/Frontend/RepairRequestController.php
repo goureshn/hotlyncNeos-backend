@@ -971,7 +971,7 @@ class RepairRequestController extends Controller
 
         $output_dir = $_SERVER["DOCUMENT_ROOT"] . '/uploads/repair_request/';
         if(!file_exists($output_dir)) {
-            mkdir($output_dir, 0777);
+            mkdir($output_dir, 0777, true);
         }
         $output_dir = "uploads/repair_request/";
 

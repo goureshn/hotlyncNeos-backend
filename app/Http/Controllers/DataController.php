@@ -1226,7 +1226,7 @@ class DataController extends Controller
 
     public function userlistwithids(Request $request)
     {
-        $userids = $request->get('userids', []);
+        $userids = $request->userids ?? [];
         $model = DB::table('common_users as cu')
             ->whereIn('cu.id', $userids)
             ->select(DB::raw('cu.*, CONCAT_WS(" ", cu.first_name, cu.last_name) as wholename'))

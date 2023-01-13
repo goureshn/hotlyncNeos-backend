@@ -22,6 +22,7 @@ use DB;
 use Illuminate\Http\Request;
 use Redis;
 use Response;
+use File;
 
 define("WAITING", 1);
 define("ACTIVE", 2);
@@ -2377,6 +2378,9 @@ class ChatController extends Controller
     {
         $output_dir = "uploads/chat/";
 
+        if(!File::isDirectory(public_path($output_dir)))
+            File::makeDirectory(public_path($output_dir), 0777, true, true);
+
         $ret = array();
 
         $filekey = 'myfile';
@@ -2488,6 +2492,9 @@ class ChatController extends Controller
     public function uploadFilesGroup(Request $request)
     {
         $output_dir = "uploads/chat/";
+
+        if(!File::isDirectory(public_path($output_dir)))
+            File::makeDirectory(public_path($output_dir), 0777, true, true);
 
         $ret = array();
 

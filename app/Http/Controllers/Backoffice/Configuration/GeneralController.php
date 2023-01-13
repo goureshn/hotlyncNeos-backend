@@ -8,6 +8,7 @@ use App\Models\Common\PropertySetting;
 
 use DB;
 use Response;
+use File;
 
 class GeneralController extends Controller
 {
@@ -237,6 +238,10 @@ class GeneralController extends Controller
             else
             {
                 $output_dir = "sound/";
+
+                if(!File::isDirectory(public_path($output_dir)))
+                    File::makeDirectory(public_path($output_dir), 0777, true, true);
+
                 $fileName = $_FILES['file']["name"];
                 $ext = pathinfo($fileName, PATHINFO_EXTENSION);
                 $filename1 = "noti_".time().".".strtolower($ext);

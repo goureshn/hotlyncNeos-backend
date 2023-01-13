@@ -327,30 +327,30 @@ class PropertySetting extends Model
 		return $data->value;
 	}
 
-	// static function getHskpSettingTime($property_id) {
-	// 	$rules = array();
+	static function getHskpSettingTime($property_id) {
+		$rules = array();
 
-	// 	$rules['hskp_cleaning_time'] = ['09:00:00', '12:00:00'];
-	// 	$rules['vacant_room_cleaning'] = ['00:00:00', '23:59:59'];
-	// 	$rules['turn_down_service'] = ['05:00:00', '05:07:00'];
-	// 	$rules['due_out_time'] = ['00:00:00', '14:00:00'];
+		$rules['hskp_cleaning_time'] = ['09:00:00', '12:00:00'];
+		$rules['vacant_room_cleaning'] = ['00:00:00', '23:59:59'];
+		$rules['turn_down_service'] = ['05:00:00', '05:07:00'];
+		$rules['due_out_time'] = ['00:00:00', '14:00:00'];
 
-	// 	foreach($rules as $key => $value)
-	// 	{
-	// 		$data = DB::table('property_setting as ps')
-	// 				->where('ps.property_id', $property_id)
-	// 				->where('ps.settings_key', $key)
-	// 				->select(DB::raw('ps.value'))
-	// 				->first();
+		foreach($rules as $key => $value)
+		{
+			$data = DB::table('property_setting as ps')
+					->where('ps.property_id', $property_id)
+					->where('ps.settings_key', $key)
+					->select(DB::raw('ps.value'))
+					->first();
 
-	// 		if( empty($data) )
-	// 			continue;
+			if( empty($data) )
+				continue;
 
-	// 		$rules[$key] = Functions::getTimeRange($data->value, $value);
-	// 	}
+			$rules[$key] = Functions::getTimeRange($data->value, $value);
+		}
 		
-	// 	return $rules;
-	// }
+		return $rules;
+	}
 
 	static function getHskpSettingValue($property_id) {
 		$rules = array();
