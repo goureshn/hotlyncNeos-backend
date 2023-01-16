@@ -39,6 +39,7 @@ Route::any('getfavouritemenu', [FrontendController::class, 'getFavouriteMenus'])
 Route::any('/report/filterlist', [ReportController::class, 'getFilterList']);
 Route::get('/buildsomelist', [BuildingWizardController::class, 'getBuildingSomeList']);
 Route::any('/user/setactivestatus', [UserController::class, 'setActiveStatus']);
+Route::any('/workorder/uploadchecklistfiles', [EquipmentController::class, 'uploadAttachForChecklist']);
 
 Route::prefix('guestservice')->group(function () {
     
@@ -143,7 +144,7 @@ Route::prefix('guestservice')->group(function () {
     
     Route::any('manualpost', [ProcessController::class, 'postManual']);
     Route::get('roomtypelist',  [RoomtypeWizardController::class, 'getRoomTypeList']);
-    
+
     Route::controller(ChatController::class)->group(function () {
         Route::any('chatroomlist', 'getChatSessionList');
         Route::any('getinitinfofortemplate', 'getInitInfoForTemplate');
@@ -313,6 +314,28 @@ Route::prefix('eng')->group(function () {
         Route::any('createpreventivemaintenance', 'createPreventiveMaintenance');
         Route::any('deletepreventivemaintenance', 'deletePreventiveMaintenance');
         Route::any('createworkordermanual', 'createWorkorderManual');
+        Route::any('getwridlist', 'getWRIDList');
+        Route::any('workorderlist', 'getWorkorderList');
+        Route::any('flagworkorder', 'flagWorkorder');
+        Route::any('partlist', 'getPartNameList');
+        Route::any('createworkorder', 'createWorkorder');
+        Route::any('workorderchecklist', 'getChecklistForWorkorder');
+        Route::any('updateworkorderchecklist', 'updateChecklistForWorkorder');
+        Route::any('updateworkorderchecklistattach', 'updateChecklistAttachForWorkorder');
+        Route::any('updateworkorderchecklistcomment', 'updateChecklistCommentForWorkorder');
+        Route::any('getworkorderdetail', 'getWorkOrderDetail');
+        Route::any('getworkorderhistorylist', 'getWorkorderHistoryList');
+        Route::any('getworkorderstafflist', 'getWorkorderStaffList');
+        Route::any('changestatus', 'changeWorkorderStatus');
+        Route::any('updateworkorderhistory', 'updateWorkOrderHistory');
+        Route::any('deleteworkorderhistory', 'deleteWorkorderHistory');
+        Route::any('createworkorderstaff', 'createWorkOrderStaff');
+        Route::any('updateworkorderstaff', 'updateWorkOrderstaff');
+        Route::any('deleteworkorderstaff', 'deleteWorkorderStaff');
+        Route::any('uploadfilestoworkorder', 'uploadFilesToWorkOrder');
+        Route::any('deletefilefromworkorder', 'deleteFileFromWorkOrder');
+        Route::any('updateworkorder', 'updateWorkorder');
+        Route::any('deleteworkorder', 'deleteWorkorder');
     });
 });
 
@@ -342,5 +365,18 @@ Route::prefix('equipment')->group(function () {
         Route::any('getimage', 'getImage');
         Route::any('updateequipment', 'updateEquipment');
         Route::any('equipmentdelete', 'deleteEquipment');
+        Route::any('onlypartgrouplist', 'getOnlyPartGroupList');
+        Route::any('createpartgroup', 'createPartGroup');
+        Route::any('createsupplier', 'createSupplier');
+        Route::any('getchecklist', 'getCheckList');
+    });
+});
+
+Route::prefix('part')->group(function () {
+    Route::controller(EquipmentController::class)->group(function () {
+        Route::any('partlist', 'getPartList');
+        Route::any('createpart', 'CreatePart');
+        Route::any('updatepart', 'updatePart');
+        Route::any('partdelete', 'deletePart');
     });
 });
