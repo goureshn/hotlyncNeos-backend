@@ -15,6 +15,7 @@ use App\Http\Controllers\Frontend\ReportController;
 use App\Http\Controllers\Frontend\WakeupController;
 use App\Http\Controllers\Frontend\EquipmentController;
 use App\Http\Controllers\Frontend\RepairRequestController;
+use App\Http\Controllers\Frontend\ContractController;
 use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\Intface\ProcessController;
 use App\Http\Controllers\UserController;
@@ -139,6 +140,8 @@ Route::prefix('guestservice')->group(function () {
         Route::any('getrosters_minibar', 'getRostersMinibarDeptFunc');
         Route::any('getroomlistunassign', 'getUnassignedRoomList');
         Route::any('createrosterdevice_minibar', 'createRosterMinibarForDevice');
+        Route::any('addpreference', 'addPreference');
+        Route::any('deletepreference', 'deletePreference');
         Route::any('departsearchlist', 'getDepartmentSearchList');
     });
     
@@ -237,6 +240,17 @@ Route::prefix('hskp')->group(function () {
         Route::any('createlinensetting', 'createLinenSetting'); // added column "qty" in "services_linen_setting" table to resolve error
         Route::any('updatelinensetting', 'updateLinenSetting');
         Route::any('removelinensetting', 'deleteLinenSetting');
+        Route::any('gethskpstatusbyfloor', 'getHskpStatusByFloor');
+        Route::any('gethskpattendantlist', 'getHskpAttendantUserList');
+        Route::any('getroomhistory', 'getRoomHistory');
+        Route::any('updateroomluggage', 'updateRoomLuggage');
+        Route::any('updatecleaningstate', 'updateCleaningState');
+        Route::any('reassignroster', 'reassignRosterToToom');
+        Route::any('updateroomdiscrepancy', 'updateRoomDiscrepancy');
+        Route::any('updateroomschedule', 'updateRoomSchedule');
+        Route::any('updateroomstatusmanually', 'changehskpstatus');
+        Route::any('updaterushclean', 'updateRushClean');
+        Route::any('updateservicestate', 'updateServiceState');
     });
 });
 
@@ -336,6 +350,13 @@ Route::prefix('eng')->group(function () {
         Route::any('deletefilefromworkorder', 'deleteFileFromWorkOrder');
         Route::any('updateworkorder', 'updateWorkorder');
         Route::any('deleteworkorder', 'deleteWorkorder');
+    });
+
+    Route::controller(ContractController::class)->group(function () {
+        Route::any('contractlist', 'contractList');
+        Route::any('createcontract', 'createContract');
+        Route::any('updatecontract', 'updateContract');
+        Route::any('deletecontract', 'deleteContract');
     });
 });
 

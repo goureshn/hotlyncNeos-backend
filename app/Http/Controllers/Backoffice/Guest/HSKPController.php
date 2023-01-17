@@ -6313,7 +6313,7 @@ class HSKPController extends Controller
 		}	
 
 		// $list = array_unique($tag_list, SORT_REGULAR);
-		$list = array_merge($checkinout_log, $cleaning_log);
+		$list = array_merge($checkinout_log->toArray(), $cleaning_log->toArray());
 
 		
 		usort($list, function($a, $b) {
@@ -7667,4 +7667,51 @@ class HSKPController extends Controller
 		return $taskList;
 	}
 
+	public function updateRoomLuggage(Request $request) {
+		$room_id = $request->get('room_id', 0);
+		$user = $request->get('user_id', '0');
+
+		$cur_time = date("Y-m-d H:i:s");
+		$cur_date = date("Y-m-d");
+
+		$ret = array();
+		$ret['code'] = 201;
+
+		
+		$room_status = HskpRoomStatus::find($room_id);
+		if(empty($room_status) ){
+			$ret['message'] = 'Cannot find Room';
+			return Response::json($ret);
+		}
+
+		$guest = DB::table('common_guest as cg')
+				->where('cg.room_id',$room_id)
+				->where('cg.departure','>=', $cur_date)
+				->where('cg.checkout_flag', '=','checkin')
+				->first();
+
+
+		if(empty($guest) )
+		{
+			$ret['message'] = 'Room not Checked In';
+			return Response::json($ret);
+		}
+		
+
+		DB::table('services_hskp_room_luggage')
+			->insert([
+				'room_id' => $room_id,
+				'profile_id' => $guest->profile_id,
+				'user_id' => $user,
+				'created_at' => $cur_time
+			]);
+			
+		
+		
+		$ret['code'] = 200;
+		$ret['message'] = 'No Luggage is posted successfully';
+		$ret['content'] = $room_status;
+
+		return Response::json($ret);		
+	}
 }

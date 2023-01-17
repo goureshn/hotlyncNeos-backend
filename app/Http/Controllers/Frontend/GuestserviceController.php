@@ -9181,6 +9181,95 @@ class GuestserviceController extends Controller
 		return Response::json($ret);
 	}
 
+	public function addPreference(Request $request)
+	{
+		date_default_timezone_set(config('app.timezone'));
+
+		$room = $request->get('id', '0');
+		$guest_id = $request->get('guest_id', '0');
+		$remark = $request->get('remark', '');
+		$repeat = $request->get('repeat', '0');
+		$cur_time = date("Y-m-d H:i:s");
+		$ret = array();
+		$cur_date = date("Y-m-d");
+
+		$check_depart = DB::table('common_guest as cg')
+					//->leftJoin('common_room as cr', 'cg.room_id', '=', 'cr.id')
+					->where('cg.room_id',$room)
+					->where('cg.departure','>=',DB::raw($cur_date))
+					->where('cg.checkout_flag','=', DB::raw("'checkin'"))
+					->select(DB::raw('cg.departure'))
+					->first();
+
+		if (!empty($check_depart))
+		{
+			$query = DB::table('common_guest_remark_log as grl')
+				->where('grl.room_id','=', $room)
+				->where('grl.guest_id', '=', $guest_id)
+				->where('grl.expire_date', '>=', $cur_date);
+
+			$exist_query = clone $query;
+			$exists = $exist_query->exists();
+
+			if( $exists )
+			{
+				$update_query = clone $query;
+
+				if ($repeat == 1)
+				{
+					$update_query
+							->update(['remark' => $remark,'expire_date' => $check_depart->departure]);
+				}
+				else {
+					$update_query
+							->update(['remark' => $remark,'expire_date' => $cur_date]);
+				}
+			}
+			else
+			{
+				if ($repeat == 1)
+				{
+					DB::table('common_guest_remark_log')
+							->insert(['room_id'=> $room, 'guest_id'=> $guest_id,'remark' => $remark,'expire_date' => $check_depart->departure, 'created_on' => $cur_time]);
+				}
+				else {
+					DB::table('common_guest_remark_log')
+							->insert(['room_id'=> $room, 'guest_id'=> $guest_id,'remark' => $remark,'expire_date' => $cur_date, 'created_on' => $cur_time]);
+				}
+			}
+
+			$ret['code'] = 200;
+
+			return Response::json($ret);
+		}
+		else{
+			$ret['code'] = 201;
+			$ret['message'] = 'Guest does not checkin';
+			return Response::json($ret);
+		}
+	}
+
+	public function deletePreference(Request $request)
+	{
+		date_default_timezone_set(config('app.timezone'));
+
+		$room = $request->get('id', '0');
+		$guest_id = $request->get('guest_id', '0');
+
+		$ret = array();
+		$cur_date = date("Y-m-d");
+
+		DB::table('common_guest_remark_log')
+			->where('room_id','=', $room)
+			->where('guest_id', '=', $guest_id)
+			->where('expire_date', '>=', $cur_date)
+			->delete();
+
+		$ret['code'] = 200;
+		return Response::json($ret);
+
+	}
+	
 	public function getDepartmentSearchList(Request $request)
 	{
 		$department = $request->get('department', '');
@@ -9193,5 +9282,247 @@ class GuestserviceController extends Controller
 			->get();
 
 		return Response::json($deptlist);
+	}
+
+	private function getlinencounttotal($roster_id,$device) 
+	{
+
+		date_default_timezone_set(config('app.timezone'));
+        $cur_time = date("Y-m-d H:i:s");
+        $cur_date = date("Y-m-d");
+
+		//	$roster_id = $request->get('roster_id', 0);
+		//	$device = $request->get('device', 0);
+
+		$list_occ= DB::table('services_room_status as rs')
+						->leftJoin('common_room as cr', 'rs.id', '=', 'cr.id')
+						->leftJoin('common_room_type as rt', 'cr.type_id', '=', 'rt.id')
+						->leftJoin('common_guest as cg', function($join) use ($cur_date) {
+								$join->on('cr.id', '=', 'cg.room_id');
+								$join->on('cg.departure','>=',DB::raw("'".$cur_date."'"));
+								$join->on('cg.checkout_flag','=', DB::raw("'checkin'"));
+						})
+						->leftJoin('common_vip_codes as cvc', 'cg.vip', '=', 'cvc.vip_code')
+						->leftJoin('services_linen_setting as ls', function($join) {
+							$join->on('rt.id', '=', 'ls.room_type_id');
+							$join->on('cvc.id', '=', 'ls.vip_id');
+						})
+						->where('rs.attendant_id', $roster_id);
+		$list_vac= DB::table('services_room_status as rs')
+						->leftJoin('common_room as cr', 'rs.id', '=', 'cr.id')
+						->leftJoin('common_room_type as rt', 'cr.type_id', '=', 'rt.id')
+						->leftJoin('services_linen_setting as ls', function($join) {
+							$join->on('rt.id', '=', 'ls.room_type_id');
+							$join->on('ls.vip_id', '=', DB::raw("'1'"));
+						})
+						->where('rs.attendant_id', $roster_id);
+
+		$list_occ_query = clone $list_occ;
+		$list_vac_query = clone $list_vac;
+
+		$total_occ = $list_occ
+						->where('rs.occupancy','=','Occupied')
+						->select(DB::raw('SUM(ls.qty) as total_occ'))
+						->first();
+
+		$list_occ_total = 	$list_occ_query	->groupBy('ls.room_type_id')
+						->groupBy('ls.vip_id')
+						->groupBy('ls.linen_type')
+						->where('rs.occupancy','=','Occupied')
+						->select(DB::raw('SUM(ls.qty) as total, ls.linen_type as linentype, rt.id as room_type, cvc.id as vipcode'))
+						->get();
+
+		$list_occ_room_total = 	$list_occ_query	->groupBy('ls.room_type_id')
+						->groupBy('ls.vip_id')
+						->groupBy('ls.linen_type')
+						->groupBy('rs.id')
+						->where('rs.occupancy','=','Occupied')
+						->select(DB::raw('SUM(ls.qty) as total, ls.linen_type, rt.id as room_type, cvc.id as vipcode, cr.id as room_id, cr.room'))
+						->get();
+
+		$total_vac = $list_vac
+						->where('rs.occupancy','=','Vacant')
+						->select(DB::raw('SUM(ls.qty) as total_vac'))
+						->first();
+
+		$list_vac_total = 	$list_vac_query	->groupBy('ls.room_type_id')
+						->groupBy('ls.vip_id')
+						->groupBy('ls.linen_type')
+						->where('rs.occupancy','=','Vacant')
+						->select(DB::raw('SUM(ls.qty) as total, ls.linen_type as linentype, rt.id as room_type, ls.vip_id as vipcode'))
+						->get();
+
+		$list_vac_room_total = 	$list_vac_query	->groupBy('ls.room_type_id')
+						->groupBy('ls.vip_id')
+						->groupBy('ls.linen_type')
+						->groupBy('rs.id')
+						->where('rs.occupancy','=','Vacant')
+						->select(DB::raw('SUM(ls.qty) as total, ls.linen_type, rt.id as room_type, ls.vip_id as vipcode, cr.id as room_id, cr.room'))
+						->get();
+
+		$total = $total_occ->total_occ+$total_vac->total_vac;
+		$linentotal = array_merge($list_occ_total->toArray(), $list_vac_total->toArray());
+		$linenroomtotal = array_merge($list_occ_room_total->toArray(), $list_vac_room_total->toArray());
+		
+		$roster = RosterList::where('id', $roster_id)->first();
+
+		$roster->linen = $total;
+		$roster->save();
+
+
+		$user = DB::table('common_users as cu')
+					->leftJoin('services_devices as sd', 'cu.device_id', '=', 'sd.device_id')
+					->where('sd.id', $device)
+					->where('cu.deleted', 0)
+					->select(DB::raw('cu.*'))
+					->first();
+
+		$linen_types = DB::table('services_linen_type')->get(); 
+
+		$query = DB::table('services_linen_total')
+				->where('user_id', $user->id)
+				->where('device_id', $device)
+				->get();
+
+		if (empty($query)){
+
+			foreach($linen_types as $type){
+			DB::table('services_linen_total')
+				->insert([
+					'user_id' => $user->id,
+					'device_id' => $device,
+					'linen_type' => $type->id,
+					'count' => 0]);
+			}
+			$query = DB::table('services_linen_total')
+				->where('user_id', $user->id)
+				->where('device_id', $device)
+				->get();
+		}
+
+		DB::table('services_linen_total')
+				->where('user_id', $user->id)
+				->where('device_id', $device)
+				->update(['count' => 0]);
+
+		foreach ($linentotal as $row){
+				
+			foreach($query as $row1){
+
+				if ($row->linentype == $row1->linen_type){
+
+					$row1->count += $row->total;
+
+					DB::table('services_linen_total')
+						->where('id', $row1->id)
+						->update(['count' => $row1->count]);
+				}
+			}
+		
+				
+		}
+
+		foreach($linenroomtotal as $room){
+
+			$query = DB::table('services_linen_room')
+				->where('room_id', $room->room_id)
+				->where('type_id', $room->linen_type)
+				->first();
+		
+			if (empty($query)){
+
+				DB::table('services_linen_room')
+					->insert([
+					'room_id' => $room->room_id,
+					'type_id' => $room->linen_type,
+					'total' => $room->total]);
+			}
+			else{
+				DB::table('services_linen_room')
+					->where('room_id', $room->room_id)
+					->where('type_id', $room->linen_type)
+					->update(['total' => $room->total]);
+
+			}
+		}
+
+		$ret = array();
+
+		$ret['total'] = $total;
+		$ret['linentotal'] = $linentotal;
+
+		return json_encode($ret);
+		
+
+	}
+
+	public function getNewDeviceList(Request $request) {
+		$property_id = $request->get('property_id', '0');
+		
+		$dept_func = $request->get('dept_func', '0');
+		//	$name = $request->get('name', '');
+		
+       
+        $active_flag = $request->get('active_flag', 1);
+       
+        $device_id = $request->get('id', '');
+       
+
+		$hskp_role = DeftFunction::getHskpRole($dept_func);
+	
+		$devicelist = array();
+		if( $dept_func > 0 )
+		{
+			$query = DB::table('services_devices as sd')
+					->leftJoin('services_roster_list as rs','sd.id', '=', 'rs.device')
+					->leftJoin('common_users as cu', 'cu.device_id', '=', 'sd.device_id');
+
+			if( $hskp_role == 'Attendant' )
+				$query->leftJoin('services_room_status as b', 'rs.id', '=', 'b.attendant_id');
+
+			if( $hskp_role == 'Supervisor' )
+				$query->leftJoin('services_room_status as b', 'rs.id', '=', 'b.supervisor_id');
+
+
+			$devicelist = $query
+					->whereRaw("FIND_IN_SET($dept_func, sd.dept_func_array_id)")
+				//	->whereRaw("sd.name like '%$name%'")
+					->where('cu.active_status', 1)
+					->where('cu.deleted', 0)
+					->where('sd.id','!=', $device_id)
+					->select(DB::raw('sd.*, CONCAT_WS(" ", cu.first_name, cu.last_name) as wholename,cu.active_status,cu.picture,
+								rs.supervisor_id,count(b.id) as room_count,  rs.id as roster_id'))
+					->orderByRaw('sd.name asc')
+					->groupBy('sd.id')
+					->get();
+
+			foreach($devicelist as $row)
+			{
+				if(empty($row->roster_id))
+				{
+					$roster = new RosterList();
+
+					$roster->device = $row->id;
+					$roster->repeat_flag = 0;
+					$roster->name= $row->name;
+					$roster->total_credits = 0;
+
+					$roster->save();
+
+					$row->roster_id = $roster->id;
+				}
+
+				$row->total_credits = RosterList::getTotalCredits($hskp_role, $row->roster_id, 0, $property_id);
+			}
+
+            $arr=[];
+
+		}
+
+
+		$ret = array();
+		$ret['device_list'] = $devicelist;
+       
+		return Response::json($ret);
 	}
 }
