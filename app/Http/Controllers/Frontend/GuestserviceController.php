@@ -9284,6 +9284,298 @@ class GuestserviceController extends Controller
 		return Response::json($deptlist);
 	}
 
+	public function getSupervisorList(Request $request) {
+		$property_id = $request->get('property_id', '0');
+		$val = $request->get('val', '0');
+		$filter = '%' . $val . '%';
+
+		$supervisor_id = DB::table('property_setting as ps')
+						->select(DB::raw('ps.value'))
+						->where('ps.settings_key', 'supervisor_job_role')
+						->where('ps.property_id', $property_id)
+						->first();
+
+
+		$list = DB::table('services_devices as sd')
+						->leftJoin('common_users as cu', 'cu.username', '=', 'sd.device_user')
+								->where('job_role_id', $supervisor_id->value)
+								->select(DB::raw('sd.*, cu.id as supervisor_id,CONCAT_WS(" ", cu.first_name, cu.last_name) as supervisor'))
+								->orderByRaw('length(sd.name), sd.name asc')
+								->get();
+		// $list = DB::table('common_users as cu')
+		// 		->where('job_role_id', $supervisor_id->value)
+		// 		->where('cu.first_name', 'like', $filter)
+		// 		->where('cu.last_name', 'like', $filter)
+		// 		->select(DB::raw('cu.id as supervisor_id,CONCAT_WS(" ", cu.first_name, cu.last_name) as supervisor'))
+		// 		->get();
+
+		$ret = array();
+		$ret['suplist'] = $list;
+
+		return Response::json($ret);
+	}
+
+	public function getRostersDeptFunc(Request $request)
+	{
+		$property_id = $request->get('property_id', '0');
+		$dept_func_id = $request->get('dept_func_id', '');
+		$device_id = $request->get('device_id', '');
+
+		$ret = array();
+
+		$tm1 = microtime(true);
+
+		$roster = RosterList::where('device', $device_id)->first();
+
+		if( empty($roster) )
+		{
+			$roster = new RosterList();
+
+			$roster->device = $device_id;
+			$roster->repeat_flag = 0;
+			$roster->begin_date_time = '0000-00-00 00:00:00';
+			$roster->end_date_time = '0000-00-00 00:00:00';
+			$device = Device::find($device_id);
+			if( !empty($device) )
+				$roster->name = $device->name;
+			$roster->total_credits = 0;
+
+			$roster->save();
+
+			$ret['new_roster'] = $roster;
+		}
+
+		$roster = DB::table('services_roster_list as rs')
+				->leftJoin('services_devices as sd', 'sd.id', '=', 'rs.device')
+				->where('rs.device',$device_id)
+				->select(DB::raw("rs.*, sd.name as device_name, sd.number, sd.loc_grp_id, sd.device_id, sd.dept_func_array_id"))
+				->first();
+
+
+		$tm2 = microtime(true);
+
+		if(!empty($roster))
+		{
+			$hskp_role = DeftFunction::getHskpRole($dept_func_id);
+			$roster->locations = HskpRoomStatus::getRoomListForRoster($roster->id, $hskp_role, "All", "");
+
+			HskpRoomStatus::updateRoomCredits($roster->locations, $property_id);
+		}
+		else
+		{
+			$roster = [];
+			$roster['locations'] = [];
+		}
+
+		$tm3 = microtime(true);
+		$ret['datalist'] = $roster;
+		$ret['exe_time'] = ($tm2 - $tm1);
+
+    	$ret['code'] = 200;
+		$ret['message'] = '';
+
+		return Response::json($ret);
+	}
+
+	public function updateRosterForDevice(Request $request) {
+		date_default_timezone_set(config('app.timezone'));
+		$cur_time = date("Y-m-d H:i:s");
+		$cur_date = date("Y-m-d");
+		$room_id = $request->get('room_id', 0);
+
+		$dispatcher = $request->get('dispatcher', 186);
+        $device = $request->get('device', 186);
+        $hskp_user_id = $request->get('hskp_user_id', 0);
+        $device_flag = $request->get('device_flag', 1);
+		$updated_by = $request->get('updated_by', 0);
+		$assigned_list = $request->get('assigned_list', [8]);
+		$td_list = $request->get('td_list', [8]);
+		$property_id = $request->get('property_id', 4);
+		$begin_date_time=$request->get('begin_date_time','');
+		$end_date_time=$request->get('end_date_time','');
+		$roster_name = $request->get('roster_name', '');
+		$total_credits = $request->get('total_credits', '');
+		$supervisor_id = $request->get('supervisor_id', 0);
+		$supervisor_device = $request->get('supr_device', []);
+		$retain_flag = $request->get('retain_flag', 0);
+		$casual_staff = $request->get('casual_staff', '');
+		$dept_func_id = $request->get('dept_func_id', 0);
+		$job_role_id = $request->get('job_role_id', 0);
+		$id = $request->get('id', '');
+
+		$old_list=[];
+
+		$hskp_role = 'None';
+		if( $device_flag == 1 )
+			$hskp_role = DeftFunction::getHskpRole($dept_func_id);
+
+		if( $device_flag == 0 )
+			$hskp_role = CommonJobrole::getHskpRole($job_role_id);
+
+		if( $device_flag == 1 )
+			$roster = RosterList::where('device', $device)->first();
+
+		if( $device_flag == 0 )
+			$roster = RosterList::where('user_id', $hskp_user_id)->first();
+
+
+		if(!empty($roster))
+		{
+			if( $device_flag == 1 && $roster->device != $device ||
+				$device_flag == 0 && $roster->user_id != $hskp_user_id)
+			{
+				$ret = array();
+
+				$ret['code'] = 201;
+				$ret['message'] = 'Roster Info is non matched';
+				$ret['content'] = $roster;
+
+				return Response::json($ret);
+			}
+
+			$roster->device = $device;
+			$roster->user_id = $hskp_user_id;
+			$roster->repeat_flag = 0;
+
+			$roster->begin_date_time=$begin_date_time;
+			$roster->end_date_time= $end_date_time;
+			$roster->name = $roster_name;
+			$roster->location_list = json_encode($assigned_list);
+			$roster->total_credits = $total_credits;
+			$roster->casual_staff_name = $casual_staff['new_staff_name'];
+			$roster->generic_id = $casual_staff['id'];
+			if(!empty($supervisor_id))
+				$roster->supervisor_id = $supervisor_id;
+
+			$roster->save();
+
+			$rosterlog = new RosterLog();
+			$rosterlog->device=$device;
+			$rosterlog->roster_id=$roster->id;
+			$rosterlog->updated_by=$updated_by;
+			$rosterlog->casual_staff_name = $casual_staff['new_staff_name'];
+			$rosterlog->generic_id = $casual_staff['id'];
+			$rosterlog->time=$cur_time;
+			$rosterlog->td_list=json_encode($td_list);
+			$rosterlog->begin_date_time=$begin_date_time;
+			$rosterlog->end_date_time= $end_date_time;
+			$rosterlog->roster_name= $roster_name;
+			$rosterlog->total_credits = $total_credits;
+			$rosterlog->supervisor_id = $supervisor_id;
+			$rosterlog->save();
+
+			if($hskp_role == 'Attendant')
+			{
+				// old turn down list to unassigned
+
+				DB::table('services_room_status')
+					->whereNotIn('id', $td_list)
+					->where('attendant_id', $id)
+					->update([
+						'td_flag' => 0,
+						'td_working_status' => CLEANING_NOT_ASSIGNED,
+						'td_start_time' => NULL,
+						'td_end_time' => NULL
+					]);
+
+				// set turn down list to pending
+				DB::table('services_room_status')
+					->whereIn('id', $td_list)
+					->where('attendant_id', $id)
+					->update([
+						'td_flag' => 1,
+						'td_working_status' => CLEANING_PENDING,
+					]);
+
+
+			}
+
+			if( $hskp_role == 'Supervisor' )
+			{
+				// remove old supervisor
+				DB::table('services_room_status')
+					->where('supervisor_id', $id)
+					->update([
+						'supervisor_id' => 0
+					]);
+
+				// assign new supervisor
+				DB::table('services_room_status')
+					->whereIn('id', $assigned_list)
+					->update([
+						'supervisor_id' => $id
+					]);
+			}
+
+			if( $hskp_role == 'Attendant' )
+			{
+				if($retain_flag == 0)
+				{
+					// remove old attendant
+					DB::table('services_room_status')
+						->where('attendant_id', $id)
+						->update([
+							'attendant_id' => 0,
+							'working_status' => CLEANING_NOT_ASSIGNED,
+						]);
+
+					// assign new attendant
+					DB::table('services_room_status')
+						->whereIn('id', $assigned_list)
+						->update([
+							'attendant_id' => $id,
+							'working_status' => CLEANING_PENDING,
+						]);
+				}
+				else
+				{
+					// remove old attendant
+					DB::table('services_room_status')
+						->where('attendant_id', $id)
+						->whereNotIn('id', $assigned_list)
+						->update([
+							'attendant_id' => 0,
+						]);
+
+					// assign new attendant
+					DB::table('services_room_status')
+						->whereIn('id', $assigned_list)
+						->update([
+							'attendant_id' => $id,
+						]);
+
+					// not assigned to pending
+					DB::table('services_room_status')
+						->whereIn('id', $assigned_list)
+						->where('working_status', CLEANING_NOT_ASSIGNED)
+						->update([
+							'working_status' => CLEANING_PENDING,
+						]);
+				}
+			}
+
+			if ($hskp_role == 'Attendant'){
+
+				$this->getlinencounttotal($id,$device);
+			}
+
+			
+			$message = 'You has been updated with new rooms.';
+			RosterList::sendRosterNotification($roster, $message);
+		}
+
+		Functions::sendHskpStatusChangeToProperty($property_id);
+
+		$ret = array();
+
+		$ret['code'] = 200;
+		$ret['message'] = 'Roster is updated successfully';
+		$ret['content'] = $roster;
+
+		return Response::json($ret);
+
+	}
+
 	private function getlinencounttotal($roster_id,$device) 
 	{
 
@@ -9524,5 +9816,171 @@ class GuestserviceController extends Controller
 		$ret['device_list'] = $devicelist;
        
 		return Response::json($ret);
+	}
+
+	public function transferDevice(Request $request) {
+		date_default_timezone_set(config('app.timezone'));
+		$cur_time = date("Y-m-d H:i:s");
+
+		$selected_room_ids = $request->get('selected_room_ids', '');
+
+        $device_flag = $request->get('device_flag', 1);
+		$dept_func_id = $request->get('dept_func_id', 0);
+		$job_role_id = $request->get('job_role_id', 0);
+
+		$old_device_id = $request->get('old_device_id', 0);
+		$new_device_id = $request->get('new_device_id', 0);
+
+		$old_hskp_user_id = $request->get('old_hskp_user_id', 0);
+		$new_hskp_user_id = $request->get('new_hskp_user_id', 0);
+		$property_id = $request->get('property_id', 0);
+
+		$selected_room_ids = explode(',', $selected_room_ids);
+
+		$hskp_role = 'None';
+		if( $device_flag == 1 )
+			$hskp_role = DeftFunction::getHskpRole($dept_func_id);
+
+		if( $device_flag == 0 )
+			$hskp_role = CommonJobrole::getHskpRole($job_role_id);
+
+		if( $device_flag == 1 )
+		{
+			$old_roster = RosterList::where('device', $old_device_id)->first();
+			$new_roster = RosterList::where('device', $new_device_id)->first();
+		}
+
+		if( $device_flag == 0 )
+		{
+			$old_roster = RosterList::where('user_id', $old_hskp_user_id)->first();
+			$new_roster = RosterList::where('user_id', $new_hskp_user_id)->first();
+		}
+
+		if( empty($old_roster) )
+		{
+			$ret['code'] = 202;
+			$ret['message'] = 'Invalid are roster';
+
+			return Response::json($ret);
+		}
+
+		if( empty($new_roster) )
+		{
+			$new_roster = new RosterList();
+
+			$new_roster->device = $new_device_id;
+			$new_roster->user_id = $new_hskp_user_id;
+			$new_roster->repeat_flag = 0;
+			$new_roster->begin_date_time = '0000-00-00 00:00:00';
+			$new_roster->end_date_time = '0000-00-00 00:00:00';
+			$new_roster->total_credits = 0;
+
+			$new_roster->save();
+		}
+
+		// update hskp role for old roster
+		if( $hskp_role == 'Attendant' )
+		{
+			DB::table('services_room_status')
+				->whereIn('id', $selected_room_ids)
+				->where('attendant_id', $old_roster->id)
+				->update(['attendant_id' => $new_roster->id]);
+
+
+			$this->getlinencounttotal($old_roster->id,$old_device_id);
+			$this->getlinencounttotal($new_roster->id,$new_device_id);
+		}
+
+		if( $hskp_role == 'Supervisor' )
+		{
+			DB::table('services_room_status')
+				->whereIn('id', $selected_room_ids)
+				->where('supervisor_id', $old_roster->id)
+				->update(['supervisor_id' => $new_roster->id]);
+		}
+
+		// update location list for old roster and new roster
+		$old_roster->updateRosterInfo($hskp_role, $property_id);
+		$new_roster->updateRosterInfo($hskp_role, $property_id);
+
+		$ret['code'] = 200;
+		$ret['message'] = 'Rooms are transfered to New device successfully';
+		$ret['old_roster'] = $old_roster;
+		$ret['new_roster'] = $new_roster;
+
+		return Response::json($ret);
+	}
+
+	public function clearAllRosters(Request $request) {
+		$dept_func = $request->get('dept_func', 0);
+		$job_role_id = $request->get('job_role_id', 0);
+		$device_flag = $request->get('device_flag', 0);
+		$property_id = $request->get('property_id', 0);
+		$retain_flag = $request->get('retain_flag', 0);
+
+		$hskp_role = 'None';
+		if( $device_flag == 1 )
+			$hskp_role = DeftFunction::getHskpRole($dept_func);
+
+		if( $device_flag == 0 )
+			$hskp_role = CommonJobrole::getHskpRole($job_role_id);
+
+		if( $hskp_role == 'Attendant')
+		{
+			if( $retain_flag == 0 )
+			{
+				DB::table('services_room_status')->update(['attendant_id' => 0,
+										'working_status' => CLEANING_NOT_ASSIGNED,
+										'td_working_status' => CLEANING_NOT_ASSIGNED,
+										'td_flag' => 0]);
+			}
+			else
+			{
+				DB::table('services_room_status')
+						->where('working_status', '!=', CLEANING_RUNNING)
+						->update(['attendant_id' => 0]);
+			}
+
+			// update credits
+			RosterList::resetRoomCredits();
+		}
+
+		if( $hskp_role == 'Supervisor')
+		{
+			DB::table('services_room_status')->update(['supervisor_id' => 0,
+										'supervisor_inspect_status' => CLEANING_NOT_ASSIGNED
+										]);
+		}
+
+
+		Functions::sendHskpStatusChangeToProperty($property_id);
+
+		$ret = array();
+		$ret['code'] = 200;
+		$ret['message'] = 'Rosters deleted successfully';
+
+		return Response::json($ret);
+	}
+
+	public function forwardTicket(Request $request) {
+		$id = $request->get('id', 0);
+
+		$task = Task::find($id);
+		if( !empty($task) )
+		{
+			$task->forward_flag = 1;
+			$task->save();
+		}
+
+		$job_roles = PropertySetting::getJobRoles($task->property_id);
+
+		// find duty managers on shift
+		$user_list = $this->getUserListForTicket($task, $job_roles['dutymanager_job_role'], false);
+
+		foreach($user_list as $user) {
+			$this->saveNotification($user->id, $id, 'Forward');
+		}
+
+		return Response::json($user_list);
 	}
 }

@@ -143,6 +143,12 @@ Route::prefix('guestservice')->group(function () {
         Route::any('addpreference', 'addPreference');
         Route::any('deletepreference', 'deletePreference');
         Route::any('departsearchlist', 'getDepartmentSearchList');
+        Route::any('forward', 'forwardTicket');
+        Route::any('supervisorlist', 'getSupervisorList');
+        Route::any('getrosters', 'getRostersDeptFunc');
+        Route::any('updaterosterdevice', 'updateRosterForDevice');
+        Route::any('transferdevice', 'transferDevice');
+        Route::any('clearallrosters', 'clearAllRosters');
     });
     
     Route::any('manualpost', [ProcessController::class, 'postManual']);
@@ -251,7 +257,15 @@ Route::prefix('hskp')->group(function () {
         Route::any('updateroomstatusmanually', 'changehskpstatus');
         Route::any('updaterushclean', 'updateRushClean');
         Route::any('updateservicestate', 'updateServiceState');
+        Route::any('hskpdeptfunclist', 'getHskpDeptFuncList');
+        Route::any('hskpjobrolelist', 'getHskpJobRoleList');
+        Route::any('getservicestatelist', 'getServiceStateList');
+        Route::any('hskpuserlist', 'getHskpUserList');
+        Route::any('rosterroomlist', 'getRoomListForRoster');
     });
+    
+    Route::any('hskpdevicelist', [GuestserviceController::class, 'getDeviceList']);
+    Route::any('newhskpdevicelist', [GuestserviceController::class, 'getNewDeviceList']);
 });
 
 Route::prefix('minibar')->group(function () {
@@ -390,6 +404,8 @@ Route::prefix('equipment')->group(function () {
         Route::any('createpartgroup', 'createPartGroup');
         Route::any('createsupplier', 'createSupplier');
         Route::any('getchecklist', 'getCheckList');
+        Route::any('createchecklistcategory', 'createChecklistCategory');
+        Route::any('equipmentimagedel', 'delEquipmentImage');
     });
 });
 
