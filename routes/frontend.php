@@ -199,6 +199,8 @@ Route::prefix('complaint')->group(function () {
         Route::any('post', 'create');
         Route::any('uploadfiles', 'uploadFiles');
         Route::any('uploadguestimage', 'uploadFileGuest');
+        Route::any('categorylist', 'getCategoryList');
+        Route::any('statistics', 'getStatisticInfo');
     });
 });
 
@@ -262,6 +264,12 @@ Route::prefix('hskp')->group(function () {
         Route::any('getservicestatelist', 'getServiceStateList');
         Route::any('hskpuserlist', 'getHskpUserList');
         Route::any('rosterroomlist', 'getRoomListForRoster');
+        Route::any('shiftlist', 'getShiftList');
+        Route::any('attendantlist', 'getAttendantList');
+        Route::any('assignedroomlist', 'getAssignedRoomListToStaff');
+        Route::any('getroomlist', 'getRoomList');
+        Route::any('createroomassignment', 'createRoomAssignment');
+        Route::any('assignroomwithauto', 'createRoomAssignmentWithAuto');
     });
     
     Route::any('hskpdevicelist', [GuestserviceController::class, 'getDeviceList']);
