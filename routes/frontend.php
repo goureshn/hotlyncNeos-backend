@@ -201,6 +201,11 @@ Route::prefix('complaint')->group(function () {
         Route::any('uploadguestimage', 'uploadFileGuest');
         Route::any('categorylist', 'getCategoryList');
         Route::any('statistics', 'getStatisticInfo');
+        Route::any('fblist', 'getfbList');
+        Route::any('feedbackid', 'getfeedbackID');
+        Route::any('searchcoguestlist', 'searchCOGuestList');
+        Route::any('occasionlist', 'getOccasionList');
+        Route::any('postfeedback', 'createFeedback');
     });
 });
 
