@@ -140,6 +140,7 @@ Route::prefix('guestservice')->group(function () {
         Route::any('getrosters_minibar', 'getRostersMinibarDeptFunc');
         Route::any('getroomlistunassign', 'getUnassignedRoomList');
         Route::any('createrosterdevice_minibar', 'createRosterMinibarForDevice');
+        Route::any('gettaskcategory', 'getTaskCategory');
         Route::any('addpreference', 'addPreference');
         Route::any('deletepreference', 'deletePreference');
         Route::any('departsearchlist', 'getDepartmentSearchList');

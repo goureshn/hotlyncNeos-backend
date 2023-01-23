@@ -3,6 +3,10 @@
 use App\Http\Controllers\Backoffice\Configuration\GeneralController;
 use App\Http\Controllers\Backoffice\Configuration\EngController;
 use App\Http\Controllers\Backoffice\Guest\AlarmController;
+use App\Http\Controllers\Backoffice\Guest\TaskListController;
+use App\Http\Controllers\Backoffice\Guest\TaskController;
+use App\Http\Controllers\Backoffice\Guest\EscalationController;
+use App\Http\Controllers\Frontend\GuestserviceController;
 use App\Http\Controllers\Backoffice\Property\BuildingWizardController;
 use App\Http\Controllers\Backoffice\Property\LicenseWizardController;
 use Illuminate\Http\Request;
@@ -34,6 +38,19 @@ Route::group(['prefix'=>'guestservice/wizard','as'=>'guestservice.wizard.'], fun
 
     Route::prefix('alarmgroup')->controller(AlarmController::class)->group(function () {
         Route::get('userlist', 'getUserList');
+    });
+
+    Route::resource('tasklist', TaskListController::class);
+    Route::get('gettaskgrouplist', [TaskListController::class, 'getTaskGorupList']);
+    Route::any('gettaskcategorylist', [GuestserviceController::class, 'getTaskCategoryList']);
+    Route::post('task/createlist', [TaskController::class, 'createTaskList']);
+    Route::get('categoryname', [TaskListController::class, 'getCategoryName']);
+
+    Route::resource('task', TaskController::class);
+
+    Route::controller(EscalationController::class)->group(function () {
+        Route::get('deptfunclist', 'deptFuncList');
+        Route::get('usergrouplist', 'userGroupList');
     });
 });
 

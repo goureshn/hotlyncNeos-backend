@@ -42,7 +42,6 @@ use App\Modules\Functions;
 use DateInterval;
 use DateTime;
 use Illuminate\Support\Facades\Config;
-
 use Illuminate\Http\Request;
 use DB;
 use Response;
@@ -9179,6 +9178,15 @@ class GuestserviceController extends Controller
 		$ret = $this->getTaskShiftInfoReassign($task_id, $location_id,1);
 
 		return Response::json($ret);
+	}
+
+	public function getTaskCategory(Request $request){
+
+		$category = DB::table('services_task_category as stc')
+					->select(DB::raw('stc.id,stc.name'))
+					->get();
+
+		return Response::json($category);
 	}
 
 	public function addPreference(Request $request)
