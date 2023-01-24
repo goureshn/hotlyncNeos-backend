@@ -6,7 +6,11 @@ use App\Http\Controllers\Backoffice\Guest\AlarmController;
 use App\Http\Controllers\Backoffice\Guest\TaskListController;
 use App\Http\Controllers\Backoffice\Guest\TaskController;
 use App\Http\Controllers\Backoffice\Guest\EscalationController;
+use App\Http\Controllers\Backoffice\Guest\DepartFuncController;
+use App\Http\Controllers\Backoffice\Guest\ShiftController;
+use App\Http\Controllers\Backoffice\Guest\DeviceController;
 use App\Http\Controllers\Frontend\GuestserviceController;
+use App\Http\Controllers\Backoffice\Admin\DepartmentWizardController;
 use App\Http\Controllers\Backoffice\Property\BuildingWizardController;
 use App\Http\Controllers\Backoffice\Property\LicenseWizardController;
 use Illuminate\Http\Request;
@@ -51,10 +55,29 @@ Route::group(['prefix'=>'guestservice/wizard','as'=>'guestservice.wizard.'], fun
     Route::controller(EscalationController::class)->group(function () {
         Route::get('deptfunclist', 'deptFuncList');
         Route::get('usergrouplist', 'userGroupList');
+        Route::post('escalation/selectitem', 'selectGroup');
+        Route::post('escalation/updateinfo', 'updateEscalationInfo');
+        Route::post('escalation/deleteinfo', 'deleteEscalationInfo');
+        Route::get('escalationgroupindex', 'escalationgroupindex');
+        Route::get('list/grouplist', 'groupList');
+    });
+
+    Route::resource('shift', ShiftController::class);
+    Route::resource('departfunc', DepartFuncController::class);
+
+    Route::resource('device', DeviceController::class);
+    Route::controller(DeviceController::class)->group(function () {
+        Route::get('devicelist', 'getDeviceList');
+        Route::post('device/upload', 'upload');
+        Route::post('device/storeng', 'storeng');
     });
 });
 
 Route::prefix('configuration/wizard')->group(function () {
     Route::post('general', [GeneralController::class, 'getGeneral']);
     Route::post('getrepairrequest', [EngController::class, 'getRepairRequest']);
+});
+
+Route::prefix('admin/wizard')->group(function () {
+    Route::get('departmentlist', [DepartmentWizardController::class, 'getDepartmentList']);
 });

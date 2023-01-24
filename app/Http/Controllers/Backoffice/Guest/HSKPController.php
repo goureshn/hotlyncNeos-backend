@@ -7714,4 +7714,30 @@ class HSKPController extends Controller
 
 		return Response::json($ret);		
 	}
+
+	public function getRmStateList(Request $request) {
+		
+		$property_id = $request->get('property_id', '0');
+
+        $resultList = DB::table('services_room_status')
+            ->select(DB::raw('room_status as label'))
+			->where('property_id', $property_id)
+            ->groupBy('room_status')
+			->orderBy('room_status','asc')
+            ->get();
+
+        return Response::json($resultList);
+    }
+
+	public function getFOStateList(Request $request) {
+		$property_id = $request->get('property_id', 0);
+        $resultList = DB::table('services_room_status')
+            ->select(DB::raw('fo_state as label'))
+			->where('property_id', $property_id)
+            ->groupBy('fo_state')
+			->orderBy('fo_state','asc')
+            ->get();
+
+        return Response::json($resultList);
+    }
 }

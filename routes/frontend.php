@@ -276,6 +276,8 @@ Route::prefix('hskp')->group(function () {
         Route::any('getroomlist', 'getRoomList');
         Route::any('createroomassignment', 'createRoomAssignment');
         Route::any('assignroomwithauto', 'createRoomAssignmentWithAuto');
+        Route::any('getfostatelist', 'getFOStateList');
+        Route::any('getrmstatelist', 'getRmStateList');
     });
     
     Route::any('hskpdevicelist', [GuestserviceController::class, 'getDeviceList']);
