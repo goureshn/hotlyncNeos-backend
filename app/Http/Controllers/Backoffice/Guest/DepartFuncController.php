@@ -209,4 +209,77 @@ class DepartFuncController extends UploadController
 			}							
 		});
 	}
+
+	public function deptFuncIndex(Request $request)
+	{
+		$platform = $request->get('platform', '');
+		$user_id = $request->get('user_id', 0);
+
+		$limit = $request->get('limit', 0);
+		$offset = $request->get('offset', 0);
+		$search = $request->get('searchtext', "");
+		$sortColumn = $request->get('sortcolumn', 'df.id');
+		$sortOrder = $request->get('sortorder', 'desc');
+		$filter = json_decode($request->get("filter", ""), true);
+
+		$datalist = DB::table('services_dept_function as df')
+			->leftJoin('common_department as cd', 'df.dept_id', '=', 'cd.id')
+			->select(DB::raw('df.*, cd.department, 
+							CASE 
+								WHEN gs_device = "0" THEN "User"
+								WHEN gs_device = "1" THEN "Device"
+								WHEN gs_device = "2" THEN "Roster"
+							END as device	
+							'));
+
+		if (!empty($filter)) {
+
+			if (!empty($filter["gs_device"])) {
+				$datalist->whereIn('df.gs_device', $filter["gs_device"]);
+			}
+
+			if (!empty($filter["all_dept_setting"])) {
+				$datalist->whereIn('df.all_dept_setting', $filter["all_dept_setting"]);
+			}
+
+			if (!empty($filter["escalation_setting"])) {
+				$datalist->whereIn('df.escalation_setting', $filter["escalation_setting"]);
+			}
+		}
+
+		if (!empty($search)) {
+			$datalist->where('df.id', 'like', '%' . $search . '%')->orWhere('df.function', 'like', '%' . $search . '%')->orWhere('df.short_code', 'like', '%' . $search . '%');
+		}
+
+		if (!empty($sortColumn) && !empty($sortOrder)) {
+			$datalist->orderBy($sortColumn, $sortOrder);
+		}
+
+		$total = count($datalist->get());
+
+		if ($limit != 0) {
+			$datalist->take($limit);
+		}
+		if ($offset != 0) {
+			$datalist->skip($offset);
+		}
+
+		$response = $datalist->get();
+
+		foreach ($response as $key => $val) {
+			$list = DB::table('services_escalation_group')
+				->where("dept_func", $val->id)
+				->select(DB::raw('name as field, id as segid'))->first();
+			if (isset($list->field))
+				$val->services_escalation_group_name = $list->field;
+			else
+				$val->services_escalation_group_name = null;
+
+			if (isset($list->field))
+				$val->services_escalation_group_id = $list->segid;
+			else
+				$val->services_escalation_group_id = null;
+		}
+		return Response::json(["data" => $response, "recordsFiltered" => $total]);
+	}
 }

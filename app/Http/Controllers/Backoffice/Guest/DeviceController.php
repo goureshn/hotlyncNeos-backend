@@ -217,4 +217,135 @@ class DeviceController extends UploadController
 			}
 		});
 	}
+	public function deviceIndex(Request $request)
+	{
+		$platform = $request->get('platform', '');
+		$user_id = $request->get('user_id', 0);
+
+		$limit = $request->get('limit', 0);
+		$offset = $request->get('offset', 0);
+		$search = $request->get('searchtext', "");
+		$sortColumn = $request->get('sortcolumn', 'sd.id');
+		$sortOrder = $request->get('sortorder', 'desc');
+		$filter = json_decode($request->get("filter", ""), true);
+
+		$device_status = $request->get('status', 'All');
+		$datalist = DB::table('services_devices as sd')
+			->leftJoin('common_users as cu', 'sd.device_id', '=', 'cu.device_id')
+			->select(DB::Raw('sd.*,CASE WHEN cu.active_status = 1 THEN "Active" ELSE "Offline" END as device_status'));
+
+		// if ($device_status == 'Online')
+		// 	$datalist->where('cu.active_status', 1);
+
+		// if ($device_status == 'Offline')
+		// 	$datalist->whereRaw('(cu.active_status = 0 OR cu.active_status is NULL)');
+
+		// if ($device_status == 'Disabled')
+		// 	$datalist->where('sd.enabled', 0);
+
+		if (!empty($filter)) {
+			if (!empty($filter["dept_func"])) {
+				foreach ($filter["dept_func"] as $key => $val) {
+					$datalist->whereRaw("FIND_IN_SET($val, sd.dept_func_array_id)");
+				}
+			}
+
+			if (!empty($filter["building_ids"])) {
+				foreach ($filter["building_ids"] as $key => $val) {
+					$datalist->whereRaw("FIND_IN_SET($val, sd.building_ids)");
+				}
+			}
+
+			if (!empty($filter["type"])) {
+				$datalist->whereIn('sd.type', $filter["type"]);
+			}
+
+			if (!empty($filter["active_status"])) {
+				$datalist->whereIn('cu.active_status', $filter["active_status"]);
+			}
+		}
+
+
+		if (!empty($search)) {
+			$datalist->where('sd.id', 'like', '%' . $search . '%')
+				->orWhere('sd.name', 'like', '%' . $search . '%')
+				->orWhere('sd.type', 'like', '%' . $search . '%')
+				->orWhere('sd.number', 'like', '%' . $search . '%')
+				->orWhere('sd.device_id', 'like', '%' . $search . '%');
+		}
+
+		if (!empty($sortColumn) && !empty($sortOrder)) {
+			$datalist->orderBy($sortColumn, $sortOrder);
+		}
+
+		$total = count($datalist->groupBy('sd.id')->get());
+
+		if ($limit != 0) {
+			$datalist->take($limit);
+		}
+		if ($offset != 0) {
+			$datalist->skip($offset);
+		}
+
+		$response = $datalist->groupBy('sd.id')->get();
+
+		foreach ($response as $key => $val) {
+			// Secondary department function
+			if (!empty($val->sec_dept_func)) {
+				$ids = explode(",", $val->sec_dept_func);
+				$list_sec_dep = DB::table('services_dept_function')
+					->whereIn("id", $ids)
+					->select(DB::raw('GROUP_CONCAT(`function`) as field'))->first();
+				$val->sec_function = $list_sec_dep->field;
+			} else {
+				$val->sec_function = "";
+			}
+
+			// Department function
+			if (!empty($val->dept_func_array_id)) {
+				$sec_ids = explode(",", $val->dept_func_array_id);
+				$list_dep = DB::table('services_dept_function')
+					->whereIn("id", $sec_ids)
+					->select(DB::raw('GROUP_CONCAT(`function`) as field'))->first();
+				$val->function = $list_dep->field;
+			} else {
+				$val->function = "";
+			}
+
+			// Location group
+			if (!empty($val->loc_grp_array_id)) {
+				$loc_ids = explode(",", $val->loc_grp_array_id);
+				$list_loc = DB::table('services_location_group')
+					->whereIn("id", $loc_ids)
+					->select(DB::raw('GROUP_CONCAT(`name`) as field'))->first();
+				$val->loc_name = $list_loc->field;
+			} else {
+				$val->loc_name = "";
+			}
+
+			// Secondary location group
+			if (!empty($val->sec_loc_grp_id)) {
+				$sec_loc_ids = explode(",", $val->sec_loc_grp_id);
+				$list_sec_loc = DB::table('services_location_group')
+					->whereIn("id", $sec_loc_ids)
+					->select(DB::raw('GROUP_CONCAT(`name`) as field'))->first();
+				$val->sec_loc_name = $list_sec_loc->field;
+			} else {
+				$val->sec_loc_name = "";
+			}
+
+			// Building
+			if (!empty($val->building_ids)) {
+				$bul_ids = explode(",", $val->building_ids);
+				$list_bul = DB::table('common_building')
+					->whereIn("id", $bul_ids)
+					->select(DB::raw('GROUP_CONCAT(`name`) as field'))->first();
+				$val->cb_name = $list_bul->field;
+			} else {
+				$val->cb_name = "";
+			}
+		}
+
+		return Response::json(["data" => $response, "recordsFiltered" => $total]);
+	}
 }
