@@ -9,11 +9,15 @@ use App\Http\Controllers\Backoffice\Guest\EscalationController;
 use App\Http\Controllers\Backoffice\Guest\DepartFuncController;
 use App\Http\Controllers\Backoffice\Guest\ShiftController;
 use App\Http\Controllers\Backoffice\Guest\DeviceController;
+use App\Http\Controllers\Backoffice\Guest\LocationController;
 use App\Http\Controllers\Frontend\GuestserviceController;
 use App\Http\Controllers\Backoffice\Admin\DepartmentWizardController;
 use App\Http\Controllers\Backoffice\Property\BuildingWizardController;
 use App\Http\Controllers\Backoffice\Property\LicenseWizardController;
 use App\Http\Controllers\Backoffice\Property\PropertyWizardController;
+use App\Http\Controllers\Backoffice\Property\LocationWizardController;
+use App\Http\Controllers\Backoffice\User\UserWizardController;
+use App\Http\Controllers\Frontend\ReportController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -42,6 +46,7 @@ Route::prefix('property/wizard')->group(function () {
     
     Route::resource('license', LicenseWizardController::class);
     Route::post('uploadlicense', [LicenseWizardController::class, 'uploadLicense']);
+    Route::get('locationindex', [LocationWizardController::class, 'locationIndex']);
 });
 
 Route::group(['prefix'=>'guestservice/wizard','as'=>'guestservice.wizard.'], function () {
@@ -57,6 +62,7 @@ Route::group(['prefix'=>'guestservice/wizard','as'=>'guestservice.wizard.'], fun
     Route::get('categoryname', [TaskListController::class, 'getCategoryName']);
 
     Route::resource('task', TaskController::class);
+    Route::get('taskindex', [TaskController::class, 'taskIndex']);
 
     Route::controller(EscalationController::class)->group(function () {
         Route::get('deptfunclist', 'deptFuncList');
@@ -70,13 +76,20 @@ Route::group(['prefix'=>'guestservice/wizard','as'=>'guestservice.wizard.'], fun
 
     Route::resource('shift', ShiftController::class);
     Route::resource('departfunc', DepartFuncController::class);
+    Route::get('deptfuncindex', [DepartFuncController::class, 'deptFuncIndex']);
 
     Route::resource('device', DeviceController::class);
     Route::controller(DeviceController::class)->group(function () {
         Route::get('devicelist', 'getDeviceList');
         Route::post('device/upload', 'upload');
         Route::post('device/storeng', 'storeng');
+        Route::get('deviceindex', 'deviceIndex');
     });
+
+    Route::resource('location', LocationController::class);
+    Route::post('location/list', [LocationController::class, 'getLocationList']);
+    Route::post('location/postlocation', [LocationController::class, 'postLocation']);
+    Route::get('locationgroupindex', [LocationController::class, 'locationGroupIndex']);
 });
 
 Route::prefix('configuration/wizard')->group(function () {
@@ -86,4 +99,10 @@ Route::prefix('configuration/wizard')->group(function () {
 
 Route::prefix('admin/wizard')->group(function () {
     Route::get('departmentlist', [DepartmentWizardController::class, 'getDepartmentList']);
+});
+
+Route::group(['prefix'=>'user/wizard','as'=>'user.wizard.'], function () {
+    Route::controller(UserWizardController::class)->group(function () {
+        Route::get('userindex', 'userIndex');
+    });
 });
