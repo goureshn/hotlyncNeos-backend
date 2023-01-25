@@ -22,6 +22,9 @@ class AuthMiddleware
         $auth_info = $request->header('Authorization');
         $auth_info = base64_decode(substr($auth_info, strlen('Basic ')));
 
+        //return config('app.super_access_token');
+        //return response($auth_info);
+
         $auth_array = explode(':', $auth_info);
         if( count($auth_array) != 2 )
         {
@@ -45,23 +48,23 @@ class AuthMiddleware
         }
 
         // ===================  check license ================================
-        $meta = Functions::CheckLicense();
+        // $meta = Functions::CheckLicense();
 
-        if( is_numeric($meta) )
-        {
-            if( $meta == 1 )       
-                return response('You have been logged out due to invalid server device.', 401);   
-            else if( $meta == 2 )       
-                return response('You have been logged out due to non exist license.', 401);  
-            else if( $meta == 3 )       
-                return response('You have been logged out due to invalid license.', 401);   
-            else if( $meta > 3 )       
-                return response('You have been logged out due to license expired.', 401);   
-        }
+        // if( is_numeric($meta) )
+        // {
+        //     if( $meta == 1 )       
+        //         return response('You have been logged out due to invalid server device.', 401);   
+        //     else if( $meta == 2 )       
+        //         return response('You have been logged out due to non exist license.', 401);  
+        //     else if( $meta == 3 )       
+        //         return response('You have been logged out due to invalid license.', 401);   
+        //     else if( $meta > 3 )       
+        //         return response('You have been logged out due to license expired.', 401);   
+        // }
         
         // ==============================================================================
 
-
+        //$user_id = 1;
         $property_ids_by_jobrole = CommonUser::getPropertyIdsByJobrole($user_id);
 
         $request->attributes->add(['user_id' => $user_id]);

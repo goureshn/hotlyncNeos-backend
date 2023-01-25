@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Backoffice\Property\PropertyWizardController;
 use App\Http\Controllers\Backoffice\Guest\HSKPController;
 use App\Http\Controllers\Backoffice\Property\LicenseWizardController;
 use App\Http\Controllers\DataController;
@@ -23,6 +24,11 @@ use Illuminate\Support\Facades\Route;
 // Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 //     return $request->user();
 // });
+
+Route::post('storelicense', [PropertyWizardController::class, 'storeLicense']);
+Route::post('licensekey', [PropertyWizardController::class, 'licenseKey']);
+
+Route::post('checklicense', [LicenseWizardController::class, 'checkLicense']);
 
 Route::get('/getcurrency', [DataController::class, 'getCurrency']);
 Route::any('/build/list', [DataController::class, 'getBuildList']);

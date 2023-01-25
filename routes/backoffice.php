@@ -13,6 +13,7 @@ use App\Http\Controllers\Frontend\GuestserviceController;
 use App\Http\Controllers\Backoffice\Admin\DepartmentWizardController;
 use App\Http\Controllers\Backoffice\Property\BuildingWizardController;
 use App\Http\Controllers\Backoffice\Property\LicenseWizardController;
+use App\Http\Controllers\Backoffice\Property\PropertyWizardController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -30,6 +31,11 @@ use Illuminate\Support\Facades\Route;
 // prefix => backoffice, middleware used => ['api', 'api_auth_group']
 
 Route::prefix('property/wizard')->group(function () {
+    
+    Route::controller(PropertyWizardController::class)->group(function () {
+        Route::post('storeproperty', 'storeProperty');
+    });
+
     Route::controller(BuildingWizardController::class)->group(function () {
         Route::get('buildlist', 'getBuildingList');
     });

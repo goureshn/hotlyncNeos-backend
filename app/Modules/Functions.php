@@ -42,6 +42,36 @@ class Functions
 	    return $ipaddress;
 	}
 
+	static function getNewLicenseInfo()
+	{	
+		$device_id =  Functions::getDeviceId();
+        if( empty($device_id) )       
+        {
+			return 1;
+        }
+		
+        $key = md5(config('app.key') . 'License');
+        $encrypter = new \Illuminate\Encryption\Encrypter( $key, "AES-256-CBC" );
+		
+		$license_path = Functions::GetLicensePath();
+		if( file_exists($license_path) == false )
+		{
+			return 2;
+		}
+        $ciphertext = file_get_contents($license_path);
+		// dd("hey");
+        $plaintext = $encrypter->decrypt( $ciphertext );
+		$meta = json_decode($plaintext);
+
+		// check device id and expire date
+        if( $meta->device_id != $device_id )       
+        {
+            return 3;
+		}
+		
+		return $meta;
+	}
+
 	static function GetLicensePath()
 	{
 		$license_path = config_path() . "/license.lic";

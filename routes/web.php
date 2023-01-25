@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Backoffice\Property\PropertyWizardController;
+use App\Http\Controllers\FrontendController;
+
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,6 +16,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::any('/' . config('app.frontend_url'), [FrontendController::class, 'index']);
+
 Route::get('/', function () {
-    return view('welcome');
+    return Redirect::to('/' . config('app.frontend_url'));
+    
+    //return view('welcome');
 });

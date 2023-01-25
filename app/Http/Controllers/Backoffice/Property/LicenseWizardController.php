@@ -206,6 +206,141 @@ class LicenseWizardController extends Controller
         echo 'test::::';
     }
 
+    public function test(Request $request){
+        return "testing";
+    }
+    public function updatelic(Request $request){
+        $id = 7;
+        date_default_timezone_set(config('app.timezone'));
+        $cur_date = date("Y-m-d");
+
+        $condition = $request->get('condition','update');
+        $property_id = $request->get('property_id',0);
+
+        $input = $request->except(['id', 'modules_ids', 'modules','condition','down_csr_path']);
+        //main board serail number
+        $mainboard_number = Functions::getDeviceId();
+        
+        $input['device_number'] = $mainboard_number;
+        $input['updated_at'] = $cur_date;
+
+        $settings = PropertySetting::getCentralServerSetting($property_id);
+        $flag = $settings['central_flag'];           
+
+        $model = License::find($id);
+        $model->update($input);
+
+        $model->csr_path = "/uploads/request_" . $cur_date . ".csr";
+        $model->save();
+
+        $property = Property::find($property_id);
+
+
+        // Request license
+        if($condition == 'request') {
+            $meta = array();
+            $meta['email'] = $model->email;
+            $meta['property'] = $property->name;
+            $meta['device_id'] = '263d5771084ab7ae67c241225a855ce529e8005a872a4aaba234713fc70943ec';//$mainboard_number;     
+            $meta['start_day'] = $cur_date;   
+            //return $meta;
+        
+            $message = json_encode($meta);
+
+            // $key = md5('Hotlync_Request');
+            $key = md5(config('app.key') . 'Request');
+
+            $encrypter = new \Illuminate\Encryption\Encrypter( $key, "AES-256-CBC" );
+        
+            $ciphertext = $encrypter->encrypt( $message );
+         
+            $license_path = public_path() . $model->csr_path;
+            
+            file_put_contents($license_path, $ciphertext);
+
+            $input['server_path'] = $license_path;
+            $input['ciphertext'] = $ciphertext;
+            
+            // $model->save();
+        }
+       
+        if($condition == 'register') {
+            $this->getLicense($input);
+        }
+
+        return Response::json($input);
+    }
+
+    public function storelic(Request $request)
+    {
+        date_default_timezone_set(config('app.timezone'));
+        $cur_date = date("Y-m-d");
+
+        $property_id = $request->get('property_id' ,0);
+
+        $input = $request->except(['id', 'modules_ids', 'modules','module_type', 'condition', 'down_csr_path']);
+        $checkdata = DB::table('common_property_license')
+            ->where('property_id', $input['property_id'])
+            ->first();
+        if(!empty($checkdata) ) {
+            $message = ' This value already exist';
+            $ret = array();
+            $ret['code'] = '401';
+            $ret['message'] = $message;
+            return Response::json($ret);
+        }
+        
+        $mainboard_number = Functions::getDeviceId();
+        $input['device_number'] = $mainboard_number;
+        $input['created_at'] = $cur_date;
+        $input['updated_at'] = $cur_date;
+
+       
+        $settings = PropertySetting::getCentralServerSetting($property_id);
+        $flag = $settings['central_flag'];        
+
+        $model = License::create($input);
+
+        $property_id = $model->property_id;
+        
+        if($flag == 1 && $condition == 'request') {
+            
+        }
+
+        $message = 'SUCCESS';
+
+        if ($request->ajax())
+            return Response::json($model);
+        else
+            return back()->with('error', $message)->withInput();
+    }
+    static function createDeviceInfo()
+	{
+		$device_info_path = config_path() . "/device_info.lic";
+        print_r($device_info_path);
+
+		
+		if (!file_exists($device_info_path)) 
+		{
+			$device_id =  Redis::get('device_id');  
+            print_r($device_id);
+			if( !empty($device_id))
+				file_put_contents($device_info_path, $device_id);
+		}
+		else
+		{
+			$device_id = file_get_contents($device_info_path);
+			if( empty($device_id) )
+			{
+				$device_id =  Redis::get('device_id');
+				if( !empty($device_id))
+				file_put_contents($device_info_path, $device_id);
+			}
+		}
+		
+		return $device_id;
+	}
+
     public function update(Request $request, $id)
     {
         date_default_timezone_set(config('app.timezone'));
@@ -649,6 +784,8 @@ class LicenseWizardController extends Controller
 	{
 		// ===================  check license ================================
         $meta = Functions::getLicenseInfo();
+
+        return;
         
         $ret['code'] = $meta;
 

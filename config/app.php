@@ -146,9 +146,10 @@ return [
     'super_user' => env('SUPER_USER', 'admin'),
     'super_password' => env('SUPER_PASSWORD', 'admin'),
     'super_access_token' => env('SUPER_ACCESS_TOKEN', 'SuperAdmin'),
+    'secure_server_url' => env('SECURE_SERVER_URL', 'http://securemobile2.myhotlync.com'),
 
     'interface_url' => env('INTERFACE_URL', 'http://localhost:3000/'),
-    'frontend_url' => env('FRONTEND_URL', 'hotlync'),
+    'frontend_url' => env('FRONTEND_URL', 'hotlync'),//hotlync/react
     'liveserver_url' => env('LIVESEVER', 'http://localhost:8001'),
     'db_swap_timeout' => env('DB_SWAP_TIMEOUT', 10),
 
