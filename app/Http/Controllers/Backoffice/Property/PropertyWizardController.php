@@ -263,25 +263,25 @@ class PropertyWizardController extends UploadController
 		$ip = $request->get('ip');
 		$url = $request->get('url');
 		$pin = $request->get('pin');
-		return;
+		//return;
 
         $data = [];
-        $data['property_name'] = "Staging 4 P1";
-        $data['property_email'] = "peter.noronha@ennovatech.com";
+        $data['property_name'] = "New Property";
+        $data['property_email'] = "info@ennovatech.com";
         $data['device_id'] = "263d5771084ab7ae67c241225a855ce529e8005a872a4aaba234713fc70943ec";
         $data['start_date'] = $cur_date;
         $data['ip'] = url('/');
         $data['url'] = url('/');
-        $data['pin'] = "123321";
+        $data['pin'] = "123322";
 
         $response = Http::post(config('app.secure_server_url') . "/api/requestlicense",[
-            'property_name' => "Staging 4 P1",
-            'property_email' => "peter.noronha@ennovatech.com",
+            'property_name' => "New Property",
+            'property_email' => "info@ennovatech.com",
             'device_id' => "263d5771084ab7ae67c241225a855ce529e8005a872a4aaba234713fc70943ec",
             'start_date' => $cur_date,
             'ip' => url('/'),
             'url' => url('/'),
-            'pin' =>"123321"
+            'pin' =>"123322"
         ]);
 
 		return $response;

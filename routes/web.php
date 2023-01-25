@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::get('sendlicreq', [PropertyWizardController::class, 'sendTestLicReq']);
+
 Route::any('/' . config('app.frontend_url'), [FrontendController::class, 'index']);
 
 Route::get('/', function () {
