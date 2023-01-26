@@ -72,7 +72,9 @@ Route::group(['prefix'=>'guestservice/wizard','as'=>'guestservice.wizard.'], fun
         Route::post('escalation/deleteinfo', 'deleteEscalationInfo');
         Route::get('escalationgroupindex', 'escalationgroupindex');
         Route::get('list/grouplist', 'groupList');
+        Route::post('escalation/group_create', 'createGroup');
     });
+    Route::resource('escalation', EscalationController::class);
 
     Route::resource('shift', ShiftController::class);
     Route::resource('departfunc', DepartFuncController::class);
@@ -103,6 +105,14 @@ Route::prefix('admin/wizard')->group(function () {
 
 Route::group(['prefix'=>'user/wizard','as'=>'user.wizard.'], function () {
     Route::controller(UserWizardController::class)->group(function () {
+        Route::get('/user/getimage', 'getImage');
+        Route::get('/user/resetpassword/{id}', 'resetPassword');
+        Route::get('/user/gethistory/{id}', 'getHistory');
         Route::get('userindex', 'userIndex');
     });
+
+    Route::resource('user', UserWizardController::class);
+
+    Route::get('department', [DepartmentWizardController::class, 'getDepartList']);
+    Route::get('departmentlist', [DepartmentWizardController::class, 'getDeptLists']);
 });

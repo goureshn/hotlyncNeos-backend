@@ -8,6 +8,7 @@
         "php": "^8.0.2",
         "consoletvs/charts": "6.*",
         "darkaonline/l5-swagger": "^8.4",
+        "fruitcake/laravel-cors": "^3.0",
         "guzzlehttp/guzzle": "^7.2",
         "ixudra/curl": "^6.22",
         "laravel/framework": "^9.19",

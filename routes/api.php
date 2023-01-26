@@ -3,6 +3,7 @@
 use App\Http\Controllers\Backoffice\Property\PropertyWizardController;
 use App\Http\Controllers\Backoffice\Guest\HSKPController;
 use App\Http\Controllers\Backoffice\Property\LicenseWizardController;
+use App\Http\Controllers\Backoffice\User\UserWizardController;
 use App\Http\Controllers\DataController;
 use App\Http\Controllers\GuestController;
 use App\Http\Controllers\Intface\ProcessController;
@@ -58,3 +59,6 @@ Route::controller(DataController::class)->group(function () {
     Route::get('/list/{name}', 'getList');
     
 });
+
+Route::get('backend_api/multipropertylist', [DataController::class, 'getMultiPropertyList']);//add
+Route::get('/backoffice/user/jobrole', [UserWizardController::class, 'getJobRoles']);//add
