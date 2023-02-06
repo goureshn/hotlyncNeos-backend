@@ -310,6 +310,12 @@ class DataController extends Controller
             case 'vips':
                 $model = DB::table('common_vip_codes')->get();
                 break;
+
+            case 'viplist':
+                $property_id = $request->property_id || 0;
+                $model = DB::table('common_vip_codes')->where('property_id', $property_id)->get();
+                break;
+
             case 'roomtype':
                 $model = DB::table('common_room_type')->get();
                 break;

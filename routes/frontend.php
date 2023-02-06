@@ -380,6 +380,7 @@ Route::prefix('eng')->group(function () {
         Route::any('deletefilefromworkorder', 'deleteFileFromWorkOrder');
         Route::any('updateworkorder', 'updateWorkorder');
         Route::any('deleteworkorder', 'deleteWorkorder');
+        Route::any('changeworkdate', 'changeWorkOrderDate');
     });
 
     Route::controller(ContractController::class)->group(function () {

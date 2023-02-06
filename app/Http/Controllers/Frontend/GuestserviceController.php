@@ -6544,6 +6544,7 @@ class GuestserviceController extends Controller
 		$checkout_flag = $request->get('checkout_flag', 'All');
 		$searchoption = $request->get('searchoption','');
 		$filter = $request->get('filter','');
+		$vip = $request->vip ?? 'show_all';
 
 		if($pageSize < 0 )
 			$pageSize = 20;
@@ -6557,6 +6558,8 @@ class GuestserviceController extends Controller
 				->join('common_vip_codes as vc', 'vc.vip_code', '=', 'cg.vip')
 				->leftJoin('common_guest_advanced_detail as gad', 'cg.id', '=', 'gad.id')
 				->where('cb.property_id', $property_id);
+		
+		if($vip !== 'show_all') $query->where('cg.vip', $vip);
 
 		// get building ids
 		$user_id = $request->get('user_id', 0);
@@ -6620,7 +6623,7 @@ class GuestserviceController extends Controller
 				->skip($skip)->take($pageSize)
 				->get();
 
-				foreach($alarm_list as $key => $row) {
+		foreach($alarm_list as $key => $row) {
 			$alarm_list[$key]->active_fac = GuestLog::activeList($row->id);
 		}
 
