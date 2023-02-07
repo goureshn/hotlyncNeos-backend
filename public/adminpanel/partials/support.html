@@ -1,0 +1,235 @@
+<style type="text/css">    
+    .modal-lg {
+        width: 850px;
+        margin-top: 50px;
+    }
+</style>
+
+<input type="hidden" id="id" value="-1" ng-model="model_data.id"/>
+
+<div class="panel panel-default">
+    <div class="panel-heading wrapper">
+        <button type="button" class="btn btn-success btn-sm" style="float:right; margin-top: -5px" data-toggle="modal" data-target="#addModal" ng-disabled="job_role!='SuperAdmin'&&edit_flag==0" ng-click="onShowEditRow(-1)">
+            <span class="glyphicon glyphicon-plus"></span>
+            <b> Add New </b>
+        </button>
+        <i class="fa fa-bank"></i>
+        <span class="font-bold">Support</span>
+    </div>
+    <div>
+        <table id="table_grid" class="table table-hover table-bordered" style="text-align: center; width:100%" ng-model = "table_grid" >
+            <thead>
+            <tr>                
+                <th  style="text-align: center" ng-repeat = "field in fields">
+                    <b>{{field}}</b>
+                </th>
+                <th class="no-sort" style="text-align: center">Edit</th>
+            </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="panel">
+            <div class="modal-header bg">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h5 class="modal-title font-bold" style="color:#2691d9" ng-if="model_data.id<0">
+                    <i class="fa fa-plus"></i>&nbsp;Add Support</h5>
+                <h5 class="modal-title font-bold" style="color:#2691d9" ng-if="model_data.id>=0">
+                    <i class="fa fa-pencil"></i>&nbsp;Edit Support </h5>
+            </div>
+            <!--add  user insterface -->
+            <div class="modal-body" ng-if="model_data.id<0">
+                <br>
+                <form class="form-horizontal" required >
+                    <div class="form-group">
+                        <label class="col-sm-offset-3" style="padding-left:10px;color: #d6421a; font-size: 12px; ">{{error}}</label>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-sm-1" for="Property">Property</label>
+                        <div class="col-sm-5">
+                            <select id='prpty_id' class='form-control' ng-model="model_data.property_id"
+                                    ng-options="value.id as value.name for (key, value) in properties">
+                            </select>
+                        </div>
+                        <label class="control-label col-sm-1" for="Module">Module:</label>
+                        <div class="col-sm-5">
+                            <select id='prpty_id' class='form-control' ng-model="model_data.module_id"
+                                    ng-options="value.id as value.name for (key, value) in modules">
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-sm-1" for="Subject">Subject:</label>
+                        <div class="col-sm-5">
+                            <input type="text" class="form-control" ng-model="model_data.subject" required />
+                        </div>
+                        <label class="control-label col-sm-1" for="Module">Severity:</label>
+                        <div class="col-sm-5">
+                            <select id='prpty_id' class='form-control' ng-model="model_data.severity"
+                                    ng-options="value for value in severities">
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-sm-1" for="Subject">Email:</label>
+                        <div class="col-sm-5">
+                            <input type="text" class="form-control" ng-model="model_data.from_email" required />
+                        </div>
+                        <label class="control-label col-sm-1" for="Module">CC:</label>
+                        <div class="col-sm-5">
+                            <input type="text" class="form-control"  ng-model="model_data.cc_email"  required />
+                            <span class="help-block m-b-none text-muted text-xs" style="font-style: italic">
+                                Add multiple e-mails separated by comma. eg: email1@domain.com, email2@domain.com
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-group" ng-include="'/adminpanel/partials/fragments/uploadimg.html'"></div>
+                    <div class="col-md-12" style="clear:both;margin-bottom: 20px" ng-include="'/adminpanel/partials/fragments/uploader.html'"></div>
+                    <div class="form-group">
+                         <label class="control-label col-sm-1" >Issue :</label>
+                        <div class="col-sm-11">
+                             <textarea class="form-control input-sm" rows=3" ng-model="model_data.issue" style="resize:none"></textarea>                            
+                        </div>                        
+                    </div>
+                </form>
+            </div> 
+            <!--edit interface-->
+            <div class="modal-body" ng-if="model_data.id>=0" ng-click="dbClickEmail()" >
+                <br>
+                <form class="form-horizontal" required >
+                    <div class="form-group">
+                        <label class="col-sm-offset-3" style="padding-left:10px;color: #d6421a; font-size: 12px; ">{{error}}</label>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-sm-1" for="Property">Property</label>
+                        <div class="col-sm-5">
+                            <input type="text" class="form-control" ng-model="model_data.cpname" readonly required />
+                        </div>
+                        <label class="control-label col-sm-1" for="Module">Module:</label>
+                        <div class="col-sm-5">
+                            <input type="text" class="form-control" ng-model="model_data.cmname" readonly required />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-sm-1" for="Subject">Subject:</label>
+                        <div class="col-sm-5">
+                            <input type="text" class="form-control" ng-model="model_data.subject" readonly required />
+                        </div>
+                        <label class="control-label col-sm-1" for="Module">Severity:</label>
+                        <div class="col-sm-5">
+                           <input type="text" class="form-control" ng-model="model_data.severity" readonly required />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-sm-1" for="Subject">Email:</label>
+                        <div class="col-sm-5">
+                            <input type="text" class="form-control" ng-model="model_data.from_email" readonly required />
+                        </div>
+                        <label class="control-label col-sm-1" for="Module">CC:</label>
+                        <div class="col-sm-5">
+                            <input type="text" class="form-control" ng-dblclick="dbClickEmail()" ng-click = "$event.stopPropagation();" ng-readonly="cc_email" ng-model="model_data.cc_email" required />
+                            <span class="help-block m-b-none text-muted text-xs" style="font-style: italic">
+                                Add multiple e-mails separated by comma. eg: email1@domain.com, email2@domain.com
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-group">                       
+                        <label class="control-label col-sm-1" for="Module">Status:</label>
+                        <div class="col-sm-5">
+                            <select class='form-control' ng-model="model_data.status" ng-click = "$event.stopPropagation();"
+                                    ng-options="value for value in statuses">
+                            </select>
+                        </div>
+                    </div>
+                    <!-- <div class="form-group" ng-include="'/adminpanel/partials/fragments/uploadimg.html'"></div> -->
+                    <div class="col-md-12" style="clear:both;margin-bottom: 20px" ng-include="'/adminpanel/partials/fragments/uploader.html'"></div>
+                    <div class="form-group">
+                         <label class="control-label col-sm-1" >Issue:</label>
+                        <div class="col-sm-11">
+                             <textarea class="form-control input-sm" rows="3" ng-model="model_data.issue" readonly style="resize:none"></textarea>                            
+                        </div>                        
+                    </div>
+                    <div class="form-group" ng-repeat="row in model_data.message_list">
+                        <div class="text-right" ng-if="row.option == 'support'">                            
+                            <div class="col-sm-10 col-sm-offset-1"  >
+                                <div >{{row.message}}</div>
+                                <div class="text-xs text-primary">{{row.first_name}} &nbsp;&nbsp;{{row.last_name}}&nbsp;&nbsp;{{row.created_at}}</div>
+                            </div> 
+                            <label class="control-label col-sm-1" >
+                                <i class="fa fa-envelope"  aria-hidden="true"></i>
+                            </label>                               
+                        </div>
+                        <div class="text-left" ng-if="row.option == 'user'">
+                            <label class="control-label col-sm-1" >
+                                <i class="fa fa-envelope" aria-hidden="true"></i>
+                            </label>
+                            <div class="col-sm-10">
+                                <div >{{row.message}}</div>
+                                <div class="text-xs text-primary">{{row.first_name}} &nbsp;&nbsp;{{row.last_name}}&nbsp;&nbsp;{{row.created_at}}</div>
+                            </div>                                
+                        </div>                        
+                    </div>
+                    <div class="form-group">
+                         <label class="control-label col-sm-1" >message:</label>
+                        <div class="col-sm-11">
+                             <textarea class="form-control input-sm" rows="2" ng-dbclick = "$event.stopPropagation();" ng-click = "$event.stopPropagation();" ng-model="model_data.message" style="resize:none"></textarea>                            
+                        </div>                        
+                    </div>
+                    <div class="form-group">
+                       <div class="col-sm-2 col-sm-offset-10 text-right">
+                         <button type="button" class="btn btn-success btn-sm"  data-ng-click="sendMessage()">
+                            <span class="glyphicon glyphicon-ok"></span>
+                            <b> Send Message</b>
+                        </button>       
+                       </div> 
+                    </div>
+                    <div>
+                        <i class="fa fa-refresh"></i> History
+                    </div>
+                    <div style="height:200px; overflow-y:auto;">
+                        <table style="width:100%;" class="table ticket table-striped b-t b-light">
+                            <thead>
+                                <tr class="tblhead-sm">
+                                    <th class="text-center" style="width:10%"><b>ID</b></th>
+                                    <th class="text-center" style="width:40%"><b>Date&Time</b></th>
+                                    <th class="text-center" style="width:20%"><b>Action</b></th>
+                                    <th class="text-center" style="width:30%"><b>User</b></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="" ng-repeat="row in historylist">
+                                    <td class="text-center" >{{row.id}}</td>
+                                    <td class="text-center" >{{row.created_at }}</td>
+                                    <td class="text-center" >{{row.status }}</td>
+                                    <td class="text-center" ng-if="row.user_id == 0 " >Super Admin</td>
+                                    <td class="text-center" ng-if="row.user_id != 0 " >
+                                     {{row.name}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                    </div>
+
+                </form>
+            </div>     
+            <!---->           
+            <div class="modal-footer ">
+                <button type="button" ng-if="model_data.id < 0" class="btn btn-success btn-sm"  data-ng-click="onUpdateRow()">
+                    <span class="glyphicon glyphicon-ok"></span>
+                    <b> Save</b>
+                </button>
+                <button  type="button" class="btn btn-danger btn-sm" data-dismiss="modal">
+                    <span class="glyphicon glyphicon-remove"></span>
+                    <b> Cancel</b>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<dialog-delete title="Property" modelname="model_data.name" deletedata="deleteRow()"></dialog-delete>

@@ -1,0 +1,829 @@
+<style>
+	p::first-letter {
+		text-transform: capitalize;
+	}
+	.text-xs {
+	  margin-bottom: 0px;
+	  margin-top: 0px;
+	}
+	tags-input .tags {
+	font-size: 12px;
+	}
+
+</style>
+
+<uib-accordion close-others="false" >
+	<div class="wrapper">		
+		<!-- - - - - - REQUEST DETAIL - - - - - -->		
+		<div class="panel panel-default" style="border-radius: 4px">
+			<div class="panel-heading">
+				<div class="pull-left">
+				<label class="font-bold text-sm"><i class="fa fa-user-circle-o text-default"></i>&nbsp;&nbsp;Request Party Details</label>
+				</div>
+			<br>
+			</div>
+			
+			<div class="panel-body">
+				<form class="form-horizontal form-validation" >
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">Company</label>
+						<div>
+						<label  class="text-sm font-bold">{{complaint.request_company}}</label>
+						
+						</div>
+					</div>
+					
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">Permit No</label>
+						<div>
+						<label class="text-sm font-bold">{{::complaint.request_permit}}</label>
+					
+						</div>
+						
+					</div>
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">Location</label>
+						<div>
+					    <label class="text-sm font-bold">{{::complaint.request_location}}</label>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+		
+		<!-- - - - - - /REQUEST DETAIL - - - - - -->
+
+		<!-- - - - - THIRD DETAIL - - - - -->
+
+		<div class="panel panel-default" style="border-radius: 4px">
+			<div class="panel-heading">
+				<div class="pull-left">
+				<label class="font-bold text-sm"><i class="fa fa-info-circle text-default"></i>&nbsp;&nbsp;Risk Assessment</label>
+				</div>
+			<br>
+			</div>
+			
+			<div class="panel-body">
+				<form class="form-horizontal form-validation" >
+					<div class="col-sm-12">
+						<label class="control-label text-xs text-muted">Less Hazardous methods considered?&nbsp;&nbsp;&nbsp;&nbsp;</label>
+						<label ng-show = "complaint.less_hazard" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;Yes</label>
+						<label ng-show = "!complaint.less_hazard" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;No</label>	
+					</div>
+					<div ng-show = "!complaint.less_hazard" class="col-sm-12">
+						<label class="control-label text-xs text-muted">Reason</label>
+						<div>
+						<label class="text-sm font-bold">{{::complaint.hzrd_desc}}</label>
+						</div>	
+					</div>
+					<div class="col-sm-12">
+						<label class="control-label text-xs text-muted">Project specific method statement used and copy attached?&nbsp;&nbsp;&nbsp;&nbsp;</label>
+						<label ng-show = "complaint.project" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;Yes</label>
+						<label ng-show = "!complaint.project" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;No</label>	
+					</div>
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">Work By?&nbsp;&nbsp;&nbsp;&nbsp;</label>
+						<label ng-show = "complaint.in_house" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;In-House Staff</label>
+						<label ng-show = "complaint.contractor" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;Contractor</label>	
+					</div>
+					<div ng-show = "complaint.contractor" class="col-sm-6">
+						<label class="control-label text-xs text-muted">Contractor Name</label>
+						
+						<label class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;{{::complaint.cont_name}}</label>
+							
+					</div>
+					<div class="col-sm-12">
+						<label class="control-label text-xs text-muted">Supervisor and Worker qualification verified?&nbsp;&nbsp;&nbsp;&nbsp;</label>
+						<label ng-show = "complaint.verify" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;Yes</label>
+						<label ng-show = "!complaint.verify" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;No</label>	
+					</div>
+					<div class="line line-dashed b-b"></div>
+					<div><label class="control-label text-xs text-muted font-bold pull-left">Work Area Risk Assessment</label></div><br><br>
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">Completed By</label>
+						<div>
+					    <label class="text-sm font-bold">{{::complaint.completed_by}}</label>
+						</div>
+					</div>
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">Position</label>
+						<div>
+					    <label class="text-sm font-bold">{{::complaint.position}}</label>
+						</div>
+					</div> 
+					<div class="col-sm-12">
+						<label class="control-label text-xs text-muted"><b>a.</b>&nbsp;&nbsp;Work area is not a "hot work permitted" area?&nbsp;&nbsp;&nbsp;&nbsp;</label>
+						<label ng-show = "complaint.permit_area" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;Yes</label>
+						<label ng-show = "!complaint.permit_area" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;No</label>	
+					</div> 
+					<div class="col-sm-12">
+						<label class="control-label text-xs text-muted"><b>b.</b>&nbsp;&nbsp;Automatic sprinkler fully operational?&nbsp;&nbsp;&nbsp;&nbsp;</label>
+						<label ng-show = "complaint.sprinkler" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;Yes</label>
+						<label ng-show = "!complaint.sprinkler" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;No</label>	
+					</div> 
+					<div class="col-sm-12">
+						<label class="control-label text-xs text-muted"><b>c.</b>&nbsp;&nbsp;Hot work equipment is functional,secure and in good repair?&nbsp;&nbsp;&nbsp;&nbsp;</label>
+						<label ng-show = "complaint.equipment" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;Yes</label>
+						<label ng-show = "!complaint.equipment" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;No</label>	
+					</div> 
+					<div class="col-sm-12">
+						<label class="control-label text-xs text-muted"><b>d.</b>&nbsp;&nbsp;Within 10m (35ft) of the work area:&nbsp;&nbsp;&nbsp;&nbsp;</label>
+					</div> 
+					<div class="col-sm-12">
+						<label class="control-label text-xs text-muted"><b>&nbsp;&nbsp;1)</b>&nbsp;&nbsp;Flammable liquids removed?&nbsp;&nbsp;&nbsp;&nbsp;</label>
+						<label ng-show = "complaint.flammable" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;Yes</label>
+						<label ng-show = "!complaint.flammable" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;No</label>	
+					</div> 
+					<div class="col-sm-12">
+						<label class="control-label text-xs text-muted"><b>&nbsp;&nbsp;2)</b>&nbsp;&nbsp;Combustible materials removed or covered with fire resisting materials?&nbsp;&nbsp;&nbsp;&nbsp;</label>
+						<label ng-show = "complaint.combustible" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;Yes</label>
+						<label ng-show = "!complaint.combustible" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;No</label>	
+					</div> 
+					<div class="col-sm-12">
+						<label class="control-label text-xs text-muted"><b>&nbsp;&nbsp;3)</b>&nbsp;&nbsp;Floors swept and overhead structure clean from dust,lint and debris?&nbsp;&nbsp;&nbsp;&nbsp;</label>
+						<label ng-show = "complaint.cleaning" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;Yes</label>
+						<label ng-show = "!complaint.cleaning" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;No</label>	
+					</div> 
+					<div class="col-sm-12">
+						<label class="control-label text-xs text-muted"><b>&nbsp;&nbsp;4)</b>&nbsp;&nbsp;Floor and wall openings protected against spread of sparks and embers?&nbsp;&nbsp;&nbsp;&nbsp;</label>
+						<label ng-show = "complaint.floor_protect" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;Yes</label>
+						<label ng-show = "!complaint.floor_protect" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;No</label>	
+					</div> 
+					<div class="col-sm-12">
+						<label class="control-label text-xs text-muted"><b>e.</b>&nbsp;&nbsp;Does work involve enclosed equipment?&nbsp;&nbsp;&nbsp;&nbsp;</label>
+						<label ng-show = "complaint.enclose" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;Yes</label>
+						<label ng-show = "!complaint.enclose" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;No</label>	
+					</div> 
+					<div class="col-sm-12">
+						<label class="control-label text-xs text-muted"><b>&nbsp;&nbsp;1)</b>&nbsp;&nbsp;Adequate ventilation provided?&nbsp;&nbsp;&nbsp;&nbsp;</label>
+						<label ng-show = "complaint.ventilation" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;Yes</label>
+						<label ng-show = "!complaint.ventilation" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;No</label>	
+					</div> 
+					<div class="col-sm-12">
+						<label class="control-label text-xs text-muted"><b>&nbsp;&nbsp;2)</b>&nbsp;&nbsp;Thoroughly cleaned to remove all flammables and combustibles?&nbsp;&nbsp;&nbsp;&nbsp;</label>
+						<label ng-show = "complaint.clean_flame" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;Yes</label>
+						<label ng-show = "!complaint.clean_flame" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;No</label>	
+					</div> 
+					<div class="col-sm-12">
+						<label class="control-label text-xs text-muted"><b>&nbsp;&nbsp;3)</b>&nbsp;&nbsp;Flammable vapours purged?&nbsp;&nbsp;&nbsp;&nbsp;</label>
+						<label ng-show = "complaint.vapours" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;Yes</label>
+						<label ng-show = "!complaint.vapours" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;No</label>	
+					</div> 
+					<div class="col-sm-12">
+						<label class="control-label text-xs text-muted"><b>&nbsp;&nbsp;4)</b>&nbsp;&nbsp;Purging and ventilation verified with gas detector?&nbsp;&nbsp;&nbsp;&nbsp;</label>
+						<label ng-show = "complaint.detector" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;Yes</label>
+						<label ng-show = "!complaint.detector" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;No</label>	
+					</div> 
+					<div class="col-sm-12">
+						<label class="control-label text-xs text-muted"><b>f.</b>&nbsp;&nbsp;Fire watch (provided during and after hot work):&nbsp;&nbsp;&nbsp;&nbsp;</label>
+					</div> 
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">No.of personnel</label>
+						<div>
+					    <label class="text-sm font-bold">{{::complaint.personnel}}</label>
+						</div>
+					</div>
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">Location</label>
+						<div>
+					    <label class="text-sm font-bold">{{::complaint.loc_watch}}</label>
+						</div>
+					</div>
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">First-aid Fire Fighting Equipment</label>
+						<div>
+					    <label class="text-sm font-bold">{{::complaint.first_aid}}</label>
+						</div>
+					</div>
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">Duration</label>
+						<div>
+							<label ng-show = "complaint.thirty_min" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;30 min</label>
+							<label ng-show = "complaint.sixty_min" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;60 min</label>
+							<label ng-show = "complaint.exceed" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;>60 min</label>
+						</div>
+					</div>
+					<div class="col-sm-12">
+						<label class="control-label text-xs text-muted"><b>g.</b>&nbsp;&nbsp;Additional precaution required for this job:&nbsp;&nbsp;&nbsp;&nbsp;</label>
+						<label class="text-sm font-bold">{{::complaint.precaution}}</label>	
+					</div> 	    
+				</form>
+			</div>
+		</div>	
+		<!-- - - - - /THIRD DETAIL - - - - -->
+
+
+		<!-- - - - - WORKER DETAIL - - - - -->
+
+		<div class="panel panel-default" style="border-radius: 4px">
+			<div class="panel-heading">
+				<div class="pull-left">
+				<label class="font-bold text-sm"><i class="fa fa-user-circle-o text-default"></i>&nbsp;&nbsp;Worker Acknowledgement</label>
+				</div>
+			<br>
+			</div>
+			
+			<div class="panel-body">
+				<form class="form-horizontal form-validation" >
+					<div class="col-sm-12">
+						<label class="control-label text-xs text-muted">Worker and Fire Watch been briefed on precautions and emergency procedures?&nbsp;&nbsp;&nbsp;&nbsp;</label>
+						<label ng-show = "complaint.briefed" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;Yes</label>							
+						<label ng-show = "!complaint.briefed" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;No</label>	
+					</div>
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">Worker Name</label>
+						<div>
+							<label class="text-sm font-bold">{{::complaint.worker_name}}</label>
+						</div>
+					</div>
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">Position</label>
+						<div>
+						<label class="text-sm font-bold">{{::complaint.worker_pos}}</label>
+						</div>	
+					</div>
+					<div class="col-sm-6">
+							<label class="control-label text-xs text-muted">Date</label>
+							<div>
+							<label class="text-sm font-bold">{{::complaint.request_date |mydatetime : 'D MMM YYYY hh:mm a'}}</label>
+							</div>	
+						</div>
+					                
+					    
+				</form>
+			</div>
+		</div>
+
+		<!-- - - - - /WORKER DETAIL - - - - -->
+
+		
+		<!-- - - - - AUTHORIZE DETAIL - - - - -->
+
+		<div class="panel panel-default col-sm-12" style="border-radius: 4px; padding:0px;">
+				<div class="panel-heading">
+					<div class="pull-left">
+						<label class="font-bold text-sm"><i class="fa fa-user-circle-o text-default"></i>&nbsp;&nbsp;Authorization</label>
+					</div><br>
+				</div>
+				<div class="panel-body" style="padding: 5px 0px">
+					<form class="form-horizontal form-validation">
+						<div ng-show = "!complaint.auth_by">
+							<div class="col-sm-12">
+								<label class="md-check " style="margin-top:10px;margin-right: 30px">
+									<input type="checkbox" ng-model = "complaint.method" ><i class="blue"></i>Work method assessment approved
+								</label>
+								<label class="md-check" style="margin-top:10px;margin-right: 30px">
+									<input type="checkbox" ng-model = "complaint.risk" ><i class="blue"></i>Work area risk assessment approved 
+								</label><br>
+							</div><br>
+							<div class="col-sm-6">
+								<label class="control-label text-xs">Work Location<i class="text-danger">*</i></label>
+								<div>
+									<input class='form-control input-sm' ng-model = "complaint.work_loc"  type="text">
+								</div>
+							</div>
+							<div class="col-sm-6">
+								<label class="control-label text-xs">Work Description<i class="text-danger">*</i></label>
+								<div>
+									<input class='form-control input-sm' ng-model = "complaint.work_desc" type="text">
+								</div>
+							</div><br>
+							<label class="control-label text-xs" style="margin-left: 15px">Permit valid for work on:</label><br>
+							<div class="col-sm-6">
+								<label class="control-label text-xs">Date<i class="text-danger">*</i></label>
+								<div class = "dropdown">
+									<a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+										<div class="input-group">
+											<input type="text" class="form-control" ng-model="complaint.work_date">
+											  <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+										</div>
+									</a>
+									<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel" >
+										 <datetimepicker ng-model="complaint.workdatepicker" data-datetimepicker-config="{ dropdownSelector: '#dropdown2'}"
+											data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+									</ul>
+								</div>
+							</div>
+							<div class="col-sm-3">
+								<label class="control-label text-xs ">Start Time<i class="text-danger">*</i></label>
+								<div class = "dropdown">
+									<a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+										<div class="input-group">
+											<input type="text" class="form-control" ng-model="complaint.start_time">
+											  <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+										</div>
+									</a>
+									<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel" >
+										 <datetimepicker ng-model="complaint.starttimepicker" data-datetimepicker-config="{ dropdownSelector: '#dropdown2'}"
+											data-before-render="beforeRender1($view, $dates, $leftDate, $upDate, $rightDate)"/>
+									</ul>
+								</div>
+							</div>
+							<div class="col-sm-3">
+								<label class="control-label text-xs ">End Time<i class="text-danger">*</i></label>
+								<div class = "dropdown">
+									<a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+										<div class="input-group">
+											<input type="text" class="form-control" ng-model="complaint.end_time">
+											  <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+										</div>
+									</a>
+									<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel" >
+										 <datetimepicker ng-model="complaint.endtimepicker" data-datetimepicker-config="{ dropdownSelector: '#dropdown2'}"
+											data-before-render="beforeRender1($view, $dates, $leftDate, $upDate, $rightDate)"/>
+									</ul>
+								</div>
+							</div><br><br>
+							<label class="control-label text-xs" style="margin-left: 15px">Specify frequency of inspections made by the Supervisor during the hot work and the fire watch:</label><br>
+							<label class="control-label text-xs" style="margin-left: 15px">Frequency: Continous</label><br><br>
+						   
+							<div class="col-sm-12" style="margin-left: 30px">
+								<input type="radio" ng-model="complaint.duration" style="margin-left: 30px" value="fifteen min">&nbsp;&nbsp;&nbsp;&nbsp;15 minutes
+								<input type="radio" ng-model="complaint.duration" style="margin-left: 30px" value="thirty min">&nbsp;&nbsp;&nbsp;&nbsp;30 minutes
+								<input type="radio" ng-model="complaint.duration" style="margin-left: 30px" value="sixty min">&nbsp;&nbsp;&nbsp;&nbsp;60 minutes
+								
+								
+							</div><br>                
+							<div class = "col-sm-12" style="margin-left: 30px">
+									<input type="radio" ng-model="complaint.duration"  style="margin-left: 30px" value="other">&nbsp;&nbsp;&nbsp;&nbsp;Other<br><br>
+								<div class = "col-sm-11">
+									<input  ng-show="complaint.duration == 'other'"  style="margin-left: 30px" class='form-control input-sm' ng-model = "complaint.other_desc" type="text">
+								</div>
+							</div><br><br>
+							
+							<div class="col-sm-6"> 
+								<label class="control-label text-xs">Authorizer Name<i class="text-danger">*</i></label>
+								<div>
+									<input class='form-control input-sm' type="text" ng-model = "complaint.auth_name">
+								</div>
+							</div>
+							<div class="col-sm-6"> 
+								<label class="control-label text-xs">Position<i class="text-danger">*</i></label>
+								<div>
+									<input class='form-control input-sm' type="text" ng-model = "complaint.auth_pos">
+								</div>
+							</div>
+							<div class="col-sm-6">
+								<label class="control-label text-xs">Date<i class="text-danger">*</i></label>
+								<div class = "dropdown">
+									<a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+										<div class="input-group">
+											<input type="text" class="form-control" ng-model="complaint.auth_date">
+											  <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+										</div>
+									</a>
+									<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel" >
+										 <datetimepicker ng-model="complaint.authdatepicker" data-datetimepicker-config="{ dropdownSelector: '#dropdown2'}"
+											data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+									</ul>
+								</div>
+							</div>
+							<div class="col-sm-6">
+									<label class="control-label text-xs" >Signature</label>
+									
+										<label class="i-switch m-t-xs m-r" style="margin-left:20px;margin-top: 20px;margin-bottom:3px">
+											<input type="checkbox" ng-model="complaint.auth_sign" checked>
+											<i></i>
+										</label>
+									
+							</div>
+						</div>
+							<div ng-show = "complaint.auth_by">
+									<div class="col-sm-6">
+											<label class="control-label text-xs text-muted">Work merhod assessment approved:&nbsp;&nbsp;&nbsp;&nbsp;</label>
+											<label ng-show = "complaint.method" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;Yes</label>							
+											<label ng-show = "!complaint.method" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;No</label>	
+									</div>
+									<div class="col-sm-6">
+											<label class="control-label text-xs text-muted">Work area risk assessment approved:&nbsp;&nbsp;&nbsp;&nbsp;</label>
+											<label ng-show = "complaint.risk" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;Yes</label>							
+											<label ng-show = "!complaint.risk" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;No</label>	
+										</div>
+									<div class="col-sm-6">
+											<label class="control-label text-xs text-muted">Work Location</label>
+											<div>
+												<label class="text-sm font-bold">{{complaint.work_loc}}</label>
+											</div>
+										</div>
+										<div class="col-sm-6">
+											<label class="control-label text-xs text-muted">Work Description</label>
+											<div>
+												<label class="text-sm font-bold">{{::complaint.work_desc}}</label>
+											</div>
+										</div>
+										<div><label class="control-label text-xs text-muted font-bold">&nbsp;&nbsp;&nbsp;Permit valid for work on:</label></div>
+										<div class="col-sm-6">
+											<label class="control-label text-xs text-muted">Date</label>
+											<div>
+												<label class="text-sm font-bold">{{::complaint.work_date |mydatetime : 'D MMM YYYY hh:mm a'}}</label>
+											</div>
+										</div>
+										<div class="col-sm-3">
+												<label class="control-label text-xs text-muted">Start Time</label>
+												<div>
+												<label class="text-sm font-bold">{{::complaint.start_time}}</label>
+												</div>
+										</div>
+										<div class="col-sm-3">
+												<label class="control-label text-xs text-muted">End Time</label>
+												<div>
+												<label class="text-sm font-bold">{{::complaint.end_time}}</label>
+												</div>
+										</div>
+										<div class="col-sm-6">
+												<label class="control-label text-xs text-muted">Frequency(in min)</label>
+												<div>
+												<label  ng-show = "complaint.duration != 'other'" class="text-sm font-bold">{{::complaint.duration}}</label>
+												<label  ng-show = "complaint.duration == 'other'" class="text-sm font-bold">{{::complaint.other_desc}}</label>
+												</div>
+										</div>
+										<div class="col-sm-6">
+												<label class="control-label text-xs text-muted">Authorizer Name</label>
+												<div>
+													<label class="text-sm font-bold">{{complaint.auth_name}}</label>
+												</div>
+											</div>
+											<div class="col-sm-6">
+												<label class="control-label text-xs text-muted">Authorizer Position</label>
+												<div>
+													<label class="text-sm font-bold">{{::complaint.auth_pos}}</label>
+												</div>
+											</div>
+											<div class="col-sm-6">
+													<label class="control-label text-xs text-muted">Date</label>
+													<div>
+														<label class="text-sm font-bold">{{::complaint.auth_date |mydatetime : 'D MMM YYYY hh:mm a'}}</label>
+													</div>
+											</div>
+							</div>
+						</form><br><br>
+				</div><br><br>
+		</div></br></br>
+			
+		<!-- - - - -/ AUTHORIZE DETAIL - - - - -->
+
+		<!--- - - - - - PERIODIC WORK AREA INSPECTIONS - - - - - - - - - -->
+		<div class="panel panel-default col-sm-12" style="border-radius: 4px; padding:0px;" ng-show = "complaint.auth_by">
+			<div class="panel-heading">
+					<label class="font-bold text-sm"><i class="fa fa-user-circle-o text-default pull-left"></i>&nbsp;&nbsp;Periodic Work Area Inspections (completed by supervisor)</label>
+					<i ng-show = "!inspect_by" class="fa fa-plus-circle fa-2x text-success ng-click-active pull-right" style="cursor: pointer" title="Add" ng-click="addInspectTime()"></i>	
+			</div>
+			<div class="panel-body" style="padding: 5px 0px">
+				<div ng-show = "!inspect_by">
+				<form class="form-horizontal form-validation">
+				
+						<div class="col-sm-6">
+								<label class="control-label text-xs ">Inspection Time</label>
+								<div class = "dropdown">
+									<a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+										<div class="input-group">
+											<input type="text" class="form-control" ng-model="inspection.inspect_time">
+											  <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+										</div>
+									</a>
+									<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel" >
+										 <datetimepicker ng-model="inspection.inspecttimepicker" data-datetimepicker-config="{ dropdownSelector: '#dropdown2'}"
+											data-before-render="beforeRender1($view, $dates, $leftDate, $upDate, $rightDate)"/>
+									</ul>
+								</div>
+						</div>
+						<div class="col-sm-6 ">
+							<label class ="control-label"  style="margin-left: 50px">Work In</label>
+							<div  style="margin-left: 20px">
+								<input type="radio" ng-model="inspection.work_in" style="margin-left: 30px" value="Yes">&nbsp;&nbsp;&nbsp;&nbsp;Yes
+								<input type="radio" ng-model="inspection.work_in" style="margin-left: 30px" value="No">&nbsp;&nbsp;&nbsp;&nbsp;No
+						
+							</div><br>   
+						</div>
+				</form>
+				<div class="line line-dashed b-b"></div>
+				<div class="col-centered"  class="line-sm" style="width:99%; z-index:3">
+						<div class="panel panel-default" style="margin-left: 10px;">
+							<div class="panel-heading">
+								<label class="font-bold">Inspection List</label>
+							</div>
+							<div class="panel-body">	
+								<form class="form-horizontal form-validation">
+									<div class="form-group label-group" style="width:98%; margin:auto" ng-repeat="task in tasks">
+										<div class="form-group col-md-10">
+											<div class="col-md-4">
+												<span class="pull-left" style="margin-left: 3px" >{{task.inspect_time}}</span>
+											 </div>
+											<div class="col-md-4 ">
+												  <span class="pull-left" style="margin-left: 3px" >{{task.work_in}}</span>
+											</div>
+										</div>
+										
+										<div class="form-group col w-xs col-md-1">
+											  <span class="glyphicon icon-close pull-right" style="margin-top:3px;margin-right: 10px; color: red" ng-click="removeTask()"></span>
+										</div>
+									</div>
+								</form>
+							</div>
+						</div>
+				</div><br>
+				</div>
+				<div ng-show = "inspect_by">
+						<div class="table  table-responsive" additional-padding="40" style="margin-bottom: 10px;">
+								<table class="table ticket" st-pipe="inspectlist" st-table="datalist">
+									<thead class="tblhead-sm" style="background: #a7bccf;">
+												<tr>
+												  <th class="text-center"  style="width: 30%">&nbsp;&nbsp;Inspection Time</th>
+												  <th class="text-center"  style="width: 30%">&nbsp;&nbsp;Work In</th>
+												 
+												</tr>
+									</thead>
+								  <tbody ng-hide="isLoading">
+								  <tr class="" ng-repeat="row in datalist">
+									<!--<td class="text-center" >{{row.id}}</td>-->
+									
+											<td class= "text-center text-sm" >{{row.inspect_time}}</td>
+											<td class="text-center text-sm" >{{row.work_in}}</td>		
+								  </tr>
+								  </tbody>
+										 <tbody ng-show="isLoading">
+									<tr>
+									  <td colspan="9" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+									</tr>
+								  </tbody>
+									  
+								</table>
+								
+							  </div>
+				</div>
+				
+			</div><br>
+		
+	</div><br>
+	
+
+	<!--- - - - - -/PERIODIC WORK AREA INSPECTIONS - - - - - - - - - -->
+
+
+		<!-- - - - - - - - - FINAL WORK INSPECTION - - - - - - -  - - - -->
+
+		<div class="panel panel-default col-sm-12" ng-show = "inspect_by" style="border-radius: 4px; padding:0px;">
+			<div class="panel-heading">
+				<div class="pull-left">
+					<label class="font-bold text-sm"><i class="fa fa-user-circle-o text-default"></i>&nbsp;&nbsp;Final Work Area Inspection (completed by supervisor at the end of fire watch)</label>
+				</div><br>
+			</div>
+			<div class="panel-body" style="padding: 5px 0px">
+				<form class="form-horizontal form-validation">
+					<div ng-show = "!complaint.final_by">
+						<div class="col-sm-6">
+								<label class="control-label text-xs">Time hot work ended</label>
+								<div class = "dropdown">
+									<a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+										<div class="input-group">
+											<input type="text" class="form-control" ng-model="complaint.ended_time">
+											  <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+										</div>
+									</a>
+									<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel" >
+										 <datetimepicker ng-model="complaint.endedtimepicker" data-datetimepicker-config="{ dropdownSelector: '#dropdown2'}"
+											data-before-render="beforeRender1($view, $dates, $leftDate, $upDate, $rightDate)"/>
+									</ul>
+								</div>
+						</div><br>
+					<br><br>
+					<div class="line line-dashed b-b"></div> 
+					<div class="col-sm-12" style="margin-left: 30px">
+							<label class="md-check " style="margin-top:10px;margin-right: 30px">
+								<input type="checkbox"ng-model = "complaint.fire_check" ><i class="blue"></i>All areas where sparks or heat might have spread have been inspected with no sign of fire
+							</label>
+							<label class="md-check" style="margin-top:10px;margin-right: 30px">
+								<input type="checkbox" ng-model = "complaint.alarm_check" ><i class="blue"></i>All fire alarm detectors isolated during the work have been reinstated
+							</label>
+							<label class="md-check" style="margin-top:10px;margin-right: 30px">
+								<input type="checkbox"ng-model = "complaint.permit_check" ><i class="blue"></i>Work completed in accordance with this permit
+							</label><br>
+					</div><br><br> 
+					<br><br><br>  
+					<div class="line line-dashed b-b"></div> 
+						<div class="col-sm-6"> 
+							<label class="control-label text-xs">Supervisor Name<i class="text-danger">*</i></label>
+							<div>
+								<input class='form-control input-sm' type="text" ng-model = "complaint.sup_name">
+							</div>
+						</div>
+						<div class="col-sm-6"> 
+							<label class="control-label text-xs">Position<i class="text-danger">*</i></label>
+							<div>
+								<input class='form-control input-sm' type="text" ng-model = "complaint.sup_pos">
+							</div>
+						</div>
+						<div class="col-sm-6">
+							<label class="control-label text-xs">Date<i class="text-danger">*</i></label>
+							<div class = "dropdown">
+								<a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+									<div class="input-group">
+										<input type="text" class="form-control" ng-model="complaint.final_date">
+										  <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+									</div>
+								</a>
+								<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel" >
+									 <datetimepicker ng-model="complaint.finaldatepicker" data-datetimepicker-config="{ dropdownSelector: '#dropdown2'}"
+										data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+								</ul>
+							</div>
+						</div>
+						<div class="col-sm-6">
+								<label class="control-label text-xs">Time<i class="text-danger">*</i></label>
+								<div class = "dropdown">
+									<a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+										<div class="input-group">
+											<input type="text" class="form-control" ng-model="complaint.final_time">
+											  <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+										</div>
+									</a>
+									<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel" >
+										 <datetimepicker ng-model="complaint.finaltimepicker" data-datetimepicker-config="{ dropdownSelector: '#dropdown2'}"
+											data-before-render="beforeRender1($view, $dates, $leftDate, $upDate, $rightDate)"/>
+									</ul>
+								</div>
+						</div>
+					</div>
+					<div ng-show = "complaint.final_by">
+							<div class="col-sm-6">
+									<label class="control-label text-xs text-muted">Time Hotwork Ended</label>
+									<div>
+										<label class="text-sm font-bold">{{::complaint.ended_time}}</label>
+									</div>
+							</div>
+							<div class="col-sm-12">
+									<label class="control-label text-xs text-muted">All areas where sparks or heat might have spread have been inspected with no sign of fire?&nbsp;&nbsp;&nbsp;&nbsp;</label>
+									<label ng-show = "complaint.fire_check" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;Yes</label>							
+									<label ng-show = "!complaint.fire_check" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;No</label>	
+							</div>
+							<div class="col-sm-12">
+									<label class="control-label text-xs text-muted">All fire alarm detectors isolated during the work have been reinstated?&nbsp;&nbsp;&nbsp;&nbsp;</label>
+									<label ng-show = "complaint.alarm_check" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;Yes</label>							
+									<label ng-show = "!complaint.alarm_check" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;No</label>	
+							</div>
+							<div class="col-sm-12">
+									<label class="control-label text-xs text-muted">Work completed in accordance with this permit?&nbsp;&nbsp;&nbsp;&nbsp;</label>
+									<label ng-show = "complaint.alarm_check" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;Yes</label>							
+									<label ng-show = "!complaint.alarm_check" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;No</label>	
+							</div>
+							<div class="col-sm-6">
+									<label class="control-label text-xs text-muted">Supervisor Name</label>
+									<div>
+										<label class="text-sm font-bold">{{complaint.sup_name}}</label>
+									</div>
+							</div>
+							<div class="col-sm-6">
+									<label class="control-label text-xs text-muted">Supervisor Position</label>
+									<div>
+										<label class="text-sm font-bold">{{::complaint.sup_pos}}</label>
+									</div>
+							</div>
+							<div class="col-sm-6">
+									<label class="control-label text-xs text-muted">Date</label>
+									<div>
+										<label class="text-sm font-bold">{{::complaint.final_date |mydatetime : 'D MMM YYYY hh:mm a'}}</label>
+									</div>
+							</div>
+							<div class="col-sm-6">
+									<label class="control-label text-xs text-muted">Time</label>
+									<div>
+										<label class="text-sm font-bold">{{::complaint.final_time}}</label>
+									</div>
+							</div>
+
+
+
+					</div>
+				</form>
+			</div><br><br>
+		</div>
+
+		<!-- - - - - - - - - /FINAL WORK INSPECTION - - - - - - -  - - - -->
+	
+		<!-- - - - - - - - - - - - PERMIT CLOSE OUT - - - - - - - - - - - -->
+	
+		<div class="panel panel-default col-sm-12" ng-show = "complaint.final_by" style="border-radius: 4px; padding:0px;">
+			<div class="panel-heading">
+				<div class="pull-left">
+					<label class="font-bold text-sm"><i class="fa fa-user-circle-o text-default"></i>&nbsp;&nbsp;Permit Close Out (completed by authorizer at the end of fire watch)</label>
+				</div><br>
+			</div>
+			<div class="panel-body" style="padding: 5px 0px">
+				<div class="form-horizontal">
+					<div ng-show = "!complaint.close_by">
+					<label class="control-label text-xs font-bold" style="margin-left: 15px">Permit closed based upon (please tick one):</label><br><br>
+					<div class="col-sm-12" style="margin-left: 30px">
+							<input type="radio" ng-model="complaint.close" style="margin-left: 30px" value="completed">&nbsp;&nbsp;&nbsp;&nbsp;Permit and Work completed in satisfactory manner		
+					</div><br>
+						
+					<div class = "col-sm-12" style="margin-left: 30px">
+						<input type="radio" ng-model="complaint.close"  style="margin-left: 30px" value="withdrawn">&nbsp;&nbsp;&nbsp;&nbsp;Permit Withdrawn<br><br>
+							<div class = "col-sm-11">
+								<input  ng-show="complaint.close == 'withdrawn'"  style="margin-left: 30px" class='form-control input-sm' ng-model = "complaint.withdraw_reason" type="text">
+							</div>
+					</div><br><br>
+					<br><br><br>
+					<div class="line line-dashed b-b"></div> 
+					<div class="col-sm-6"> 
+							<label class="control-label text-xs">Authorizer Name</label>
+							<div>
+								<input class='form-control input-sm' type="text" ng-model = "complaint.close_name">
+							</div>
+						</div>
+						<div class="col-sm-6"> 
+							<label class="control-label text-xs">Position</label>
+							<div>
+								<input class='form-control input-sm' type="text" ng-model = "complaint.close_pos">
+							</div>
+						</div>
+						<div class="col-sm-6">
+								<label class="control-label text-xs">Date</label>
+								<div class = "dropdown">
+									<a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+										<div class="input-group">
+											<input type="text" class="form-control" ng-model="complaint.close_date">
+											  <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+										</div>
+									</a>
+									<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel" >
+										 <datetimepicker ng-model="complaint.closedatepicker" data-datetimepicker-config="{ dropdownSelector: '#dropdown2'}"
+											data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+									</ul>
+								</div>
+						</div>
+						<div class="col-sm-6">
+								<label class="control-label text-xs">Time</label>
+								<div class = "dropdown">
+									<a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+										<div class="input-group">
+											<input type="text" class="form-control" ng-model="complaint.close_time">
+											  <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+										</div>
+									</a>
+									<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel" >
+										 <datetimepicker ng-model="complaint.closetimepicker" data-datetimepicker-config="{ dropdownSelector: '#dropdown2'}"
+											data-before-render="beforeRender1($view, $dates, $leftDate, $upDate, $rightDate)"/>
+									</ul>
+								</div>
+						</div>
+					</div>
+					<div ng-show = "complaint.close_by">
+							<div class="col-sm-12">
+									<label class="control-label text-xs text-muted">Permit closed based upon&nbsp;&nbsp;&nbsp;&nbsp;</label>
+									<label ng-show = "complaint.close == 'completed'" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;Permit and Work completed in satisfactory manner</label>							
+									<label ng-show = "complaint.close == 'withdrawn'" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;Permit Withdrawn</label>	
+							</div>
+							<div ng-show = "complaint.close == 'withdrawn'" class="col-sm-12">
+									<label class="control-label text-xs text-muted">Withdrawal Reason</label>
+									<div>
+										<label class="text-sm font-bold">{{complaint.withdraw_reason}}</label>
+									</div>
+							</div>
+							<div class="col-sm-6">
+									<label class="control-label text-xs text-muted">Authorizer Name</label>
+									<div>
+										<label class="text-sm font-bold">{{complaint.close_name}}</label>
+									</div>
+							</div>
+							<div class="col-sm-6">
+									<label class="control-label text-xs text-muted">Authorizer Position</label>
+									<div>
+										<label class="text-sm font-bold">{{::complaint.close_pos}}</label>
+									</div>
+							</div>
+							<div class="col-sm-6">
+									<label class="control-label text-xs text-muted">Date</label>
+									<div>
+										<label class="text-sm font-bold">{{::complaint.close_date |mydatetime : 'D MMM YYYY hh:mm a'}}</label>
+									</div>
+							</div>
+							<div class="col-sm-6">
+									<label class="control-label text-xs text-muted">Time</label>
+									<div>
+										<label class="text-sm font-bold">{{::complaint.close_time}}</label>
+									</div>
+							</div>
+
+					</div>
+				
+				</div><br><br><br><br>
+			</div><br><br><br><br><br><br>
+		</div><br><br><br><br>
+		<center>
+			<button  ng-show = "!complaint.auth_by" type="button " style="margin:40px" class="btn btn-dark btn-sm" ng-click="save()">
+			<span class="text-success font-bold"><i class="fa fa-check"></i>&nbsp;Save</span></button>
+			<button  ng-show = "complaint.auth_by && !inspect_by" type="button " style="margin:40px" class="btn btn-dark btn-sm" ng-click="savelist()">
+					<span class="text-success font-bold"><i class="fa fa-check"></i>&nbsp;Save List</span></button>
+			<button ng-show = "inspect_by && !complaint.final_by" style="margin:40px" type="button" class="btn btn-dark btn-sm" ng-click="update()">
+			<span class="text-success font-bold"><i class="fa fa-check"></i>&nbsp;Update</span></button>
+			<button ng-show = "complaint.final_by && !complaint.close_by" style="margin:40px" type="button" class="btn btn-dark btn-sm" ng-click="complete()">
+					<span class="text-success font-bold"><i class="fa fa-check"></i>&nbsp;Complete</span></button>
+			
+		</center><br><br>
+								
+</div><br><br><br><br>
+				          
+					
+			
+</uib-accordion>
+

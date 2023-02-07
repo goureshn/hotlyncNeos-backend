@@ -1,0 +1,308 @@
+<style>
+    .profile-page {
+        background-color: #fcfcfd;
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+    }
+   .profile-wwxl {
+       width: 700px;
+   }
+   input {
+       width: 100%;
+       font-size: 14px;
+       line-height: 1.42857143;
+       color: #555;
+       background-color: #ffffff !important;
+       border: 0px;
+       border-bottom: 1px solid #ccc;
+   }
+    .label_height{
+        margin-top: 5px;
+    }
+</style>
+<div class="profile-page" ng-controller="PageProfileController" style="display: table-cell; vertical-align:middle; text-align: center;">
+    <script type="text/ng-template" id="agent_image.html">
+        <div ng-include="'tpl/profile/image_profile.html'"></div>
+    </script>
+    <div class="container profile-wwxl "  >
+        <div class="m-b-lg row" style="margin-top: 100px;" >
+            <div class="wrapper text-center">
+
+            </div>
+            <div >
+                <div class="col-md-4">
+                    <label>
+                        <img id="agentimg" src="{{agent.picture}}"  height="150vw" width="150vw" style="cursor:crosshair; border: 1px solid #e4e4e4" ng-click="onShowImage_modal()" />
+                    </label>
+                    <label class="label_height">
+                        <a ui-sref="access.changepass">Change Password</a>
+                    </label>
+                </div>
+                <div class="col-md-8">
+                    <form name="form" class="form-validation">
+                        <div class="text-danger wrapper text-center" ng-show="authError">
+                            <label class="label_height">{{authError}} </label>
+                        </div>
+                        <div>
+                            <label class="col-md-5 text-right">
+                            </label>
+                            <h3 class="col-md-7 text-left">
+                              {{agent.firstname}} {{agent.lastname}}
+                            </h3>
+                        </div>
+                        <div>
+                            <label class="col-md-5 text-right label_height">
+                                JobRole:
+                            </label>
+                            <label class="col-md-7 text-left label_height">
+                                {{agent.jobrole}}
+                            </label>
+                        </div>
+                        <div>
+                            <label class="col-md-5 text-right label_height">
+                                Department:
+                            </label>
+                            <label class="col-md-7 text-left label_height">
+                                {{agent.department}}
+                            </label>
+                        </div>
+                        <div>
+                            <label class="col-md-5 text-right label_height">
+                                Email:
+                            </label>
+                            <label class="col-md-7 label_height label_height">
+                                <input type="text" placeholder="Email Address"   ng-model="agent.email" required />
+                            </label>
+                        </div>
+                        <div>
+                            <label class="col-md-5 text-right label_height">
+                                Mobile:
+                            </label>
+                            <label class="col-md-7 label_height">
+                                <input type="text" placeholder="Mobile"  ng-disabled="agent.mobile_disable" ng-model="agent.mobile" required />
+                            </label>
+                        </div>
+                        <div>
+                            <label class="col-md-5 text-right label_height">
+                                Employee ID:
+                            </label>
+                            <label class="col-md-7 label_height">
+                                <input type="text" placeholder="Employee ID" ng-disabled="true" ng-model="agent.emp_id" required />
+                            </label>
+                        </div>
+
+                        <div>
+                            <label class="col-md-5 text-right label_height">
+                                Vacation Periods:
+                            </label>
+                            <label class="col-md-7 label_height">                                
+                                <input ng-model="daterange" ui-jq="daterangepicker" ui-options="dateRangeOption" required>
+                            </label>
+                        </div>
+
+                        <div>
+                            <label class="col-md-5 text-right label_height">
+                                Delegated User:
+                            </label>
+                            <label class="col-md-7 label_height">
+                                <input type="text" ng-model="agent.delegated_user" 
+                                    uib-typeahead="item.wholename for item in userlist | filter:{wholename:$viewValue} | limitTo:10"
+                                    typeahead-min-length="0"
+                                    typeahead-editable="false"
+                                    typeahead-on-select="onUserSelect($item, $model, $label)" required>                                
+                            </label>
+                        </div>
+
+                        <div class="text-right">
+                            <label class="label_height">
+                            <button type="button" class="btn btn-sm btn-success" style="margin-right: 30px;"  ng-click="onUpdateProfile()" >Update</button>
+                            </label>
+                        </div>
+                        <!--notification-->
+                        <div style="margin-left: 70px;" ng-show="complaint_setting_show">
+                                <div class="row">
+                                    <label class="col-md-12 text-right ">
+                                        Enable or Disable notifications by selecting the modules below:
+                                    </label>
+                                </div>
+                                <div class="row">
+                                    <label class="col-md-6 text-right ">
+                                        Compensation Change:
+                                    </label>
+                                    <label class="col-md-2">
+                                        <input type="checkbox" ng-model="complaint_setting.compensation_change" ng-click="change_notifi('compensation_change', complaint_setting.compensation_change)" />
+                                    </label>
+                                </div>
+                                <div class="row">
+                                    <label class="col-md-6 text-right ">
+                                        Complaint Create:
+                                    </label>
+                                    <label class="col-md-2 ">
+                                        <input type="checkbox" ng-model="complaint_setting.complaint_create" ng-click="change_notifi('complaint_create', complaint_setting.complaint_create)"  />
+                                    </label>
+                                </div>
+                                <div class="row">
+                                    <label class="col-md-6 text-right">
+                                        Complaint Notify:
+                                    </label>
+                                    <label class="col-md-2">
+                                        <input type="checkbox" ng-model="complaint_setting.complaint_notify" ng-click="change_notifi('complaint_notify', complaint_setting.complaint_notify)"   />
+                                    </label>
+                                </div>
+                                <div class="row">
+                                    <label class="col-md-6 text-right">
+                                        Subcomplaint Complete:
+                                    </label>
+                                    <label class="col-md-2">
+                                        <input type="checkbox" ng-model="complaint_setting.subcomplaint_complete" ng-click="change_notifi('subcomplaint_complete', complaint_setting.subcomplaint_complete)"   />
+                                    </label>
+                                </div>
+                                <div class="row">
+                                    <label class="col-md-6 text-right">
+                                        Subcomplaint Create:
+                                    </label>
+                                    <label class="col-md-2 ">
+                                        <input type="checkbox" ng-model="complaint_setting.subcomplaint_create" ng-click="change_notifi('subcomplaint_create', complaint_setting.subcomplaint_create)"  />
+                                    </label>
+                                </div>
+                                <div class="row">
+                                    <label class="col-md-6 text-right">
+                                        Severity Informational:
+                                    </label>
+                                    <label class="col-md-2">
+                                        <input type="checkbox" ng-model="complaint_setting.severity_filter.Informational" ng-click="change_notifi('Informational', complaint_setting.severity_filter.Informational)"  />
+                                    </label>
+                                </div>
+                                <div class="row">
+                                    <label class="col-md-6 text-right">
+                                        Severity Major:
+                                    </label>
+                                    <label class="col-md-2">
+                                        <input type="checkbox" ng-model="complaint_setting.severity_filter.Major" ng-click="change_notifi('Major', complaint_setting.severity_filter.Major)"   />
+                                    </label>
+                                </div>
+                                <div class="row">
+                                    <label class="col-md-6 text-right">
+                                        Severity Minor:
+                                    </label>
+                                    <label class="col-md-2">
+                                        <input type="checkbox" ng-model="complaint_setting.severity_filter.Minor" ng-click="change_notifi('Minor', complaint_setting.severity_filter.Minor)"  />
+                                    </label>
+                                </div>
+                                <div class="row">
+                                    <label class="col-md-6 text-right">
+                                        Severity Moderate:
+                                    </label>
+                                    <label class="col-md-2">
+                                        <input type="checkbox" ng-model="complaint_setting.severity_filter.Moderate" ng-click="change_notifi('Moderate', complaint_setting.severity_filter.Moderate)"   />
+                                    </label>
+                                </div>
+                                <div class="row">
+                                    <label class="col-md-6 text-right">
+                                        Severity Serious:
+                                    </label>
+                                    <label class="col-md-2">
+                                        <input type="checkbox" ng-model="complaint_setting.severity_filter.Serious"  ng-click="change_notifi('Serious', complaint_setting.severity_filter.Serious)"  />
+                                    </label>
+                                </div>
+                        </div>
+                        <!--<div style="margin-left: 70px;" ng-show="call_center_show">-->
+                                <!--<div class="row">-->
+                                    <!--<label class="col-md-6 text-right label_height">-->
+                                        <!--Call center:-->
+                                    <!--</label>-->
+                                    <!--<label class="col-md-2 label_height">-->
+                                        <!--<input type="checkbox" ng-model="complaint_setting.subcomplaint_complete"  />-->
+                                    <!--</label>-->
+                                <!--</div>-->
+                         <!--</div>-->
+                        <!--notification-->
+                    </form>
+                </div>
+            </div>
+
+            <div style="margin-top:10px;">
+                <ul class="nav nav-tabs">
+                    <li  ng-if="auth_svc.isValidModule('app.guestservice')" class="active"><a data-toggle="tab" href="#gservice">Guest Service</a></li>
+                    <li  ng-if="auth_svc.isValidModule('app.guestservice,wakeup')"><a data-toggle="tab" href="#wakeup">Wake up</a></li>
+                    <!--<li  ng-if="auth_svc.isValidModule('app.callaccounting')"><a data-toggle="tab" href="#callaccounting">Call Accounting</a></li>-->
+                </ul>
+                <div class="tab-content">
+                    <div id="gservice"  ng-if="auth_svc.isValidModule('app.guestservice')" class="tab-pane fade in active">
+
+                        <div class="row" style="margin-top:20px;">
+                            <label class="col-md-1">
+                            </label>
+                            <label class="col-md-1">
+                                <input type="checkbox" ng-model="agent.notifystatus" ng-click="change_notifi1('notifystatus', agent.notifystatus)" style="width:20px;height:20px;"/>
+                            </label>
+                            <label class="col-md-6 text-left ">
+                                Enable sound notification
+                            </label>
+                        </div>
+                    </div>
+                    <div id="wakeup"  ng-if="auth_svc.isValidModule('app.guestservice,wakeup')" class="tab-pane fade">
+                        <div class="row" style="margin-top:20px;">
+                            <label class="col-md-1">
+                            </label>
+                            <label class="col-md-1">
+                                <input type="checkbox" ng-model="agent.wakeupnotifystatus" ng-click="change_notifi1('wakeupnotifystatus', agent.wakeupnotifystatus)" style="width:20px;height:20px;"/>
+                            </label>
+                            <label class="col-md-6 text-left ">
+                                Enable sound wake up
+                            </label>
+                        </div>
+                    </div>
+                    <!--<div id="callaccounting"  ng-if="auth_svc.isValidModule('app.callaccounting')" class="tab-pane fade">
+                        <div class="row" style="margin-top:20px;">
+                            <label class="col-md-1">
+                            </label>
+                            <label class="col-md-1">
+                                <input type="checkbox" ng-model="agent.callaccountingnotifystatus" ng-click="change_notifi1('callaccountingnotifystatus', agent.callaccountingnotifystatus)" style="width:20px;height:20px;"/>
+                            </label>
+                            <label class="col-md-6 text-left ">
+                                Enable sound call accounting
+                            </label>
+                        </div>
+                    </div>-->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!------------------>
+    <!--<div class="wrapper-md" style="margin-top:-50px;margin-left: 250px;width: 400px;" ng-show="agent.viewimg">-->
+        <!--<div class="m-b">-->
+            <!--<input type="file" id="fileInput" />-->
+        <!--</div>-->
+        <!--<div class="hbox hbox-auto-xs">-->
+            <!--<div class="col" style="width: 220px;">-->
+                <!--<div class="wrapper-sm b-a bg-white m-r-xs m-b-xs">-->
+                    <!--<div class="bg-light" style="height:170px;width: 200px;">-->
+                        <!--<img-crop-->
+                                <!--image="myImage"-->
+                                <!--result-image="myCroppedImage"-->
+                                <!--result-image-size="160"-->
+                                <!--area-type="{{cropType}}"-->
+                        <!--&gt;</img-crop>-->
+                    <!--</div>-->
+                <!--</div>-->
+            <!--</div>-->
+            <!--<div class="col">-->
+                <!--<div class="inline bg-white wrapper-sm b-a">-->
+                    <!--<div class="bg-light" style="height: 150px;height:150px;">-->
+                        <!--<img ng-src="{{myCroppedImage}}" />-->
+                    <!--</div>-->
+                <!--</div>-->
+            <!--</div>-->
+        <!--</div>-->
+        <!--<div class="btn-group m-t">-->
+            <!--<label class="btn btn-default" ng-model="cropType" ng-click="onType('circle')">Circle</label>-->
+            <!--<label class="btn btn-default" ng-model="cropType" ng-click="onType('square')">Square</label>-->
+            <!--<label class="btn btn-default" ng-model="cropType" ng-click="onSaveImage()">Save</label>-->
+        <!--</div>-->
+    <!--</div>-->
+    <!------------------->
+</div>

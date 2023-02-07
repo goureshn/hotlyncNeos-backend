@@ -1,0 +1,195 @@
+<style>
+    button {
+        pointer: cursor;
+    }
+
+    input[type=file] {
+        width: 150px;
+        height: 20px;
+    }
+
+    .btn-circle-sm {
+        width: 40px;
+        height: 40px;
+        text-align: center;
+        padding: 2px 0;
+        font-size: 20px;
+        line-height: 1.65;
+        border-radius: 30px;
+    }
+    .btn-grey {
+      background-color: #d1d1d2;
+    }
+    .btn-progres {
+        background-color: #71b9fb;
+    }
+    .btn-hold {
+        background-color: #eec639;
+    }
+
+
+</style>
+<div style="margin-top: 20px;" class="row" ng-show="supervisor" >
+    <div class="col-sm-3" >
+        <button class="btn btn-circle-sm  {{pendingcolor}}" style="margin-left: 8px;" ng-click="changeStatusWorkOrder('Pending')"  >
+            <span class="fa fa-lock"></span>
+        </button>
+        <label>Pending</label>
+    </div>
+    <div class="col-sm-3" >
+        <button  class="btn btn-circle-sm {{progresscolor}}"  style="margin-left:8px;" ng-click="changeStatusWorkOrder('In Progress')" >
+            <span class="fa fa-gear"></span>
+        </button>
+        <label>Progress</label>
+    </div>
+    <div class="col-sm-3">
+        <button  class="btn btn-circle-sm {{holdcolor}}" style="margin-left: 8px;" ng-click="changeStatusWorkOrder('On Hold')">
+            <span class="fa fa-refresh"></span>
+        </button>
+        <label>On Hold</label>
+    </div >
+    <div class="col-sm-3">
+        <button  class="btn btn-circle-sm {{completcolor}}" style="margin-left: 8px;" ng-click="changeStatusWorkOrder('Completed')" >
+            <span class="fa fa-life-saver"></span>
+        </button>
+        <label>Completed</label>
+     </div>
+</div>
+<div class="wrapper" >
+    <div class="panel panel-default" style="border-radius: 4px">
+        <div class="panel-body">
+            <form class="form-horizontal form-validation">
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-4 text-right " style="margin-bottom: 0px">ID</label>
+                    <div class="col-sm-8 ">
+                        {{workorder.ticket_id}}
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-4 text-right " style="margin-bottom: 0px">Name</label>
+                    <div class="col-sm-8 ">
+                        {{workorder.name}}
+                    </div>
+                </div>
+                <div ng-show = "workorder.request_flag == 1" class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-4 text-right " style="margin-bottom: 0px">Work Request ID</label>
+                    <div class="col-sm-8 ">
+                        {{ref_id}} 
+                    </div>
+                </div>
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-4 text-right " style="margin-bottom: 0px">Asset Name</label>
+                    <div class="col-sm-8 ">
+                        {{workorder.equipment_name}}
+                    </div>
+                </div>
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-4 text-right " style="margin-bottom: 0px">Location</label>
+                    <div class="col-sm-8 ">
+                        {{workorder.location_name}}
+                        <label ng-if="workorder.location_name"> : </label>
+                        {{workorder.location_type}}
+                    </div>
+                </div>
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-4 text-right " style="margin-bottom: 0px">Type</label>
+                    <div class="col-sm-8 ">
+                        {{workorder.work_order_type}}
+                    </div>
+                </div>
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-4 text-right " style="margin-bottom: 0px">Priority</label>
+                    <div class="col-sm-8 ">
+                        {{workorder.priority}}
+                    </div>
+                </div>
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-4 text-right " style="margin-bottom: 0px">Description</label>
+                    <div class="col-sm-8 ">
+                        {{workorder.description}}
+                    </div>
+                </div>
+                <div class="form-group" style="margin-right: 0px" ng-show="workorder.checklist_id > 0" >
+                    <label class="col-sm-4 text-right " style="margin-bottom: 0px">Checklist</label>
+                    <div class="col-sm-8">
+                        {{workorder.checklist_name}} 
+
+                        <label class="md-check" style="margin-left: 10px">
+                            <input type="checkbox" ng-model="workorder.inspected" disabled>
+                            <i class="blue"></i>
+                            Inspected
+                        </label>    
+
+                        <a class="btn default btn-xs" style="margin-top: -5px" ng-click="onViewCheckList()">
+                            <img style="width: 15px;height: 15px" src="/images/eng/checklist.svg"/>
+                        </a>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-4 text-right " style="margin-bottom: 0px">Created Date</label>
+                    <div class="col-sm-8">
+                        {{workorder.created_date}}
+                    </div>
+                </div>
+                <div class="form-group" style="margin-right: 0px" ng-hide="workorder.status == 'Pending'">
+                    <label class="col-sm-4 text-right " style="margin-bottom: 0px">Start Date</label>
+                    <div class="col-sm-8">
+                        {{workorder.purpose_start_date}}
+                    </div>
+                </div>
+                <div class="form-group" style="margin-right: 0px" ng-show="workorder.status == 'Completed'">
+                    <label class="col-sm-4 text-right " style="margin-bottom: 0px">End Date</label>
+                    <div class="col-sm-8">
+                        {{workorder.end_date}}
+                    </div>
+                </div>     
+
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-4 text-right " style="margin-bottom: 0px">Scheduled Date</label>
+                    <div class="col-sm-8">
+                        {{workorder.schedule_date}}
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-4 text-right " style="margin-bottom: 0px">Due Date</label>
+                    <div class="col-sm-8">
+                        {{workorder.due_date}}
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-4 text-right " style="margin-bottom: 0px">Estimated</label>
+                    <div class="col-sm-8">
+                        {{workorder.estimated_duration}} hours
+                    </div>
+                </div>           
+                <div class="form-group" style="margin-right: 0px"  ng-repeat="row in workorder.staff_group" >
+                    <label class="col-sm-4 text-right" style="margin-bottom: 0px">Staff/Group {{$index+1}} .</label>
+                    <label class="col-sm-3">{{row.staff_name}} </label>
+                    <label class="col-sm-2">{{row.staff_type}} </label>
+                    <label class="col-sm-3">AED {{row.staff_cost}} </label>
+                </div>
+
+                <div class="form-group" style="margin-right: 0px"  ng-repeat="row in workorder.part_group" >
+                    <label class="col-sm-4 text-right" style="margin-bottom: 0px">Part {{$index+1}} .</label>
+                    <label class="col-sm-3">{{row.part_name}} </label>
+                    <label class="col-sm-2">{{row.part_number}} </label>
+                    <label class="col-sm-3">AED {{row.part_cost}} </label>
+                </div>
+
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-4 text-right" style="margin-bottom: 0px">Files</label>
+                    <div class="col-sm-8">
+                        <ul>
+                            <li ng-repeat="f in workorder.filelist" style="font:smaller" ng-click="openModalImage(f.path, f.filename)">
+                                {{f.filename}} 
+                            </li>
+                        </ul>           
+                    </div>    
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,60 @@
+<div>
+
+    <div class="col-lg-6 b-r">
+        <div class="row wrapper-md">
+            <div class="col-sm-12 input-group text-right">
+                <div class="btn-group">
+                    <label class="btn btn-info btn-sm" ng-model="period.dateFilter" uib-btn-radio="'Today'">Today</label>
+                    <label class="btn  btn-info btn-sm" ng-model="period.dateFilter" uib-btn-radio="'Weekly'">Weekly</label>
+                    <label class="btn  btn-info btn-sm" ng-model="period.dateFilter" uib-btn-radio="'Monthly'">Monthly</label>
+                    <label class="btn  btn-info btn-sm" ng-model="period.dateFilter" uib-btn-radio="'Yearly'">Yearly</label>
+                    <label class="btn  btn-info btn-sm" ng-model="period.dateFilter" uib-btn-radio="'Custom Days'">Custom Days</label>
+                </div>
+                <input style="width: 200px; margin-left: 10px" ng-disabled="period.dateFilter != 'Custom Days'" ng-model="period.daterange" ui-jq="daterangepicker" ui-options="dateRangeOption" class="form-control pull-right input-sm">
+            </div>
+        </div>
+        <div class="row" style="margin-left: 0px; margin-right: 0px">
+            <div class="col-md-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading font-bold">Booking statistics</div>
+                    <div class="panel-body" ng-if="loading === false">
+                        <div ui-jq="plot" ui-options="
+                          {{by_booking}},
+                          {
+                            series: { pie: { show: true, stroke: { width: 0 }, label: { show: true, threshold: 0.05 } } },
+                            colors: ['{{app.color.primary}}','{{app.color.info}}','{{app.color.success}}','{{app.color.warning}}','{{app.color.danger}}'],
+                            grid: { hoverable: true, clickable: true, borderWidth: 0, color: '#ccc' },
+                            tooltip: true,
+                            tooltipOpts: { defaultTheme: false, content: '%s count is %y.0', shifts: { x: 10, y: -25 } }
+                          }
+                        " style="height:300px"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row" style="margin-left: 0px; margin-right: 0px">
+            <div class="col-md-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading font-bold">Restaurants</div>
+                    <div class="panel-body" ng-if="loading === false">
+                        <div ui-jq="plot" ui-options="
+                          {{by_restaurant}},
+                          {
+                            series: { pie: { show: true, stroke: { width: 0 }, label: { show: true, threshold: 0.05 } } },
+                            colors: ['{{app.color.primary}}','{{app.color.info}}','{{app.color.success}}','{{app.color.warning}}','{{app.color.danger}}'],
+                            grid: { hoverable: true, clickable: true, borderWidth: 0, color: '#ccc' },
+                            tooltip: true,
+                            tooltipOpts: { defaultTheme: false, content: '%s count is %y.0', shifts: { x: 10, y: -25 } }
+                          }
+                        " style="height:300px"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6" ng-include="'tpl/guestservice/reservation/reservation_list.html'">
+
+    </div>
+
+</div>

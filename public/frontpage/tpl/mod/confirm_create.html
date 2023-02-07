@@ -1,0 +1,23 @@
+<style>
+    button {
+        pointer: cursor;
+    }
+</style>
+<div class="modal-content">
+    <div class="modal-body" style="padding-top: 30px; padding-bottom: 30px;">
+        <h3 style="color: blue; word-break: break-word" class="text-center">{{category_name}}</h3>
+        <h3 class="text-center">This category doesn't exist now...</h3>
+        <h3 class="text-center">Do you need to create new category?</h3>
+    </div>
+
+    <div class="modal-footer ">
+        <div class="form-group" style="padding-left: 0; margin: 0; text-align: center">
+            <button type="submit" class="btn btn-info btn-sm" ng-click="onYes()" style="width: 80px">
+                Yes
+            </button>
+            <button type="button" class="btn btn-danger btn-sm" style="width: 80px" ng-click="onNo()">
+                No
+            </button>
+        </div>
+    </div>
+</div>

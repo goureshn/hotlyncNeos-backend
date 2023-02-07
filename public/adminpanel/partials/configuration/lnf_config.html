@@ -1,0 +1,80 @@
+<div class=" panel panel-default" style="border-color: #dee5e7">
+    <style>
+        .edit-time {
+            padding-right: 0px;
+        }
+
+        .edit-label {
+            margin-top: 4px;
+            padding-left: 4px;
+        }
+    </style>
+    <div class="panel-heading wrapper">
+        <div  style="float:right; margin-top: -5px; background: #efefef;padding:5px 10px 5px 10px;color: #868585;font-size: 16px; " >
+            <strong>{{message}}</strong>
+        </div>
+        <i class="fa fa-cog"></i>
+        <span class="font-bold"> &nbsp;&nbsp;Configuration</span>
+    </div>
+    <div class="" style="background-color: #eeeeee; height: 800px">        
+        <div class="col-sm-12">
+            <div>
+                <h5><strong> Found Notification</strong></h5>
+            </div>
+            <div style="margin-left: 30px">
+                <div class="form-horizontal" >
+                    <div class="form-group">
+                        <label class="col-sm-2">User Group</label>
+                        <div class="col-sm-6">
+                            <tags-input ng-model="config.found_user_group_ids" placeholder="Add User Group" replace-spaces-with-dashes="false" style="margin-top: -5px"
+									display-property="name" key-property="id"	
+                                    on-tag-added="onFoundUserGroupChanged()" on-tag-removed="onFoundUserGroupChanged()"
+								>
+                                <auto-complete source="loadFiltersValue($query)"
+                                    min-length="0"
+                                    debounce-delay="0"
+                                    load-on-focus="true"
+                                    load-on-empty="true"
+                                    max-results-to-show="100">
+                                </auto-complete>
+                            </tags-input>
+                        </div>
+                        <div class="col-sm-4">
+                            Notification User Group
+                        </div>
+                    </div>                  
+                </div>
+            </div>
+        </div> 
+        <div class="col-sm-12">
+            <div>
+                <h5><strong> Inquiry Notification</strong></h5>
+            </div>
+            <div style="margin-left: 30px">
+                <div class="form-horizontal" >
+                   <div class="form-group">
+                        <label class="col-sm-2">User Group</label>
+                        <div class="col-sm-6">
+                            <tags-input ng-model="config.inquiry_user_group_ids" placeholder="Add User Group" replace-spaces-with-dashes="false" style="margin-top: -5px"
+									display-property="name" key-property="id"	
+                                    on-tag-added="onInquiryUserGroupChanged()" on-tag-removed="onInquiryUserGroupChanged()"
+								>
+                                <auto-complete source="loadFiltersValue($query)"
+                                    min-length="0"
+                                    debounce-delay="0"
+                                    load-on-focus="true"
+                                    load-on-empty="true"
+                                    max-results-to-show="100">
+                                </auto-complete>
+                            </tags-input>
+                        </div>
+                        <div class="col-sm-4">
+                            Notification User Group
+                        </div>
+                    </div>            
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

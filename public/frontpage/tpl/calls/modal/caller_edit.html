@@ -1,0 +1,140 @@
+<style>
+
+</style>
+<!- - - - - - - - TOP PANEL - - - - - - - ->
+<form class=" form-horizontal form-validation">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="panel panel-default" style="margin: 10px;">
+                <div class="panel-heading">
+                    <label class="font-bold">
+                        <i class="fa fa-tasks" aria-hidden="true"></i>&nbsp;&nbsp;Caller Information&nbsp;</label>
+                    <label style="float: right">
+                        <input class="form-group" type="checkbox" ng-model="caller.spam" checked>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Spam</label>
+                </div>
+                <div class="panel-body">
+                    <div class="col-sm-12">
+                        <div class="col-sm-6 form-validation" style="margin-top: -3px;">
+                            <label class="col-sm-12 control-label text-left" style="font-size:10px;"> Salutation </label>
+                            <div class="col-sm-5" style="margin-left: 0px">
+                                <select ng-model="caller.salutation" style="height:28px">
+                                    <option value="Mr.">Mr.</option>
+                                    <option value="Mrs.">Mrs.</option>
+                                    <option value="Ms.">Ms.</option>
+                                    <option value="Miss.">Miss.</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 form-validation" style="margin-top: -3px;">
+                            <label class="col-sm-12 control-label text-left" style="font-size:10px;"> Nationality </label>
+                            <div class="col-sm-12">
+                                <select class="input-info" style="width: 9vw" ng-model="caller.national" ng-options="name for name in countrylist">
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 form-validation" style="margin-top: -3px;">
+                            <label class="col-sm-12 control-label text-left" style="font-size:10px;"> First Name </label>
+                            <div class="col-sm-12">
+                                <input type="text" ng-model="caller.firstname" class="form-control input-info" placeholder="">
+                            </div>
+                        </div>
+                        <div class="col-sm-6 form-validation" style="margin-top: -3px;">
+                            <label class="col-sm-12 control-label text-left" style="font-size:10px;"> Last Name </label>
+                            <div class="col-sm-12">
+                                <input type="text" ng-model="caller.lastname" class="form-control input-info" placeholder="">
+                            </div>
+                        </div>
+                        <div class="col-sm-6 form-validation" style="margin-top: -3px;">
+                            <label class="col-sm-12 control-label text-left" style="font-size:10px;"> Email </label>
+                            <div class="col-sm-12">
+                                <input type="text" ng-model="caller.email" class="form-control input-info" placeholder="">
+                            </div>
+                        </div>
+                        <div class="col-sm-6 form-validation" style="margin-top: -3px;">
+                            <label class="col-sm-12 control-label text-left" style="font-size:10px"> Company </label>
+                            <div class="col-sm-11 input-group" style="margin-left:15px">
+                                                            <span class="input-group-addon ">
+                                                                <input type="checkbox" ng-model="caller.company">
+                                                            </span>
+                                <input type="text" ng-model="caller.companyname" ng-disabled="caller.company==1" class="form-control input-info">
+                            </div>
+                        </div>
+                        <div class="col-sm-6 form-validation" style="margin-top: -3px;">
+                            <label class="col-sm-12 control-label text-left" style="font-size:10px;"> Mobile </label>
+                            <div class="col-sm-11 input-group" style="margin-left:15px">
+                                                            <span class="input-group-addon ">
+                                                                <input type="checkbox" ng-model="mobile_flag">
+                                                            </span>
+                                <input ng-disabled="!mobile_flag" type="text" ng-model="caller.mobile" class="form-control input-info" placeholder="+xx xxxx xxxxx">
+                            </div>
+                        </div>
+                        <div class="col-sm-6 form-validation" style="margin-top: -3px;">
+                            <label class="col-sm-12 control-label text-left" style="font-size:10px;"> Fixed Phone </label>
+                            <div class="col-sm-11 input-group" style="margin-left:15px">
+                                                            <span class="input-group-addon ">
+                                                                <input type="checkbox" ng-model="phone_flag">
+                                                            </span>
+                                <input ng-disabled="!phone_flag" type="text" ng-model="caller.phone" class="form-control input-info" placeholder="+xx xxxx xxxxx">
+                            </div>
+                        </div>
+                        <div class="col-sm-12 form-validation" style="margin-top: -3px;">
+                            <label class="col-sm-12 control-label text-left" style="font-size:10px;"> Address </label>
+                            <div class="col-sm-12">
+                                <input type="text" ng-model="caller.address" class="form-control input-info" placeholder="">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!- - - - - - - - /TOP PANEL - - - - - - - ->
+
+            <!- - - - - - - - BOTTOM PANEL - - - - - - - ->
+            <div class="panel panel-default" style="margin: 10px;">
+                <div class="panel-heading">
+                    <label class="font-bold">
+                        <i class="fa fa-phone" aria-hidden="true"></i>&nbsp;&nbsp;Call&nbsp;</label>
+                    <label style="float: right">
+                        <b>Ticket #</b>
+                        <span style="color:orange">&nbsp;&nbsp;{{getCallTicket(caller)}}</span>
+                    </label>
+                </div>
+                <div class="panel-body">
+                    <div class="col-sm-12" style="padding-left: 7px;">
+                        <div class="col-sm-6 form-validation" style="margin-top: -3px; padding-left: 0px;">
+                            <label class="col-sm-12 control-label text-left" style="font-size:10px;"> Type </label>
+                            <div class="col-sm-12">
+
+                                <select id='id' class='form-control' ng-model="caller.type" ng-options="value.label as value.label for (key, value) in types"></select>
+
+                            </div>
+                        </div>
+                        <div class="col-sm-6 form-validation" style="margin-top: -3px;">
+                            <label class="col-sm-12 control-label text-left" style="font-size:10px;"> Channel </label>
+                            <div class="col-sm-12">
+                                <input type="text" ng-disabled="true" ng-model="caller.channel" class="form-control input-info">
+                            </div>
+                        </div>
+                        <div class="col-sm-12 form-validation" style="margin-top: -3px; padding-left: 0px;">
+                            <label class="col-sm-12 control-label text-left" style="font-size:10px;"> Comment </label>
+                            <div class="col-sm-12">
+                                <input type="text" rows="4" cols="30" class="form-control" ng-model="caller.comment" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" style="margin: 0;">
+        <div class="wrapper-md pull-right">
+            <button type="button" class="btn btn-dark btn-sm" ng-click="onUpdateProfile()">
+                <span class="text-success font-bold"><i class="fa fa-check"></i>&nbsp;Update</span>
+            </button>
+            <button type="button" class="btn btn-dark btn-sm" ng-click="onCancel()">
+                <span class="text-danger font-bold"><i class="fa fa-times"></i>&nbsp;Cancel</span>
+            </button>
+        </div>
+    </div>
+</form>
+<!- - - - - - - - /BOTTOM PANEL - - - - - - - ->

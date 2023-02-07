@@ -1,0 +1,120 @@
+<style>
+    .modal-lg {
+        width: 950px;
+        margin-top: 50px;
+    }
+    .ql-container {
+        height: 250px;
+    }
+    .ql-tooltip.ql-editing{
+        left:150px !important;
+    }
+</style>
+<input type="hidden" id="id" value="-1" ng-model="model_data.id"/>
+
+<div class="panel panel-default">
+    <div class="panel-heading wrapper">
+        <button type="button" class="btn btn-success btn-sm" style="float:right; margin-top: -5px" data-toggle="modal" data-target="#addModal" ng-disabled="job_role!='SuperAdmin'&&edit_flag==0" ng-click="onShowEditRow(-1)">
+            <span class="glyphicon glyphicon-plus"></span>
+            <b> Add New </b>
+        </button>
+        <i class="fa fa-id-badge"></i>
+        <span class="font-bold">Faq management</span>
+    </div>
+    <div>
+        <table id="table_grid" class="table table-hover table-bordered" style="text-align: center; width:100%" ng-model = "table_grid">
+            <thead>
+            <tr><!--
+                <th class="no-sort" style="text-align: center">
+                    <input style="text-align: center" type="checkbox" id="checkall" />
+                </th>-->
+                <th style="text-align: center" ng-repeat = "field in fields">
+                    <b>{{field}}</b>
+                </th>
+                <th style="text-align: center" class="no-sort">Edit</th>
+                <th style="text-align: center" class="no-sort">Delete</th>
+            </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="panel">
+            <div class="modal-header bg">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h5 class="modal-title font-bold" style="color:#2691d9" ng-if="model_data.id<0">
+                    <i class="fa fa-plus"></i>&nbsp;Add Faq</h5>
+                <h5 class="modal-title font-bold" style="color:#2691d9" ng-if="model_data.id>=0">
+                    <i class="fa fa-pencil"></i>&nbsp;Edit Faq</h5>
+            </div>
+            <div class="modal-body">
+                <br>
+                <form class="form-horizontal">
+                    <div class="form-group">
+                        <label class="control-label col-sm-1" >Title :</label>
+                        <div class="col-sm-11">
+                            <input type="text" class="form-control" ng-model="model_data.title" required />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-sm-1" >Module:</label>
+                        <div class="col-sm-3">
+                            <select id='module_id' class='form-control' ng-model="model_data.module_id"
+                                    ng-options="value.id as value.name for (key, value) in modules">
+                            </select>
+                        </div>
+                        <label class="control-label col-sm-1 col-sm-offset-4" >Category :</label>
+                        <div class="col-sm-3">
+                            <div class="scrollable-dropdown-menu">
+                                <input ng-model="model_data.category" class="form-control input-sm"
+                                  uib-typeahead="item.name for item in getCategoryList($viewValue)"
+                                  typeahead-on-select="onCategorySelect(item, $item, $model, $label)"
+                                  typeahead-min-length="0"
+                                  typeahead-no-results="noResults" required/>
+                                <span ng-if="noResults" uib-dropdown uib-dropdown-toggle auto-close="disabled" is-open="true">
+                                    <ul class="dropdown-menu" >
+                                        <li><a href ng-click="onAddCategory()">{{main_task.tasklist.task}} (New Add Category Item))</a></li>
+                                    </ul>
+                                </span>    
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-sm-1" >Tags :</label>
+                        <div class="col-sm-11">
+                           <tags-input ng-model="model_data.tags" placeholder="Add tag" replace-spaces-with-dashes="false" style="margin-top: -5px">
+                                            <auto-complete source="loadFilters($query)"
+                                              min-length="0"
+                                                debounce-delay="0"
+                                                load-on-focus="true"
+                                                load-on-empty="true"
+                                                max-results-to-show="100">
+                                            </auto-complete>
+                            </tags-input>                           
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-12">
+                            <ng-quill-editor ng-model="model_data.content" style="border: none" placeholder="" on-editor-created="editorCreated(editor)"  on-content-changed="contentChanged(editor, html, text)" on-selection-changed="selectionChanged(editor, range, oldRange, source)"></ng-quill-editor>                           
+                        </div>
+                    </div>
+                    <div class="form-group">
+                         <label class="control-label col-sm-1" >Excerpt :</label>
+                        <div class="col-sm-11">
+                             <textarea class="form-control input-sm" rows="3" ng-model="model_data.excerpt" style="resize:none"></textarea>                            
+                        </div>                        
+                    </div>
+                </form>
+            </div>
+            <div style="clear:both">
+                <submit-form id="model_data.id" updatedata="onUpdateRow()"></submit-form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<dialog-delete title="Faq" modelname="model_data.title" deletedata="deleteRow()"></dialog-delete>

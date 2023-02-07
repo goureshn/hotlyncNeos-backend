@@ -1,0 +1,62 @@
+<style>
+	#scrollable-dropdown-menu .dropdown-menu {
+		max-height: 150px;
+		overflow-y: auto;
+	}
+</style>
+
+<div class="panel panel-default"> 
+	<div class="panel-heading wrapper"> 		
+		<i class="fa fa-street-view"></i>                            
+		<span class="font-bold">Sub Complaint Escalation</span>
+	</div>                         
+	<div class=""> 
+		<table id="table_grid" class="table table-hover table-bordered" style="text-align: center;width:100%" ng-model = "table_grid"> 
+			<thead> 
+				<tr> 
+					<th style="text-align: center" ng-repeat = "field in fields">
+						<b>{{field}}</b>
+					</th>												
+				</tr>                                     
+			</thead>                    
+		</table>                             
+	</div>
+</div> 
+
+<div style="height:400px">	               
+	<form class="form-horizontal"> 
+		<div class="form-group" ng-repeat="row in selected_level_list">
+			<label class="control-label col-sm-1" for="Property">Level {{row.level}}:</label>
+			<div class="scrollable-dropdown-menu col-sm-4">
+				<tags-input ng-model="row.job_role_list" placeholder="Add Job Role" replace-spaces-with-dashes="false" style="margin-top: -5px"
+						display-property="job_role" key-property="id"
+						on-tag-added="onJobRoleChanged(row)" on-tag-removed="onJobRoleChanged(row)">
+					<auto-complete source="loadJobroleFilter($query)" min-length="0" debounce-delay="0" load-on-focus="true" load-on-empty="true"
+						max-results-to-show="100">
+					</auto-complete>
+				</tags-input>					
+			</div>
+			<div class="col-sm-4">
+				<tags-input ng-model="row.notify_type_list" placeholder="Add Notify Mode" replace-spaces-with-dashes="false" style="margin-top: -5px"
+						on-tag-added="onNotifyChanged(row)" on-tag-removed="onNotifyChanged(row)">
+					<auto-complete source="notify_type_list" min-length="0" debounce-delay="0" load-on-focus="true" load-on-empty="true"
+						max-results-to-show="100">
+					</auto-complete>
+				</tags-input>	
+			</div>
+			<div class="col-sm-2" style="padding-left: 5px">
+				<input class="form-control input-sm" style="display: inline; width: 50px" type="text" ng-model="row.max_time" ng-change="onChangeMaxtime(row)"/>
+				<button class="btn btn-primary btn-xs" style="margin-top:-2px" ng-click="onAddLevel(row)"
+					ng-show="row.id == 0">
+					<span class="fa fa-plus"></span>
+				</button>	
+				<button class="btn btn-primary btn-xs" style="margin-top:-2px" ng-click="onDeleteLevel(row)" ng-show="row.id > 0">
+					<span class="fa fa-minus"></span>
+				</button>	
+			</div>
+		</div>
+	</form>   
+</div>	
+
+	
+

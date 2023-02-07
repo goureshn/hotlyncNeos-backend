@@ -1,0 +1,176 @@
+<div style="">
+	<div class="wrapper">
+		<fieldset>
+			<legend>
+          <div style="width: 95%;" class="col-centered wrapper-xs">
+              <form class="bs-example form-horizontal">
+                  <div class="row form-horizontal">
+                      <label style="font-size:15px;"><i class="glyphicon glyphicon-user"></i>&nbsp;&nbsp;Guest Detail</label>                      
+                  </div>
+              </form>
+          </div>
+			</legend>
+		    
+		  <div class=" ">
+          <div class="row label-group">
+              <div class="col-sm-2">Guest</div>
+              <div class="col-sm-4"><strong>{{complaint.guest_name}}</strong></div>                        
+              <div class="col-sm-2">Guest Type</div>
+              <div class="col-sm-4"><strong>{{complaint.guest_type}}</strong></div>
+          </div>
+
+          <div class="row label-group">
+              <div class="col-sm-2">Guest</div>
+              <div class="col-sm-4"><strong>{{complaint.room}}</strong></div>                                      
+          </div>
+
+          <div class="row label-group">
+              <div class="col-sm-2">Check in</div>
+              <div class="col-sm-4"><strong>{{complaint.arrival}}</strong></div>                        
+              <div class="col-sm-2">Check out</div>
+              <div class="col-sm-4"><strong>{{complaint.departure}}</strong></div>
+          </div>
+
+          <hr style="margin-top: 5px; margin-bottom: 5px" />
+
+          <label style="font-size:15px;"><i class="glyphicon glyphicon-minus"></i>&nbsp;&nbsp;Additional Details</label>
+
+          <div class="row label-group">
+              <div class="col-sm-2">Mobile</div>
+              <div class="col-sm-4"><strong>{{complaint.mobile}}</strong></div>                        
+              <div class="col-sm-2">Phone</div>
+              <div class="col-sm-4"><strong>{{complaint.phone}}</strong></div>
+          </div>
+            
+          <div class="row label-group">
+              <div class="col-sm-2">Email</div>
+              <div class="col-sm-4"><strong>{{complaint.email}}</strong></div>                        
+              <div class="col-sm-2">Gender</div>
+              <div class="col-sm-4"><strong>{{complaint.gender}}</strong></div>
+          </div>
+
+          <div class="row label-group">
+              <div class="col-sm-2">Passport No</div>
+              <div class="col-sm-4"><strong>{{complaint.passport}}</strong></div>                        
+              <div class="col-sm-2">Nationality</div>
+              <div class="col-sm-4"><strong>{{complaint.nationality_name}}</strong></div>
+          </div>
+
+          <div class="row label-group">
+              <div class="col-sm-2">Address</div>
+              <div class="col-sm-10"><strong>{{complaint.address}}</strong></div>                        
+              <div class="col-sm-2">Nationality</div>
+              <div class="col-sm-4"><strong>{{complaint.nationality_name}}</strong></div>
+          </div>            
+      </div>  
+		</fieldset>
+					
+		<!-- Complaint Information -->
+		<fieldset>
+			<legend>
+          <div style="width: 95%;" class="col-centered wrapper-xs">
+              <form class="bs-example form-horizontal">
+                  <div class="row form-horizontal">
+                      <label style="font-size:15px;"><i class="fa fa-comment"></i>&nbsp;&nbsp;Complaint Detail</label>
+                  </div>
+              </form>
+          </div>
+			</legend>
+			<div class=" ">
+          <div class="row label-group">
+              <div class="col-sm-2">Request Time</div>
+              <div class="col-sm-4"><strong>{{complaint.created_at}}</strong></div>                        
+              <div class="col-sm-2">Location</div>
+              <div class="col-sm-4"><strong>{{complaint.lgm_name}} - {{complaint.lgm_type}}</strong></div>
+          </div>
+
+          <div class="row label-group">
+              <div class="col-sm-2">Complaint</div>
+              <div class="col-sm-4"><strong>{{complaint.comment}}</strong></div>                                      
+          </div>
+      </div>    
+    </fieldset> 
+
+    <fieldset>
+      <legend>
+          <div style="width: 95%;" class="col-centered wrapper-xs">
+              <form class="bs-example form-horizontal">
+                  <div class="row form-horizontal">
+                      <label style="font-size:15px;">&nbsp;<i class="icon-energy"></i>&nbsp;&nbsp;Compensation</label>                      
+                      <div class="pull-right">    
+                        <div class="pull-right">
+                          <div class="btn-group" uib-dropdown is-open="status.isopen">
+                              <button type="button" class="btn btn-success btn-sm" ng-click="onApprove()">Approve</button>
+                              <button type="button" class="btn btn-success btn-sm" uib-dropdown-toggle>
+                                  <span class="caret"></span>
+                              </button>     
+                              <ul class="dropdown-menu" role="menu">
+                                  <li ng-click="onReject()">
+                                    <a href>Reject</a>
+                                  </li>
+                                   <li ng-click="onReturn()">
+                                    <a href>Return</a>
+                                  </li>
+                              </ul>                       
+                          </div>
+                        </div>
+                      </div>
+                  </div>
+              </form>
+          </div>
+      </legend>
+        
+      <div class=" ">  
+        <div class="row">
+            <div class="col-sm-2"><span class="pull-right">Compensation Type</span></div>
+            <div class="col-sm-4"><strong>{{complaint.compensation}}</strong></div>                        
+            <div class="col-sm-2">Cost</div>
+            <div class="col-sm-4"><strong>{{complaint.cost}}</strong></div>
+        </div>
+        <form class="form-horizontal form-validation" style="margin-top: 15px">
+          <div class="form-group">
+            <label class="col-sm-2 control-label" >Comment</label>
+            <div class="col-sm-4">              
+                <input ng-model="complaint.approve_comment" class="form-control  input-sm"/>              
+            </div>            
+          </div>  
+        </form>
+      </div>
+
+      <hr/>
+      
+      <div class="col-lg-12">
+        <!-- .comment-list -->
+        <div class="m-b b-l m-l-md streamline">
+          <div ng-repeat="row in subcomment_list">
+            <a class="pull-left thumb-sm avatar m-l-n-md">
+              <object width="30" height="30" data="/frontpage/img/default_photo.png" type="image/png">
+                <img src="{{row.picture}}" width="30" height="30">
+              </object>  
+            </a>          
+            <div class="m-l-lg panel b-a">
+              <div class="panel-heading pos-rlt b-b b-light">
+                <span class="arrow left"></span>                    
+                <a href ng-show="row.wholename">{{row.wholename}}({{row.job_role}})</a>
+                <a href ng-show="!row.wholename">System</a>
+                <label class="label bg-success m-l-xs">{{row.reason}}</label> 
+                <span class="text-muted m-l-sm pull-right">
+                  <i class="fa fa-clock-o"></i>
+                    {{getTime(row)}}
+                </span>
+              </div>
+              <div class="panel-body">
+                <div ng-bind-html="row.comment"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </fieldset>  
+
+
+
+
+  </div> 
+</div>

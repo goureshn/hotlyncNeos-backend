@@ -1,0 +1,53 @@
+<div class="modal-content">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">
+            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        </button>
+        <h3 class="modal-title" style="color:#2691d9" id="Heading">Add Files</h3>
+    </div>
+    <br>
+    <div class="modal-body">
+        <form class="form-horizontal form-validation">
+            <div class="form-group" >
+                <div class="col-sm-6">
+                    <label class="control-label text-xs text-muted">Upload File</label>
+                    <button class="btn btn-dark btn-xs" ngf-select="uploadFiles($files)" multiple ngf-max-files="5" ngf-max-size="10MB"
+                        ngf-accept="'image/*,application/pdf,.eml,.msg'" ngf-pattern="'image/*,application/pdf,.eml,.msg'">
+                        <span class="text-success font-bold"><i class="fa fa-folder-open"></i>&nbsp;Add file</span>
+                    </button>
+                    <small class="text-muted">(Max 5 files)</small>
+                    <br>
+                    <small class="text-muted text-xs">Upload .jpg, .jpeg, .png , .msg, .eml and .pdf file with maximum size of 10MB is allowed.</small>
+                </div>
+                <div class="col-sm-6">
+                    <label class="control-label text-xs text-muted"><i class="fa fa-file" aria-hidden="true"></i>&nbsp;Files</label><br/>
+                    <ul style="list-style: none">
+                        <li ng-repeat="f in files" class="text-xs" style="margin-bottom: 5px">
+                            <span class="glyphicon icon-close text-ellipsis" style="margin-top:3px"
+                                ng-click="removeFile($index)">
+                                {{f.name}}
+                            </span>										
+                        </li>
+                    </ul>
+                    <span class="progress" ng-show="progress > 0">
+                        <div style="width:{{progress}}%" ng-bind="progress + '%'"></div>
+                    </span>
+                    {{errorMsg}}                
+                </div>		
+            </div>    					
+        </form>    
+    </div>
+
+    <div class="modal-footer ">
+        <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal" ng-click="onUploadFiles()">
+            <span class="glyphicon glyphicon-ok"></span>
+            <b> Attach</b>            
+        </button>
+        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal" ng-click="cancel()">
+            <span class="glyphicon glyphicon-remove"></span>
+            <b> Cancel</b>
+        </button>
+    </div>
+
+</div>
+

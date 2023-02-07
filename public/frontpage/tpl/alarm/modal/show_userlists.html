@@ -1,0 +1,136 @@
+<style>
+    .modal-body {
+      width: 900px;
+    }
+    .modal-dialog {
+     width: 900px;
+    }
+    .userlist-table {
+    }
+
+    .userlist-table tbody{
+        display: block;
+        position: relative;
+        width: 100%;
+        max-height: 500px;
+        overflow-y: auto;
+    }
+    .userlist-table tr {
+        display: flex;
+        width: 100%;
+    }
+
+    .userlist-table thead th, .userlist-table tbody td {
+        flex-basis: 100%;
+        display: block;
+        padding: 1em;
+        text-align: left;
+    }
+
+    .userlist-table tbody td {
+        padding-left: 15px !important;
+        padding-right: 15px !important;
+    }
+
+
+    .userlist-table tbody td:first-child {
+        padding-left: 20px;
+    }
+
+</style>
+<div class="modal-body wrapper" class="modal-dialog">            
+    <div class="panel-heading"><i class="fa fa-list-ul" aria-hidden="true"></i>&nbsp;{{alarm_name}}</div>
+    <div class="panel-body">
+        <div ng-cloak>
+            <md-content>
+                <md-tabs md-dynamic-height md-border-bottom > 
+                    <md-tab label="User List" md-on-select="getUserList()" index="100" >
+                        <md-content>
+                            <div style="margin-top: 10px">
+                                <label><b>Created Date:</b>&nbsp;&nbsp;{{created_at | mydatetime}}</label> 
+                                <div class="input-group pull-right" style="width: 200px">
+                                    <input type="text" ng-model="search_notify_text" my-enter="onSearchUser()" class="form-control input-sm bg-light no-border rounded padder" placeholder="Search User">
+                                    <span class="input-group-btn">
+                                        <button type="submit"   class="btn btn-sm bg-light rounded"><i class="fa fa-search"></i></button>
+                                    </span>
+                                </div>
+                            </div>
+                            <div style="margin-top: 5px;">
+                                <table  st-table="userlist"   st-pipe="getUserList" class="table ticket table-striped b-t b-light userlist-table" >
+                                    <thead class="tblhead-sm">
+                                    <tr>
+                                        <th align="center"><b>No</b></th>
+                                        <th><b>Recipients</b></th>
+                                        <th><b>Status</b></th>
+                                        <th><b>Notify Type</b></th>
+                                        <th><b>ACK Type</b></th>
+                                        <th><b>ACK Time</b></th>
+                                        <th><b>ACK Duration</b></th>
+                                        <!--<th><b>Changed date</b></th>-->
+                                    </tr>
+                                    </thead>
+                                    <tbody ng-hide="isLoading" directive-when-scrolled="onLoadMore()">
+                                        <tr class="" ng-repeat="row in userlist track by $index">
+                                            <td align="center">
+                                                {{ row.warning_message == '' ? ($index + 1) : ''}}
+                                                <i ng-show="row.warning_message" class="fa fa-exclamation-triangle" 
+                                                        aria-hidden="true" title="{{row.warning_message}}"></i>
+                                            </td>
+                                            <td>
+                                                {{row.user_name}}
+                                            </td>
+                                            <td>{{row.status_name}} <span ng-if="row.kind=='1'">(Escalation {{row.escal_count}}/{{retry_count}})</span></td>
+                                            <td class="text-center"> 
+                                                <a ng-repeat="item in row.notify_type_list">     
+                                                    &nbsp;                                                                              
+                                                    <i class="fa fa-desktop" ng-if="item == 'Desktop'" data-toggle="tooltip" title="Desktop" data-placement="bottom" aria-hidden="true" ></i>
+                                                    <i class="fa fa-comments-o" ng-if="item == 'SMS'" data-toggle="tooltip" title="SMS" data-placement="SMS" aria-hidden="true" ></i> 
+                                                    <i class="fa fa-mobile" ng-if="item == 'Mobile'" data-toggle="tooltip" title="Mobile" data-placement="bottom"  aria-hidden="true" ></i>
+                                                    <i class="fa fa-envelope-o" ng-if="item == 'Email'" data-toggle="tooltip" title="Email" data-placement="bottom"  aria-hidden="true" ></i>
+                                                    <i class="fa fa-phone" ng-if="item == 'IVR'" data-toggle="tooltip" title="IVR" data-placement="bottom"  aria-hidden="true" ></i>
+                                            </a>    
+                                            </td>
+                                            <td class="text-center"> 
+                                                <a ng-repeat="item in row.ack_type_list" >     
+                                                    &nbsp;                                                                              
+                                                    <i class="fa fa-desktop" ng-if="item == 'Desktop'" data-toggle="tooltip" title="Desktop" data-placement="bottom" aria-hidden="true" ></i>
+                                                    <i class="fa fa-comments-o" ng-if="item == 'SMS'" data-toggle="tooltip" title="SMS" data-placement="SMS" aria-hidden="true" ></i> 
+                                                    <i class="fa fa-mobile" ng-if="item == 'Mobile'" data-toggle="tooltip" title="Mobile" data-placement="bottom"  aria-hidden="true" ></i>
+                                                    <i class="fa fa-envelope-o" ng-if="item == 'Email'" data-toggle="tooltip" title="Email" data-placement="bottom"  aria-hidden="true" ></i>
+                                                    <i class="fa fa-phone" ng-if="item == 'IVR'" data-toggle="tooltip" title="IVR" data-placement="bottom"  aria-hidden="true" ></i>
+                                                </a>    
+                                            </td>
+                                            <td class="text-center" >
+                                                <label ng-if='row.notify_status==1'>{{row.ack_date}}</label>                            
+                                            </td>
+                                            <td>{{row.ack_duration}}</td>                      
+                                        </tr>
+                                    </tbody>                    
+                                    <tbody ng-show="isLoading">
+                                        <tr>
+                                            <td colspan="4" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot ng-hide="isLoading">
+                                        <tr ng-show="paginationOptions.totalItems > paginationOptions.pageSize">
+                                            <td colspan="3" class="text-center">
+                                                <div st-pagination="" st-items-by-page="paginationOptions.pageSize" st-displayed-pages="7" class="no-margin"></div>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div> 
+                        </md-content>
+                    </md-tab> 
+                    <md-tab label="Update" md-on-select="getAlarmUpdate(item.id)" index="101" >
+                        <md-content ng-include="'tpl/alarm/update_list.html'"><b>UPDATE</b> 
+                        </md-content>
+                    </md-tab>                     
+                </md-tabs>
+            </md-content>            
+        </div>       
+
+               
+    </div>     
+</div>
+

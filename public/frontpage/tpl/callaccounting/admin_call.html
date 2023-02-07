@@ -1,0 +1,139 @@
+<div ng-controller="AdminCallController">
+    <script type="text/ng-template" id="adminrateTemplate.html">
+        <div class="form-group">
+            <p>Carrier Rate: {{row.carrier_rate}}/min</p>
+        </div>
+    </script>
+	
+	<script type="text/ng-template" id="CallTypeAdminCall.html">
+		<label style="color:#000000">Call Type : </label>
+        <select class='input-sm' ng-model="filters.call_type" ng-change="onChangeCallType()" ng-options="type for type in calltypes" style="color:#000000">
+        </select>
+    </script>
+    <!--
+    <script type="text/ng-template" id="BuildingAdminCall.html">
+		<label style="color:#000000">Building : </label>
+        <select class='input-sm' ng-model="filters.building_id" ng-change="onChangeBuilding()" ng-options="value.id as value.name for (key, value) in buildings" style="color:#000000">
+        </select>
+    </script>
+-->
+    <script type="text/ng-template" id="BuildingAdminCall.html">
+        <div class="btn-group" uib-dropdown is-open="status.isopen" auto-close="disabled" >
+            <ul class="headfilter" role="menu" style="list-style: none; margin-left:-50px;">
+                <li class="line-sm" ng-repeat="building in filter.buildings">
+                    <label class="md-check" style="margin-left: 20px;">
+                        <input type="checkbox" ng-model="building.selected"  ng-click="onChangeBuilding(building)"  />
+                        <i class="green"></i>
+                        {{building.name}}
+                    </label>
+                </li>
+            </ul>
+        </div>
+    </script>
+	
+	<script type="text/ng-template" id="DateAdminCall.html">
+        <style>
+            .popover {
+                max-width: 300px;
+            }
+        </style>
+
+        <div uib-datepicker ng-model="filters.call_date" datepicker-options="dateOptions" date-disabled="  disabled(date, mode)" ng-change="select()">                
+        </div>
+
+	</script>
+	<div style="padding: 3px;">
+		<div class="pull-left">
+			<label style="margin-left: 18px; margin-top: 5px">
+				<i class="fa fa-money" aria-hidden="true"></i>&nbsp;<b>Charged Calls</b>
+			</label>
+		</div>
+		<div class="pull-left" style="margin-left: 20px">
+        <label class="i-switch m-t-xs m-r"  >
+            <input type="checkbox" ng-model="totalcharge" ng-click="onTotalCharge()" >
+            <i></i>
+        </label>
+    </div>
+    <div class="input-group col-sm-2 pull-left">
+	      <input type="text" ng-model="searchtext" ng-keyup="onSearch()" class="form-control input-sm bg-light no-border rounded padder" placeholder="Search">
+	      <span class="input-group-btn">
+	        <button type="submit" class="btn btn-sm bg-light rounded"><i class="fa fa-search"></i></button>
+	      </span>
+	  </div>
+		<div class="pull-right">
+			<label style="margin-right: 20px; margin-top: 5px; margin-bottom: 0px">
+				<i class="fa fa-phone" aria-hidden="true"></i>&nbsp;<b>Total Calls</b> : <label style="color: #FF5722"> {{total_count}}&nbsp; &nbsp;</label>|&nbsp; &nbsp;
+				<i class="fa fa-usd" aria-hidden="true"></i>&nbsp;<b>Total Cost</b> : <label style="color: #FF5722"> {{ currency }} {{total_cost | number :2}} &nbsp; &nbsp; </label>
+			</label>
+		</div>
+	</div>
+	<div>
+	
+    <div class="table table-responsive" style="{{full_height}}">
+        <table  st-table="guestlist" st-pipe="getDataList" class="table ticket table-striped b-t b-light">
+            <thead class="tblhead-sm">
+                <tr>
+                    
+                    <th class="text-center" style="width: 90px">
+                        <a><b>Building&nbsp;&nbsp;</b></a>
+                        <b class="fa fa-fw fa-filter" ng-show="filter.buildings.length > 1" uib-popover-template="'BuildingAdminCall.html'" popover-trigger="outsideClick" popover-placement="bottom" ng-style="{'color' : buildingcolor}"></b>
+                    </th>
+                    <th class="text-center" style="width: 130px; white-space: nowrap" st-sort="id" st-sort-default="reverse"><b>User Name</b></th>
+                    <th class="text-center" style="width: 90px" st-sort="ext"><b>Extension</b></th>
+                    <th class="text-center" style="width: 100px">
+                        <a>&nbsp;<b>Date</b></a>&nbsp;
+                        <b class="fa fa-fw fa-filter" uib-popover-template="'DateAdminCall.html'" popover-is-open="date_selector_is_open" popover-placement="bottom-left"></b>
+                    </th>
+                    <th class="text-center" style="width: 110px; white-space: nowrap"><b>Called No.</b></th>
+                    <th class="text-center" style="width: 90px">
+                        <a st-sort="call_type"><b>Type&nbsp;&nbsp;</b></a>
+                        <b class="fa fa-fw fa-filter" uib-popover-template="'CallTypeAdminCall.html'" popover-trigger="outsideClick" popover-placement="right"></b>
+                    </th>
+                    <th class="text-center" style="width: 90px"><b>Trunk</b></th>
+                    <th class="text-center" style="width: 90px; white-space: nowrap"><b>Start Time</b></th>
+                    <th class="text-center" style="width: 90px; white-space: nowrap"><b>End Time</b></th>
+                    <th class="text-center" style="width: 90px" st-sort="duration"><b>Duration</b></th>
+                    <th class="text-center" style="width: 100px;" st-sort="country"><b>Destination</b></th>
+                    <th class="text-center" style="width: 90px"><b>Charges</b></th>
+                  <!--  <th class="text-center" style="width: 90px"><b>Classify</b></th>-->
+                </tr>
+            </thead>
+            <tbody ng-hide="isLoading">
+                <tr class="" ng-repeat="row in datalist">
+                    <td class="text-center">{{row.building}}</td>
+                    <td class="text-center">
+                        <div ng-show="row.wholename!=''">{{row.wholename}}</div>
+                        <div ng-hide="row.wholename!=''">{{row.description}}</div>
+                    </td>
+                    <td class="text-center">{{row.extension}}</td>
+                    <td class="text-center">{{row.call_date}}</td>
+                    <td class="text-center">{{row.called_no}}</td>
+                    <td class="text-center">{{row.call_type}}</td>
+                    <td class="text-center">{{row.trunk}}</td>
+                    <td class="text-center">{{row.start_time}}</td>
+                    <td class="text-center">{{row.end_time}}</td>
+                    <td class="text-center">{{getDuration(row)}}</td>
+                    <td class="text-center">
+                        <a  uib-popover-template="'adminrateTemplate.html'" popover-trigger="mouseenter" popover-placement="right" popover-title="{{row.country}}">{{row.country}}</a>
+                    </td>
+                    <td class="text-center"><b>{{row.carrier_charges | number :2}}</b></td>
+                <!--    <td class="text-center">{{row.classify}}</td>-->
+                </tr>
+            </tbody>
+            <tbody ng-show="isLoading">
+                <tr>
+                    <td colspan="17" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+                </tr>
+            </tbody>
+            <tfoot ng-hide="isLoading">
+                <tr ng-show="paginationOptions.totalItems > paginationOptions.pageSize">
+                    <td colspan="17" class="text-center">
+                        <div st-pagination="" st-items-by-page="paginationOptions.pageSize" st-displayed-pages="7" class="no-margin"></div>
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+

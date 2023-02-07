@@ -1,0 +1,473 @@
+<div ng-controller="GuestChatController">
+<script type="text/ng-template" id="transfer_select_dialog.html">
+    <div ng-include="'tpl/guestservice/chat/transfer_select_dialog.html'"></div>
+</script>
+	<div id="guest-chat-page">
+		<style>
+			.sub-tab md-tab-content {
+				transition: none !important;
+				-webkit-transform: none !important;
+				-webkit-transform: none !important;
+				-moz-transform: none !important;
+				-ms-transform: none !important;
+				-o-transform: none !important;
+				transform: none !important;
+			}
+
+			.sub-tab .md-active {
+				z-index: 10 !important;
+			}
+			.badge {
+				padding-left: 9px;
+				padding-right: 9px;
+				-webkit-border-radius: 9px;
+				-moz-border-radius: 9px;
+				border-radius: 9px;
+			}
+
+			tr.selected {
+				background-color: skyblue !important;
+			}
+
+			.label-warning[href],
+			.badge-warning[href] {
+				background-color: #c67605;
+			}
+			.chat-notification {
+				font-size: 12px;
+				background: #ff0000;
+				color: #fff;
+				padding: 0 5px;
+				vertical-align: top;
+				margin-left: -10px;
+			}
+			.filter-second button {
+				height: 35px;
+			}
+			.filter-search button, .filter-search input {
+				height: 35px;
+			}
+
+			.blink-waiting {
+				color: dodgerblue;
+				font-weight: bolder;
+				animation: blink-waiting 1.8s steps(1, end) infinite;
+			}
+
+			@keyframes blink-waiting {
+				0% {
+					opacity: 1;
+				}
+				50% {
+					opacity: 0.1;
+				}
+				100% {
+					opacity: 1;
+				}
+			}
+
+			.blink-warning {
+				animation: blink-warning 1.4s steps(1, end) infinite;
+				color: darkorange;
+				font-weight: bolder
+			}
+
+			@keyframes blink-warning {
+				0% {
+					opacity: 1;
+				}
+				50% {
+					opacity: 0.1;
+				}
+				100% {
+					opacity: 1;
+				}
+			}
+
+			.blink-critical {
+				animation: blink-critical 1s steps(1, end) infinite;
+				color: red;
+				font-weight: bolder
+			}
+
+			@keyframes blink-critical {
+				0% {
+					opacity: 1;
+				}
+				50% {
+					opacity: 0.1;
+				}
+				100% {
+					opacity: 1;
+				}
+			}
+
+			.chat-image {
+				/*max-height: 100px;*/
+			}
+
+			.chat-image img {
+				height: 100px;
+			}
+
+			.chat-image .download-image {
+				background-color: red;
+			}
+
+
+		</style>
+		<div class="btn-group" id="btn-filter-drop-down" uib-dropdown is-open="filter_is_open" auto-close="disabled">
+	    	<button class="btn btn-default btn-sm" style="height: 35px; font-size: 14px" uib-dropdown-toggle ng-disabled="disabled">
+	    	  	&nbsp;&nbsp;&nbsp;&nbsp;Filter&nbsp;&nbsp;&nbsp; <span class="caret"></span>
+	    	</button>
+	    	<div class="dropdown-menu" id="filter-drop-down" style="width: 500px" uib-dropdown-menu role="menu" aria-labelledby="single-button">
+		    	<form role="form">
+		    		<div class="form-group col-sm-12">
+			            <label>Periods</label>
+			            <input style="width: 100%" ng-model="daterange" ui-jq="daterangepicker" ui-options="dateRangeOption" class="form-control input-sm">
+		            </div>
+		            <div class="form-group col-sm-12">
+			            <label>Agents</label>
+			            <tags-input ng-model="agent_tags" display-property="agent_name" placeholder="Add Agent" style="margin-top: -7px" replace-spaces-with-dashes="false">
+			            	<auto-complete source="loadAgentFilters($query)"
+			                                 min-length="0"
+			                                 load-on-focus="true"
+			                                 load-on-empty="true"
+			                                 debounce-delay="0"
+			                                 max-results="10">
+			                </auto-complete>
+			            </tags-input>
+		            </div>
+		            <div class="form-group col-sm-12">
+		              	<label>Room Numbers</label>
+		              	<tags-input ng-model="room_tags" display-property="room" placeholder="Add Room" style="margin-top: -7px" replace-spaces-with-dashes="false">
+			            	<auto-complete source="loadRoomFilters($query)"
+			                                 min-length="0"
+			                                 load-on-focus="true"
+			                                 load-on-empty="true"
+			                                 debounce-delay="0"
+			                                 max-results="10">
+			                </auto-complete>
+			            </tags-input>
+		            </div>
+					<div class="form-group col-sm-12">
+						<label>Status</label>
+						<div class="row">
+							<div class="col-sm-4">
+								<input type="checkbox" ng-model="status_filter[0].checked">&nbsp;&nbsp;{{status_filter[0].label}}
+							</div>
+							<div class="col-sm-4">
+								<input type="checkbox" ng-model="status_filter[1].checked">&nbsp;&nbsp;{{status_filter[1].label}}
+							</div>
+							<div class="col-sm-4">
+								<input type="checkbox" ng-model="status_filter[2].checked">&nbsp;&nbsp;{{status_filter[2].label}}
+							</div>
+						</div>
+					</div>
+		            <div class="form-group col-sm-12">
+		            	<div class="pull-right">
+		            		<button type="button" class="btn btn-sm w-xs btn-info" ng-click="onFilterReset()">Reset</button>
+		            		<button type="button" class="btn btn-sm w-xs btn-primary" ng-click="onFilterSearch()">Search</button>
+		            	</div>
+		            </div>
+
+		        </form>
+	    	</div>
+	    </div>
+
+		<div class="input-group pull-right filter-search" style="width: 200px; margin-right: 20px">
+			<input type="text" ng-model="search_text" ng-keyup="$event.keyCode == 13 && onSearch()" class="form-control input-sm bg-light no-border 		rounded padder" placeholder="Search">
+			<span class="input-group-btn">
+			      	<button type="button" class="btn btn-sm bg-light rounded" ng-click="onSearch()"><i class="fa fa-search"></i></button>
+			    </span>
+		</div>
+	</div>
+	<div>
+		<div class="table table-responsive" style="height: 250px; overflow-y: auto">
+			<table  st-table="ticketlist" class="table ticket table-striped b-t b-light" style="width:100%; margin:auto">
+				<thead class="" style="font-size: .7vw">
+					<tr>
+						<th class="text-center"><b>ID</b></th>
+						<th class="text-center"></th>
+						<th class="text-center"></th>
+						<th class="text-center"><b>Guest Type</b></th>
+						<th class="text-center"><b>Guest Name</b></th>
+						<th class="text-center"><b>Guest Find Path</b></th>
+						<th class="text-center"><b>Mobile Number</b></th>
+						<th class="text-center"><b>Room</b></th>
+						<th class="text-center"><b>Agent Name</b></th>
+						<th class="text-center"><b>Status</b></th>
+						<th class="text-center"><b>Duration</b></th>
+						<th class="text-center"><b>Wait Time</b></th>
+						<th class="text-center"><b>Start Time</b></th>
+						<th class="text-center"><b>Language</b></th>
+					</tr>
+			  	</thead>
+				<tbody>
+					<tr ng-repeat="row in chat_session_list"
+						ng-class="{'selected' : row.id == current_session.id}" ng-click="onSelectChatSession(row)">
+						<td class="text-center" style="width: 60px"><span>{{row.id}}</span></td>
+						<td class="text-center" style="width: 30px">
+							<div ng-if="(row.status == 'Waiting' || row.status == 'Active') && row.spam_id && row.spam_status && row.spam_agent_id == agent_id" title="Spam request">
+								<i class="fa fa-exclamation-circle" style="color: orangered; font-size:24px"></i>
+							</div>
+						</td>
+						<td class="text-center" style="width: 40px">
+							<div ng-if="row.unread > 0" title="Unread chats">
+								<i class="fa fa-comment" style="color: deepskyblue; font-size:24px"></i>
+								<span class='badge badge-warning chat-notification'>{{row.unread}}</span>
+							</div>
+						</td>
+						<td class="text-center"><span>{{row.guest_type}}</span></td>
+						<td class="text-center"><span>{{row.phonebook_id && row.phonebook_name ? row.phonebook_name : (row.guest_name ? row.guest_name : 'Unknown')}}</span></td>
+						<td class="text-center"><span title="{{row.guest_path}}">{{row.guest_path.length > 20 ? row.guest_path.slice(0, 17) + '...' : row.guest_path}}</span></td>
+						<td class="text-center"><span>{{row.mobile_number}}</span></td>
+						<td class="text-center"><span>{{row.room}}</span></td>
+						<td class="text-center"><span>{{row.agent_name}}</span></td>
+						<td class="text-center">
+							<span ng-if="row.status == 'Waiting'"
+								  ng-class="{'blink-waiting': (curSetting.warning_time == 0 || row.waiting_time_seconds < curSetting.warning_time * 60),
+								  'blink-warning': curSetting.warning_time != 0 && curSetting.critical_time != 0 && row.waiting_time_seconds >= curSetting.warning_time * 60 && row.waiting_time_seconds < curSetting.critical_time * 60,
+								  'blink-critical': curSetting.critical_time != 0 && row.waiting_time_seconds > curSetting.critical_time * 60
+								  }">{{row.status}} {{row.transfer_id > 0 ? ' -> ' + row.waiting_time_seconds : ''}}</span>
+							<span ng-if="row.status != 'Waiting'">{{row.status}} {{row.transfer_id > 0 ? ' -> ' + row.transfer_name : ''}}</span>
+						</td>
+						<td class="text-center"><span>{{row.duration}}</span></td>
+						<td class="text-center"><span>{{row.wait_time}}</span></td>
+						<td class="text-center"><span>{{row.start_time}}</span></td>
+						<td class="text-center"><span>{{row.language_name}}</span></td>
+
+					</tr>
+				</tbody>
+			</table>
+	  	</div>
+	  	<div>
+	  		<div class="col-sm-6" style="padding: 0px">
+	  			<div class="panel panel-default">
+				    <div class="panel-heading">
+				    	<label class="text-sm font-bold"><i class="fa fa-comment text-default"></i>&nbsp;&nbsp;Duration: {{current_session.duration}}
+				    		<span class="label m-l-sm"
+				    			ng-class="{
+				    				'bg-wakeup-waiting': current_session.status=='Waiting',
+				    				'bg-wakeup-success': current_session.status=='Active',
+				    				'bg-wakeup-canceled': current_session.status=='Ended'
+				    				}"
+				    			>
+				    	  		{{current_session.status}}
+				    	  	</span>
+				    	</label>
+
+				    	<div class="pull-right">
+							<button style="width: 130px" class="btn btn-default btn-sm"  ng-disabled="current_session.guest_type == 'In-House' || current_session.agent_id != agent_id" ng-click="onChangePhonebookInfo(current_session)">
+								{{current_session.phonebook_id ? 'Change Phonebook' : 'Add to phonebook'}}
+							</button>
+							&nbsp;
+				    		{{current_session.typing_flag == 0 ? 'Typing...' : ''}}
+				    	  	<div class="btn-group" uib-dropdown>
+						    	<button class="btn btn-default btn-sm" uib-dropdown-toggle ng-disabled="current_session.status != 'Active' || current_session.agent_id != agent_id">
+						    	  	&nbsp;&nbsp;Chat Action&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="caret"></span>
+						    	</button>
+						    	<ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
+									<li role="menuitem" ng-class="{'disabled': isLoadingSpam == true}" ng-click="onSetMark(current_session)"><a>{{current_session.spam_id && current_session.spam_status && current_session.spam_agent_id == agent_id ? 'Remove From Spam' : 'Mark As Spam'}}</a></li>
+									<li role="menuitem" ng-click="onEndChat(current_session)"><a>End Chat</a></li>
+							    	<li role="menuitem" ng-show="current_session.transfer_id < 1" ng-click="onTransferRequest(current_session)"><a>Request Transfer</a></li>
+							    	<li role="menuitem" ng-show="current_session.transfer_id > 0" ng-click="onTransferCancel(current_session)"><a>Cancel Transfer</a></li>
+						    	</ul>
+						    </div>
+							<div class="btn-group" uib-dropdown style="padding-left: 10px">
+								<button class="btn btn-default btn-sm" uib-dropdown-toggle>
+									&nbsp;&nbsp;Preset messages&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="caret"></span>
+								</button>
+								<ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
+									<li role="menuitem" ng-click="onSetPresetMessage(msgInfo)" ng-repeat="msgInfo in presetMessages">
+										<a>{{msgInfo.message}}</a>
+									</li>
+									<li role="menuitem"><a></a></li>
+									<li role="menuitem" class="text-center"><button type="button" style="width: 100px" class="btn btn-sm btn-default" ng-click="onShowPresetMessageModal()">Set</button> </li>
+								</ul>
+							</div>
+				    	</div>
+				    </div>
+					<div class="panel-heading" style="background-color: white">
+						<label style="font-size: 1.2em; margin: 0;">{{current_session.guest_path}}</label>
+					</div>
+				    <div class="panel-body" fill-height additional-padding="420" scroll-glue>
+
+						<div class="m-b" ng-repeat="msg in messages">
+					        <a ng-if="msg.direction == 0" href class="pull-left" ng-style="{'margin-top': msg.language == 'en' || !msg.text_trans ? '0px' : '20px'}">
+					          	<button class="btn btn-rounded btn-lg btn-icon btn-default">G</button>
+					        </a>
+					        <!-- incoming -->
+					        <div class="m-l-xxl" style="margin-left: 60px" ng-if="msg.direction == 0">
+
+								<div ng-if="msg.chat_type == 'audio'">
+									<audio controls src="{{msg.attachment | trustUrl}}">
+									</audio>
+								</div>
+								<div ng-if="msg.chat_type == 'video'">
+									<video height="200" controls src="{{msg.attachment | trustUrl}}">
+									</video>
+								</div>
+								<div ng-if="msg.chat_type != 'audio' && msg.chat_type != 'video'">
+									<div ng-show="msg.language != 'en' && msg.text_trans">
+										<label class="font-bold">
+											(
+											<a class="text-sm ng-binding" dynamic="msg.text_trans">
+											</a>
+											)
+										</label>
+									</div>
+									<div class="pos-rlt wrapper b b-light bg-info r r-2x" ng-if="msg.chat_type == 'text'">
+										<span class="arrow left pull-up arrow-info"></span>
+										<p ng-if="msg.text != ''" class="m-b-none chat" dynamic="msg.text"></p>
+									</div>
+									<div class="pos-rlt wrapper b b-light bg-info r r-2x" ng-if="msg.chat_type == 'image'">
+										<span class="arrow left pull-up arrow-info"></span>
+										<div class="chat-image">
+											<img ng-src="{{msg.attachment}}" alt="" ng-click="onShowFullImage(msg.attachment)"/>
+										</div>
+										<p ng-if="msg.text != ''" class="m-b-none chat" dynamic="msg.text"></p>
+									</div>
+									<div class="pos-rlt wrapper b b-light bg-info r r-2x" ng-if="msg.chat_type == 'document'">
+										<span class="arrow left pull-up arrow-info"></span>
+										<a href="{{msg.attachment}}" download="{{msg.text}}">
+											<i ng-if="msg.attachment.includes('.pdf')" class="fa fa-file-pdf-o" ></i>
+											<i ng-if="msg.attachment.includes('.xls') || msg.attachment.includes('.xlsx')"
+											   class="fa fa-file-excel-o" ></i>
+											<i ng-if="msg.attachment.includes('.csv') || msg.attachment.includes('.txt')" class="fa fa-file-text" ></i>
+											<i ng-if="msg.attachment.includes('.docx') || msg.attachment.includes('.doc')" class="fa fa-file-word-o" ></i>
+
+											<i ng-if="!msg.attachment.includes('.pdf') && !msg.attachment.includes('.xls')
+											&& !msg.attachment.includes('.xlsx') && !msg.attachment.includes('.csv')
+											&& !msg.attachment.includes('.txt') && !msg.attachment.includes('.docx')
+											&& !msg.attachment.includes('.doc')" class="fa fa-file"></i>
+											&nbsp;{{msg.text}}
+										</a>
+									</div>
+								</div>
+
+					        	<small class="text-muted"><i class="fa fa-ok text-success"></i>{{ msg.created_at | mydate: "h:mm a" }}</small>
+					        </div>
+					        <!-- outgoing -->
+					        <div ng-if="msg.direction == 1">
+
+					        	<div style="text-align: right">
+					        		<label class="font-bold">
+					        			<a class="text-sm ng-binding">
+					        			  	<i class="fa fa-user text-primary"></i>
+					        			  &nbsp;{{agent_id == msg.agent_id ? 'Me' : msg.agent_name}}
+					        			</a>
+					        		</label>
+					        	</div>
+								<div ng-if="msg.chat_type == 'video'">
+									<video height="200" controls src="{{msg.attachment | trustUrl}}"></video>
+								</div>
+								<div ng-if="msg.chat_type == 'audio'" style="text-align: right">
+									<audio controls src="{{msg.attachment | trustUrl}}">
+									</audio>
+								</div>
+					        	<div class="pos-rlt wrapper bg-primary r r-2x" ng-if="msg.chat_type != 'audio' && msg.chat_type != 'video'">
+					        	  	<span class="arrow right pull-up arrow-primary"></span>
+									<div ng-if="msg.chat_type == 'image'" class="chat-image">
+										<img ng-src="{{msg.attachment}}" alt="" ng-click="onShowFullImage(msg.attachment)"/>
+										<p ng-if="msg.text != ''" class="m-b-none chat" dynamic="msg.text"></p>
+									</div>
+									<div ng-if="msg.chat_type == 'text'">
+										<p ng-if="msg.text != ''" class="m-b-none">{{msg.text}}</p>
+									</div>
+									<div ng-if="msg.chat_type == 'document'">
+										<a href="{{msg.attachment}}" download="{{msg.text}}">
+											<i ng-if="msg.attachment.includes('.pdf')" class="fa fa-file-pdf-o" ></i>
+											<i ng-if="msg.attachment.includes('.xls') || msg.attachment.includes('.xlsx')"
+											   class="fa fa-file-excel-o" ></i>
+											<i ng-if="msg.attachment.includes('.csv') || msg.attachment.includes('.txt')" class="fa fa-file-text" ></i>
+											<i ng-if="msg.attachment.includes('.docx') || msg.attachment.includes('.doc')" class="fa fa-file-word-o" ></i>
+
+											<i ng-if="!msg.attachment.includes('.pdf') && !msg.attachment.includes('.xls')
+											&& !msg.attachment.includes('.xlsx') && !msg.attachment.includes('.csv')
+											&& !msg.attachment.includes('.txt') && !msg.attachment.includes('.docx')
+											&& !msg.attachment.includes('.doc')" class="fa fa-file"></i>
+											&nbsp;{{msg.text}}
+										</a>
+									</div>
+					        	</div>
+					        	<small class="text-muted">{{ msg.created_at | mydate: "h:mm a" }}</small>
+					        </div>
+				      	</div>
+
+				    </div>
+				    <footer class="panel-footer">
+				     	<div>
+					        <form class="m-b-none">
+					        	<div class="input-group" ng-show="current_session.status != 'Waiting' && (current_session.status != 'Active' || current_session.transfer_id != agent_id)">
+					        		<input type="text" class="form-control" id="guest_chat_input" ng-model="current_session.chat" placeholder="Write a message..." ng-disabled="current_session.status != 'Active' || current_session.agent_id != agent_id"
+										   ng-keydown="onTextareaKeypress($event.which)" ng-focus="onSelectMessage(current_session)"
+					        		ng-change="onChangeChat(current_session.chat)"  ng-model-options="{debounce: 500}"
+					        		>
+					        		<span class="input-group-btn" >
+					        			<button class="btn btn-default" type="button"
+												ng-disabled="!current_session.chat || current_session.status != 'Active' || current_session.agent_id != agent_id"
+												style="font-size: 12px"
+												ng-click="onSendMessage(current_session.chat)">Send</button>
+										<button class="btn btn-default" type="button"
+												title="Recording..."
+												ng-disabled="current_session.status != 'Active' ||current_session.agent_id != agent_id"
+												style="font-size: 12px"
+												ng-click="onShowRecorderModal(current_session)">
+											<i class="fa fa-microphone"></i>
+										</button>
+										<button class="btn btn-default" type="button"
+												title="Upload file..."
+												ng-disabled="current_session.status != 'Active' ||current_session.agent_id != agent_id"
+												style="font-size: 12px"
+												ng-click="onShowFileUploadModal(current_session)">
+											<i class="fa fa-paperclip"></i>
+										</button>
+					        		</span>
+					        	</div>
+					        	<div class="text-center" ng-show="current_session.status == 'Waiting' || current_session.status == 'Active' && current_session.transfer_id == agent_id">
+					        		<button class="btn btn-primary w-sm" style="font-size: 12px" type="button" ng-click="onAcceptChat(current_session)">Accept</button>
+					        	</div>
+					        </form>
+					    </div>
+				    </footer>
+				</div>
+	  		</div>
+	  		<div class="col-sm-6 sub-tab" style="padding: 0px">
+
+				<md-content class="call_menu navi clearfix" active="chat_active">
+					<md-tabs md-selected="0"  md-disable-animation md-autoselect md-dynamic-height md-border-bottom style="height:30px;">
+						<md-tab md-disable-animation style="margin:8px -5px 0px;" class="{{chat_active == 1 ? 'tab-current' : ''}}">
+							<md-tab-label>
+								<i class="fa fa-users"></i>&nbsp;&nbsp;Details
+							</md-tab-label>
+							<md-tab-body>
+								<div class="stretch" debounce-wait="500" ng-include="'tpl/guestservice/chat/chat_detail.html'">
+								</div>
+							</md-tab-body>
+						</md-tab>
+						<md-tab md-disable-animation style="margin:8px -5px 0px;" class="{{chat_active == 2 ? 'tab-current' : ''}}">
+							<md-tab-label>
+								<i class="fa fa-user"></i>&nbsp;&nbsp;History
+							</md-tab-label>
+							<md-tab-body>
+								<div class="stretch" debounce-wait="500" ng-include="'tpl/guestservice/chat/chat_history.html'">
+								</div>
+							</md-tab-body>
+						</md-tab>
+						<md-tab md-disable-animation style="margin:8px -5px 0px;" class="{{chat_active == 3 ? 'tab-current' : ''}}">
+							<md-tab-label>
+								<i class="fa fa-user"></i>&nbsp;&nbsp;Guest Request
+							</md-tab-label>
+							<md-tab-body>
+								<div fill-height additional-padding="420" class="stretch" debounce-wait="500" ng-include="'tpl/guestservice/ticket/guest_request.html'" ng-init="isOnlyGuestRequest = false" ng-controller="GuestrequestController">
+								</div>
+							</md-tab-body>
+						</md-tab>
+					</md-tabs>
+				</md-content>
+	  		</div>
+	  	</div>
+	</div>
+
+</div>

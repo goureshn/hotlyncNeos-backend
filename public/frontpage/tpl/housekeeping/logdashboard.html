@@ -1,0 +1,74 @@
+<style>
+.room_status td {        
+    text-align: center;
+    font-weight: bold;
+}
+
+.room_status td.group {
+    width: 300px;    
+    background: #ddebf7;
+    border: 1px solid #555;
+}
+
+.room_status td.floor {
+    width: 210px;    
+    background: #e2efda;
+    border: 1px solid #555;
+}
+
+.room_status td.room {
+    width: 200px;
+    border: 1px solid #cecece;    
+    cursor: pointer;
+}
+
+.room_status td.room.dirty {
+    color: white;
+    background: #e77c6e;
+}
+
+.room_status td.room.completed {
+    color: white;
+    background: #86c789;
+}
+
+.room_status td.room.declined {
+    color: white;
+    background: #607d8b;
+}
+
+.room_status td.room.postponed {
+    color: white;
+    background: #ff9800;
+}
+
+.room_status td.room.dnd {
+    color: white;
+    background: #f44336;
+}
+
+.room_status td.room.progress {
+    color: white;
+    background: #008a8a;
+}
+
+
+
+
+</style>
+<div ng-controller="LogDashboardController">
+   <table class="room_status">
+        <tbody>
+            <tr ng-repeat="row in room_status">            
+                <td class="{{cell.class}}" rowspan="{{cell.span}}" ng-repeat="cell in row" ng-click="onClickCell(cell)">
+                    {{cell.type == 0 ? cell.data.name : ''}}
+                    {{cell.type == 1 ? 'Floor ' + cell.data.name : ''}}
+                    {{cell.type == 2 ? cell.data.room : ''}}
+                </td>                
+            </tr>
+            <tr ng-show="room_status.length < 1">
+                <td colspan="12" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+            </tr>
+        </tbody>   
+   </table>
+</div>

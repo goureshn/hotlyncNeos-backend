@@ -15,6 +15,7 @@ use App\Http\Controllers\Backoffice\Admin\DepartmentWizardController;
 use App\Http\Controllers\Backoffice\Property\BuildingWizardController;
 use App\Http\Controllers\Backoffice\Property\LicenseWizardController;
 use App\Http\Controllers\Backoffice\Property\PropertyWizardController;
+use App\Http\Controllers\Backoffice\Property\RoomWizardController;
 use App\Http\Controllers\Backoffice\Property\LocationWizardController;
 use App\Http\Controllers\Backoffice\User\UserWizardController;
 use App\Http\Controllers\Frontend\ReportController;
@@ -46,7 +47,21 @@ Route::prefix('property/wizard')->group(function () {
     
     Route::resource('license', LicenseWizardController::class);
     Route::post('uploadlicense', [LicenseWizardController::class, 'uploadLicense']);
+    
+    Route::post('/location/createtype', [LocationWizardController::class, 'createLocationType']);
+    Route::resource('location', LocationWizardController::class);
+    Route::get('location_type', [LocationWizardController::class, 'getTypeList']);
     Route::get('locationindex', [LocationWizardController::class, 'locationIndex']);
+
+    Route::get('/roomlist/assist', [RoomWizardController::class,'getRoomAssistList']);
+
+    // Export
+    Route::controller(ReportController::class)->withoutMiddleware('api_auth_group')->group(function () {
+        Route::get('audittask_excelreport', 'downloadAuditExcelReportTask');
+        Route::get('auditdeptfunc_excelreport', 'downloadAuditExcelReportDeptFunc');
+        Route::get('auditdevice_excelreport', 'downloadAuditExcelReportDevice');
+        Route::get('audituser_excelreport', 'downloadAuditExcelReportUser');
+    });
 });
 
 Route::group(['prefix'=>'guestservice/wizard','as'=>'guestservice.wizard.'], function () {

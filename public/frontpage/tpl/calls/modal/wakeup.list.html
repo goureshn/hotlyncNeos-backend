@@ -1,0 +1,58 @@
+<div class="table table-responsive">
+	<table  st-table="guestlist"  st-pipe="getWakeupList" class="table ticket table-striped b-t b-light">
+		<thead class="tblhead-sm" style="font-size: .8vw; height: 30px">
+			<tr>
+				<th class="text-center" st-sort="id" style="white-space: nowrap">
+					<b>&nbsp;Ref. No</b>
+				</th>
+				<th class="text-center" st-sort="time" st-sort-default="ascending"><b>&nbsp;Time</b></th>
+				<th class="text-center"><b>Guest</b></th>
+				<th class="text-center" st-sort="room"><b>&nbsp;Room</b></th>
+				<th class="text-center"><b>Set-by</b></th>
+				<th class="text-center"><b>Attempts</b></th>
+				<th class="text-center"><b>Fail Reason</b></th>
+				<th class="text-center"><b>Status</b></th>
+			</tr>
+		</thead>
+		<tbody ng-hide="isLoading" style="font-size: .8vw">
+			<tr ng-repeat="row in wakup_list " style="cursor:pointer;">
+				<td>{{row.id}}</td>
+				<td>{{row.time}}</td>
+				<td>{{row.guest_name}}</td>
+				<td>{{row.room}}</td>
+				<td>{{row.set_by}}</td>
+				<td>{{row.attempts}}</td>
+				<td>{{row.fail_reason}}</td>
+				<td><a><span ng-class="{'label' : true, 'm-l-sm': true,
+												'bg-wakeup-pending': row.status == 'Pending',
+												'bg-wakeup-in-progress': row.status == 'In-Progress',
+												'bg-wakeup-success': row.status == 'Success',
+												'bg-wakeup-snooze': row.status == 'Snooze',
+												'bg-wakeup-busy': row.status == 'Busy',
+												'bg-wakeup-no-answer': row.status == 'No Answer',
+												'bg-wakeup-not-confirm': row.status == 'Not Confirmed',
+												'bg-wakeup-canceled': row.status == 'Canceled',
+												'bg-wakeup-failed': row.status == 'Failed',
+												'bg-wakeup-waiting': row.status == 'Waiting',
+											}"
+								>{{row.status}}
+							</span>
+						</a>
+				</td>
+
+			</tr>
+		</tbody>
+		<tbody ng-show="isLoading">
+			<tr>
+				<td colspan="7" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+			</tr>
+		</tbody>
+		<tfoot ng-hide="true">
+			<tr ng-show="paginationOptionsWakeup.totalItems > paginationOptionsWakeup.pageSize">
+				<td colspan="7" class="text-center">
+					<div st-pagination="" st-items-by-page="paginationOptionsWakeup.pageSize" st-displayed-pages="7" class="no-margin"></div>
+				</td>
+			</tr>
+		</tfoot>
+	</table>
+</div>

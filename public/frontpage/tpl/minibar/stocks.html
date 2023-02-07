@@ -1,0 +1,64 @@
+<div ng-controller="MinibarStockController" style="{{full_height}}">
+    <div class="">
+        <div>
+		<div>
+            <div class="form-horizontal col-md-12 wrapper" style="display: table; background-color: #141414; padding-top: 10px">
+								<div class="row" style="width: 200px !important; margin: 0px; display: inline-block">
+									<h3 class="m-n font-thin" style="white-space: nowrap; color: #337ab7"> <i class="fa fa-glass"></i>&nbsp;&nbsp;Minibar Stock</h3>
+								</div>
+								<div class="input-group col-md-2 pull-right">
+                    <input type="text" ng-model="searchtext" ng-keyup="onSearch()" class="form-control input-sm bg-light no-border rounded padder" placeholder="Search">
+                      <span class="input-group-btn">
+                        <button type="submit" class="btn btn-sm bg-light rounded"><i class="fa fa-search"></i></button>
+                      </span>
+            </div>
+			</div>
+            <div class="table table-responsive">
+                <table  st-table="guestlist"  st-pipe="getDataList" st-pipe="getGuestList" class="table table-striped ticket">
+                    <thead >
+                        <tr class="tblhead-sm">
+                            <th class="text-center" st-sort="id" st-sort-default="ascend" style="width: 5%">ID &nbsp;</th>
+                            <th class="text-center" style="width: 15%"><b>Item Name</b></th>
+                            <th class="text-center" style="width: 10%" st-sort="room"><b>Remaining Count</b></th>
+                            <th class="text-center" st-sort="item_ids" style="width: 15%"><b>Alarm Count</b></th>
+                            <th class="text-center" st-sort="total_amount" style="width: 10%"><b>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody ng-hide="isLoading">
+                        <tr class="" ng-repeat="row in datalist" >
+                            <td class="text-center">
+                                <a>{{row.id}}</a>
+                            </td>
+                            <td class="text-center">{{row.item_name}}</td>
+                            <td class="text-center">{{row.item_stock}}</td>
+                            <td class="text-center">{{row.alarm_count}}</td>
+							<td class="text-center">
+								<div class="dropdown">
+                                <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" ng-click="editStock(row)">Edit 
+                                    <!--<span class="caret"></span>-->
+								</button>
+                                <!--<ul class="dropdown-menu">
+                                    <li><a ng-click="addUtil(row)">Add</a></li>
+                                    <li><a>Remove </a></li>
+                                </ul>!-->
+								</div>
+							</td>
+                        </tr>
+                    </tbody>
+                    <tbody ng-show="isLoading">
+                    <tr>
+                        <td colspan="9" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+                    </tr>
+                    </tbody>
+                    <tfoot ng-hide="isLoading">
+                        <tr ng-show="paginationOptions.totalItems > paginationOptions.pageSize">
+                            <td colspan="9" class="text-center">
+                                <div st-pagination="" st-items-by-page="paginationOptions.pageSize" st-displayed-pages="7" class="no-margin"></div>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

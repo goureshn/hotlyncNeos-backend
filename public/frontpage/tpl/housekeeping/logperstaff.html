@@ -1,0 +1,84 @@
+<div ng-controller="LogPerStaffController">
+    <div class="wrapper-md1">
+        <div class="panel panel-default">
+            <div class="panel-heading">Logs</div>
+            <div class="panel-body">
+                <form class="form-horizontal form-validation">
+                    <div class="form-group">
+                        <label class="col-sm-1 control-label">View By</label>
+                        <div class="col-sm-2">
+                            <select class='form-control input-sm' ng-model="view_by" ng-change="onChangeViewBy()" style="width: 200px"
+                                    ng-options="type for type in viewtypes">
+                            </select>
+                        </div>
+                        <label class="col-sm-1 control-label">Select {{view_by}}</label>
+                        <div class="col-sm-2">
+                            <select class='form-control input-sm' ng-model="ids"  style="width: 200px"
+                                    ng-options="value.id as value.item_name for (key, value) in itemlist" multiple>
+                            </select>
+                        </div>
+                        <div class="pull-right" style="margin-right: 20px">
+                            <button type="submit" class="btn btn-primary" ng-click="onShowList()">Show</button>
+                            <button type="submit" class="btn btn-default">Cancel</button>
+                        </div>
+                    </div>
+                </form>
+
+                <div>
+                    <div class="col-sm-4 drag_animate"
+                         ng-repeat="item in datalist"
+                         ng-model="datalist"
+                         data-drop="true"
+                         data-drag="true"
+                         jqyoui-droppable="{index: {{$index}}}"
+                         jqyoui-draggable="{index: {{$index}}, insertInline: true, direction:'jqyouiDirection'}"
+                         data-jqyoui-options="{revert: 'invalid'}"
+                         data-direction="{{item.jqyouiDirection}}"
+                    >
+                        <div class="panel panel-default">
+                            <div class="panel-heading" style="cursor: Move">
+                                <div>
+                                    {{item.title}}
+                                    <span class="pull-right">{{item.room_list.length}} Rooms</span>
+                                </div>
+                                <div style="margin-top: 4px">
+                                    Dirty: {{item.dirty}}
+                                    <span style="margin-left: 20px">DND: {{item.dnd}}</span>
+                                    <span style="margin-left: 20px">Clean: {{item.clean}}</span>
+                                </div>
+                            </div>
+                            <div class="panel-body" style="padding: 0px">
+                                <uib-progressbar  value="item.complete_ratio" type="success" class="progress-sm"><b>{{item.complete_ratio}}%</b></uib-progressbar>
+                                <table class="table">
+                                    <thead >
+                                    <tr >
+                                        <th><b>ID</b></th>
+                                        <th><b>Room Number</b></th>
+                                        <th><b>Housekeeping Status</b></th>
+                                        <th><b>Assign to</b></th>
+                                        <th><b>Start Time</b></th>
+                                        <th><b>End Time</b></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr class="" ng-repeat="subrow in item.room_list">
+                                        <td style="width: 40px">
+                                            <a>{{subrow.id}}</a>
+                                        </td>
+                                        <td>{{subrow.room}}</td>
+                                        <td>{{subrow.status}}</td>
+                                        <td>{{subrow.assigne_to}}</td>
+                                        <td>{{subrow.start_time | mytime}}</td>
+                                        <td>{{subrow.end_time | mytime}}</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

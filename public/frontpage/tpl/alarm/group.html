@@ -1,0 +1,207 @@
+<script type="text/ng-template" id="alarmTypeahead.html">
+   <a>
+        <span ng-bind="match.model.name"></span>
+   </a>
+</script>
+
+<script type="text/ng-template" id="alarm_list.html">
+    <ul class="headfilter" role="menu" style="list-style: none; margin-left:-50px;">
+        <li class="line-sm" ng-repeat="item in row.alarm_list">
+            {{item.name}}
+        </li>
+    </ul>    
+</script>
+	
+
+<div ng-controller="AlarmGroupController">
+    <div class="wrapper-md1">
+        <div class="col-sm-3">
+            <div class="panel panel-default">
+                <div class="panel-heading"><i class="fa fa-plus" aria-hidden="true"></i>&nbsp;Add Group List</div>
+                <div class="panel-body">
+                    <form class="form-horizontal form-validation">
+                        <input type="hidden" ng-model="gorup_id"  />
+                        <div class="form-group" >
+                            <div class="col-sm-12">
+                                <label class="text-muted">Group name</label><label class="field_title" style="color:#F44336">*</label>
+                                <input ng-model="group_name" class="form-control  input-sm" required/>
+                            </div>
+                        </div>
+                        <div class="form-group" >
+                            <div class="col-sm-12">
+                                <label class="text-muted">Description</label>
+                                <label style="color:#F44336">*</label>
+                                <input ng-model="group_description" class="form-control  input-sm" required/>
+                            </div>
+                        </div>
+                        <div class="form-group" >
+                            <div class="col-sm-6">
+                                <label class="text-muted">Default Notification</label>
+                                <label style="color:#F44336">*</label>   
+                                <select  class='form-control' ng-model="group_notification" multiple >                                 
+                                    <option value="SMS">SMS</option>
+                                    <option value="Mobile">Mobile</option>
+                                    <option value="Email">Email</option>
+                                    <option value="IVR">IVR</option>
+                                    <option value="Webpush">Webpush</option>
+                                    <option value="Desktop">Desktop</option>
+                                    <option value="WhatsApp">WhatsApp</option>
+                                </select> 
+                                <label class="err_message">{{default_notifi_err}}</label>               
+                            </div>
+                            <div class="col-sm-6"> 
+                               <label class="text-muted">Flag</label>
+                                <label style="color:#F44336">*</label>   
+                                <select  class='form-control' ng-model="group_flag"
+                                    ng-options="item as item.name for item in flags track by item.id">
+                                </select>      
+                            </div>
+                        </div>                        
+                        <div class="form-group">
+                            <div class="col-sm-6">
+                                <label class="text-muted">Permission</label>
+                                <select  class='form-control' ng-model="group_permission"
+                                    ng-options="item as item.name for item in permissions track by item.id">  
+                                </select>    
+                            </div>
+                             <div class="col-sm-6">
+                                <label class="text-muted">Status</label>
+                                <label style="color:#F44336">*</label>                                   
+                                 <select class='form-control' ng-model="group_status" multiple  >
+                                    <option value="1" ng-if="group_permission.id == 0 || group_permission.id ==1 ">Acknowledge</option>
+                                    <option value="2" ng-if="group_permission.id ==1" >Check</option>
+                                    <option value="3" ng-if="group_permission.id ==1">Clear</option>
+                                </select>                                                       
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="col-sm-12">
+                                <div><p>Alarm Name</p></div>
+                                <div> 
+                                                                       
+                                    <tags-input ng-model="alarm_name_list" placeholder="Add Alarm" display-property="name" replace-spaces-with-dashes="false" style="margin-top:-5px;font-size:12px;">
+                                        <auto-complete source="loadFiltersAlarm($query)" min-length="0" debounce-delay="0" load-on-focus="true" load-on-empty="true"
+                                        max-results-to-show="100">
+                                        </auto-complete>
+                                    </tags-input>    
+                    
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group" >
+                            <div class="col-sm-12">
+                                <div>
+                                    <p>User list</p>
+                                </div>
+                                <div>                                   
+                                    <tags-input ng-model="user_name_list" placeholder="Enter User" display-property="wholename" replace-spaces-with-dashes="false" style="margin-top: -5px; font-size:12px;">
+                                        <auto-complete source="loadFiltersUser($query)" min-length="0" debounce-delay="0" load-on-focus="true" load-on-empty="true"
+                                            max-results-to-show="100">
+                                        </auto-complete>
+                                    </tags-input>                    
+                                </div>
+                            </div>	                           
+                        </div>
+
+                        <div class="form-group" >
+                            <div class="col-sm-12">
+                                <label class="text-muted">Max Duration</label><label class="field_title" style="color:#F44336">*</label>
+                                <input ng-model="max_duration" class="form-control  input-sm" required/>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="col-sm-12">
+	                            <div class="pull-right">
+					                        <button type="submit" class="btn btn-sm btn-dark text-uc m-t-n-xs" ng-click="groupAdd()"><strong>
+					                        	<span class="text-success">{{action_button}}</span></strong></button>
+					                        <button type="submit" class="btn btn-sm btn-dark text-uc m-t-n-xs" ng-click="groupCancel()"><strong>
+					                        	<span class="text-danger">Clear</span></strong></button>
+					            </div>
+                            </div>
+                        </div>
+                        
+                    </form>
+                </div>
+            </div>
+        </div>      
+
+        <div class="col-sm-9">
+            <div class="panel panel-default">
+                <div class="panel-heading"><i class="fa fa-list-ul" aria-hidden="true"></i>&nbsp;Group List</div>
+                <div class="panel-body">
+                    <div class="row">
+                        <table  st-table="datalist"   st-pipe="getDataList" class="table ticket table-hover table-condensed b-t b-light" >
+                            <thead class="tblhead-sm" style="font-size: .8vw">
+                            <tr class="text-center">
+                                <th><b>Group Name</b></th>
+                                <th><b>Description</b></th>
+                                <th><b>Notification Type</b></th>
+                                <th><b>Status</b></th>
+                                <th><b>Permission</b></th>
+                                <th><b>Status</b></th>
+                                <th><b>User Counts</b></th>
+                                <th><b>Alarm Counts</b></th>
+                                <th><b>Max Duration</b></th>
+                                <th style="width: 80px"><b>Action</b></th>
+                            </tr>
+                            </thead>
+                            <tbody  ng-hide="isLoading" ng-repeat="row in datalist">
+                                <tr class="text-center">
+                                    <td align = "left">
+                                        {{row.name}}
+                                    </td>
+                                    <td align = "left">{{row.description}}</td>
+                                    <td align = "center">
+                                        <a ng-repeat="item in row.notify_type_list">     
+                                            &nbsp;                                              
+                                            <i class="fa fa-desktop" ng-if="item == 'Desktop'" data-toggle="tooltip" title="Desktop" data-placement="bottom" aria-hidden="true" ></i>
+                                            <i class="fa fa-comments-o" ng-if="item == 'SMS'" data-toggle="tooltip" title="SMS" data-placement="SMS" aria-hidden="true" ></i> 
+                                            <i class="fa fa-mobile" ng-if="item == 'Mobile'" data-toggle="tooltip" title="Mobile" data-placement="bottom"  aria-hidden="true" ></i>
+                                            <i class="fa fa-envelope-o" ng-if="item == 'Email'" data-toggle="tooltip" title="Email" data-placement="bottom"  aria-hidden="true" ></i>
+                                            <i class="fa fa-phone" ng-if="item == 'IVR'" data-toggle="tooltip" title="IVR" data-placement="bottom"  aria-hidden="true" ></i>
+
+                                        </a>   
+                                    </td>
+                                    <td >{{row.flag == 1 ? 'Enable': 'Disable'}}</td>
+                                    <td >{{row.permission == 0 ? 'Read' : 'Read/Write' }}</td>
+                                    <td align = "left">{{row.status | statusname}}</td>
+                                    <td >{{row.user_count}}</td>
+                                    <td >
+                                        <a popover-trigger="mouseenter"
+                                            uib-popover-template="'alarm_list.html'" popover-placement="bottom-left">
+                                            {{row.alarm_count}}    
+                                        </button>
+                                    </td>
+                                    <td align = "left">
+                                        {{row.max_duration}}
+                                    </td>
+                                    <td >
+                                        <a class="btn default btn-xs green" ng-click="editItems(row)">
+                                            <i class="fa fa-pencil"></i></a>
+                                        <a class="btn default btn-xs red" ng-click="deleteItem(row)">
+                                            <i class="fa fa-times"></i></a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                                
+                            <tbody ng-show="isLoading">
+                                <tr>
+                                    <td colspan="4" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+                                </tr>
+                            </tbody>
+                            <tfoot ng-hide="isLoading">
+                                <tr ng-show="paginationOptions.totalItems > paginationOptions.pageSize">
+                                    <td colspan="4" class="text-center">
+                                        <div st-pagination="" st-items-by-page="paginationOptions.pageSize" st-displayed-pages="7" class="no-margin"></div>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>                   
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

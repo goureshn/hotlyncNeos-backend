@@ -1,0 +1,62 @@
+<style>
+    button {
+        pointer: cursor;
+    }
+
+    input[type=file] {
+        width: 150px;
+        height: 20px;
+    }
+    .tbl-sm {
+        font-size: .8vw;
+        padding: 1px 15px !important;
+        color: #67686a;
+    }
+</style>
+
+
+<form class="form-horizontal form-validation" ng-submit="onDownloadReport()">
+    <div class="modal-content">        
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">
+                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+            </button>
+            <h3 class="modal-title" style="color:#2691d9" id="Heading">Alarm Report</h3>
+        </div>        
+        <div class="modal-body">        
+            <div class="form-group">              
+                <div class="col-sm-6">
+                    <label class="control-label text-xs text-muted">Report By</label>
+                    <div>
+                        <select class='form-control input-sm' ng-model="report.report_by"
+                            ng-options="value for value in report_by_list" />
+                    </div>
+                </div>  
+
+                <div class="col-sm-6">
+                    <label class="control-label text-xs text-muted">Report Format</label>
+                    <div>
+                        <label class="pl-20">
+                            <input type="radio" ng-model="report.format" value="excel" ng-click="changeOption('yes')" /> Excel
+                        </label>
+                        <label class="pl-20">
+                            <input type="radio" ng-model="report.format" value="pdf" ng-click="changeOption('no')" /> PDF
+                        </label>
+                    </div>
+                </div>  
+            </div>    
+        </div>
+
+        <div class="modal-footer ">            
+            <button type="submit" class="btn btn-info btn-sm w-xs" data-dismiss="modal">
+                <span class="glyphicon glyphicon-ok"></span>
+                <b> Download</b>
+            </button>
+            <button type="button" class="btn btn-default btn-sm w-xs" data-dismiss="modal" ng-click="cancel()">
+                <span class="glyphicon glyphicon-remove"></span>
+                <b> Cancel</b>
+            </button>
+        </div>
+
+    </div>
+</form>

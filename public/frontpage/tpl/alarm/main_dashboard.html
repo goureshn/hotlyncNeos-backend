@@ -1,0 +1,121 @@
+<style>
+.nav-tabs li a{
+      color : #ffffff !important ; 
+      background-color : #dddede ; 
+   }
+   .nav-tabs > li.active > a, .nav-tabs > li.active > a:focus, .nav-tabs >  li.active > a:hover{
+      color : #686868;
+      background-color : #f2f2f2;
+   }
+/*=========*/
+nav {
+    position: relative;
+    z-index: 1;
+    white-space: nowrap;
+    font-size: 12px;;
+}
+
+nav a {
+    position: relative;
+    display: inline-block;
+    padding: 1.5em 1.5em 1em;
+    text-decoration: none;
+    margin: 0 -7px;
+    color: #fff;
+}
+
+nav a:hover {
+    color: #ef6905;
+}
+
+nav a::before,
+main {
+    border: .1em solid #aaa;
+}
+
+nav a::before {
+    content: ''; /* To generate the box */
+    position: absolute;
+    top: 0; right: 0; bottom: .5em; left: 0;
+    z-index: -1;
+    border-bottom: none;
+    border-radius: 10px 10px 0 0;
+    background: #2e3344;
+    box-shadow: 0 2px hsla(0,0%,100%,.5) inset;
+    transform: perspective(5px) rotateX(2deg);
+    transform-origin: bottom;
+}
+
+nav.left a {
+    padding: 1.5em 2em 1em 1em;
+}
+
+nav.left a::before {
+    transform-origin: bottom left;
+}
+
+nav.right a {
+    padding: 1.5em 1em 1em 2em;
+}
+
+nav.right a::before {
+    transform-origin: bottom right;
+}
+
+nav a.selected {
+    z-index: 2;
+}
+
+nav a.selected::before {
+    margin-bottom: -1px;
+    border-top-width: 1px;
+}
+
+nav a.selected::before
+ {
+    background: #0e08b6;
+}
+
+main {
+    display: block;
+    margin: -8px 0 30px -15px;
+    padding: 1em;
+    border-radius: 3px;
+    /*background:#fff;*/
+}
+.tabsdemoDynamicHeight md-content {
+    background-color: transparent !important; 
+}
+.tabsdemoDynamicHeight md-content md-tabs {
+    background: #f6f6f6;
+    border: 1px solid #e1e1e1; 
+}
+.tabsdemoDynamicHeight md-content md-tabs md-tabs-wrapper {
+    background: white; 
+}
+.tabsdemoDynamicHeight md-content h1:first-child {
+    margin-top: 0; 
+}
+</style>
+<div ng-controller="AlarmMainDashboardController"  >
+    <div style="overflow-y: auto;background-color: #141414; height: 100vh;" >     
+        <div ng-show="flags==0" ng-cloak>
+            <md-content>
+                <md-tabs md-dynamic-height md-border-bottom > 
+                    <md-tab label="{{row.name}}" ng-repeat="row in dash_name_list"  md-on-select="getDashAlarms(row.id)" >
+                        <md-content ng-include="'tpl/alarm/main_dashboardsub.html'"><b>{{row.name}}</b> 
+                        </md-content>
+                    </md-tab>               
+                    <md-tab label="Active" md-on-select="getAlarmActive()" index="100" >
+                        <md-content ng-include="'tpl/alarm/active.html'"><b>ACTIVE</b> 
+                        </md-content>
+                    </md-tab> 
+                    <md-tab label="Alarm Logs" md-on-select="getAlarmLog()" index="102"  >
+                        <md-content ng-include="'tpl/alarm/logs.html'"><b>AlARM LOGS</b> 
+                        </md-content>
+                    </md-tab>    
+                </md-tabs>
+            </md-content>            
+        </div>       
+    </div>                
+</div>

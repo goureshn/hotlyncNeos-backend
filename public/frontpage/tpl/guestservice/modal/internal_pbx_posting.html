@@ -1,0 +1,145 @@
+<form class="form-horizontal" > 
+    
+    <div class="wrapper-md1 col-centered" style="width: 100%;">  
+        <div class="form-group">
+            <label class="col-sm-2 control-label text-muted">Building</label>
+            <div class="col-sm-4">
+                <select class="form-control" ng-model="guest.building" ng-change="onSelectBuilding()"
+                    ng-options="item as item.name for item in buildings track by item.id">
+                </select>
+            </div>                     
+        </div>     
+                                
+        <div class="form-group">
+            <label class="col-sm-2 control-label text-muted">Action</label>
+            <div class="col-sm-4">
+                <select class="form-control" ng-model="guest.action" ng-change="onChangeAction()"
+                    ng-options="type for type in pbx_action_type_list">
+                </select>
+            </div>    
+        </div> 
+
+        <div  ng-show="guest.action == 'Class Of Service'" class="form-group">
+            <label class="col-sm-2 control-label text-muted">Group Bar</label>
+                <div class="col-sm-4">
+                <label class="i-switch m-t-xs m-r">
+                    <input type="checkbox"   ng-model="guest.selected" checked>
+                    <i></i>
+                </label>
+            </div>
+        </div>
+        <div class = "form-group"  ng-show = 'guest.selected'>
+            <div>
+            <label class=" col-sm-2 control-label text-xs text-muted">Guest Group Number</label>
+                <div class=" col-sm-4 scrollable-dropdown-menu">
+                    <input type="text" ng-model="guest_group" popover-trigger="mouseenter"  class="form-control input-sm"  placeholder="Enter Guest Group Number" 
+                        uib-typeahead="guest_group.guest_group for guest_group in getguestgroupList($viewValue)"
+                        typeahead-min-length="0"
+                        typeahead-editable="false"
+                        typeahead-on-select="onGroupSelect($item, $model, $label)"  required >
+                </div>
+            </div>
+            <div class="col-sm-6">
+            <label class="col-sm-2 control-label text-xs text-muted">Room List </label>
+                    <select id = 'search'  class=' col-sm-8 ' multiple size='6' disabled>		</select>												  
+            </div>                      
+        </div>            
+
+        <div class="form-group">
+            <label  ng-show = '!guest.selected' class="col-sm-2 control-label text-muted">Room</label>
+            <div  ng-show = '!guest.selected' class="col-sm-4">
+                <input type="text" ng-model="guest.room" class="form-control input-sm" placeholder="Enter room number"
+                    uib-typeahead="room.room for room in roomlist | filter:$viewValue | limitTo:10"
+                    typeahead-editable="false"
+                    typeahead-min-length="0"
+                    typeahead-on-select="onRoomSelect($item, $model, $label)">
+            </div>
+            <label   class="col-sm-2 control-label text-muted" ng-show="guest.action == 'Checkin' || guest.action == 'Checkout' || guest.action == 'Guest Change'">Guest Name</label>
+            <div   class="col-sm-4" ng-show="guest.action == 'Checkin' || guest.action == 'Checkout' || guest.action == 'Guest Change'">
+                <input type="text" ng-model="guest.guest_name" class="form-control input-sm" placeholder="Enter guest name">
+            </div>
+
+            <label class="col-sm-2 control-label text-muted" 
+                ng-show="guest.action == 'Message Lamp' || guest.action == 'Class Of Service' || guest.action == 'Do Not Disturb'">Value</label>
+            <div class="col-sm-4" ng-show="guest.action == 'Message Lamp' || guest.action == 'Class Of Service' || guest.action == 'Do Not Disturb'">
+                <!--   <input type="text" ng-model="guest.value" class="form-control input-sm" placeholder="Enter Value" ng-required="guest.action == 'Message Lamp' || guest.action == 'Class Of Service' || guest.action == 'Do Not Disturb'"> -->
+                <select class="form-control" ng-model="guest.value" ng-options="type for type in value_list">
+                </select>
+            </div>
+
+        </div>                             
+
+        <div class="form-group">
+            <label class="col-sm-2 control-label text-muted">Guest ID</label>                    
+            <div class="col-sm-4">
+                <input type="text" ng-model="guest.guest_id" class="form-control input-sm">
+            </div>
+
+            <label class="col-sm-2 control-label text-muted">Guest Group</label>                    
+            <div class="col-sm-4">
+                <input type="text" ng-model="guest.guest_group" placeholder="0" class="form-control input-sm">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-sm-2 control-label text-muted">Language</label>                    
+            <div class="col-sm-4">
+                <input type="text" ng-model="guest.language" placeholder="EN" class="form-control input-sm">
+            </div>
+
+            <label class="col-sm-2 control-label text-muted">Arrival Date</label>                    
+            <div class="col-sm-4">
+                <input type="text" ng-model="guest.arrival" placeholder="YYYY-MM-DD" class="form-control input-sm">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-sm-2 control-label text-muted">Guest/VIP</label>                    
+            <div class="col-sm-4">
+                <input type="text" ng-model="guest.vip" placeholder="0" class="form-control input-sm">
+            </div>
+
+            <label class="col-sm-2 control-label text-muted">Departure Date</label>                    
+            <div class="col-sm-4">
+                <input type="text" ng-model="guest.departure" placeholder="YYYY-MM-DD" class="form-control input-sm">
+            </div>
+        </div>    
+
+        <div class="form-group">
+            <label class="col-sm-2 control-label text-muted">First Name</label>                    
+            <div class="col-sm-4">
+                <input type="text" ng-model="guest.first_name" class="form-control input-sm">
+            </div>
+
+            <label class="col-sm-2 control-label text-muted">Title</label>                    
+            <div class="col-sm-4">
+                <input type="text" ng-model="guest.title" class="form-control input-sm">
+            </div>
+        </div>   
+
+        <div class="form-group">
+            <label class="col-sm-2 control-label text-muted">Profile ID</label>                    
+            <div class="col-sm-4">
+                <input type="text" ng-model="guest.profile_id" class="form-control input-sm">
+            </div>
+        </div>   
+
+        <div class="form-group">
+            <label class="col-sm-2 control-label text-muted">Check In Share</label>
+            <div class="col-sm-4">
+                <label class="md-check" style="margin-top: 7px">
+                    <input type="checkbox" ng-model="guest.share">
+                    <i class="green"></i>                                
+                </label>
+            </div>    
+        </div>
+
+        <br/><br/><br/>
+        <div class="col-sm-8 pull-right">
+            <button type="submit" class="btn btn-sm btn-dark text-uc m-t-n-xs" ng-click="onPostPBXInternal()"><strong>
+                <span class="text-success">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Post&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></strong></button>
+            <button type="submit" class="btn btn-sm btn-dark text-uc m-t-n-xs" ng-click="cancel()"><strong>
+                <span class="text-danger">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Cancel&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></strong></button>
+        </div>        
+    </div>
+</form>

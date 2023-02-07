@@ -1,0 +1,367 @@
+<style>
+    tbody > tr > th, tfoot > tr > th, tbody > tr > td, tfoot > tr > td {
+        /*padding: 1px 1px;*/
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .jqplot-target {
+        color: #ffffff;
+        background-color: #2a2a2a;
+    }
+
+    .jqplot-table-legend {
+        /*background-color: #595959;*/
+        background-color: #2a2a2a;
+        font-size: 0.9em;
+        border: 1px solid #2a2a2a;
+        padding-top: 1em;
+        padding-left: 1em;
+    }
+
+    .jqplot-title {
+        padding-top: 0.6em;
+        font-size: 1.2em;
+    }
+
+    div.jqplot-table-legend-swatch-outline {
+        border: 1px solid #2a2a2a;
+    }
+
+    svg text {
+        fill: white;
+
+    }
+
+    .nvd3 .nv-legend text {
+        font: normal 10px Arial;
+    }
+
+    .nvd3.nv-pie .nv-slice text {
+        fill: white !important;
+    }
+
+    .nvd3 .nv-discretebar .nv-groups text, .nvd3 .nv-multibarHorizontal .nv-groups text {
+        fill: rgba(255, 255, 255, 1);
+        stroke: rgba(255, 255, 255, 0);
+    }
+
+    .tick line {
+        opacity: 0.2;
+    }
+
+    .status-view:hover {
+        color: #0b2ef4;
+    }
+
+    .selected {
+        border: 2px solid;
+    }
+
+</style>
+<div ng-controller="GusetserviceDashboardController">
+    <script type="text/ng-template" id="adminrateTemplate.html">
+        <div class="form-group">
+            <p>{{row.device_name}}</p>
+        </div>
+    </script>
+    <div style="overflow-y: auto;background-color: #141414; height: 100vh;" id="content">
+        <div class="wrapper-md1 bg-light lt" style="background-color: #141414">
+            <div class="col-sm-6 col-xs-12">
+                <h1 class="m-n font-thin h3 text-black" style="color:#337ab7">
+                    <label style="font-size: 1.5vw"><i class="glyphicon glyphicon-dashboard"></i>
+                        &nbsp;&nbsp;Guest Services
+                    </label>
+                </h1>
+            </div>
+            <div class="col-sm-6 input-group text-right">
+                <a ui-fullscreen style="margin-right: 20px"></a>
+                <div class="btn-group">
+                    <!--<a ng-click="onDownloadPDF()"><i class="fa fa-file-pdf-o" style="font-size: 30px; color:red" aria-hidden="true"></i></a>&nbsp;&nbsp;&nbsp;&nbsp;-->
+                </div> <!-- Dummy Need to add logic to export dash to pdf -->
+                <div class="btn-group">
+                    <label class="btn btn-info btn-sm" ng-model="dateFilter" uib-btn-radio="'Today'">24 Hrs</label>
+                    <label class="btn  btn-info btn-sm" ng-model="dateFilter" uib-btn-radio="'Weekly'">7 days</label>
+                    <label class="btn  btn-info btn-sm" ng-model="dateFilter" uib-btn-radio="'Monthly'">30 Days</label>
+                    <label class="btn  btn-info btn-sm" ng-model="dateFilter" uib-btn-radio="'Yearly'">1Year</label>
+                    <label class="btn  btn-info btn-sm" ng-model="dateFilter" uib-btn-radio="'Custom Days'">Custom
+                        Days</label>
+                </div>
+                <input style="width: 200px; margin-left: 10px" ng-disabled="dateFilter != 'Custom Days'"
+                       ng-model="daterange" ui-jq="daterangepicker" ui-options="dateRangeOption"
+                       class="form-control pull-right input-sm">
+            </div>
+        </div>
+        <!-- / main header -->
+        <div style="margin-top: 8px" ng-show="visible_flag[4]">
+            <!-- stats -->
+            <div class="col-md-12">
+                <div class="text-center col-md-6">
+                    <div class="col-xs-3">
+                        <a href class="block padder-v bg-dark {{selectedFilter === 'Complaint' ? 'selected' : ''}}"
+                           ng-click="onChangeFilterItem('Complaint')" style="border-radius: 6px">
+                            <span class="font-thin h1 block" style="color: #7266BA">{{total.complaint}}</span>
+                            <span class="text-muted text-xs">Complaints</span>
+                        </a>
+                    </div>
+                    <div class="col-xs-3">
+                        <a href class="block panel padder-v bg-dark {{selectedFilter === 'Ontime' ? 'selected' : ''}}"
+                           ng-click="onChangeFilterItem('Ontime')" style="border-radius: 6px">
+                            <span class="font-thin h1 block" style="color: #00a14d">{{total.ontime}}</span>
+                            <span class="text-muted text-xs">On Time</span>
+                        </a>
+                    </div>
+                    <div class="col-xs-3">
+                        <a href
+                           class="block panel padder-v bg-dark {{selectedFilter === 'Escalated' ? 'selected' : ''}}"
+                           ng-click="onChangeFilterItem('Escalated')" style="border-radius: 6px">
+                            <span class="font-thin h1 block" style="color: #FB8C00">{{total.escalated}}</span>
+                            <span class="text-muted text-xs">Escalated</span>
+                        </a>
+                    </div>
+                    <div class="col-xs-3">
+                        <a href class="block panel padder-v bg-dark {{selectedFilter === 'Timeout' ? 'selected' : ''}}"
+                           ng-click="onChangeFilterItem('Timeout')" ng-click="onSelectFilterItem('timeout')"
+                           style="border-radius: 6px">
+                            <span class="font-thin h1 block" style="color: #F44336">{{total.timeout}}</span>
+                            <span class="text-muted text-xs">Timeout</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="text-center col-md-6">
+                    <div class="col-xs-3">
+                        <a href
+                           class="block panel padder-v bg-dark {{selectedFilter === 'Scheduled' ? 'selected' : ''}}"
+                           ng-click="onChangeFilterItem('Scheduled')" style="border-radius: 6px">
+                            <span class="font-thin h1 block" style="color: #6a93ee">{{total.scheduled}}</span>
+                            <span class="text-muted text-xs">Scheduled</span>
+                        </a>
+                    </div>
+                    <div class="col-xs-3">
+                        <a href class="block panel padder-v bg-dark {{selectedFilter === 'Canceled' ? 'selected' : ''}}"
+                           ng-click="onChangeFilterItem('Canceled')" style="border-radius: 6px">
+                            <span class="font-thin h1 block" style="color: #607D8B">{{total.canceled}}</span>
+                            <span class="text-muted text-xs">Canceled</span>
+                        </a>
+                    </div>
+                    <div class="col-xs-3">
+                        <a href class="block panel padder-v bg-dark {{selectedFilter === 'Hold' ? 'selected' : ''}}"
+                           ng-click="onChangeFilterItem('Hold')" style="border-radius: 6px">
+                            <span class="font-thin h1 block" style="color: #d4e157">{{total.hold}}</span>
+                            <span class="text-muted text-xs">Hold</span>
+                        </a>
+                    </div>
+                    <div class="col-xs-3">
+                        <a href class="block panel padder-v bg-dark {{selectedFilter === 'Total' ? 'selected' : ''}}"
+                           ng-click="onChangeFilterItem('Total')" style="border-radius: 6px">
+                            <span class="font-thin h1 block" style="color: #2196f3">{{total.total}}</span>
+                            <span class="text-muted text-xs">Total</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div>
+            <div class="col-sm-6" ng-show="visible_flag[4]">
+                <div class="panel-body" style="padding: 0">
+                    <div style="background-color: #2a2a2a">
+                        <!--<h4 class="font-thin m-t-none m-b-none text-primary-lt" style="color: #ffffff">Agent Statistics</h4>-->
+                        <div class="table table-responsive" style="margin-top: 3px; overflow-y: auto"
+                             ng-style="table_body_style">
+                            <table class="table ticket table-striped">
+                                <thead>
+                                <tr class="tblhead-sm" style="font-size: .7vw">
+                                    <th width="180px;" class="text-center"><b>Staff</b></th>
+                                    <th width="150px;" class="text-center"><b>Job Role</b></th>
+                                    <th class="text-center" style="white-space: nowrap"><b>Device</b></th>
+                                    <th class="text-center"><b>Status</b></th>
+                                    <th class="text-center"><b>Login</b></th>
+                                    <th class="text-center" style="white-space: nowrap"><b>Active</b></th>
+                                    <th class="text-center" style="white-space: nowrap"><b>On time</b></th>
+                                    <th class="text-center" style="white-space: nowrap"><b>Escalated</b></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr style="height:1vw" ng-repeat="row in dispatcherList">
+                                    <td>
+                                        <span class="thumb-sm avatar pull-left thumb-xs m-r-xs">
+                                            <img src="{{row.picture}}" loading="lazy" alt="...">
+                                            <i class="bg-success b-white bottom" ng-if="row.active_status==1"></i>
+                                            <i class="bg-default b-white bottom" ng-if="row.active_status==0"></i>
+                                            <span class="hidden-xs hidden-sm status-view text-xs"
+                                                  style="cursor: pointer">&nbsp;&nbsp;&nbsp;&nbsp;{{row.first_name}} {{row.last_name}}</span>
+                                        </span>
+                                    </td>
+                                    <td class="text-center text-xs">
+                                        <span ng-show="row.secondary_job_roles.length < 1">{{row.job_role}}</span>
+                                        <uib-accordion class="minibar" ng-show="row.secondary_job_roles.length > 0">
+                                            <uib-accordion-group is-open="open">
+                                                <uib-accordion-heading>
+                                                    <span class="text-xs">{{row.job_role}}</span>
+                                                    <i class="pull-right fa fa-angle-right"
+                                                       ng-class="{'fa-angle-down': open, 'fa-angle-right': !open}"></i>
+                                                </uib-accordion-heading>
+                                                <li class="text-xs" ng-repeat="item in row.secondary_job_roles"
+                                                    style="text-align: left; list-style: none">
+                                                    <span>
+                                                        <i class="fa fa-plug text-xs" aria-hidden="true"
+                                                           ng-show="item.job_role == 'Electrician'"></i>
+                                                        <i class="fa fa-snowflake-o text-xs"
+                                                           ng-if="item.job_role == 'AC Technician'"></i>
+                                                        <i class="fa fa-shower text-xs"
+                                                           ng-if="item.job_role == 'Plumber'"></i>
+                                                        <i class="fa fa-gavel text-xs"
+                                                           ng-if="item.job_role == 'Carpenter'"></i>
+                                                        &nbsp;{{item.job_role}}
+                                                    </span>
+                                                </li>
+                                            </uib-accordion-group>
+                                        </uib-accordion>
+                                    </td>
+                                    <td class="text-center text-xs">
+                                        <a uib-popover-template="'adminrateTemplate.html'" popover-trigger="mouseenter"
+                                           popover-placement="right" popover-title="Device Name">
+                                            <span ng-if='row.web_login == 1 && row.mobile_login == 1'>Web / Mobile</span>
+                                            <span ng-if="row.web_login == 1 && row.mobile_login == 0">Web</span>
+                                            <span ng-if="row.web_login == 0 && row.mobile_login == 1">Mobile</span>
+
+                                            <!--                                            <span ng-if='row.device_id.length > 0'>Mobile</span>-->
+                                            <!--                                            <span ng-if='row.device_id.length<=0'>Web</span>-->
+                                        </a>
+                                    </td>
+                                    <td class="text-center">
+                                        <label class="label label-success m-l-xs" ng-if="row.active_status==1"
+                                               ng-click="onClickOnline(row)">
+                                            <i class="icon-power"></i>&nbsp;&nbsp;Online
+                                        </label>
+                                        <label class="label label-default m-l-xs" ng-if="row.active_status==0">
+                                            <i class="icon-power"></i>&nbsp;&nbsp;Offline
+                                        </label>
+                                    </td>
+                                    <td class="text-center text-xs">{{row.last_log_in | mydatetime : 'hh:mm a'}}</td>
+                                    <td class="text-center text-xs">{{row.count.actived}}</td>
+                                    <td class="text-center text-xs">{{row.count.on_time}}</td>
+                                    <td class="text-center text-xs">{{row.count.escalated}}</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div ng-class="{'col-sm-6':!expand_flag[0], 'col-sm-12':expand_flag[0]}" ng-show="visible_flag[0]">
+                <a class="expand-dashboard" ng-click="onExpandDashboard(0)">
+                    <i class="fa fa-expand fa-fw text"></i>
+                    <i class="fa fa-compress fa-fw text-active"></i>
+                </a>
+                <div ng-show="expand_flag[0]">
+                    <div>
+                        <label class="i-switch bg-success m-t-xs m-r" style="margin-left: 20px">
+                            <input type="checkbox" ng-model="table_view_visible[0]" ng-change="onChangeChart(0)">
+                            <i></i>
+                        </label>
+                        <a ng-click="onExportToImage(0)"><i class="fa fa-download fa-fw text"></i></a>
+                    </div>
+                </div>
+                <div class="panel-body" style="padding: 0;">
+                    <nvd3 id="status" options="status_options" data="status_data" api="status_api"></nvd3>
+                </div>
+            </div>
+        </div>
+        <div>
+            <div ng-class="{'col-sm-5':!expand_flag[2], 'col-sm-12':expand_flag[2]}" ng-show="visible_flag[2]">
+                <a class="expand-dashboard" ng-click="onExpandDashboard(2)">
+                    <i class="fa fa-expand fa-fw text" ng-hide="expand_flag[2]"></i>
+                    <i class="fa fa-compress fa-fw text" ng-show="expand_flag[2]"></i>
+                </a>
+                <div ng-show="expand_flag[2]">
+                    <div>
+                        <label class="i-switch bg-success m-t-xs m-r" style="margin-left: 20px">
+                            <input type="checkbox" ng-model="table_view_visible[1]" ng-change="onChangeChart(2)">
+                            <i></i>
+                        </label>
+                        <a ng-click="onExportToImage(2)"><i class="fa fa-download fa-fw text"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-12" style="background-color: #2a2a2a;margin-bottom: 10px; border-radius: 6px">
+                    <div class="panel-body" style="padding: 0;">
+                        <nvd3 id="task" options="task_options" data="task_data" api="task_api"></nvd3>
+                    </div>
+                </div>
+            </div>
+            <div ng-class="{'col-sm-4':!expand_flag[1], 'col-sm-12':expand_flag[1]}" ng-show="visible_flag[1]">
+                <a class="expand-dashboard" ng-click="onExpandDashboard(1)">
+                    <i class="fa fa-expand fa-fw text" ng-hide="expand_flag[1]"></i>
+                    <i class="fa fa-compress fa-fw text" ng-show="expand_flag[1]"></i>
+                </a>
+                <div ng-show="expand_flag[1]">
+                    <div>
+                        <label class="i-switch bg-success m-t-xs m-r" style="margin-left: 20px">
+                            <input type="checkbox" ng-model="table_view_visible[1]" ng-change="onChangeChart(1)">
+                            <i></i>
+                        </label>
+                        <a ng-click="onExportToImage(1)"><i class="fa fa-download fa-fw text"></i></a>
+                    </div>
+                </div>
+                <div ng-class="{'col-md-6':table_view_visible[1], 'col-md-12':!table_view_visible[1]}"
+                     style="background-color: #2a2a2a;margin-bottom: 10px; border-radius: 6px">
+                    <div class="panel-body" style="padding: 0;">
+                        <nvd3 id="department" options="department_options" data="department_data"
+                              api="department_api"></nvd3>
+                    </div>
+                </div>
+                <div class="col-sm-6" ng-show="table_view_visible[1]">
+                    <div class="panel-body" style="padding: 0">
+                        <div style="background-color: #2a2a2a">
+                            <div class="table table-responsive" style="margin-top: 3px; overflow-y: auto"
+                                 ng-style="department_table_body_style">
+                                <table class="table ticket table-striped">
+                                    <thead>
+                                    <tr class="tblhead-sm" style="font-size: .7vw">
+                                        <th class="text-center"><b>Department</b></th>
+                                        <th class="text-center"><b>Total Tasks</b></th>
+                                        <th class="text-center"><b>On Time</b></th>
+                                        <th class="text-center"><b>Escalated</b></th>
+                                        <th class="text-center"><b>Timeout</b></th>
+                                        <th class="text-center"><b>Hold</b></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr style="height:1vw" ng-repeat="row in dept_count_list">
+                                        <td class="text-center text-xs">{{row.department}}</td>
+                                        <td class="text-center text-xs">{{row.total}}</td>
+                                        <td class="text-center text-xs">{{row.ontime}}</td>
+                                        <td class="text-center text-xs">{{row.escalated}}</td>
+                                        <td class="text-center text-xs">{{row.timeout}}</td>
+                                        <td class="text-center text-xs">{{row.hold}}</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div ng-class="{'col-sm-3':!expand_flag[3], 'col-sm-12':expand_flag[3]}" ng-show="visible_flag[3]">
+                <a class="expand-dashboard" ng-click="onExpandDashboard(3)">
+                    <i class="fa fa-expand fa-fw text" ng-hide="expand_flag[3]"></i>
+                    <i class="fa fa-compress fa-fw text" ng-show="expand_flag[3]"></i>
+                </a>
+                <div ng-show="expand_flag[3]">
+                    <div>
+                        <label class="i-switch bg-success m-t-xs m-r" style="margin-left: 20px">
+                            <input type="checkbox" ng-model="table_view_visible[1]" ng-change="onChangeChart(3)">
+                            <i></i>
+                        </label>
+                        <a ng-click="onExportToImage(3)"><i class="fa fa-download fa-fw text"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-12" style="background-color: #2a2a2a;margin-bottom: 10px; border-radius: 6px">
+                    <div class="panel-body" style="padding: 0;">
+                        <nvd3 id="category" options="category_options" data="category_data" api="category_api"></nvd3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,130 @@
+<style>
+    .modal-dialog  {width:1000px;}
+</style>
+
+<div class="modal-body wrapper-lg">
+    <h3 class="m-t-none m-b font-thin"><i class="fa fa-reply"></i>&nbsp;Call Classification (Return)</h3>
+    <div class="row">
+        <div class="col-sm-12 b-r">
+            <div class="panel b-a">
+                <div class="panel-heading b-b b-light font-bold">Call Detail</div>
+                <div class="panel-body" style="height: 130px">
+                    <div>
+                        <div class="col-sm-3" style="text-align: right">
+                            <label>Date :</label>
+                        </div>
+                        <div class="col-sm-3">
+                            <label class="font-bold">{{call.call_date | mydate}}</label>
+                        </div>
+                        <div class="col-sm-3" style="text-align: right">
+                            <label>Call Type :</label>
+                        </div>
+                        <div class="col-sm-3">
+                            <label class="font-bold">{{call.call_type}}</label>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="col-sm-3" style="text-align: right">
+                            <label>Time :</label>
+                        </div>
+                        <div class="col-sm-3">
+                            <label class="font-bold">{{call.start_time}}</label>
+                        </div>
+                        <div class="col-sm-3" style="text-align: right">
+                            <label>Cost :</label>
+                        </div>
+                        <div class="col-sm-3">
+                            <label class="font-bold">AED {{call.carrier_charges | number :2}}</label>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="col-sm-3" style="text-align: right">
+                            <label>Phone# :</label>
+                        </div>
+                        <div class="col-sm-3">
+                            <label class="font-bold">{{call.called_no}}</label>
+                        </div>
+                        <div class="col-sm-3" style="text-align: right">
+                            <label>Classification :</label>
+                        </div>
+                        <div class="col-sm-3">
+                            <label class="font-bold">{{call.classify}}</label>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="col-sm-3" style="text-align: right">
+                            <label>Duration :</label>
+                        </div>
+                        <div class="col-sm-3">
+                            <label class="font-bold">{{getDurationInMinute(call.duration)}}</label>
+                        </div>
+                        <div class="col-sm-3" style="text-align: right">
+                            <label>Status :</label>
+                        </div>
+                        <div class="col-sm-3">
+                            <label class="font-bold">{{call.approval}}</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="table table-responsive">
+			<label class="font-bold"><i class="fa fa-history" aria-hidden="true"></i>&nbsp;&nbsp;Call Approval History</label>
+			<table  st-table="ticketlist" class="table ticket table-striped b-t b-light">
+				<thead class="tblhead-sm" style="font-size: .7vw">
+					<tr>
+						<th class="text-center"><b>Date & Time</b></th>
+						<th class="text-center"><b>Status</b></th>
+						<th class="text-center"><b>Comment</b></th>
+						<th class="text-center"><b>User</b></th>
+						<th class="text-center"><b><i class="fa fa-download" aria-hidden="true"></i></b></th>
+					</tr>
+				</thead>
+				<tbody ng-hide="isLoading">
+					<tr ng-repeat="comment in comment_list">
+						<td><span>{{comment.date_time | mydatetime}}</span></td>
+						<td><span>{{comment.approval}}</span></td>
+						<td><span>{{comment.comment}}</span></td>
+						<td><span>{{comment.wholename}}</span></td>
+						<td>
+							<span>
+								<a href="{{comment.attachment}}" ng-if="comment.attachment != ''"><i class="fa fa-download" aria-hidden="true"></i></a>
+							</span>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		
+    <div class="row" style="margin-top: 30px">
+        <div class="col-sm-11" style="padding-right: 0px">
+            <textarea class="form-control input-sm" rows="5" ng-model="call.comment_content" style="resize:none"></textarea>
+        </div>
+        <div class="col-sm-1">
+            <button class="btn btn-icon btn-info" style="width: 30px;height: 30px;"><i class="fa fa-paperclip"></i></button>
+            <div>
+                <div class="dropzone" file-dropzone="[image/png, image/jpeg, image/gif]"
+                     file="image"  file-name="imageFileName"  data-max-file-size="3" >
+                </div>
+                <div class="image-container" >
+                    <img ng-src={{image}}  />
+                    <!--<span class="file-name" >{{imageFileName}}</span>-->
+                </div>
+                <form action>
+                    <input type="file"  fileread="call.src" imagename="call.imagename" imagetype="call.imagetype"
+                           style="opacity: 0.001;width:35px;margin-top:-45px;max-height: 50px;" >
+                    <!--<img ng-src="{{ call.src }}"  style="width: 70px;height: 70px; border: 0px; border-color:#ffffff;">-->
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" style="margin-top: 20px">
+        <div class="pull-right">
+            <button type="submit" class="btn btn-sm btn-primary text-uc m-t-n-xs" ng-click="send()"><strong>&nbsp;&nbsp;&nbsp;Send&nbsp;&nbsp;&nbsp;</strong></button>
+            <button type="submit" class="btn btn-sm btn-default text-uc m-t-n-xs" ng-click="cancel()"><strong>&nbsp;&nbsp;Cancel&nbsp;&nbsp;</strong></button>
+        </div>
+    </div>
+</div>

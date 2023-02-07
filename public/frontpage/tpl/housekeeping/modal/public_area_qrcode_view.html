@@ -1,0 +1,17 @@
+<div class="modal-content">
+    
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">
+                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+            </button>
+            <h3 class="modal-title" style="color:#2691d9" id="Heading">Public Area QR Code</h3>
+        </div>
+        <br>
+        <div class="modal-body" style="text-align: center;">
+            <button type="button" class="btn btn-sm btn-primary text-uc m-t-n-xs" ng-click="downloadQRCode()" ><strong>&nbsp;&nbsp;&nbsp;Download&nbsp;&nbsp;&nbsp;</strong></button>
+            <p>&nbsp;</p>
+            <img style="max-width:100%" src="{{qrcodeimage}}" /> 
+        </div>
+
+</div>
+

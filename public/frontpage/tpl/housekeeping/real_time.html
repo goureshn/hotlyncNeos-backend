@@ -1,0 +1,583 @@
+<style>
+    .bg-hover {
+	background-color: white;
+	border: none;
+	color: black;
+	padding: 16px 32px;
+	text-align: center;
+	margin: 4px 2px;
+	transition: 0.3s;
+	}
+
+	.btn-hover:hover {
+	background-color: #d3d0d0;
+	color: rgb(66, 66, 66);
+	}  
+    .total_count {
+      background-color: rgb(209, 207, 207);
+      margin-bottom: 0px;
+      border-radius: 6px; }
+  .boxed {
+      border: 2px solid black ;
+    }
+
+    .room_status td {
+        text-align: center;
+        font-weight: bold;
+        color: #fcfcfc;  
+            
+    }
+
+    .room_status td.group {
+        width: 300px;
+        background: #bd8082;
+        border: 1px solid #555;
+    }
+
+    .room_status td.floor {
+        width: 210px;
+        /* background: #8c8cbd; */
+        border-right: 2px solid rgb(255, 255, 255);
+        border-left: 2px solid rgb(255, 255, 255);
+    }
+    .room_status td.status {
+        width: 210px;
+        /* background: #4848b6; */
+        border-right: 2px solid rgb(255, 255, 255);
+        border-left: 2px solid rgb(255, 255, 255);
+        border-top: 2px solid rgb(255, 255, 255);
+    }
+    .room_status td.noclass {
+        width: 210px;
+        /* background: #4848b6; */
+        border: 1px solid #4E4E4E;
+    }
+
+    .room_status td.room {
+        width: 200px;
+        border: 1px solid #cecece;
+        background: #6a1c8f;
+        cursor: pointer;
+    }
+
+    .room_status td.room.dirty {
+        color: white;
+        background: rgb(94,36,136);
+    }
+
+    .room_status td.room.completed {
+        color: white;
+        background: rgb(112,172,72);
+    }
+
+    .room_status td.room.declined {
+        color: white;
+        background: rgb(166,166,166);
+    }
+    .room_status td.room.unassigned {
+        color: white;
+        background: rgb(255,191,5);
+    }
+
+    .room_status td.room.postponed {
+        color: white;
+        background: rgb(237,125,29);
+    }
+
+    .room_status td.room.dnd {
+        color: white;
+        background: rgb(254,0,0);
+    }
+
+    .room_status td.room.progress {
+        color: white;
+        background: rgb(68,114,199);
+    }
+
+  .blink {
+      animation: blink 2s steps(5, start) infinite;
+      -webkit-animation: blink 1s steps(5, start) infinite;
+  }
+  @keyframes blink {
+      to {
+          visibility: hidden;
+      }
+  }
+  @-webkit-keyframes blink {
+      to {
+          visibility: hidden;
+      }
+  }
+
+    .rushclean {              
+       border: 3px solid #ff9852 !important;
+
+       color: #f94a3a;
+		padding: 1px 2px;
+		animation: pulse 2s infinite;
+		text-shadow: none;
+		box-shadow: 0 0 0 0 rgba(232, 76, 61, 0.7);
+		-webkit-animation: pulse 1.25s infinite cubic-bezier(0.66, 0, 0, 1);
+		-moz-animation: pulse 1.25s infinite cubic-bezier(0.66, 0, 0, 1);
+		-ms-animation: pulse 1.25s infinite cubic-bezier(0.66, 0, 0, 1);
+		animation: pulse 1.25s infinite cubic-bezier(0.66, 0, 0, 1);
+    }
+
+   .pending {
+       background-color: #e77c6e!important;
+       color: white;
+       border: 2px solid #371245;
+    }
+    .noservice {
+       background-color: #df235c!important;
+       color: white;
+       border: 2px solid #371245;
+    }
+    .cleaning {
+        background-color: #68aee6 !important;
+        color: white;
+        border: 2px solid #04285d;
+    }
+    .dnd {
+        background-color: #e65100 !important;
+        color: white;
+        border: 2px solid #ff6c02;
+    }
+    .refuse {
+        background-color: #607d8b !important;
+        color: white;
+        border: 2px solid #4c4c4c;
+    }
+    .delay {
+        background-color: #FF9800!important;
+        color: white;
+        border: 2px solid #5e3d04;
+    }
+    .unassigned {
+        background-color: grey!important;
+        color: white;
+        border: 2px solid #4a4a4a;
+    }
+    .finished {
+         background-color: #0e8064 !important;
+         color: white;
+         border: 2px solid #6d9f3d;
+     }
+    .done {
+        background-color: #86c789 !important;
+        color: white;
+        border: 2px solid #6d9f3d;
+    }
+    .pause {
+        background-color: #827717!important;
+        color: white;
+        border: 2px solid #fefc59;
+    }
+    .inspected {
+        background-color: #22c064!important;
+        color: white;
+        border: 2px solid #2b4415;
+    }
+
+    .rejected {
+        background-color: #673AB7!important;
+        color: #050405;
+        border: 2px solid #4c4c4c;
+    }
+
+    .sleepout {
+        background-color: #12a0c4!important;
+        color: white;
+        border: 2px solid #0761b4;
+    }
+
+    .grid-container {
+        display: grid;
+        grid-template-columns: repeat(10, 1fr);
+        grid-gap: 5px;
+    }
+
+    .grid-item {
+        padding: 0px 0px 1px 0px;
+        border-radius:5px;
+        border-shadow:2px;
+        position:relative;
+    }
+    .grid-item p{
+        padding:0px;
+        margin:0px;
+        text-align:center;
+    }
+
+    .grid-item p.header{
+        border-top-left-radius: 4%;
+        border-top-right-radius: 4px;
+    }
+
+    .grid-item p.header{
+        font-size: 15px;
+    }
+    
+
+    @media screen and (max-width : 1500px)
+    {
+        .grid-item p.header{
+           font-size: 12px;
+        }
+    }
+
+    @media screen and (max-width : 1200px)
+    {
+        .grid-item p.header{
+           font-size: 10px;
+        }
+    }
+
+    .checkout {
+        background-color: #f31e27;
+    }
+
+    .occuppied {
+        background-color: #009957;
+    }
+
+    .vacant {
+        background-color: #005ca6;
+    }
+
+    .vacant {
+        background-color: #005ca6;
+    }
+
+    .dueout {
+        background-color: #f8752d;
+    }
+
+    .grid-row-wrapper {
+        display: contents;
+    }
+
+    .grid-row-wrapper > .grid-item {
+        background: skyblue;
+    }
+
+
+    .div-table {
+        display: table;
+        width: auto;
+        background-color: #eee;
+        border: 1px solid #666666;
+        border-spacing: 5px; /* cellspacing:poor IE support for  this */
+    }
+    .div-table-row {
+        display: table-row;
+        width: auto;
+        clear: both;
+    }
+    .div-table-col {
+        float: left; /* fix for  buggy browsers */
+        display: table-column;
+        width: 200px;
+        background-color: #ccc;
+    }
+
+    .popover-container .popover {
+        max-width: 650px;
+    }
+
+    a.block {
+        border-radius: 6px;
+    }
+
+    .cleaning-icon img  {
+        width: 15px;
+        margin-top:-8px;
+    }
+
+    @media screen and (max-width : 1500px)
+    {
+        .cleaning-icon img  {
+            width: 13px;
+            margin-top:-12px;
+        }
+    }
+
+    @media screen and (max-width : 1200px)
+    {
+        .cleaning-icon img  {
+            width: 11px;
+            margin-top:-15px;
+        }
+    }
+
+</style>
+<div ng-controller="RealTimeController" >    
+    <script type="text/ng-template" id="Preference.html">
+        <div>
+            <label  ng-if = "label" class="text-sm font-bold">{{::room_status.remark}}</label>
+            <i class="fa fa-pencil" title = "Edit" style="color: green" aria-hidden="true"  ng-click="onFieldHidden('remark',item)"></i>
+            <textarea ng-if="item.input" ng-pattern = "item.regex" type="text" style="height:100px;" size="20"  ng-model="item.remark" ng-keyup="$event.keyCode == 13 && onKeySave('remark',item)"    />
+            <i class="fa fa-trash-o" title = "Delete" style="color: #FF0000" title="Remove" style="cursor: pointer"  ng-click="deleteRemark(item)"></i>
+        </div>
+    </script>
+    <script type="text/ng-template" id="filter_template.html">        
+        <div style="width: 400px">
+            <form class="form-horizontal form-validation" ng-submit="createRepairRequest()">        
+                <div class="form-group">
+                    <!-- Building Filter -->
+                    <div class="col-sm-12">
+                        <label class="control-label text-xs text-muted">Building : </label>
+                        <div class="scrollable-dropdown-menu">
+                             <tags-input ng-model="filter.bldg_tags" display-property="name" placeholder="Add a Building" replace-spaces-with-dashes="false"
+                                        on-tag-added="refreshDataOnBuilding()" on-tag-removed="refreshDataOnBuilding()">
+                                <auto-complete source="loadBuildingFilters($query)" min-length="0" load-on-focus="true" load-on-empty="true" debounce-delay="0"
+                                            max-results="6">
+                                </auto-complete>
+                            </tags-input>
+                        </div>
+                    </div>           
+
+                    <!-- Floors Filter -->
+                    <div class="col-sm-12">
+                        <label class="control-label text-xs text-muted">Floors : </label>
+                        <div class="scrollable-dropdown-menu">
+                             <tags-input ng-model="filter.floor_tags" display-property="floor_name" placeholder="Add a Floor"
+                                replace-spaces-with-dashes="false" on-tag-added="refreshDatalist()" on-tag-removed="refreshDatalist()">
+                                <auto-complete source="loadFloorFilters($query)" min-length="0" load-on-focus="true" load-on-empty="true" debounce-delay="0"
+                                    max-results="6">
+                                </auto-complete>
+                            </tags-input>
+                        </div>
+                    </div>         
+
+                    <!-- Attendnat Filter -->
+                    <div class="col-sm-12">
+                        <label class="control-label text-xs text-muted">Attendant : </label>
+                        <div class="scrollable-dropdown-menu">
+                            <tags-input  ng-model="filter.attendant_tags" display-property="roster_name" placeholder="Add Attendant" replace-spaces-with-dashes="false"
+                                on-tag-added="refreshDatalist()" on-tag-removed="refreshDatalist()">
+                                <auto-complete source="loadAttendantFilters($query)" min-length="0" load-on-focus="true" load-on-empty="true" debounce-delay="0"
+                                    max-results="6">
+                                </auto-complete>
+                            </tags-input>
+                        </div>
+                    </div>  
+
+                    <!-- Supervisor Filter -->
+                    <div class="col-sm-12">
+                        <label class="control-label text-xs text-muted">Supervisor : </label>
+                        <div class="scrollable-dropdown-menu">
+                            <tags-input  ng-model="filter.supervisor_tags" display-property="roster_name" placeholder="Add Supervisor" replace-spaces-with-dashes="false"
+                                on-tag-added="refreshDatalist()" on-tag-removed="refreshDatalist()">
+                                <auto-complete source="loadSupervisorFilters($query)" min-length="0" load-on-focus="true" load-on-empty="true" debounce-delay="0"
+                                    max-results="6">
+                                </auto-complete>
+                            </tags-input>
+                        </div>
+                    </div>         
+
+                    <!-- Working Status Filter -->
+                    <div class="col-sm-12">
+                        <label class="control-label text-xs text-muted">Working Status : </label>
+                        <div class="scrollable-dropdown-menu">
+                            <tags-input ng-model="filter.status_tags" display-property="status_name" placeholder="Add Status" replace-spaces-with-dashes="false"
+                                        on-tag-added="refreshDatalist()" on-tag-removed="refreshDatalist()">
+                                <auto-complete source="loadStatusFilters($query)" min-length="0" load-on-focus="true" load-on-empty="true" debounce-delay="0"
+                                            max-results="6">
+                                </auto-complete>
+                            </tags-input>
+                        </div>
+                    </div>     
+
+                    <!-- Group By Filter -->        
+                    <div class="col-sm-12">
+                        <label class="control-label text-xs text-muted">Group By : </label>
+                        <div class="scrollable-dropdown-menu">
+                             <select class = "form-control" style="margin-top: 5px;" ng-options = "value for value in group_list"  ng-change="changedGroup()" ng-model = "filter.group_by">
+                            </select>				
+                        </div>
+                    </div>     
+
+                    <!-- View Filter -->        
+                    <div class="col-sm-12">
+                        <label class="control-label text-xs text-muted">View By : </label>
+                        <div class="scrollable-dropdown-menu">
+                            <select class = "form-control" style="margin-top: 5px;" ng-options = "value for value in view_style_list" ng-change="changedViewStyle()"  ng-model = "filter.view_style">
+                        </select>				
+                        </div>
+                    </div>     
+                    
+                    <!-- Rush Filter -->        
+                    <div class="form-group" >
+                        <label class="col-sm-3 text-right control-label text-muted" >Rush Clean:</label>
+                        <div class="col-sm-9">                        
+                            <label class="i-switch m-t-xs m-r" >
+                                <input type="checkbox" ng-model="filter.rush" ng-change="refreshDatalist()" checked>
+                                <i></i> 
+                            </label>
+                        </div>
+                    </div>
+
+                </div>
+            </form>       
+        </div>    
+    </script>
+
+    <div class="row bg-light lt" style="padding: 5px; ;background-color: #141414; margin:0px">
+        <div class="col-sm-6">
+            <h1 class="m-n font-thin h5 text-black" style="color:#337ab7">
+                <label style="font-size: 25px; margin-bottom: 0px"><i class="fa fa-tachometer"></i>
+                    Real Time
+                </label>
+            </h1>
+        </div>
+
+        <div class="pull-right">
+            <select class = "form-control" ng-options = "value for value in order_list" ng-change="changedSort()"  ng-model = "filter.sort_by">
+            </select>			
+        </div>
+
+        <div class="btn-toolbar pull-right" style="padding-right: 2px">
+            <div class="btn-group  popover-container" style="margin-left:0px">                       
+                <button class="btn btn-sm btn-icon btn-default" data-toggle="tooltip" title="Filter" data-placement="bottom" 
+                    uib-popover-template="'filter_template.html'" popover-placement="bottom-right" popover-trigger="outsideClick">
+                    <i class="fa fa-filter" ng-style="{'color': filter_apply ? '#23b7e5' : '#58666e'}"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="input-group col-xs-2 pull-right" style="padding-right: 15px">
+            <input type="text" ng-model="filter.search_room" my-enter="refreshDatalist()" class="form-control input-sm no-border  padder" placeholder="Search Room">
+            <span class="input-group-btn">
+                <button type="submit" class="btn btn-sm " ng-click="searchBriefing(filter_value)"><i class="fa fa-search"></i></button>
+            </span>             
+        </div>
+    </div>
+    
+    <div class="grid-container" style="padding:5px">
+        <div class="grid-item text-center" ng-click="onClickCleaning(row)" ng-repeat="row in cleaning_room_count">
+            <a href class="block panel padder-v item card btn-hover total_count">
+                <span class="font-bold h1 block" ng-style="{'color': row.color}">
+                    {{row.count}}
+                </span>
+                <span class="text-xs">{{row.status_name}}</span>
+            </a>
+        </div>
+    </div>
+
+    <hr style="margin: 5px 0px 10px 0px">
+   
+    <div fill-height additional-padding="100" debounce-wait="300">
+        <div ng-if = "filter.view_style == 'List' && filter.group_by == undefined " style = "padding-left:5px;">
+            <div class="table table-responsive">
+                <table  class="table ">
+                    <thead>
+                        <tr class="">
+                            <th class="text-center"   style="width: 10%"><b>Room</b></th>
+                            <th class="text-center"   style="width: 10%"><b>Occupancy</b></th>
+                            <th class="text-center"   style="width: 10%"><b>Status</b></th>
+                            <th class="text-center"   style="width: 10%"><b>Attendant</b></th>
+                            <th class="text-center"   style="width: 10%"><b>Room Type</b></th>
+                            <th class="text-center"   style="width: 10%"><b>Credits</b></th>
+                            <th class="text-center"   style="width: 10%"><b>Duration</b></th>
+                        </tr>
+                    </thead>
+
+                    <tbody ng-hide="isLoading">
+                        <tr class="" style = "border:none;" ng-repeat="row in room_data.room_status_list" 
+                            ng-class="{'pending': row.state=='0','cleaning': row.state=='1','done': row.state=='2','dnd': row.state=='3','refuse': row.state=='4','delay': row.state=='5','pause': row.state=='6','inspected': row.state=='7','rejected': row.state=='8','unassigned': row.state=='100', 'noservice': row.state == '11', 'sleepout': row.state == '12'}"
+                            ng-click="onClickRoom(row)">
+                            <td  class="text-center" >{{row.room}}</td>
+                            <td  class="text-center" ><i  ng-if ="row.adult" style="font-size:1em" class ="fa fa-male fa-fw m-r-xs">{{row.adult}}</i>&nbsp;&nbsp;<i  ng-if ="row.chld" style="font-size:1em" class ="fa fa-child fa-fw m-r-xs" >{{row.chld}}</i></td>
+                            <td  class="text-center" >{{row.status_name}}</td>
+                            <td  class="text-center" >{{row.assigne_to}}</td>
+                            <td  class="text-center" >{{row.type}}</td>
+                            <td  class="text-center" >{{row.credits}}</td>
+                            <td  class="text-center" >{{row.duration}}</td>
+                        </tr>
+                    </tbody>
+                    <tbody ng-show="isLoading">
+                        <tr>
+                            <td colspan="11" class="text-center">
+                                <i class="fa fa-spin fa-refresh"></i>
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tfoot ng-if = "0" ng-hide="isLoading">
+                        <tr ng-show="paginationOptions.totalItems > paginationOptions.pageSize">
+                            <td colspan="9" class="text-center">
+                                <div st-pagination="" st-items-by-page="paginationOptions.pageSize" st-displayed-pages="7" class="no-margin"></div>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <div  ng-if = "filter.view_style == 'Grid' && filter.group_by == undefined " class="col-sm-12">
+
+            <div class="grid-container" style="padding-bottom:50px">
+                <div class="grid-item" ng-repeat = "row in room_data.room_status_list" 
+                    ng-class="{'rushclean':row.rush_flag == 1, 'pending': row.state=='0','cleaning': row.state=='1','done': row.state=='2','dnd': row.state=='3','refuse': row.state=='4','delay': row.state=='5','pause': row.state=='6','inspected': row.state=='7','rejected': row.state=='8','unassigned': row.state=='100', 'noservice': row.state == '11', 'sleepout': row.state == '12'}"                
+                    ng-click="onClickRoom(row)" >
+
+                    <div class="cleaning-icon" style = "position: absolute;top: 3px;right: 3px;">                                           
+                        <img ng-if="row.state == '0'" src="/images/hskp/pending.svg"/>
+                        <img ng-if="row.state == '1'" class="blink" src="/images/hskp/cleaning.svg"/>
+                        <img ng-if="row.state == '2'" src="/images/hskp/finished.svg"/>
+                        <img ng-if="row.state == '3'" src="/images/hskp/dnd.svg"/>
+                        <img ng-if="row.state == '4'" src="/images/hskp/refused.svg"/>
+                        <img ng-if="row.state == '5'" src="/images/hskp/delay.svg"/>
+                        <img ng-if="row.state == '6'" src="/images/hskp/pause.svg"/>
+                        <img ng-if="row.state == '7'" src="/images/hskp/inspected.svg"/>
+                        <img ng-if="row.state == '8'" src="/images/hskp/rejected.svg"/>
+                        <i ng-if="row.linen_change == 1" class = "fa fa-bed"></i>
+                    </div>
+
+                    <p class="header" ng-class="{'occuppied' : row.occupancy == 'Occupied', 'vacant' : row.occupancy == 'Vacant'}" ><span style="font-weight: bolder; color: red;" ng-if="row.service_state != 'Available'"> {{row.service_state}} &nbsp;&nbsp;</span> {{row.occupancy}} - {{row.room}}</p>
+                    <p style = "font-weight:bold;">{{row.status_name}}</p>
+                    <p>{{row.assigne_to}} </p>
+                    <p>{{row.type}} - {{row.credits}} </p>
+                    <p>VIP{{row.vip}} - A - {{row.adult}} K - {{row.chld}}</p>
+                    <p>{{row.duration}}</p>
+                    <p>{{row.room_status}}</p>
+                 <!--   <p ng-if="row.state == 11" >No Service</p> -->
+                </div>
+            </div>
+        </div>
+
+        <div  ng-if = "filter.group_by !== undefined" class="col-sm-12">
+            <div ng-repeat="group in room_data.group_keys">
+                <div class="row" style = "color:white;margin:5px 0px 5px 0px;padding:5px;background-color:slategray;width:100%;"> 
+                    {{group}} 
+                </div>
+                <div class="grid-container">               
+                    <div class="grid-item" ng-repeat = "row in room_data.room_status_list_group[group]"                     
+                        ng-class="{'rushclean':row.rush_flag == 1, 'pending': row.state=='0','cleaning': row.state=='1','done': row.state=='2','dnd': row.state=='3','refuse': row.state=='4','delay': row.state=='5','pause': row.state=='6','inspected': row.state=='7','rejected': row.state=='8','unassigned': row.state=='100','noservice': row.state == '11'}"
+                        ng-click="onClickRoom(row)" >
+                        <div class="cleaning-icon" style = "position: absolute;top: 3px;right: 3px;">                                           
+                        <img ng-if="row.state == '0'" src="/images/hskp/pending.svg"/>
+                        <img ng-if="row.state == '1'" class="blink" src="/images/hskp/cleaning.svg"/>
+                        <img ng-if="row.state == '2'" src="/images/hskp/finished.svg"/>
+                        <img ng-if="row.state == '3'" src="/images/hskp/dnd.svg"/>
+                        <img ng-if="row.state == '4'" src="/images/hskp/refused.svg"/>
+                        <img ng-if="row.state == '5'" src="/images/hskp/delay.svg"/>
+                        <img ng-if="row.state == '6'" src="/images/hskp/pause.svg"/>
+                        <img ng-if="row.state == '7'" src="/images/hskp/inspected.svg"/>
+                        <img ng-if="row.state == '8'" src="/images/hskp/rejected.svg"/>
+                        <i ng-if="row.linen_change == 1" class = "fa fa-bed"></i>
+                    </div>
+                        <p class="header" ng-class="{'occuppied' : row.occupancy == 'Occupied', 'vacant' : row.occupancy == 'Vacant'}">{{row.occupancy}} - {{row.room}}</p>
+                        <p style = "font-weight:bold;">{{row.status_name}}</p>
+                        <p>{{row.assigne_to}} </p>
+                        <p>{{row.type}} - {{row.credits}} </p>
+                        <p>VIP{{row.vip}} - A - {{row.adult}} K - {{row.chld}}</p>
+                        <p>{{row.duration}}</p>
+                        <p>{{row.room_status}}</p>
+                     <!--   <p ng-if="row.state == 11" >No Service</p> -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

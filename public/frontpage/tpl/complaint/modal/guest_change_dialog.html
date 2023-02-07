@@ -1,0 +1,148 @@
+<div class="modal-body" >	
+	<div class="">
+		<div class="panel panel-default" style="border-radius: 4px">
+			<div class="panel-heading">
+				<div class="pull-left">
+					<label class="font-bold text-sm"><i class="fa fa-user-circle-o text-default"></i>Change Guest&nbsp;&nbsp;</label>
+				</div>
+				<div class="pull-right">
+					
+				</div>
+
+				<br>
+			</div>
+			
+			<div class="panel-body" style="padding: 5px 0px"  tabindex="1">
+				<div class="col-sm-6">
+					<label for="email" class="control-label text-xs text-muted">Property<i class="text-danger">*</i></label>
+					<div>
+					<select class='form-control input-sm' ng-model="complaint.property_id" ng-change="onChangedProperty()"
+								ng-options="value.id as value.name for (key, value) in property_list">
+						</select>
+					</div>
+				</div>
+				<div class="col-sm-6">
+					<div ng-class="{'col-sm-11' : complaint.guest_type == 'Checkout', 'col-sm-12' : complaint.guest_type != 'Checkout'}" style="padding-left: 0px; padding-right: 5px">
+						<label for="email" class="control-label text-xs text-muted">Guest Type<i class="text-danger">*</i></label>
+						<div>
+						<select class='form-control' ng-model="complaint.guest_type" ng-change="onChangeGuestType()"
+								ng-options="type for type in guest_types">
+							</select>
+						</div>
+					</div>	
+					<div ng-class="{'col-sm-1' : complaint.guest_type == 'Checkout'}" style="padding:0px" ng-show="complaint.guest_type == 'Checkout'">
+						<label class="control-label text-xs text-muted"></label>
+						<span class="input-group-btn">
+							<button type="button" class="btn btn-sm" ng-click="onSearchCheckoutGuest()"><i class="fa fa-search"></i></button>
+						</span>
+					</div>
+				</div>
+				<div class="col-sm-6" ng-hide="complaint.guest_type == 'Walk-in' || complaint.guest_type == 'House Complaint' || complaint.guest_type == 'Arrival'">
+					<label for="email" class="control-label text-xs text-muted">Room<i class="text-danger">*</i></label>
+					<div>
+						<input type="text" ng-model="complaint.room" class="form-control input-sm" placeholder="Enter room number"
+								uib-popover="Enter room number" popover-trigger="mouseenter"
+							uib-typeahead="room.room for room in roomlist | filter:$viewValue | limitTo:10"
+							typeahead-editable="false"
+							typeahead-min-length="0"
+							typeahead-on-select="onRoomSelect($item, $model, $label)"
+							ng-disabled="complaint.guest_type == 'Walk-in' || complaint.guest_type == 'Arrival' || complaint.guest_type == 'House Complaint'">
+					</div>
+				</div>
+				<div class="col-sm-6" ng-show="complaint.guest_type == 'Walk-in' || complaint.guest_type == 'Arrival'">
+					<label class="control-label text-xs text-muted">New Guest</label>
+					<div>
+					<label class="i-switch m-t-xs m-r">
+							<input type="checkbox" ng-model="complaint.new_guest" ng-change="onChangeNewGuest()"
+								ng-disabled="complaint.guest_type != 'Walk-in' && complaint.guest_type != 'Arrival'">
+							<i></i>
+						</label>
+					</div>
+				</div>
+				<div class="col-sm-6" ng-show="complaint.guest_type == 'Walk-in' || complaint.guest_type == 'Arrival' || complaint.room_id != 0">
+					<label for="email" class="control-label text-xs text-muted" ng-hide="complaint.new_guest == true">
+						{{complaint.guest_type == 'Walk-in' || complaint.guest_type == 'Arrival' ? 'Guest Search' : 'Guest Name'}}
+					<i class="text-danger">*</i></label>
+					<div ng-show="complaint.new_guest == false || complaint.room_id > 0">
+					<input type="text" ng-model="complaint.guest_name" minlength="3" class="form-control input-sm" placeholder="Enter name, email or mobile"
+							uib-typeahead="user.guest_name for user in getGuestList($viewValue)"
+							typeahead-editable="complaint.guest_type == 'Walk-in' || complaint.guest_type == 'Arrival' || !(complaint.room_id > 0) ? true : false"
+							typeahead-on-select="onGuestSelect($item, $model, $label)"
+							typeahead-min-length="complaint.guest_type == 'Walk-in' || complaint.guest_type == 'Arrival' || !(complaint.room_id > 0) ? 1 : 0"
+							typeahead-template-url="guestTypeahead.html"
+							ng-disabled="complaint.guest_type == 'In-House'">
+							<i></i>
+					</div>
+				</div>
+				<div class="col-sm-6" ng-show="complaint.new_guest == true">
+					<label class="control-label text-muted text-xs" ng-show="complaint.new_guest == true">
+						Guest Name<i class="text-danger">*</i>
+					</label>
+						<div class="scrollable-dropdown-menu">
+							<input type="text" ng-model="complaint.guest_name" minlength="3" class="form-control input-sm" placeholder="Enter guest name"
+							uib-typeahead="user.guest_name for user in getGuestList($viewValue)"
+							typeahead-editable="complaint.guest_type == 'Walk-in' || complaint.guest_type == 'Arrival' || !(complaint.room_id > 0) ? true : false"
+							typeahead-on-select="onGuestSelect($item, $model, $label)"
+							typeahead-min-length="complaint.guest_type == 'Walk-in' || complaint.guest_type == 'Arrival' || !(complaint.room_id > 0) ? 1 : 0"
+							typeahead-template-url="guestTypeahead.html"
+							ng-disabled="complaint.guest_type == 'In-House'">
+						</div>
+				</div>
+				<div class="col-sm-6" ng-show="(complaint.new_guest == true && complaint.guest_id > 0) ||
+								(complaint.guest_id > 0 && complaint.guest_type == 'Arrival') ||
+								(complaint.guest_id > 0 && complaint.guest_type == 'Walk-in')
+									|| complaint.new_guest == true">
+					<label for="email" class="control-label text-xs text-muted">Mobile<i class="text-danger">*</i></label>
+					<div>
+					<input type="text" ng-model="complaint.mobile" class="form-control input-sm" ng-disabled="complaint.new_guest == false">
+					</div>
+				</div>
+				<div class="col-sm-6" ng-show="(complaint.new_guest == true && complaint.guest_id > 0) ||
+								(complaint.guest_id > 0 && complaint.guest_type == 'Arrival') ||
+								(complaint.guest_id > 0 && complaint.guest_type == 'Walk-in')
+									|| complaint.new_guest == true">
+					<label for="email" class="control-label text-xs text-muted">Email<i class="text-danger">*</i></label>
+					<div ng-show="(complaint.new_guest == true && complaint.guest_id > 0) ||
+								(complaint.guest_id > 0 && complaint.guest_type == 'Arrival') ||
+								(complaint.guest_id > 0 && complaint.guest_type == 'Walk-in')
+									|| complaint.new_guest == true">
+					<input type="text" ng-model="complaint.email" class="form-control input-sm" ng-disabled="complaint.new_guest == false">
+					</div>
+				</div>
+				<div class="col-sm-6" ng-show="complaint.guest_type != 'Walk-in' && complaint.guest_type != 'Arrival' && complaint.guest_id > 0">
+					<label for="email" class="control-label text-xs text-muted">Check in<i class="text-danger">*</i></label>
+					<div>
+					<input type="text" ng-model="complaint.arrival" class="form-control input-sm" disabled>
+					</div>
+				</div>
+				<div class="col-sm-6" ng-show="complaint.guest_type != 'Walk-in' && complaint.guest_type != 'Arrival' && complaint.guest_id > 0">
+					<label for="email" class="control-label text-xs text-muted">Check out<i class="text-danger">*</i></label>
+					<div>
+					<input type="text" ng-model="complaint.departure" class="form-control input-sm" disabled>
+					</div>
+				</div>
+				<div class="col-sm-6" ng-show="complaint.guest_type == 'House Complaint'">
+					<label for="email" class="control-label text-xs text-muted">Type<i class="text-danger">*</i></label>
+					<div>
+						<select class='form-control input-sm' ng-model="complaint.housecomplaint_id"
+							ng-options="value.id as value.name for (key, value) in housecategory_list" >
+						</select>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="row" style="margin:0px">
+			<div class="pull-right">  
+				<button type="button" class="btn btn-sm btn-dark m-b-xs w-xs text-uc m-t-n-xs" ng-click="ok()">
+					<strong>OK</strong>
+				</button>
+				<button type="button" class="btn btn-sm btn-dark m-b-xs w-xs text-uc m-t-n-xs" ng-click="cancel()">
+					<strong>Cancel</strong>
+				</button>
+			</div>  
+		</div>		
+		
+	</div>
+
+</div>

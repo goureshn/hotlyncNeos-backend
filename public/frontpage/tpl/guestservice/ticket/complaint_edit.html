@@ -1,0 +1,153 @@
+<h5 class="text-muted font-bold">Guest Information & Complain</h5>
+
+<div class ="row ticket">
+    <div class="col-sm-6">
+        <label class="field_title col-md-6">Guest Request #</label> <p class="field_result">{{gs.getTicketNumber(tab)}}</p>
+    </div>
+
+    <div class="col-sm-6">
+         <label class="field_title col-md-6">Date created</label> <p class="field_result">{{guest.request_time}}</p>
+    </div>
+</div>
+
+<div class ="row">
+    <div class="col-sm-6">
+        <label class="field_title col-md-6">Room #</label> <p class="field_result">{{task.room}}</p>
+    </div>
+    <div class="col-sm-6">
+        <label class="field_title col-md-6">Status</label> <span class="m-l-sm label {{gs.getStatusCssInEdit(task)}}">{{gs.getStatus(task)}} <i ng-show="gs.getPauseState(task)" class="fa icon-control-play text"></i></span>
+    </div>
+</div>
+
+<div class ="row">
+    <div class="col-sm-6">
+        <label class="field_title col-md-6">Guest</label> <p class="field_result">{{task.guest_name}}</p>
+    </div>
+</div>
+
+<div class ="row">
+    <div class="col-sm-12">
+        <label class="field_title col-md-6">{{getTicketRequestName(task)}}</label>
+    </div>
+</div>
+		
+<div class ="row">
+    <div class="col-sm-6">
+        <label class="field_title col-md-6">Complaint</label> <p class="field_result">{{task.complaint}}</p>
+    </div>
+    <div class="col-sm-6">
+        <label class="field_title col-md-6">Department </label> <p class="field_result">{{task.department}}</p>
+    </div>
+</div>
+
+<div class ="row">
+    <div class="col-sm-6">
+        <label class="field_title col-md-6">Assignee </label> <p class="field_result">{{task.wholename}}</p>
+    </div>
+    <div class="col-sm-6">
+        <label class="field_title col-md-6">Device </label> <p class="field_result">{{task.device}}</p>
+    </div>
+</div>
+
+<div class ="row">
+    <div class="col-sm-6">
+        <label class="field_title col-md-6">Type </label> <p class="field_result">{{task.ct_type}}</p>
+    </div>
+    <div class="col-sm-6">
+        <label class="field_title col-md-6">Duration({{task.max_time * 1000 | duration:'mm'}}mins) </label> <p class="field_result" style="white-space:nowrap">{{remain_time | duration:'hh:mm:ss'}}</p>
+    </div>
+</div>
+
+<div class ="row">
+    <div class="col-sm-6">
+        <label class="field_title col-md-6">Comment </label> <p class="field_result">{{task.custom_message}}</p>
+    </div>
+    <div class ="row" ng-hide="task.status_id == 0 || task.status_id == 3 || task.status_id == 4">  <!-- Resolve, Timeout, Cancel -->
+    <!-- <div class="col-sm-3">
+       <label class="field_title col-md-2">Update Status </label>
+    </div>
+    <div class="col-sm-2">
+       <select class='form-control input-sm m-b' ng-model="task.action" ng-change="onChangeAction(task.action)"
+           ng-options="action for action in actions">
+        </select>
+      </div>
+     <button type="button" style="margin-right: 15px" class="btn btn-success btn-sm pull-right" ng-click="changeTask()">Update</button>-->
+     </div>
+</div>
+<div class="row">
+    <div class ="col-sm-6" ng-hide="task.status_id == 0 || task.status_id == 3 || task.status_id == 4">  <!-- Resolve, Timeout, Cancel -->
+        
+        <label class="field_title col-md-6">Update Status </label>
+        
+        <div class="row">
+            <select class='input-sm pull-left' ng-model="task.action" ng-change="onChangeAction(task.action)"
+               ng-options="action for action in actions" style="width:130px;">
+            </select>
+            <button type="button" class="btn btn-success btn-sm col-md-2" ng-click="changeTask()">Update</button>
+        </div>
+    </div>   
+          
+    <div class="col-sm-6" ng-show="task.action == 'Resolve'">
+        <label ng-show="task.action == 'Resolve'" class="field_title pull-left col-md-6">By </label>
+        <input type="text" class="form-control input-sm col-md-3" style="width:130px;" ng-model="task.wholename">
+    </div>
+</div>
+
+
+
+<!--<div class ="row">
+
+    <div class="col-sm-3">
+        <label ng-show="task.action == 'Resolve'" class="font-bold">By </label>
+    </div>
+          
+    <div class="col-sm-4" ng-show="task.action == 'Resolve'">
+        <input type="text" class="form-control input-sm" ng-model="task.wholename">
+    </div>
+
+</div>-->
+
+<div class ="row" ng-show="task.compensation_id > 0">
+    <div class="col-sm-6">
+        <label class="field_title col-md-6">Compensation </label> <p class="field_result">{{task.compensation}}</p>
+    </div>
+    <div class="col-sm-2">
+        <span class="m-l-sm label {{gs.getStatusCssInEdit(task)}}">{{gs.getCompensationStatus(task)}}</span>
+    </div>
+    <div class="col-sm-4">
+        <label class="field_title col-md-4">Cost </label> <p class="field_result">{{task.cost}}</p>
+    </div>
+</div>
+
+<div class ="row" ng-show="task.compensation_id > 0">
+    <div class="col-sm-6">
+        <label class="field_title col-md-6">Comment </label> <p class="field_result">{{task.compensation_comment}}</p>
+    </div>
+</div>
+
+<div class ="row col-md-12" ng-show="task.approver != undefined && (task.compensation_status == 1 || task.compensation_status == 3)">  <!-- Request comment -->
+    <div class="row col-sm-3">
+        <label class="field_title col-md-3">Update Status</label>
+    </div>
+    <div class="col-sm-3">
+        <select class='form-control field_result input-sm m-b' ng-model="task.compensation_action" ng-change="onChangeCompensationAction(task.compensation_action)"
+                ng-options="action for action in compensation_actions">
+        </select>
+    </div>
+    <button type="button" style="margin-right: 13px" class="btn btn-success btn-sm pull-right" ng-click="changeCompensation()">Update Status</button>
+
+</div>
+
+<div class ="row" ng-show="task.compensation_action == 'Comment'">
+    <div class="col-sm-3">
+        <label class="field_title col-md-6">Comment</label>
+    </div>
+
+    <div class="col-sm-9">
+        <textarea class="form-control input-sm" rows="1" ng-model="task.compensation_comment"></textarea>
+    </div>
+
+</div>
+
+<h5 class="text-muted font-bold">Notification History</h5>
+<div class="grid" style="height: 250px; margin-top: 20px;" ui-grid="gridOptions" ui-grid-auto-resize ui-grid-edit ui-grid-selection ui-grid-pagination ui-grid-resize-columns ui-grid-move-columns></div>

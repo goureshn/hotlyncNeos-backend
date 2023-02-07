@@ -8,6 +8,7 @@ use App\Http\Controllers\DataController;
 use App\Http\Controllers\GuestController;
 use App\Http\Controllers\Intface\ProcessController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\TestController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -30,10 +31,12 @@ Route::post('storelicense', [PropertyWizardController::class, 'storeLicense']);
 Route::post('licensekey', [PropertyWizardController::class, 'licenseKey']);
 
 Route::post('checklicense', [LicenseWizardController::class, 'checkLicense']);
+Route::any('test_excel', [TestController::class, 'exportExcel']);
 
 Route::get('/getcurrency', [DataController::class, 'getCurrency']);
 Route::any('/build/list', [DataController::class, 'getBuildList']);
 Route::any('/floor/list', [DataController::class, 'getFloorList']);
+Route::any('/userlistwithids', [DataController::class,'userlistwithids']);
 
 Route::post('/hotlync/checklicense', [LicenseWizardController::class, "checkLicense"]);
 Route::post('/auth/getcompareflag', [UserController::class, 'GetCompareFlag']);
@@ -60,5 +63,5 @@ Route::controller(DataController::class)->group(function () {
     
 });
 
-Route::get('backend_api/multipropertylist', [DataController::class, 'getMultiPropertyList']);//add
-Route::get('/backoffice/user/jobrole', [UserWizardController::class, 'getJobRoles']);//add
+Route::get('backend_api/multipropertylist', [DataController::class, 'getMultiPropertyList']);
+Route::get('/backoffice/user/jobrole', [UserWizardController::class, 'getJobRoles']);

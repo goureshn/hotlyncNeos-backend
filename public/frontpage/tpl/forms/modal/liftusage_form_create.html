@@ -1,0 +1,307 @@
+
+	<!--
+	 <script type="text/ng-template" id="datetime_ranger.html">
+	   <div style="width: 700px">
+		 <div rg-range-picker="myDatetimeRange" labels="myDatetimeLabels">
+		   </div>
+	   </div>
+	 </script>
+   -->
+   <style>
+	.modal-body {
+	width: 900px;
+	}
+
+	.modal-dialog {
+	width: 900px;
+	}
+	</style>
+
+   <div class="modal-body wrapper-md" >
+   <div>
+	 
+	   <div>
+		   <center>                          
+			   <span class="m-b-xs font-bold" style="text-align: center"><font size="+1">LIFT USAGE REQUEST FORM</font></span>	
+		   </center>
+	   </div>
+	   <br>
+	   <!- - - - - - - - - - - - - - REQUESTING PARTY DETAILS - - - - - - - - - - - - - - - - - - >
+   
+	   <div class="panel panel-default" style="border-radius: 5px" style="width: 800px;">
+		   <div class="panel-heading"  style="color: white; background-color:#3c6f9c">
+				 <div class="pull-left">
+					 <label class="font-bold text-sm"><i class="fa fa-user-circle-o text-default"></i>&nbsp;&nbsp;REQUESTING PARTY DETAILS</label>
+				 </div>
+				 <br>
+		   </div>
+		   <div class="panel-body" style="padding: 5px 0px">
+			   <form class="form-horizontal form-validation">
+			   <div class="col-sm-6">
+					   <label class="control-label text-xs">Company/Tenant Company<i class="text-danger">*</i></label>
+					   <div>
+						   <input type="text" ng-model="request_company" class="form-control input-sm"  placeholder="Enter name">
+					   </div>
+			   </div>
+			   <div class="col-sm-6">
+					<label class="control-label text-xs">Requested By<i class="text-danger">*</i></label>
+					<div>
+						<input type="text" ng-model="request_name" class="form-control input-sm"  placeholder="Enter name">
+					</div>
+				</div>
+			   <div class="col-sm-3">
+				   <label class="control-label text-xs">Floor No.<i class="text-danger">*</i></label>
+				   <div>
+					   <input class='form-control input-sm' ng-model="request_floor" type="text" placeholder="Enter Floor.no">
+				   </div>
+			   </div>
+			   <div class="col-sm-3">
+					<label class="control-label text-xs">Contact Number<i class="text-danger">*</i></label>
+					<div>
+						<input type="text" ng-model="request_no" class="form-control input-sm"  placeholder="Enter number">
+					</div>
+				</div>
+			   <div class="col-sm-6">
+				   <label class="control-label text-xs">Requested Date(s)<i class="text-danger">*</i></label>
+					   <div class = "dropdown">
+						   <a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+							   <div class="input-group">
+								   <input type="text" class="form-control" ng-model="request_date">
+									 <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+							   </div>
+						   </a>
+						   <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel" >
+								<datetimepicker ng-model="requestdatepicker" data-datetimepicker-config="{ dropdownSelector: '#dropdown2'}"
+								   data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+						   </ul>
+					   </div>
+					   
+			   </div>
+			   <div class="col-sm-6">
+				   <label class="control-label text-xs" style="margin-top: 20px">Signature</label>
+				   
+					   <label class="i-switch m-t-xs m-r" style="margin-top: 20px;margin-left:20px">
+						   <input type="checkbox" ng-model="signature" checked>
+						   <i></i>
+					   </label>
+				   
+			   </div>
+			   
+			   </form>	
+		   </div>
+	   </div>
+   
+	   <!- - - - - - - - - - - - - - -THIRD PARTY DETAILS- - - - -  -  - - - - - - ->	
+   
+	   <div class="panel panel-default" style="border-radius: 5px">
+		   <div class="panel-heading" style="color: white; background-color:#3c6f9c">
+			   <div class="pull-left">
+				   <label class="font-bold text-sm"><i class="fa fa-user-circle-o text-default"></i>&nbsp;&nbsp;THIRD PARTY DETAILS</label>
+			   </div>
+			   <br>
+		   </div>
+		   <div class="panel-body" style="padding: 5px 0px">
+			   <form class="form-horizontal form-validation">
+			   <div class="col-sm-6">
+					   <label class="control-label text-xs">Company Name<i class="text-danger">*</i></label>
+					   <div>
+						   <input type="text" ng-model="third_company" class="form-control input-sm"  placeholder="Enter name">
+					   </div>
+			   </div>
+			   <div class="col-sm-6">
+				   <label class="control-label text-xs">Person in Charge Details<i class="text-danger">*</i></label>
+				   <div>
+					   <input type="text" ng-model="third_name" class="form-control input-sm"  placeholder="Enter name">
+				   </div>
+			   </div>
+			   </form>
+		   </div>
+		   
+	   </div>
+	   
+	   <!- - - - - - - - - - - - - - - - - - - - REQUEST DETAILS - - - - - - - - - - - - - - - - - - - - - - - - >
+	   
+	   <div class="panel panel-default" style="border-radius: 5px">
+			   <div class="panel-heading" style="color: white; background-color:#3c6f9c">
+				   <div class="pull-left">
+					   <label class="font-bold text-sm"><i class="fa fa-info-circle text-default"  aria-hidden="true"></i>&nbsp;&nbsp;REQUEST DETAILS</label>
+				   </div>
+				   <br>
+			   </div>
+   
+			   <div class="panel-body" style="padding: 5px 0px">
+				   <form class="form-horizontal form-validation" >
+					   <label class="control-label text-xs font-bold" style="margin-left: 15px">&nbsp;&nbsp;&nbsp;&nbsp;General Access/Services/Deliveries(Kindly Check):</label><br><br>
+					   <div class="form-group">
+						   <div class="col-sm-10" style="padding-top: 7px; padding-left: 30px">
+							   <label class="md-check" style="margin-right: 30px">
+								   <input type="checkbox" ng-model="food_items">
+								   <i class="blue"></i>Food Items
+							   </label>
+							   <label class="md-check" style="margin-right: 30px">
+									   <input type="checkbox" ng-model="printed_materials">
+									   <i class="blue"></i>Printed Materials/Documents
+							   </label>
+							   <label class="md-check" style="margin-right: 10px">
+									   <input type="checkbox" ng-model="stationery">
+									   <i class="blue"></i>Stationery and Supplies
+							   </label>  
+						   </div>
+					   </div>
+					   <div class="form-group">
+						   <div class="col-sm-10" style="padding-top: 7px; padding-left: 30px">	
+								<label class="md-check" style="margin-right: 30px">
+										<input type="checkbox" ng-model="furniture">
+										<i class="blue"></i>Furniture
+								</label>
+							    <label class="md-check" style="margin-right: 30px">
+										<input type="checkbox" ng-model="cleaning">
+										<i class="blue"></i>Cleaning
+								</label>
+								<label class="md-check" style="margin-right: 30px">
+										<input type="checkbox" ng-model="it_products">
+										<i class="blue"></i>IT Products
+								</label>
+							  
+							   <label class="md-check" style="margin-top:10px;margin-right: 5px">
+									<input type="checkbox" ng-model="fit_out">
+									<i class="blue"></i>Fit out Work/MEP Work
+							</label>
+							</div>
+						</div>
+						<div class="form-group">
+							<div class="col-sm-10" style="padding-top: 7px; padding-left: 30px">  
+								<label class="md-check" style="margin-top:10px;margin-right: 30px">
+										<input type="checkbox" ng-model="pest_control">
+										<i class="blue"></i>Pest Control
+								</label>
+							   <label class="md-check" style="margin-top:10px;margin-right: 30px">
+										   <input type="checkbox" ng-model="permit_work">
+										   <i class="blue"></i>Permit to Work
+							   </label>
+							   <label class="md-check" style="margin-top:10px;margin-right: 5px">
+									<input type="checkbox" ng-model="prptyrmv">
+									<i class="blue"></i>Property Removal(kindly fill the list)
+							   </label>
+						   </div>
+					   </div>
+					   <div class="form-group">
+						   <div class="col-sm-10" style="padding-top: 7px; padding-left: 30px">	
+							   <label class="md-check" style="margin-top:10px;margin-right: 10px">
+									   <input type="checkbox" ng-model="others">
+									   <i class="blue"></i>Others(please specify):
+							   </label><br><br>
+							   <div class = "col-sm-12">
+								   <input  ng-show="others"  type="text" ng-model="other_items" class="form-control input-sm">	
+							   </div>
+						   </div>
+					   </div>
+					   <!- - - - - - - -  - - - - - - - - - ADD PROPERTY - - - - - - - - - - - - - - - - - - - >
+					   <div ng-show="prptyrmv" class="line line-dashed b-b"></div>
+					   <div class="col-centered" class="line-sm" style="width:99%; z-index:3" ng-show="prptyrmv" >
+						   <div class="panel panel-default" style="margin-left: 10px;">
+							   <div class="panel-heading">
+								   <label class="font-bold"><i style="text-align: center" aria-hidden="true"></i>&nbsp;&nbsp;List of Property Removal</label>
+								   <i class="fa fa-plus-circle fa-2x text-success ng-click-active pull-right" style="cursor: pointer" title="Add Property"
+												 ng-click="addProperty()"></i>
+							   </div>
+							   <div class="panel-body">
+								   <form class="form-horizontal">
+									   <div class="form-group label-group">
+										   <div class="col-sm-2 control-label">Description of Items<i class="text-danger">*</i></div>
+										   <div class="col-sm-3 control-label" style="text-align: left">
+											   <input type="text" ng-model="property.items" class="form-control input-sm"  placeholder="Enter name">
+										   </div>
+										   <div class="col-sm-2 control-label">Quantity<i class="text-danger">*</i></div>
+										   <div class="col-sm-3 control-label" style="text-align: left">
+											   <input type="number" class="text-center form-control" ng-model="property.quantity" maxlength="2" style="width: 50px">
+										   </div>
+									   </div>
+								   </form>
+							   </div>
+						   </div>
+					   </div>
+					   <! - - - - - - - - - - - - - - - - - - - - ADD MORE PROPERTY - - - - - - - - - - - - - - - ->
+					   <div class="col-centered"  class="line-sm" style="width:99%; z-index:3" ng-show="prptyrmv">
+							   <div class="panel panel-default" style="margin-left: 10px;">
+								   <div class="panel-heading">
+									   <label class="font-bold">Property Added</label>
+								   </div>
+								   <div class="panel-body">	
+									   <form class="form-horizontal form-validation">
+										   <div class="form-group label-group" style="width:98%; margin:auto" ng-repeat="task in tasks">
+											   <div class="form-group col-md-10">
+												   <div class="col-md-4">
+													   <span class="pull-left" style="margin-left: 3px" >{{task.items}}</span>
+													</div>
+												   <div class="col-md-4 ">
+														 <span class="pull-left" style="margin-left: 3px" >{{task.quantity}}</span>
+												   </div>
+											   </div>
+											   
+											   <div class="form-group col w-xs col-md-1">
+													 <span class="glyphicon icon-close pull-right" style="margin-top:3px;margin-right: 10px; color: red" ng-click="removeTask()"></span>
+											   </div>
+										   </div>
+									   </form>
+								   </div>
+							   </div>
+						   </div>
+					   <label  ng-show="prptyrmv" class="col-sm-10 control-label">&nbsp;&nbsp;Reason for Removal<i class="text-danger">*</i></label>
+					   <div ng-show="prptyrmv" class="col-sm-12">
+							   <input type="text" ng-model="reason" class="form-control input-sm">
+					   </div>	
+				   </form>
+			   </div>
+	   </div>
+	   
+	   <!- - - - - - - - - - - - - - - - - - - - -LEASING OFFICE - - - - - - - - - - - - - - - - - - - - - - - - >
+	   
+	   <div class="panel panel-default" style="border-radius: 5px">
+		   <div class="panel-heading" style="color: white; background-color:#3c6f9c">
+			   <div class="pull-left">
+				   <label class="font-bold text-sm"><i class="fa fa-user-circle-o text-default"  aria-hidden="true"></i>&nbsp;&nbsp;LEASING OFFICE</label>
+			   </div>
+			   <br>
+		   </div>
+		   <div class="panel-body" style="padding: 5px 0px">
+			   <form class="form-horizontal form-validation">
+				   <div class="col-sm-6">
+					   <label class="control-label text-xs">Name<i class="text-danger">*</i></label>
+						   <div>
+							   <input type="text" ng-model="lease_name" class="form-control input-sm"  placeholder="Enter name">
+						   </div>
+				   </div>
+				   <div class="col-sm-6">
+					   <label class="control-label text-xs">Contact Number<i class="text-danger">*</i></label>
+						   <div>
+							   <input type="text" ng-model="lease_no" class="form-control input-sm"  placeholder="Enter Number">
+						   </div>
+				   </div>
+				   <div class="col-sm-6">
+					   <label class="control-label text-xs">Date<i class="text-danger">*</i></label>
+						   <div class="dropdown">
+							   <a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+								   <div class="input-group">
+									   <input type="text" class="form-control" ng-model="lease_date">
+										   <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+								   </div>
+							   </a>
+							   <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel" >
+								   <datetimepicker ng-model="leasedatepicker" data-datetimepicker-config="{ dropdownSelector: '#dropdown2' }"
+										   data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)">
+							   </ul>
+						   </div>
+				   </div>
+				   
+			   </form>
+		   </div>	
+	   </div>
+	</div><br>
+   <center>
+		   <button  type="button " class="btn btn-sm btn-default" style="background-color:#3c6f9c" ng-click="submit()" ng-disabled="disable_create">
+		   <span class="text-success font-bold"><i class="fa fa-check"></i>&nbsp;Submit</span></button>
+		   <button type="button" class="btn btn-sm btn-default" style="background-color:#3c6f9c" ng-click="cancel()">
+		   <span class="text-danger font-bold"><i class="fa fa-times"></i>&nbsp;Cancel</span></button>
+   </center><br>
+</div>

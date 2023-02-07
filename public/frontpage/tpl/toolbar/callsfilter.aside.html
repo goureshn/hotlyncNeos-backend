@@ -1,0 +1,81 @@
+<div class="aside hbox" style="height: 100%;" tabindex="-1" role="dialog">
+  <div class="col bg-light dk b-r bg-auto" style="padding-left: 10px">
+    <div class="wrapper b-b bg">
+      <a href="" class="font-bold">Filters</a>
+      <button  type="button" class="btn btn-success btn-round-xs btn-xs pull-right"  ng-click="saveTicketFilter()" >Apply Filter</button>
+    </div>
+	
+	<div><h5><strong>All</strong>
+		<label class="i-switch m-t-xs m-r pull-right" style="margin-right: 80px; margin-top: -2px">
+              	<input type="checkbox" ng-model="filter.all_flag"  />
+                <i></i>
+        </label></h5>
+	</div> 	
+    <!-- Time Filter -->
+    <div>
+      <h5>
+        <strong>Time Period</strong>
+      </h5>
+      <ul class="headfilter" role="menu" style="list-style: none; margin-left:-50px;">
+        <li class="line-sm" ng-repeat="time in time_period">
+          <label class="md-check" style="margin-left: 20px">
+            <input type="radio" name="optionname" ng-model="time_filter" ng-value="time" ng-click="onChangeradio(time)" />
+            <i class="green"></i>
+            <span ng-if="time != 'Custom Days'">
+              {{ time }}
+            </span>
+          </label>
+          <div ng-if="time == 'Custom Days'" style="display: inline-block;">
+            <input style="min-width: 100px; margin-left: 10px;height:22px;padding:2px 
+               10px;" ng-change="fetchDateBetn(this)" id="dataranger" ng-disabled="time_filter != 
+               'Custom Days'" ng-model="daterange2" ui-jq="daterangepicker" ui-options="dateRangeOption" class="form-control input-sm">
+          </div>
+        </li>
+      </ul>
+    </div>
+    <div>
+      <h5><strong>Classification</strong></h5>
+      <ul class="headfilter" role="menu" style="list-style: none; margin-left:-50px;">
+        <li class="line-sm" ng-repeat="type in classify_filter_types">
+          <label class="md-check" style="margin-left: 20px">
+              <input type="checkbox"  ng-model="classify_filter[type]" ng-value="type" ng-disabled="filter.all_flag" />
+              <i class="green"></i>
+              {{type}}
+          </label>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Status Filter -->
+    <div>
+      <h5><strong>Call Type</strong></h5>
+      <ul class="headfilter" role="menu" style="list-style: none; margin-left:-50px;">
+        <li class="line-sm" ng-repeat="type in calltypes">
+          <label class="md-check" style="margin-left: 20px">
+            <input type="checkbox" ng-model="call_filter[type]" ng-disabled="filter.all_flag" ng-value="type">
+            <i class="green"></i>
+            {{type}}
+          </label>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Severity Filter -->
+    <div>
+      <h5><strong>Status</strong></h5>
+      <ul class="headfilter" role="menu" style="list-style: none; margin-left:-50px;">
+        <li class="line-sm" ng-repeat="state in approve_states">
+          <label class="md-check" style="margin-left: 20px">
+            <input type="checkbox" ng-model="approve_filter[state]" ng-value="state" ng-disabled="filter.all_flag">
+            <i class="green"></i>
+            {{state}}
+          </label>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Property Filter -->
+
+
+  </div>
+</div>

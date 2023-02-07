@@ -1,0 +1,67 @@
+<div class="modal-body wrapper-lg">
+	<h3 class="m-t-none m-b font-thin">Search Checkout Guest</h3>
+
+	<hr style="margin-top: 0px; margin-bottom: 15px" />
+
+	<div class=" ">
+		<form class="form-horizontal form-validation">
+			<div class="form-group">
+				<div class="col-sm-4">					
+					<input type="text" ng-model="filter.room" class="form-control input-sm" placeholder="Room #"							
+							uib-typeahead="room.room for room in roomlist | filter:$viewValue | limitTo:10"
+							typeahead-editable="false"
+							typeahead-min-length="0"
+							typeahead-on-select="onRoomSelect1($item, $model, $label)"
+							>
+
+				</div>   
+				<div class="col-sm-7">
+					<input ng-model="filter.other" class="form-control  input-sm" placeholder="Name, Mobile, Email"/>					
+				</div>   
+				<div class="col-sm-1">
+					<i class="fa fa-search fa-2x text-info " style="cursor: pointer"
+						title="Search Guest" ng-click="onSearchCheckoutGuest()"></i>
+				</div>
+			</div>      
+
+			<div class="table table-responsive" style="margin-top: 6px; margin-bottom: 8px; max-height:400px" directive-when-scrolled="onLoadMoreGuestHistory()">
+				<table  st-table="ticketlist" class="table ticket table-striped b-t b-light">
+					<thead class="tblhead-sm" style="font-size: .7vw">
+						<tr>
+							<th class="text-center"><b>Guest ID</b></th>
+							<th class="text-center"><b>Guest Name</b></th>
+							<th class="text-center"><b>Mobile Number</b></th>
+							<th class="text-center"><b>Email</b></th>
+							<th class="text-center"><b>Room #</b></th>
+							<th class="text-center"><b>Period</b></th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="row in guest_list | limitTo:totalGuestCount" ng-click="onSelectGuest(row)" style="cursor: pointer">							
+							<td class="text-center"><span>{{row.guest_id}}</span></td>
+							<td class="text-center"><span>{{row.guest_name}}</span></td>
+							<td class="text-center"><span>{{row.mobile}}</span></td>
+							<td class="text-center"><span>{{row.email}}</span></td>
+							<td class="text-center"><span>{{row.room}}</span></td>
+							<td class="text-center"><span>{{row.arrival}} - {{row.departure}}</span></td>		
+						</tr>									
+					</tbody>
+				</table>
+			</div>
+		</form>
+	</div>
+
+	<hr/>
+
+	<div class="row" style="margin: 0px">
+		<div class="pull-right">  
+			<button type="button" class="btn btn-sm btn-dark m-b-xs w-xs text-uc m-t-n-xs" ng-click="clear()">
+				<strong>Clear</strong>
+			</button>
+			<button type="button" class="btn btn-sm btn-dark m-b-xs w-xs text-uc m-t-n-xs" ng-click="cancel()">
+				<strong>Cancel</strong>
+			</button>
+		</div>  
+	</div>
+
+</div>

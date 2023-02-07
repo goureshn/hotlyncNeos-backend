@@ -1,0 +1,28 @@
+
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">
+                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                </button>
+                <h3 class="modal-title" style="color:#2691d9" id="Heading">Delete {{equipment.name}}</h3>
+            </div>
+            <br>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <span class="glyphicon glyphicon-warning-sign"></span> Are you sure you want to delete {{equipment.name}}?
+                </div>
+            </div>
+
+            <div class="modal-footer ">
+                <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal" ng-click="deleterow()">
+                    <span class="glyphicon glyphicon-ok"></span>
+                    <b> Yes</b>
+                </button>
+                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal" ng-click="cancel()">
+                    <span class="glyphicon glyphicon-remove"></span>
+                    <b> No</b>
+                </button>
+            </div>
+
+        </div>
+

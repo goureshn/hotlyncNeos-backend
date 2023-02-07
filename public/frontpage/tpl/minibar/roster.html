@@ -1,0 +1,55 @@
+<!-- <style>
+main { display: block; margin: -8px 0 30px -15px; padding: 1em; border-radius: 3px; background:#fff; } 
+.tabsdemoDynamicHeight md-content { background-color: transparent !important; } 
+.tabsdemoDynamicHeight md-content md-tabs { background: #f6f6f6;
+border: 1px solid #e1e1e1; } 
+.tabsdemoDynamicHeight md-content md-tabs md-tabs-wrapper { background: white; } 
+.tabsdemoDynamicHeight
+md-content h1:first-child { margin-top: 0; } -->
+
+<!-- </style> -->
+<!-- <script type="text/ng-template" id="customTemplate.html">
+    <a>
+        <span ng-bind-html="match.label | uibTypeaheadHighlight:query"></span>
+    </a>
+</script> -->
+
+<div ng-controller="MinibarRosterController">
+    <!--<div class="wrapper-md1 bg-light b-b font-bold" style="background-color: #141414; color:#337ab7">
+        <h1 class="m-n font-thin h3 text-black" style="color:#337ab7">
+            <label style="font-size: 25px">
+                <i class="fa fa-list-alt"></i>
+                &nbsp;&nbsp;Roster Allocation
+            </label>
+        </h1>
+    </div>-->
+    <div ng-include="'tpl/minibar/roster_new.html'">
+    </div>
+    <!-- <md-content>
+        <md-tabs md-selected="2" md-autoselect md-dynamic-height md-border-bottom md-border-bottom>
+            <md-tab label="Create New">
+                <md-content ng-include="'tpl/housekeeping/roster_new.html'">
+                   
+                    </md-content>
+            </md-tab>
+            <md-tab  label="Roaster List">
+                <md-content ng-include="'tpl/housekeeping/roster_list.html'">
+                    
+                </md-content>
+            </md-tab>
+            <md-tab ng-if="selectedTicket" style="margin:8px -5px 0px;">
+                <md-tab-label>&nbsp;{{getRosterID(selectedTicket)}}
+                    <i class="fa fa-times" style="margin-left: 5px; color:#FF0000" ng-click="onSelectTicket(selectedTicket)"></i>
+                </md-tab-label>
+            
+                <md-tab-body>
+                    <div  ng-controller="RosterEditController" ng-include="'tpl/housekeeping/roster_edit.html'"
+                        ng-init="init(selectedTicket)">
+                    </div>
+                </md-tab-body>
+            </md-tab>
+        </md-tabs>
+        
+    </md-content> -->
+
+</div>

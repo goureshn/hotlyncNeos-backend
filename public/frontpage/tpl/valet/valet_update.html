@@ -1,0 +1,59 @@
+<script type="text/ng-template" id="workorder_history_delete.html">
+    <div ng-include="'tpl/engineering/part/part_delete.html'"></div>
+</script>
+
+<div>
+    <div>
+    <ul class="list-group list-group-lg no-radius m-b-none m-t-n-xxs">
+            <li ng-repeat="row in ticketlist"  class="list-group-item {{gs.getStatusCss(row)}} {{gs.getLevelCss(row)}} clearfix b-l-5x {{gs.getTicketTypeCss(row)}}"
+                style="padding-left:0px; padding-right: 0px;"   >
+                <div class="clear col-sm-10" ng-click="onSelectHistoryDetail(row)" >
+                    <div class="text-ellipsis text-sm clear small" >
+                        <label class="font-bold" >
+                          {{row.status}}: &nbsp; {{getTicketDescription(row.description)}}
+                        </label>
+                    </div>
+
+                    <div class="text-ellipsis text-sm clear small" ng-if="row.staff_id > 0" >
+                        <label class="font-bold text-muted" >
+                            Assigned to: {{row.staff_name}}
+                        </label>
+                    </div>
+                    <div class="text-ellipsis text-sm clear small" >
+                        <label class="text-muted" >
+                            By: {{row.user_name}}
+                        </label>
+                        <label class="pull-right text-muted">
+                            <a class="text-sm small" > {{row.setdate | mydatetime }}</a>
+                        </label>
+                    </div>
+                </div>
+                <div class="col-sm-2" >
+                    <div class="text-ellipsis text-sm clear pull-right" style="margin-top: 10px;" >
+                        <span  data-ng-click="onDeleteHistoryDetail(row)">
+                            <i class="fa fa-trash-o fa-2x" aria-hidden="true"></i>
+                        </span>
+                    </div>
+                </div>
+            </li>
+    </ul>
+    </div>
+    <div class="form-group" style="margin-top: 10px;margin-bottom: -3px;">
+        <label class="text-left control-label text-muted">Update Notes</label>
+    </div>
+    <div class="form-group" >
+        <div >
+            <textarea class="form-control input-sm" rows="3" ng-model="history_details.description"
+            style="resize:none;"  popover-trigger="mouseenter" ng-readonly="historydetail_view" ></textarea>
+        </div>
+    </div>
+    <div class="form-group" style="margin-top: 3px" >
+        <button type="button" ng-if="historydetail_view != 'true'" class="btn btn-muted btn-sm pull-right" ng-click="onCancelHistoryDetail()"
+                style="margin-left:10px; ">
+            <span class="font-bold"><i class="fa fa-check"></i>&nbsp;Cancel</span></button>
+
+        <button type="button" ng-if="historydetail_view != 'true'" class="btn btn-muted btn-sm pull-right" ng-click="onUpdateHistoryDetail()">
+            <span class="font-bold"><i class="fa fa-check"></i>&nbsp;{{sendbutton}}</span></button>
+
+    </div>
+</div>

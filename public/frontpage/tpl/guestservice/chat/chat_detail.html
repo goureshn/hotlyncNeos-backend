@@ -1,0 +1,136 @@
+<div>
+	<form class="form-horizontal" ng-if="current_session.guest_type != 'Outside'">
+		<div class="form-group label-group" style="margin: 0">
+			<div class="col-sm-2 control-label text-muted">Chat ID:</div>
+			<div class="col-sm-4 control-label" style="text-align: left">
+				<strong>{{current_session.id}}</strong>
+			</div>
+			<div class="col-sm-2 control-label text-muted">Date:</div>
+			<div class="col-sm-4 control-label" style="text-align: left">
+				<strong>{{current_session.created_at}}</strong>
+			</div>
+		</div>
+		<div class="form-group label-group" style="margin: 0">
+			<div class="col-sm-2 control-label text-muted">Guest Type:</div>
+			<div class="col-sm-4 control-label" style="text-align: left">
+				<strong>{{current_session.guest_type}}</strong>
+			</div>
+			<div class="col-sm-2 control-label text-muted">Agent:</div>
+			<div class="col-sm-4 control-label" style="text-align: left">
+				<strong>{{current_session.agent_name}}</strong>
+			</div>
+
+		</div>
+		<div class="form-group label-group" style="margin: 0">
+			<div class="col-sm-2 control-label text-muted">Guest Name:</div>
+			<div class="col-sm-4 control-label" style="text-align: left">
+				<strong>{{current_session.guest_name}}</strong>
+			</div>
+			<div class="col-sm-2 control-label text-muted">Status:</div>
+			<div class="col-sm-4 control-label" style="text-align: left">
+				<strong>{{current_session.status}}</strong>
+			</div>
+
+		</div>
+		<div class="form-group label-group" style="margin: 0">
+			<div class="col-sm-2 control-label text-muted">Room No.:</div>
+			<div class="col-sm-4 control-label" style="text-align: left">
+				<strong>{{current_session.room}}</strong>
+			</div>
+			<div class="col-sm-2 control-label text-muted">Booking Rate:</div>
+			<div class="col-sm-4 control-label" style="text-align: left">
+				<strong>{{current_session.booking_rate}}</strong>
+			</div>
+		</div>
+		<div class="form-group label-group" style="margin: 0">
+			<div class="col-sm-2 control-label text-muted">Mobile No.:</div>
+			<div class="col-sm-4 control-label" style="text-align: left">
+				<strong>{{current_session.mobile_number}}</strong>
+			</div>
+			<div class="col-sm-2 control-label text-muted">Booking Source:</div>
+			<div class="col-sm-4 control-label" style="text-align: left">
+				<strong>{{current_session.booking_src}}</strong>
+			</div>
+		</div>
+		<div class="form-group label-group" style="margin: 0">
+			<div class="col-sm-2 control-label text-muted">Duration:</div>
+			<div class="col-sm-4 control-label" style="text-align: left">
+				<strong>{{current_session.duration}}</strong>
+			</div>
+			<div class="col-sm-2 control-label text-muted">Waiting Time:</div>
+			<div class="col-sm-4 control-label" style="text-align: left">
+				<strong>{{current_session.wait_time}}</strong>
+			</div>
+		</div>
+
+		<div class="form-group label-group" style="margin: 0">
+			<div class="col-sm-2 control-label text-muted">Start Time:</div>
+			<div class="col-sm-4 control-label" style="text-align: left">
+				<strong>{{current_session.start_time}}</strong>
+			</div>
+			<div class="col-sm-2 control-label text-muted">Stay:</div>
+			<div class="col-sm-4 control-label" style="text-align: left">
+				<strong>{{current_session.arrival}} ~ {{current_session.departure}}</strong>
+			</div>
+		</div>
+		<div class="form-group label-group" style="margin: 0">
+			<div class="col-sm-2 control-label text-muted">Vip:</div>
+			<div class="col-sm-4 control-label" style="text-align: left">
+				<strong>{{current_session.vip != 0 ? current_session.vip : ''}}</strong>
+			</div>
+			<div class="col-sm-2 control-label text-muted">Natitionality:</div>
+			<div class="col-sm-4 control-label" style="text-align: left">
+				<strong>{{current_session.nationality}}</strong>
+			</div>
+		</div>
+	</form>
+	<form class="form-horizontal" ng-if="current_session.guest_type == 'Outside'">
+		<div class="form-group label-group" style="margin: 0">
+			<div class="col-sm-2 control-label text-muted">Chat ID:</div>
+			<div class="col-sm-4 control-label" style="text-align: left">
+				<strong>{{current_session.id}}</strong>
+			</div>
+			<div class="col-sm-2 control-label text-muted">Date:</div>
+			<div class="col-sm-4 control-label" style="text-align: left">
+				<strong>{{current_session.created_at}}</strong>
+			</div>
+		</div>
+		<div class="form-group label-group" style="margin: 0">
+			<div class="col-sm-2 control-label text-muted">Guest Type:</div>
+			<div class="col-sm-4 control-label" style="text-align: left">
+				<strong>{{current_session.guest_type}}</strong>
+			</div>
+			<div class="col-sm-2 control-label text-muted">Status:</div>
+			<div class="col-sm-4 control-label" style="text-align: left">
+				<strong>{{current_session.status}}</strong>
+			</div>
+		</div>
+		<div class="form-group label-group" style="margin: 0">
+			<div class="col-sm-2 control-label text-muted">Mobile No.:</div>
+			<div class="col-sm-4 control-label" style="text-align: left">
+				<strong>{{current_session.mobile_number}}</strong>
+			</div>
+			<div class="col-sm-2 control-label text-muted">Agent:</div>
+			<div class="col-sm-4 control-label" style="text-align: left">
+				<strong>{{current_session.agent_name}}</strong>
+			</div>
+		</div>
+		<div class="form-group label-group" style="margin: 0">
+			<div class="col-sm-2 control-label text-muted">Duration</div>
+			<div class="col-sm-4 control-label" style="text-align: left">
+				<strong>{{current_session.duration}}</strong>
+			</div>
+			<div class="col-sm-2 control-label text-muted">Waiting Time</div>
+			<div class="col-sm-4 control-label" style="text-align: left">
+				<strong>{{current_session.wait_time}}</strong>
+			</div>
+		</div>
+
+		<div class="form-group label-group" style="margin: 0">
+			<div class="col-sm-2 control-label text-muted">Start Time</div>
+			<div class="col-sm-4 control-label" style="text-align: left">
+				<strong>{{current_session.start_time}}</strong>
+			</div>
+		</div>
+	</form>
+</div>

@@ -1,0 +1,455 @@
+<style>
+	tbody > tr > th, tfoot > tr > th, tbody > tr > td, tfoot > tr > td {
+	/*padding: 1px 1px;*/
+	text-align: center;
+	vertical-align: middle;
+	}
+
+	{
+    		width: 14.285714285714285714285714285714%;
+  	}	
+
+	@media (min-width: 768px){
+	.seven-cols .col-md-1,
+	.seven-cols .col-sm-1,
+	.seven-cols .col-lg-1  {
+		width: 100%;
+		*width: 100%;
+	}
+	}
+
+	@media (min-width: 992px) {
+	.seven-cols .col-md-1,
+	.seven-cols .col-sm-1,
+	.seven-cols .col-lg-1 {
+		width: 7.285714285714285714285714285714%;
+		*width: 7.285714285714285714285714285714%;
+	}
+	}
+
+	/**
+	*  The following is not really needed in this case
+	*  Only to demonstrate the usage of @media for large screens
+	*/    
+	@media (min-width: 1200px) {
+	.seven-cols .col-md-1,
+	.seven-cols .col-sm-1,
+	.seven-cols .col-lg-1 {
+		width: 7.285714285714285714285714285714%;
+		*width: 7.285714285714285714285714285714%;
+	}
+	}
+
+	.jqplot-target {
+		color:#ffffff;
+		background-color: #2a2a2a;
+	}
+	.jqplot-table-legend {
+		/*background-color: #595959;*/
+		background-color: #2a2a2a;
+		font-size: 0.9em;
+		border: 1px solid #2a2a2a;
+		padding-top:1em;
+		padding-left:1em;
+	}
+	.jqplot-title {
+		padding-top: 0.6em;
+		font-size: 1.2em;
+	}
+
+	div.jqplot-table-legend-swatch-outline {
+		border: 1px solid #2a2a2a;
+	}
+
+	svg text {
+		fill: white;
+
+	}
+
+	.nvd3 .nv-legend text {
+		font: normal 10px Arial;
+	}
+
+	.nvd3.nv-pie .nv-slice text {
+		fill: white !important;
+	}
+
+	.nvd3 .nv-discretebar .nv-groups text, .nvd3 .nv-multibarHorizontal .nv-groups text {
+		fill: rgba(255,255,255,1);
+		stroke: rgba(255,255,255,0);
+	}
+
+	.tick line{
+		opacity: 0.2;
+	}
+	.status-view:hover{
+		color:#0b2ef4;
+	}
+
+	.ticket th {
+		font-size: 11px;
+	}
+
+	.ticket td {
+		font-size: 11px;
+	}
+
+	.popover-container .popover-content {
+		padding-left: 6px;
+		padding-right: 6px;
+	}
+
+	.popover-container .popover {
+		max-width: 650px;
+	}
+
+</style>
+
+<div id="capture" class="wrapper-md" ng-controller="CallloggerDashboardController" ng-init="onEnterCallModule()">
+	<script type="text/ng-template" id="filter_template.html">        
+        <div style="width: 400px">
+            <form class="form-horizontal form-validation">        
+                <div class="form-group">
+                    <!-- Skill Filter -->
+                    <div class="col-sm-12">
+                        <label class="control-label text-xs text-muted">Agent Skill Groups : </label>
+                        <div class="scrollable-dropdown-menu">
+                            <tags-input ng-model="filter.skill_group_tags" display-property="group_name" key-property="id"
+                                    style="margin-top: -5px"
+                                    placeholder="Add Skill Groups"
+                                    on-tag-added="getTicketStatistics()" on-tag-removed="getTicketStatistics()"
+                                    replace-spaces-with-dashes="false"  >
+                                    <auto-complete source="skillGroupTagFilter($query)"
+                                                    min-length="0"
+                                                    load-on-focus="true"
+                                                    load-on-empty="true"
+                                                    debounce-delay="0"
+                                                    max-results="10"
+                                                    >
+                                    </auto-complete>
+                            </tags-input>
+						</div>
+					</div>
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">Applied Filter: </label>
+						
+						<div>
+							<label class="text-sm font-bold">{{skill_group_name}}</label>
+						</div>
+						
+					</div>
+					<div class="col-sm-12" align="center">
+					<button  ng-click="openFilterPanel()"class="btn btn-sm btn-success"   data-toggle="dropdown" aria-expanded="false">
+						<label >
+							<i class="fa fa-check"></i>&nbsp;&nbsp;Save&nbsp;
+						</label>
+					</button>
+					</div> 
+				</div>
+			</form>       
+        </div>    
+    </script>
+
+	<div style="overflow-y: auto;background-color: #141414; height: 100vh; margin: -11px">
+	<div class="wrapper-md bg-light lt" style="background-color: #141414">
+    	<div class="col-sm-6 col-xs-12">
+			<h1 class="m-n font-thin h3 text-black" style="color:#337ab7">
+				<label style="font-size: 1.5vw"><i style="top:5px" class="glyphicon glyphicon-dashboard"></i>
+					&nbsp;&nbsp;Agent Performance Dashboard
+				</label>
+			</h1>
+    	</div>
+		<div class="col-sm-6 input-group text-right">
+			<a ui-fullscreen style="margin-right: 20px"></a>
+	    	<div class="btn-group popover-container">
+				<a data-toggle="tooltip" title="Filter" data-placement="bottom" 
+                                uib-popover-template="'filter_template.html'" popover-placement="bottom-left" > 
+		        	<i class="fa fa-filter" style="font-size: 30px;" ng-style="{'color': filter_apply ? '#23b7e5' : '#58666e'}" aria-hidden="true"></i>
+				</a>&nbsp;&nbsp;&nbsp;&nbsp;
+
+	        	<a ng-click="onDownloadPDF()">
+		        	<i class="fa fa-file-pdf-o" style="font-size: 30px; color:red" aria-hidden="true"></i>
+				</a>&nbsp;&nbsp;&nbsp;&nbsp;
+
+				
+		  	</div><!-- Dummy Need to add logic to export dash to pdf -->
+		  	<div class="btn-group">
+		        <label class="btn btn-info btn-sm" ng-model="dateFilter" uib-btn-radio="'Today'">Today</label>
+		        <label class="btn  btn-info btn-sm" ng-model="dateFilter" uib-btn-radio="'Weekly'">Weekly</label>
+		        <label class="btn  btn-info btn-sm" ng-model="dateFilter" uib-btn-radio="'Monthly'">Monthly</label>
+		        <label class="btn  btn-info btn-sm" ng-model="dateFilter" uib-btn-radio="'Yearly'">Yearly</label>
+		        <label class="btn  btn-info btn-sm" ng-model="dateFilter" uib-btn-radio="'Custom Days'">Custom Days</label>
+      		</div>
+	  		<input style="width: 200px; margin-left: 10px" ng-disabled="dateFilter != 'Custom Days'"
+	  			ng-model="daterange" ui-jq="daterangepicker" ui-options="dateRangeOption" class="form-control pull-right input-sm">
+    	</div>
+	</div>
+
+	<!-- / main header -->
+	<div style="margin-top: 4px;">
+		
+		<!-- MAIN STATISTICS -->
+		<div class="col-sm-12 ">
+			<div class="text-center" >
+        	<div class="row seven-cols" style="margin-left: 0px; margin-bottom: 5px;">
+				<div class="col-md-1" >
+	            	<a href class="block padder-v bg-dark" style="border-radius: 6px;margin-right: -1em;">
+						<span class="font-thin h1 block" ng-style="{color:total_queue_count > 0 ? '#f89406' : '#27c24c'}">{{total_queue_count}}</span>
+						<span class="text-muted text-xs">On Queue</span>
+	            	</a>
+	          	</div>
+				<div class="col-md-1">
+					<a href class="block padder-v bg-dark" style="border-radius: 6px;margin-right: -1em;">
+						<span class="text-warning font-thin h1 block" >{{total_callback_count}}</span>
+						<span class="text-muted text-xs">Callback</span>
+					</a>
+				</div>
+			  	<div class="col-md-1">
+			  		<a href class="block padder-v bg-dark" style="border-radius: 6px;margin-right: -1em;">
+			  			<span class="text-success font-thin h1 block">{{total_answered_count}}</span>
+			  			<span class="text-muted text-xs">Answered</span>
+            		</a>
+          		</div>
+		  		<div class="col-md-1">
+		  			<a href class="block padder-v bg-dark" style="border-radius: 6px;margin-right: -1em;">
+		  				<span class="text-danger font-thin h1 block">{{total_abandoned_count}}</span>
+		  				<span class="text-muted text-xs">Abandoned</span>
+            		</a>
+          		</div>
+				<div class="col-md-1" >
+	            	<a href class="block padder-v bg-dark" style="border-radius: 6px;margin-right: -1em;">
+						<span class="font-thin h1 block" style="color:#f89406">{{total_missed_count}}</span>
+						<span class="text-muted text-xs">Missed</span>
+	            	</a>
+	          	</div>
+				<div class="col-md-1">
+		  			<a href class="block padder-v bg-dark" style="border-radius: 6px;margin-right: -1em;">
+		  				<span class="text-warning font-thin h1 block" style="color:#ffa64c">{{total_outgoing_count}}</span>
+		  				<span class="text-muted text-xs">Outgoing</span>
+		  			</a>
+				</div>
+				<div class="col-md-1">
+					<a href class="block padder-v bg-dark" style="border-radius: 6px;margin-right: -1em;">
+						<span class="text-warning font-thin h1 block" style="color:#ffa64c">{{total_dropped_count}}</span>
+						<span class="text-muted text-xs">Dropped</span>
+					</a>
+			  </div>
+				<div class="col-md-1">
+		  			<a href class="block padder-v bg-dark" style="border-radius: 6px;margin-right: -1em;">
+		  				<span class="text-info font-thin h1 block">{{total_count}}</span>
+		  				<span class="text-muted text-xs">Total</span>
+		  			</a>
+        		</div>
+				<!-- <div class="col-lg-1"> -->
+					<!-- <a href class="block padder-v bg-dark" style="border-radius: 6px"> -->
+						<!-- <span class="text-warning font-thin h1 block">{{total_follow_count}}</span> -->
+						<!-- <span class="text-muted text-xs">Modify</span> -->
+					<!-- </a> -->
+				<!-- </div> -->
+				<div class="col-md-1">
+		  			<a href class="block padder-v bg-dark" style="border-radius: 6px;margin-right: -1em;">
+		  				<label class="text-info font-thin h2 block" style="margin-top: 5px; color:#ff99ff">{{total_peak}}</label>
+		  				<span class="text-muted text-xs">Peak Hour</span>
+		  			</a>
+        		</div>
+				<div class="col-md-1">
+		  			<a href class="block padder-v bg-dark" style="border-radius: 6px;margin-right: -1em;">
+		  				<label class="text-info font-thin h2 block" style="margin-top: 5px;color:#00ff40">{{total_tta}}</label>
+		  				<span class="text-muted text-xs" >Time To Answer</span>
+		  			</a>
+        		</div>
+				<div class="col-md-1">
+		  			<a href class="block padder-v bg-dark" style="border-radius: 6px;margin-right: -1em;">
+		  				<label class="text-info font-thin h2 block" style="margin-top: 5px;color:#ff9999">{{total_att}}</label>
+		  				<span class="text-muted text-xs">Avg Talk Time</span>
+		  			</a>
+        		</div>
+				<div class="col-md-1">
+		  			<a href class="block padder-v bg-dark" style="border-radius: 6px;margin-right: -1em;">
+		  				<label class="text-info font-thin h2 block" style="margin-top: 5px; color:#ff00ff">{{total_au}}</label>
+		  				<span class="text-muted text-xs">Agent Utilization %</span>
+		  			</a>
+        		</div>
+				<div class="col-md-1">
+		  			<a href class="block padder-v bg-dark" style="border-radius: 6px;margin-right: -1em;">
+		  				<label class="text-info font-thin h2 block" style="margin-top: 5px; color:#ff0040">{{total_ans_percentage}}</label>
+		  				<span class="text-muted text-xs">Call Answered %</span>
+		  			</a>
+        		</div>
+			  </div>
+			  </div>
+    	</div>
+
+		<!-- AGENT STATISTICS -->
+		<!-- first part-->
+		<div class="col-md-5" style="padding-right: 0px">
+			<div class="col-md-12" style="background-color: #2a2a2a; margin-bottom: 10px; border-radius: 6px; padding: 0px 4px 0px 4px;">
+				<div class="panel-body" style="padding: 0px">
+					<div  style="background-color: #2a2a2a">
+						<!--<h4 class="font-thin m-t-none m-b-none text-primary-lt" style="color: #ffffff">Agent Statistics</h4>-->
+						<div class="table table-responsive" style="overflow-y: auto;" ng-style="table_body_style">
+							<table  class="table ticket table-striped" style="margin-top: 3px">
+								<thead>
+								<tr class="tblhead-sm" style="font-size: .7vw">
+									<th class="text-center" width="200px;">
+										<b>Agent</b></th>
+									<th class="text-center" width="10px;"><b>Extension</b></th>
+									<th class="text-center" width="10px;"><b>Status</b></th>
+									<th class="text-center" width="70px;"><b>Duration</b></th>
+									<th class="text-center" style="white-space: nowrap"><b>ASA</b></th>
+									<th class="text-center" style="white-space: nowrap"><b>AHT</b></th>
+									<th class="text-center" style="white-space: nowrap"><b>ACW</b></th>
+									<th class="text-center" style="white-space: nowrap"><b>ABDN</b></th>
+									<th class="text-center" style="white-space: nowrap"><b>AUX</b></th>
+								</tr>
+								</thead>
+								<tbody ng-hide="isLoading">
+								<tr style="height:1vw" ng-repeat="row in datalist"  >
+									<td class="text-center">
+										<span class="thumb-sm avatar pull-left thumb-xs m-r-xs" >
+						            		<img src="{{row.picture}}" alt="...">
+												<i class="bg-info b-white bottom" ng-if="row.status=='Online'"></i>
+												<i class="bg-success b-white bottom" ng-if="row.status=='Available'"></i>
+												<i class="bg-danger b-white bottom" ng-if="row.status=='Busy'"></i>
+												<i class="bg-danger b-white bottom" ng-if="row.status=='Ringing'"></i>
+												<i class="bg-danger b-white bottom" ng-if="row.status=='Outgoing'"></i>
+												<i class="bg-warning b-white bottom" ng-if="row.status=='Idle'"></i>
+												<i class="bg-warning b-white bottom" ng-if="row.status=='On Break'"></i>
+												<i class="bg-default b-white bottom" ng-if="row.status=='Log out'"></i>
+												<i class="bg-primary b-white bottom" ng-if="row.status=='Wrapup'"></i>
+												<i class="bg-primary b-white bottom" ng-if="row.status=='Away'"></i>
+											<span class="hidden-xs hidden-sm status-view" ng-dblclick ="onChangeCallStatusLogOut(row)" style="cursor: pointer;" >&nbsp;&nbsp;{{row.agent}}</span>
+										</span>
+									</td>
+									<td class="text-center"><b>{{row.extension}}</b></td>
+									<td class="text-center">
+										<button ng-show="row.selected!=1" ng-click="onClick(row)" class="btn btn-sm btn-info"  ng-if="row.status=='Online'" data-toggle="dropdown" aria-expanded="false">
+										<label>
+											<i class="icon-power"></i>&nbsp;&nbsp;Online&nbsp;
+										</label><span class="caret"></span>
+										</button>
+
+										<button ng-show="row.selected!=1" ng-click="onClick(row)"class="btn btn-sm btn-success"  ng-if="row.status=='Available'" data-toggle="dropdown" aria-expanded="false">
+										<label >
+											<i class="fa fa-check"></i>&nbsp;&nbsp;Available&nbsp;
+										</label><span class="caret"></span>
+										</button>
+										
+										<button ng-show="row.selected!=1" ng-click="onClick(row)" class="btn btn-sm btn-danger"  ng-if="row.status=='Busy'" data-toggle="dropdown" aria-expanded="false">
+										<label >
+											<i class="icon-earphones-alt"></i>&nbsp;&nbsp;Busy&nbsp;
+										</label><span class="caret"></span>
+										</button>
+
+										<button ng-show="row.selected!=1" ng-click="onClick(row)" class="btn btn-sm btn-danger"  ng-if="row.status=='Ringing'" data-toggle="dropdown" aria-expanded="false">
+										<label>
+											<i class="icon-call-in"></i>&nbsp;&nbsp;Ringing&nbsp;
+										</label><span class="caret"></span>
+										</button>
+
+										<button ng-show="row.selected!=1" ng-click="onClick(row)" class="btn btn-sm btn-danger"  ng-if="row.status=='Outgoing'" data-toggle="dropdown" aria-expanded="false">
+										<label>
+											<i class="icon-call-out"></i>&nbsp;&nbsp;Outgoing&nbsp;
+										</label><span class="caret"></span>
+										</button>
+
+										<button ng-show="row.selected!=1" ng-click="onClick(row)" class="btn btn-sm btn-warning"  ng-if="row.status=='Idle'" data-toggle="dropdown" aria-expanded="false">
+										
+										<label >
+											<i class="fa fa-clock-o"></i>&nbsp;&nbsp;Idle&nbsp;
+										</label><span class="caret"></span>
+										</button>
+										<button ng-show="row.selected!=1" ng-click="onClick(row)" class="btn btn-sm btn-warning"  ng-if="row.status=='On Break'" data-toggle="dropdown" aria-expanded="false">
+										
+										<label >
+											<i class="fa fa-coffee "></i>&nbsp;&nbsp;On Break&nbsp;
+										</label><span class="caret"></span>
+										</button>
+										<button ng-show="row.selected!=1" ng-click="onClick(row)" class="btn btn-sm btn-warning"  ng-if="row.status=='Away'" data-toggle="dropdown" aria-expanded="false">
+										
+										<label >
+											<i class="fa fa-coffee "></i>&nbsp;&nbsp;Away&nbsp;
+										</label><span class="caret"></span>
+										</button>
+
+										<button ng-show="row.selected!=1" ng-click="onClick(row)" class="btn btn-sm btn-default"  ng-if="row.status=='Log out'" data-toggle="dropdown" aria-expanded="false">
+										
+										<label >
+											<i class="fa fa-sign-out "></i>&nbsp;&nbsp;Log Out&nbsp;
+										</label><span class="caret"></span>
+										</button>
+
+										<button ng-show="row.selected!=1" ng-click="onClick(row)" class="btn btn-sm btn-primary"  ng-if="row.status=='Wrapup'" data-toggle="dropdown" aria-expanded="false">
+										
+										<label >
+											<i class="fa fa-pencil "></i>&nbsp;&nbsp;Wrap Up&nbsp;
+										</label>
+
+										<span class="caret"></span>
+										</button>
+										<select ng-hide="row.selected!=1" ng-model='row.new_status' ng-change="onSelect(row)">
+												<option ng-repeat="x in status_list" ng-hide="x==row.status" >{{x}}</option>
+												</select>
+									</td>
+									<td class="text-center" ng-style="row.duration_style"><b>{{getDuration(row)}}</b></td>
+									<td class="text-center" ng-style="row.avg_time_style"><b>{{row.avg_time}}</b></td>
+									<td class="text-center" ng-style="row.time_call_style"><b>{{row.time_call}}</b></td>
+									<td class="text-center" ng-style="row.wrapup_time_style"><b>{{row.wrapup_time}}</b></td>
+									<td class="text-center" ng-style="row.abandoned_style"><b>{{row.abandoned}}</b></td>
+									<td class="text-center" ng-style="row.aux_dur_style"><b>{{row.aux_dur_time}}</b></td>
+								</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-12" style="background-color: #2a2a2a; border-radius: 6px">
+				<div class="panel-body" style="padding: 0px;">
+					<nvd3 options="call_status_options" data="call_status_data"></nvd3>
+				</div>
+			</div>
+		</div>
+		<!-------second part-------->
+		<div class="col-md-5">
+			<div class="col-md-12" style="background-color: #2a2a2a;margin-bottom: 10px; border-radius: 6px">
+				<div class="panel-body" style="padding: 0px;">
+					<nvd3 options="agent_status_options" data="agent_status_data"></nvd3>
+				</div>
+			</div>
+			<div class="col-sm-12"  style="background-color: #2a2a2a; border-radius: 6px">
+				<div class="panel-body" style="padding: 0px;">
+					<nvd3 options='hourly_options' data='hourly_data'></nvd3>
+				</div>
+			</div>
+		</div>
+		<!-------third part--------->
+		<div class="col-md-2" style="padding-left:0px">
+			<div class="col-sm-12"  style="background-color: #2a2a2a;margin-bottom: 10px; border-radius: 6px; padding:1px">
+				<div class="panel-body"  style="background-color: #2a2a2a;padding: 0px; margin: -1px; border-radius: 6px">
+					<nvd3 options="call_success_options" data="call_success_data"></nvd3>
+				</div>
+			</div>
+			<div class="col-sm-12"  style="background-color: #2a2a2a;margin-bottom: 10px; border-radius: 6px; padding:1px">
+				<div class="panel-body"  style="background-color: #2a2a2a;padding: 0px; margin: -1px; border-radius: 6px">
+					<nvd3 options="call_type_options" data="call_type_data"></nvd3>
+				</div>
+			</div>
+			<div class="col-sm-12"  style="background-color: #2a2a2a; border-radius: 6px">
+				<div class="panel-body"  style="background-color: #2a2a2a;padding: 0px;">
+					<nvd3 options="call_classify_options" data="call_classify_data"></nvd3>
+				</div>
+			</div>
+		</div>
+		<!-------end--------------->
+
+        
+
+	</div>
+
+    <div class="clear-me">
+	
+
+    </div>
+    </div>
+</div>

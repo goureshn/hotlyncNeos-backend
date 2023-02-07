@@ -1,0 +1,123 @@
+<div class="modal-body wrapper-lg">
+  <h3 class="m-t-none m-b font-thin">Service Recovery Detail</h3> 
+  <hr/>
+  <div class ="row">
+    <div class="col-sm-3">
+      <h5 class="text-muted">Type :</h5>
+    </div>
+    <div class="col-sm-3">
+      <h5 class="text-muted">{{comp.item_name}}</h5>
+    </div> 
+    <div class="col-sm-3">
+      <h5 class="text-muted">Cost :</h5>
+    </div>
+    <div class="col-sm-3">
+      <h5 class="text-muted">{{comp.cost}}</h5>
+    </div>   
+  </div>
+
+  <div class ="row">
+    <div class="col-sm-3">
+      <h5 class="text-muted">Status :</h5>
+    </div>
+    <div class="col-sm-3">
+      <h5 class="text-muted" style="margin-left: 0px">
+        <span style="font-size: 11px" ng-class="{'label' : true, 
+                              'bg-wakeup-pending': comp.status == '1',
+                              'bg-wakeup-waiting': comp.status == '2',
+                              'bg-wakeup-success': comp.status == '0',
+                              'bg-wakeup-no-answer': comp.status == '3',
+                              'bg-wakeup-snooze': comp.status == '4',                                  
+                            }">
+                    {{comp.status == 0 ? 'Complete Approved' : ''}}
+                    {{comp.status == 1 ? 'On-route' : ''}}
+                    {{comp.status == 2 ? 'Rejected' : ''}}
+                    {{comp.status == 3 ? 'Returned' : ''}}
+                    {{comp.status == 4 ? 'Pending' : ''}}
+        </span>
+      </h5>
+    </div>
+    
+    <div class="col-sm-3">
+      <h5 class="text-muted">Provider :</h5>
+    </div>
+    <div class="col-sm-3">
+      <h5 class="text-muted">{{comp.provider}}</h5>
+    </div>
+  </div>
+  <div class ="row">
+    <div class="col-sm-3">
+      <h5 class="text-muted">Department :</h5>
+    </div>
+    <div class="col-sm-3">
+      <h5 class="text-muted">{{comp.department}}</h5>
+    </div>   
+    <div class="col-sm-3">
+      <h5 class="text-muted">Need to Approve :</h5>
+    </div>
+    <div class="col-sm-3">
+      <h5 class="text-muted">YES</h5>
+    </div>     
+  </div>
+
+  <div class ="row">
+    <div class="col-sm-3">
+      <h5 class="text-muted">Comment :</h5>
+    </div>
+    <div class="col-sm-3">
+      <h5 class="text-muted">{{comp.comment}}</h5>
+    </div>
+  </div>
+
+  <div class="row" ng-show="comp.status == 3">
+    <div class="col-sm-3">
+      <h5 class="text-muted">Comment :</h5>
+    </div>
+    <div class="col-sm-6">
+      <textarea class="form-control input-sm" rows="3" ng-model="comp.return_comment"
+         style="resize:none">
+      </textarea>
+    </div>          
+    <div class="col-sm-3">                          
+      <button type="button" class="btn btn-primary btn-sm pull-right" ng-click="addCommentToReturn(comp.return_comment)">Add Comment
+      </button>
+    </div>         
+  </div>
+
+
+  <hr/>
+
+  <div style="height: 300px; overflow-y: auto">
+    <div class="m-b b-l m-l-md streamline">
+      <div ng-repeat="row in comment_list">
+        <a class="pull-left thumb-sm avatar m-l-n-md">
+          <object width="30" height="30" data="/frontpage/img/default_photo.png" type="image/png">
+            <img src="{{row.picture}}" width="30" height="30">
+          </object>  
+        </a>          
+        <div class="m-l-lg panel b-a">
+          <div class="panel-heading pos-rlt b-b b-light">
+            <span class="arrow left"></span>                    
+            <a href ng-show="row.wholename">{{row.wholename}}({{row.job_role}})</a>
+            <a href ng-show="!row.wholename">System</a>
+            <label class="label bg-success m-l-xs">{{row.reason}}</label> 
+            <span class="text-muted m-l-sm pull-right">
+              <i class="fa fa-clock-o"></i>
+                {{getTime(row)}}
+            </span>
+          </div>
+          <div class="panel-body">
+            <div ng-bind-html="row.comment"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <hr/>
+
+  <div class="row">
+    <button type="button" class="btn btn-sm btn-success pull-right text-uc m-t-n-xs" ng-click="ok()"><strong>OK</strong></button>
+  </div>
+
+</div>

@@ -1,0 +1,68 @@
+<style>
+    .tabsdemoDynamicHeight md-content {
+    background-color: transparent !important;
+}
+.tabsdemoDynamicHeight md-content md-tabs {
+  background: #f6f6f6;
+  border: 1px solid #e1e1e1;
+}
+
+.tabsdemoDynamicHeight md-content md-tabs md-tabs-wrapper {
+  background: white;
+}
+
+.tabsdemoDynamicHeight md-content h1:first-child {
+  margin-top: 0;
+}
+</style>
+<div class="modal-body wrapper" class="modal-dialog">            
+    <div class="wrapper-md">        
+            <div class="panel-body" style="padding: 5px 0px">
+              <div class="form-horizontal form-validation">       
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">Alarm Name</label>
+                    <div class="col-sm-8">
+                        <input type="text" ng-model="alarm_group.name" class="form-control input-sm" disabled>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">Description</label>
+                    <div class="col-sm-8">
+                        <input type="text" ng-model="alarm_group.description" class="form-control input-sm" disabled>
+                    </div>
+                </div>                
+                <div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Icon :</label>
+						<div class="col-sm-5">						
+                            <button class="btn btn-icon btn-info" style="cursor: pointer"><i class="fa fa-paperclip"></i></button>
+                            <div class="dropzone" file-dropzone="[image/png, image/jpeg, image/gif]"
+                                    file="image"  file-name="imageFileName"  data-max-file-size="3" >
+                            </div>
+                            <!--                            
+                            <div class="image-container">
+                                <img ng-src={{image}}/>
+                                <span class="file-name">{{imageFileName}}</span>
+                            </div>
+                            -->
+                            <form action style="border:0px;padding-top:20px;">
+                                <input type="file" fileread="uploadme.src" imagename="uploadme.imagename" imagetype="uploadme.imagetype"
+                                    style="opacity:0.001;width:35px;margin-top:-45px;max-height: 50px;" />
+                                <img ng-src="{{ uploadme.src }}" style="margin-left:50px;margin-top:-25px; width: 80px;height: 80px;">
+                            </form>
+						</div>
+					</div>	
+                
+                <div class="line line-dashed b-b line-lg pull-in"></div>
+              </div>
+            </div>
+    </div>    
+    <center>
+        <button type="button" class="btn btn-dark btn-sm" ng-click="onSaveAlarmImage()">
+            <span class="text-success font-bold"><i class="fa fa-check"></i>&nbsp;Send</span>
+        </button>
+        <button type="button" class="btn btn-dark btn-sm" ng-click="cancel()">
+            <span class="text-danger font-bold"><i class="fa fa-times"></i>&nbsp;Cancel</span>
+        </button>           
+    </center>
+</div>
+

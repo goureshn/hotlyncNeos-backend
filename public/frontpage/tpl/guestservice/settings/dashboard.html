@@ -1,0 +1,59 @@
+<div ng-controller="DashboardController">
+    <div class="col" ng-style="{'height': tab_full_height, 'overflow-y': 'hidden'}">
+        <md-content class="call_menu navi clearfix">
+            <md-tabs md-selected="0"  md-disable-animation md-autoselect md-dynamic-height md-border-bottom style="height:30px;">
+                <md-tab  md-disable-animation style="margin:8px -5px 0px;" class="{{active == 1 ? 'tab-current' : ''}}">
+                    <md-tab-label>
+                        Task groups
+                    </md-tab-label>
+
+                    <md-tab-body>
+                        <div class="stretch" fill-height additional-padding="50" debounce-wait="500" ng-include="'tpl/guestservice/settings/task_groups.html'">
+                        </div>
+                    </md-tab-body>
+                </md-tab>
+                <md-tab  md-disable-animation style="margin:8px -5px 0px;" class="{{active == 1 ? 'tab-current' : ''}}">
+                    <md-tab-label>
+                        Tasks
+                    </md-tab-label>
+
+                    <md-tab-body>
+                        <div class="stretch" fill-height additional-padding="50" debounce-wait="500" ng-include="'tpl/guestservice/settings/tasks.html'">
+                        </div>
+                    </md-tab-body>
+                </md-tab>
+                <md-tab  md-disable-animation style="margin:8px -5px 0px;" class="{{active == 1 ? 'tab-current' : ''}}">
+                    <md-tab-label>
+                        Location Groups
+                    </md-tab-label>
+
+                    <md-tab-body>
+                        <div class="stretch" fill-height additional-padding="50" debounce-wait="500" ng-include="'tpl/guestservice/settings/location_groups.html'">
+                        </div>
+                    </md-tab-body>
+                </md-tab>
+                <md-tab  md-disable-animation style="margin:8px -5px 0px;" class="{{active == 1 ? 'tab-current' : ''}}">
+                    <md-tab-label>
+                        Device
+                    </md-tab-label>
+
+                    <md-tab-body>
+                        <div class="stretch" fill-height additional-padding="50" debounce-wait="500" ng-include="'tpl/guestservice/settings/device.html'">
+                        </div>
+                    </md-tab-body>
+                </md-tab>
+                <md-tab  md-disable-animation style="margin:8px -5px 0px;" class="{{active == 1 ? 'tab-current' : ''}}">
+                    <md-tab-label>
+                        User
+                    </md-tab-label>
+
+                    <md-tab-body>
+                        <div class="stretch" fill-height additional-padding="50" debounce-wait="500" ng-include="'tpl/guestservice/settings/user.html'">
+                        </div>
+                    </md-tab-body>
+                </md-tab>
+            </md-tabs>
+
+        </md-content>
+    </div>
+</div>

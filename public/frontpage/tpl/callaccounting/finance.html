@@ -1,0 +1,349 @@
+<style>
+  nav {
+    position: relative;
+    z-index: 1;
+    white-space: nowrap;
+    font-size: 12px;
+    ;
+  }
+
+  nav a {
+    position: relative;
+    display: inline-block;
+    padding: 1.5em 1.5em 1em;
+    text-decoration: none;
+    margin: 0 -7px;
+    color: #fff;
+  }
+
+  nav a:hover {
+    color: #ef6905;
+  }
+
+  nav a::before,
+  main {
+    border: .1em solid #aaa;
+  }
+
+  nav a::before {
+    content: '';
+    /* To generate the box */
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: .5em;
+    left: 0;
+    z-index: -1;
+    border-bottom: none;
+    border-radius: 10px 10px 0 0;
+    background: #2e3344;
+    box-shadow: 0 2px hsla(0, 0%, 100%, .5) inset;
+    transform: perspective(5px) rotateX(2deg);
+    transform-origin: bottom;
+  }
+
+  nav.left a {
+    padding: 1.5em 2em 1em 1em;
+  }
+
+  nav.left a::before {
+    transform-origin: bottom left;
+  }
+
+  nav.right a {
+    padding: 1.5em 1em 1em 2em;
+  }
+
+  nav.right a::before {
+    transform-origin: bottom right;
+  }
+
+  nav a.selected {
+    z-index: 2;
+  }
+
+  nav a.selected::before {
+    margin-bottom: -1px;
+    border-top-width: 1px;
+  }
+
+  nav a.selected::before {
+    background: #0e08b6;
+  }
+
+  main {
+    display: block;
+    margin: -8px 0 30px -15px;
+    padding: 1em;
+    border-radius: 3px;
+    background: #fff;
+  }
+
+  .tabsdemoDynamicHeight md-content {
+    background-color: transparent !important;
+  }
+
+  .tabsdemoDynamicHeight md-content md-tabs {
+    background: #f6f6f6;
+    border: 1px solid #e1e1e1;
+  }
+
+  .tabsdemoDynamicHeight md-content md-tabs md-tabs-wrapper {
+    background: white;
+  }
+
+  .tabsdemoDynamicHeight md-content h1:first-child {
+    margin-top: 0;
+  }
+</style>
+
+
+<div ng-controller="FinanceController" class="stretch">
+
+
+  <div ng-show="flags==0" ng-cloak>
+    <md-content>
+      <md-tabs md-dynamic-height md-border-bottom>
+        <md-tab ng-if="auth_svc.isValidModule('app.callaccounting.adminfinance')" label="Admin Finance">
+          <md-content ng-include="'tpl/callaccounting/myfinance.html'">
+            <b>Landphone Finance</b>
+          </md-content>
+        </md-tab>
+        <md-tab ng-if="auth_svc.isValidModule('app.callaccounting.mobilefinance')" label="Mobile Finance">
+          <md-content ng-include="'tpl/callaccounting/myfinance_mobile.html'">
+            <b>Mobile Finance</b>
+          </md-content>
+        </md-tab>
+
+
+      </md-tabs>
+
+      <!--
+	
+		<md-tab-body>
+			<md-tab-content class="stretch" ng-if="indexname == 'callaccount' " style="{{tab_full_height}}; overflow-y: hidden"
+				 ng-include="'tpl/reports/callaccount_report.html'"></md-tab-content>
+			<div class="stretch" ng-if="indexname == 'callcenter' " style="{{tab_full_height}}; overflow-y: hidden"
+				 ng-include="'tpl/reports/callcenter_report.html'"></div>
+			<div class="stretch" ng-if="indexname == 'callclassify' " style="{{tab_full_height}}; overflow-y: hidden"
+				 ng-include="'tpl/reports/callclassify_report.html'"></div>
+			<div class="stretch" ng-if="indexname == 'guestservice' " style="{{tab_full_height}}; overflow-y: hidden"
+				 ng-include="'tpl/reports/guestservice_report.html'"></div>
+			<div class="stretch" ng-if="indexname == 'hskp' " style="{{tab_full_height}}; overflow-y: hidden"
+				 ng-include="'tpl/reports/hskp_report.html'"></div>
+			<div class="stretch" ng-if="indexname == 'minibar' " style="{{tab_full_height}}; overflow-y: hidden"
+				 ng-include="'tpl/reports/minibar_report.html'"></div>
+			<div class="stretch" ng-if="indexname == 'wakeupcall' " style="{{tab_full_height}}; overflow-y: hidden"
+				 ng-include="'tpl/reports/wakeupcall_report.html'"></div>
+			<div class="stretch" ng-if="indexname == 'schedule' " style="{{tab_full_height}}; overflow-y: hidden"
+				 ng-include="'tpl/reports/scheduled_report.html'"></div>
+			<div class="stretch" ng-if="indexname == 'complaints' " style="{{tab_full_height}}; overflow-y: hidden"
+				 ng-include="'tpl/reports/complaints_report.html'"></div>
+			<div class="stretch" ng-if="indexname == 'day' " style="{{tab_full_height}}; overflow-y: hidden"
+				 ng-include="'tpl/reports/day_report.html'"></div>
+			<div class="stretch" ng-if="indexname == 'audit' " style="{{tab_full_height}}; overflow-y: hidden"
+				 ng-include="'tpl/reports/audit_report.html'"></div>
+		</md-tab-body>
+-->
+    </md-content>
+  </div>
+  <div ng-show="flags==1">
+    <nav>
+      <a ng-if="auth_svc.isValidModule('app.callaccounting.adminfinance')" class="{{indexname == 'adminfinance' ? 'selected' : ''}}"
+        ng-click="loadContent('adminfinance')">
+        <b>Landphone Finance</b>
+      </a>
+      <a ng-if="auth_svc.isValidModule('app.callaccounting.mobilefinance')" class="{{indexname == 'mobilefinance' ? 'selected' : ''}}"
+        ng-click="loadContent('mobilefinance')">
+        <b>Mobile Finance</b>
+      </a>
+  
+    </nav>
+    <main>
+      <div class="stretch" ng-if="indexname == 'adminfinance' " style="{{tab_full_height}}; overflow-y: hidden" ng-include="'tpl/callaccounting/myfinance.html'"></div>
+      <div class="stretch" ng-if="indexname == 'mobilefinance' " style="{{tab_full_height}}; overflow-y: hidden" ng-include="'tpl/callaccounting/myfinance_mobile.html'"></div>
+  
+    </main>
+  
+  </div>
+  <!-- <div ng-show="flags==1">
+        <nav>
+            <a ng-if="auth_svc.isValidModule('app.callaccounting.mycalls')" class="{{indexname == 'callaccount' ? 'selected' : ''}}" ng-click="loadContent('callaccount')">
+                <b>Call Accounting</b>
+            </a>
+            <a ng-if="auth_svc.isValidModule('app.reports.callcenter')" class="{{indexname == 'callcenter' ? 'selected' : ''}}" ng-click="loadContent('callcenter')">
+                <b>Call Center</b>
+            </a>
+            <a ng-if="auth_svc.isValidModule('app.reports.callclassify')" class="{{indexname == 'callclassify' ? 'selected' : ''}}" ng-click="loadContent('callclassify')">
+                <b>Call Classification</b>
+            </a>
+            <a ng-if="auth_svc.isValidModule('app.reports.guestservice')" class="{{indexname == 'guestservice' ? 'selected' : ''}}" ng-click="loadContent('guestservice')">
+                <b>Guest Service</b>
+            </a>
+            <a ng-if="auth_svc.isValidModule('app.reports.hskp')" class="{{indexname == 'hskp' ? 'selected' : ''}}" ng-click="loadContent('hskp')">
+                <b>Housekeeping</b>
+            </a>
+            <a ng-if="auth_svc.isValidModule('app.reports.minibar')" class="{{indexname == 'minibar' ? 'selected' : ''}}" ng-click="loadContent('minibar')">
+                <b>Minibar</b>
+            </a>
+            <a ng-if="auth_svc.isValidModule('app.reports.wakeupcall')" class="{{indexname == 'wakeupcall' ? 'selected' : ''}}" ng-click="loadContent('wakeupcall')">
+                <b>Wake Up Call</b>
+            </a>
+            <a ng-if="auth_svc.isValidModule('app.reports.schedule')" class="{{indexname == 'schedule' ? 'selected' : ''}}" ng-click="loadContent('schedule')">
+                <b>Scheduled Reports</b>
+            </a>
+            <a ng-if="auth_svc.isValidModule('app.reports.complaints')" class="{{indexname == 'complaints' ? 'selected' : ''}}" ng-click="loadContent('complaints')">
+                <b>Complaints</b>
+            </a>
+            <a ng-if="auth_svc.isValidModule('app.reports.day')" class="{{indexname == 'day' ? 'selected' : ''}}" ng-click="loadContent('day')">
+                <b>Day End Reports</b>
+            </a>
+            <a ng-if="auth_svc.isValidModule('app.reports.audit')" class="{{indexname == 'audit' ? 'selected' : ''}}" ng-click="loadContent('audit')">
+                <b>Audit Report</b>
+            </a>
+
+        </nav>
+        <main>
+            <div class="stretch" ng-if="indexname == 'callaccount' " style="{{tab_full_height}}; overflow-y: hidden" ng-include="'tpl/reports/callaccount_report.html'"></div>
+            <div class="stretch" ng-if="indexname == 'callcenter' " style="{{tab_full_height}}; overflow-y: hidden" ng-include="'tpl/reports/callcenter_report.html'"></div>
+            <div class="stretch" ng-if="indexname == 'callclassify' " style="{{tab_full_height}}; overflow-y: hidden" ng-include="'tpl/reports/callclassify_report.html'"></div>
+            <div class="stretch" ng-if="indexname == 'guestservice' " style="{{tab_full_height}}; overflow-y: hidden" ng-include="'tpl/reports/guestservice_report.html'"></div>
+            <div class="stretch" ng-if="indexname == 'hskp' " style="{{tab_full_height}}; overflow-y: hidden" ng-include="'tpl/reports/hskp_report.html'"></div>
+            <div class="stretch" ng-if="indexname == 'minibar' " style="{{tab_full_height}}; overflow-y: hidden" ng-include="'tpl/reports/minibar_report.html'"></div>
+            <div class="stretch" ng-if="indexname == 'wakeupcall' " style="{{tab_full_height}}; overflow-y: hidden" ng-include="'tpl/reports/wakeupcall_report.html'"></div>
+            <div class="stretch" ng-if="indexname == 'schedule' " style="{{tab_full_height}}; overflow-y: hidden" ng-include="'tpl/reports/scheduled_report.html'"></div>
+            <div class="stretch" ng-if="indexname == 'complaints' " style="{{tab_full_height}}; overflow-y: hidden" ng-include="'tpl/reports/complaints_report.html'"></div>
+            <div class="stretch" ng-if="indexname == 'day' " style="{{tab_full_height}}; overflow-y: hidden" ng-include="'tpl/reports/day_report.html'"></div>
+            <div class="stretch" ng-if="indexname == 'audit' " style="{{tab_full_height}}; overflow-y: hidden" ng-include="'tpl/reports/audit_report.html'"></div>
+        </main>
+
+    </div> -->
+
+
+  <!--<uib-tabset active="active" >-->
+  <!--<div class="tabs tabs-style-tzoid pull-left" >-->
+  <!--<nav ui-nav class="call_menu navi clearfix" >-->
+  <!--<ul class="tabs-style-tzoid nav" style="height:40px;max-width:2500px;">-->
+  <!---->
+  <!--<li style="margin:8px -5px 0px;" class="{{active == 1 ? 'tab-current' : ''}}" ng-if="auth_svc.isValidModule('app.reports.callaccount')">-->
+  <!--<uib-tab index="1">-->
+  <!--<uib-tab-heading>-->
+  <!--<p class="tabs-style-tzoid" style="color:#fff; font-size:12px"><i class="fa fa-phone fa-lg"></i>&nbsp;&nbsp;<b>Call Accounting</b></p>-->
+  <!--</uib-tab-heading>-->
+  <!--<div class="stretch" style="{{tab_full_height}}; overflow-y: hidden" ng-include="'tpl/reports/callaccount_report.html'">-->
+  <!--</div>-->
+  <!--</uib-tab>-->
+  <!--</li>-->
+  <!---->
+  <!--<li style="margin:8px -5px 0px;" class="{{active == 2 ? 'tab-current' : ''}}" ng-if="auth_svc.isValidModule('app.reports.callcenter')">-->
+  <!--<uib-tab index="2">-->
+  <!--<uib-tab-heading>-->
+  <!--<p class="tabs-style-tzoid" style="color:#fff; font-size:12px"><i class="fa fa-mobile fa-lg"></i>&nbsp;&nbsp;<b>Call Center</b></p>-->
+  <!--</uib-tab-heading>-->
+  <!--<div style="{{tab_full_height}}" ng-include="'tpl/reports/callcenter_report.html'">-->
+  <!--</div>-->
+  <!--</uib-tab>-->
+  <!--</li>-->
+  <!---->
+  <!--<li style="margin:8px -5px 0px;" class="{{active == 9 ? 'tab-current' : ''}}" ng-if="auth_svc.isValidModule('app.reports.callclassify')">-->
+  <!--<uib-tab index="9">-->
+  <!--<uib-tab-heading>-->
+  <!--<p class="tabs-style-tzoid" style="color:#fff; font-size:12px"><i class="fa fa-line-chart"></i>&nbsp;&nbsp;<b>Call Classification</b></p>-->
+  <!--</uib-tab-heading>-->
+  <!--<div style="{{tab_full_height}}" ng-include="'tpl/reports/callclassify_report.html'">-->
+  <!--</div>-->
+  <!--</uib-tab>-->
+  <!--</li>-->
+
+  <!--<li style="margin:8px -5px 0px;" class="{{active == 4 ? 'tab-current' : ''}}" ng-if="auth_svc.isValidModule('app.reports.guestservice')">-->
+  <!--<uib-tab index="4">-->
+  <!--<uib-tab-heading>-->
+  <!--<p class="tabs-style-tzoid" style="color:#fff; font-size:12px"><i class="glyphicon glyphicon-user"></i>&nbsp;&nbsp;<b>Guest Service</b></p>-->
+  <!--</uib-tab-heading>-->
+  <!--<div style="{{tab_full_height}}" ng-include="'tpl/reports/guestservice_report.html'">-->
+  <!--</div>-->
+  <!--</uib-tab>-->
+  <!--</li>-->
+
+  <!--<li style="margin:8px -6px 0px;" class="{{active == 3 ? 'tab-current' : ''}}" ng-if="auth_svc.isValidModule('app.reports.hskp')">-->
+  <!--<uib-tab index="3">-->
+  <!--<uib-tab-heading>-->
+  <!--<p class="tabs-style-tzoid" style="color:#fff; font-size:12px"><i class="glyphicon glyphicon-header"></i>&nbsp;&nbsp;<b>Housekeeping</b></p>-->
+  <!--</uib-tab-heading>-->
+  <!--<div style="{{tab_full_height}}" ng-include="'tpl/reports/hskp_report.html'">-->
+  <!--</div>-->
+  <!--</uib-tab>-->
+  <!--</li>-->
+  <!---->
+  <!--<li style="margin:8px -5px 0px;" class="{{active == 5 ? 'tab-current' : ''}}" ng-if="auth_svc.isValidModule('app.reports.minibar')">-->
+  <!--<uib-tab index="5">-->
+  <!--<uib-tab-heading>-->
+  <!--<p class="tabs-style-tzoid" style="color:#fff; font-size:12px"><i class="glyphicon glyphicon-glass"></i>&nbsp;&nbsp;<b>Minibar</b></p>-->
+  <!--</uib-tab-heading>-->
+  <!--<div style="{{tab_full_height}}" ng-include="'tpl/reports/minibar_report.html'">-->
+  <!--</div>-->
+  <!--</uib-tab>-->
+  <!--</li>-->
+  <!---->
+  <!--<li style="margin:8px -5px 0px;" class="{{active == 8 ? 'tab-current' : ''}}" ng-if="auth_svc.isValidModule('app.reports.wakeupcall')">-->
+  <!--<uib-tab index="8">-->
+  <!--<uib-tab-heading>-->
+  <!--<p class="tabs-style-tzoid" style="color:#fff; font-size:12px"><i class="fa fa-sun-o"></i>&nbsp;&nbsp;<b>Wake Up Call</b></p>-->
+  <!--</uib-tab-heading>-->
+  <!--<div style="{{tab_full_height}}" ng-include="'tpl/reports/wakeupcall_report.html'">-->
+  <!--</div>-->
+  <!--</uib-tab>-->
+  <!--</li>-->
+  <!---->
+  <!--&lt;!&ndash;<li style="margin:8px -5px 0px;" class="{{active == 6 ? 'tab-disable' : 'tab-disable'}}" ng-if="schedule_view == false"  >&ndash;&gt;-->
+  <!--&lt;!&ndash;<uib-tab disable="true" >&ndash;&gt;-->
+  <!--&lt;!&ndash;<uib-tab-heading >&ndash;&gt;-->
+  <!--&lt;!&ndash;<p  style="color:#484848; font-size:12px"><i class="glyphicon glyphicon-glass"></i>&nbsp;&nbsp;Scheduled Reports</p>&ndash;&gt;-->
+  <!--&lt;!&ndash;</uib-tab-heading>&ndash;&gt;-->
+  <!--&lt;!&ndash;</uib-tab>&ndash;&gt;-->
+  <!--&lt;!&ndash;</li>&ndash;&gt;-->
+  <!---->
+  <!--<li style="margin:8px -5px 0px;" class="{{active == 6 ? 'tab-current' : ''}} " ng-if="auth_svc.isValidModule('app.reports.schedule')">-->
+  <!--<uib-tab select="onShowScheduleList()" index="6">-->
+  <!--<uib-tab-heading>-->
+  <!--<p class="tabs-style-tzoid" style="color:#fff; font-size:12px"><i class="fa fa-calendar"></i>&nbsp;&nbsp;<b>Scheduled Reports</b></p>-->
+  <!--</uib-tab-heading>-->
+  <!--<div style="{{tab_full_height}}" ng-include="'tpl/reports/scheduled_report.html'">-->
+  <!--</div>-->
+  <!--</uib-tab>-->
+  <!--</li>-->
+
+  <!--<li style="margin:8px -5px 0px;" class="{{active == 11 ? 'tab-current' : ''}}" ng-if="auth_svc.isValidModule('app.reports.complaints')">-->
+  <!--<uib-tab index="11">-->
+  <!--<uib-tab-heading>-->
+  <!--<p class="tabs-style-tzoid" style="color:#fff; font-size:12px"><i class="glyphicon glyphicon-glass"></i>&nbsp;&nbsp;Complaints</p>-->
+  <!--</uib-tab-heading>-->
+  <!--<div style="{{tab_full_height}}" ng-include="'tpl/reports/complaints_report.html'">-->
+  <!--</div>-->
+  <!--</uib-tab>-->
+  <!--</li>-->
+  <!---->
+  <!--<li style="margin:8px -5px 0px;" class="{{active == 7 ? 'tab-current' : ''}}" ng-if="auth_svc.isValidModule('app.reports.day')">-->
+  <!--<uib-tab index="7">-->
+  <!--<uib-tab-heading>-->
+  <!--<p class="tabs-style-tzoid" style="color:#fff; font-size:12px"><i class="icon-note"></i>&nbsp;&nbsp;<b>Day End Reports</b></p>-->
+  <!--</uib-tab-heading>-->
+  <!--<div style="{{tab_full_height}}" ng-include="'tpl/reports/day_report.html'">-->
+  <!--</div>-->
+  <!--</uib-tab>-->
+  <!--</li>-->
+  <!--<li style="margin:8px -5px 0px;" class="{{active == 10 ? 'tab-current' : ''}}" ng-if="auth_svc.isValidModule('app.reports.audit')">-->
+  <!--<uib-tab index="10">-->
+  <!--<uib-tab-heading>-->
+  <!--<p class="tabs-style-tzoid" style="color:#fff; font-size:12px"><i class="glyphicon glyphicon-glass"></i>&nbsp;&nbsp;Audit Report</p>-->
+  <!--</uib-tab-heading>-->
+  <!--<div style="{{tab_full_height}}" ng-include="'tpl/reports/audit_report.html'">-->
+  <!--</div>-->
+  <!--</uib-tab>-->
+  <!--</li>-->
+
+  <!--</ul>-->
+  <!--</nav>-->
+  <!--</div>-->
+  <!--</uib-tabset>-->
+</div>

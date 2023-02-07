@@ -1,0 +1,45 @@
+<style>
+    button {
+        pointer: cursor;
+    }
+
+    .form-group {
+
+    }
+
+</style>
+
+<form class="form-horizontal form-validation">
+    <div class="modal-content">
+        <div class="modal-body" style="padding-top: 30px; padding-bottom: 30px;">
+            <h3 style="margin: 0; text-align: center;padding-bottom: 10px;">Please don't include the following ranges...</h3>
+
+            <div class="row" style="padding-bottom: 20px">
+                <div class="col-lg-6 col-sm-6 text-center" ng-repeat="(key, existItem) in exist_arr">
+                    ( {{existItem.start_date}} ~ {{existItem.end_date}} )
+                </div>
+            </div>
+            <div class="form-group" style="padding-left: 0; margin: 0;">
+                <div class="col-sm-5">
+                    <label class="control-label text-xs text-muted">Start Date </label>
+                    <input class="form-control" min="{{min_date}}" ng-model="start_date" type="date">
+                </div>
+                <div class="col-sm-5 pull-right">
+                    <label class="control-label text-xs text-muted">End Date </label>
+                    <input class="form-control" min="{{min_date}}" ng-model="end_date" type="date">
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer ">
+            <div class="form-group" style="padding-left: 0; margin: 0;">
+                <button type="button" class="btn btn-info btn-sm" style="width: 80px" ng-click="onAdd()">
+                    Add
+                </button>
+                <button type="button" class="btn btn-danger btn-sm" style="width: 80px" ng-click="onCancel()">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</form>

@@ -1,0 +1,53 @@
+<div ng-controller="ScheduleController" style="{{full_height}}">
+    <script type="text/ng-template" id="checklist_item.html">
+        <a>
+            <span>{{match.model.name}} - {{match.model.weight}}</span>            
+        </a>
+    </script>
+    <div class="wrapper-md1">
+        <div class="col-sm-12">
+            <div class="panel panel-default">
+                <div class="panel-heading"><i class="fa fa-plus" aria-hidden="true">
+                    </i>&nbsp;Schedule List
+                    <div class="pull-right">
+                        <button type="button" class="btn btn-sm btn-primary text-uc m-t-n-xs" ng-click="addSchedule()"><strong>&nbsp;&nbsp;&nbsp;Add Schedule&nbsp;&nbsp;&nbsp;</strong></button>
+                    </div>
+                </div>
+                <div class="panel-body">
+
+                    <div class="table table-responsive" style="height:100%">
+                        <table  st-table="datalist"  st-pipe="getDataList" class="table ticket">
+                            <thead class="tblhead-sm" style="background: #88888a">
+                                <tr>
+                                    <th><b>Name</b></th>
+                                    <th><b>Code</b></th>
+                                    <th><b>Days</b></th>   
+                                    <th><b>Creator</b></th> 
+                                    <th><b>Created Date</b></th>
+                                    <th style="width:50px;"><b>Action</b></th>                            
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="" ng-repeat="row in schedule_list">
+                                    <td>{{row.name}}</td>
+                                    <td>{{row.code}}</td>
+                                    <td>{{row.days}}</td>
+                                    <td>{{row.wholename}}</td>
+                                    <td>{{row.created_at}}</td>
+                                    <td>
+                                        <a class="btn default btn-xs green" ng-click="onEditScheduleList(row)">
+                                            <i class="fa fa-pencil"></i></a>
+                                        <a class="btn default btn-xs red" ng-click="onDeleteSchedule(row)">
+                                            <i class="fa fa-trash"></i></a>                                        
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>

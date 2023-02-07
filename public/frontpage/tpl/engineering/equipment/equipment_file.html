@@ -1,0 +1,40 @@
+<style>
+    button {
+        pointer: cursor;
+    }
+
+    input[type=file] {
+        width: 150px;
+        height: 20px;
+    }
+</style>
+<script type="text/ng-template" id="equipment_file.html">
+    <div ng-include="'tpl/engineering/equipment/modal/equipment_file.html'"></div>
+</script>
+
+<div class="wrapper" style="margin-top: 7px">
+    <div class="panel panel-default" style="border-radius: 4px">
+        <div class="panel-body">
+            <form class="form-horizontal form-validation">
+                <div class="form-group" style="margin-right: 0px"  ng-repeat="row in equipment.filelist" >
+                    <label class="col-sm-2">{{$index+1}}:
+                        <a href="{{row.path}}" > {{row.name}}</a>
+                    </label>
+                    <label class="col-sm-3"> {{row.description}} </label>
+                    <div class="col-sm-1">
+                        <i class="fa fa-minus-circle fa-2x text-danger " style="cursor: pointer"  ng-click="delEquipFile(row.id)"></i>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-right: 0px">
+                    <div class="col-sm-1 text-right">
+                        <i class="fa fa-plus-circle fa-2x text-danger " style="cursor: pointer"  ng-click="CreateFile()"></i>
+                    </div>
+                    <label class="control-label" style="margin-top: -5px;" >Add File</label>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+

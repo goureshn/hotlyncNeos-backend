@@ -1,0 +1,116 @@
+<style>
+  	.tabsdemoDynamicHeight md-content {
+  	background-color: transparent !important;
+  }
+  .tabsdemoDynamicHeight md-content md-tabs {
+    background: #f6f6f6;
+    border: 1px solid #e1e1e1;
+  }
+  
+  .tabsdemoDynamicHeight md-content md-tabs md-tabs-wrapper {
+    background: white;
+  }
+  
+  .tabsdemoDynamicHeight md-content h1:first-child {
+    margin-top: 0;
+  }
+  .modal-body {
+	width: 900px;
+	}
+
+	.modal-dialog {
+	width: 900px;
+	}
+
+</style>
+<!-- - - - - - - - HEADER - - - - - - - -->
+
+  <!-- - - - - - - - /HEADER - - - - - - - -->
+  <div class="modal-body wrapper" class="modal-dialog">
+    <md-content>
+      <md-tabs md-dynamic-height md-border-bottom>
+      <md-tab label="Add New Task">
+      <md-content class="md-padding">          
+        <div class="wrapper-md">
+      <!-- - - - - - - - CHECKLIST DETAILS - - - - - - - -->
+          <div class="panel-body" style="padding: 5px 0px">
+            <div class="form-horizontal form-validation">
+                    <div class="col-sm-6" style="padding: 5px 0px">
+                      <label class="col-sm-12 text-muted text-xs"><b>Checklist Name :</b></label>
+                      <div class="col-sm-12">
+                        <input class='form-control input-sm' type="text" ng-model='row.name'>
+                      </div>
+                    </div>
+										<div class="line line-dashed b-b"></div>
+										<div class="col-centered" class="line-sm" style="width:99%; z-index:3">
+												<div class="panel panel-default" style="margin-left: 10px;">
+														<div class="panel-heading">
+																<label class="font-bold"><i style="text-align: center" aria-hidden="true"></i>&nbsp;&nbsp;List of Tasks</label>
+																<i class="fa fa-plus-circle fa-2x text-success ng-click-active pull-right" style="cursor: pointer" title="Add Task"
+																							ng-click="addTask()"></i>
+														</div>
+														<div class="panel-body">
+																<form class="form-horizontal">
+																		<div class="form-group label-group">
+																				
+																				<div class="col-sm-1 control-label">Category<i class="text-danger">*</i></div>
+																				<div class="col-sm-3 control-label" style="text-align: left">
+																				<input class="form-control input-sm" style="text-align: left" type="text" ng-model="row.category" placeholder="Enter Category"
+																								 popover-trigger="mouseenter" popover-placement="top" 
+																								 uib-typeahead="value.category for value in getcategoryList($viewValue)"
+															 										typeahead-editable="false"
+															 										typeahead-min-length="0"
+																								 typeahead-on-select="onCategorySelect($item, $model, $label)"
+																								required >
+																				</div>   
+																				<div class="col-sm-1 control-label">Task<i class="text-danger">*</i></div>
+																				<div class="col-sm-6 control-label" style="text-align: left">
+																						<input type="text" ng-model="row.task" class="form-control input-sm"  placeholder="Enter Task">
+																				</div>
+																		</div>
+																</form>
+														</div>
+												</div>
+										</div>
+										<! - - - - - - - - - - - - - - - - - - - - ADD MORE TASK - - - - - - - - - - - - - - - ->
+										<div class="col-centered"  class="line-sm" style="width:99%; z-index:3" ng-show="row.category">
+														<div class="panel panel-default" style="margin-left: 10px;">
+																<div class="panel-heading">
+																		<label class="font-bold">Task Added</label>
+																</div>
+																<div class="panel-body">	
+																		<form class="form-horizontal form-validation">
+																				<div class="form-group label-group" style="width:98%; margin:auto" ng-repeat="row in tasks">
+																						<div class="form-group col-md-10">
+																								<div class="col-md-4">
+																										<span class="pull-left" style="margin-left: 3px" >{{row.category}}</span>
+																								 </div>
+																								 <div class="col-md-4">
+																												<span class="pull-left" style="margin-left: 3px" >{{row.task}}</span>
+																								</div>
+																						</div>
+																						
+																						<div class="form-group col w-xs col-md-1">
+																									<span class="glyphicon icon-close pull-right" style="margin-top:3px;margin-right: 10px; color: red" ng-click="removeTask()"></span>
+																						</div>
+																				</div>
+																		</form>
+																</div>
+														</div>
+										</div>	
+                    
+                </div>
+              </div>
+            </div>
+            <center>
+              <button type="button" class="btn btn-dark btn-sm" ng-click="addTasks()">
+                <span class="text-success font-bold"><i class="fa fa-check"></i>&nbsp;Update</span>
+              </button>
+              <button type="button" class="btn btn-dark btn-sm" ng-click="cancel()">
+                <span class="text-danger font-bold"><i class="fa fa-times"></i>&nbsp;Clear</span>
+              </button>           
+            </center>
+    
+    </md-content> </md-tab>
+
+    

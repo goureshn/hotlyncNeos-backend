@@ -1,0 +1,93 @@
+<style>
+	#scrollable-dropdown-menu .dropdown-menu {
+		max-height: 150px;
+		overflow-y: auto;
+	}
+</style>
+<input type="hidden" id="id" value="-1" ng-model="model_data.id"/>
+
+<div class="panel panel-default">
+    <div class="panel-heading wrapper">        
+        <i class="fa fa-user-circle-o"></i>
+        <span class="font-bold">Complaint Escalation</span>
+    </div>
+    <div class="">
+        <table id="table_grid" class="table table-hover table-bordered" style="text-align: center;width:100%" ng-model = "table_grid">
+            <thead>
+            <tr>
+                <th style="text-align: center" ng-repeat = "field in fields">
+                    <b>{{field}}</b>
+                </th>
+                <th class="no-sort" style="text-align: center">Edit</th>                            
+            </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<div style="height:400px">	               
+	<form class="form-horizontal"> 
+		<div class="form-group" ng-repeat="row in selected_level_list">
+			<label class="control-label col-sm-1" for="Property">Level {{row.level}}:</label>
+			<div class="scrollable-dropdown-menu col-sm-4">
+				<tags-input ng-model="row.job_role_list" placeholder="Add Job Role" replace-spaces-with-dashes="false" style="margin-top: -5px"
+						display-property="job_role" key-property="id"
+						on-tag-added="onJobRoleChanged(row)" on-tag-removed="onJobRoleChanged(row)">
+					<auto-complete source="loadJobroleFilter($query)" min-length="0" debounce-delay="0" load-on-focus="true" load-on-empty="true"
+						max-results-to-show="100">
+					</auto-complete>
+				</tags-input>					
+			</div>
+			<div class="col-sm-4">
+				<tags-input ng-model="row.notify_type_list" placeholder="Add Notify Mode" replace-spaces-with-dashes="false" style="margin-top: -5px"
+						on-tag-added="onNotifyChanged(row)" on-tag-removed="onNotifyChanged(row)">
+					<auto-complete source="notify_type_list" min-length="0" debounce-delay="0" load-on-focus="true" load-on-empty="true"
+						max-results-to-show="100">
+					</auto-complete>
+				</tags-input>	
+			</div>
+			<div class="col-sm-2" style="padding-left: 5px">
+				<input class="form-control input-sm" style="display: inline; width: 50px" type="text" ng-model="row.max_time" ng-change="onChangeMaxtime(row)"/>
+				<button class="btn btn-primary btn-xs" style="margin-top:-2px" ng-click="onAddLevel(row)"
+					ng-show="row.id == 0">
+					<span class="fa fa-plus"></span>
+				</button>	
+				<button class="btn btn-primary btn-xs" style="margin-top:-2px" ng-click="onDeleteLevel(row)" ng-show="row.id > 0">
+					<span class="fa fa-minus"></span>
+				</button>	
+			</div>
+		</div>
+	</form>   
+</div>	
+
+<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="panel">
+            <div class="modal-header bg">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h5 class="modal-title font-bold" style="color:#2691d9" ng-if="model_data.id<0">
+                    <i class="fa fa-plus"></i>&nbsp;Add Complaint Status</h5>
+                <h5 class="modal-title font-bold" style="color:#2691d9" ng-if="model_data.id>=0">
+                    <i class="fa fa-pencil"></i>&nbsp;Edit Complaint Status</h5>
+            </div>
+            <div class="modal-body">
+                <br>
+                <form class="form-horizontal">
+                    <div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Status:</label>
+						<div class="col-sm-5">
+							<input class='form-control' ng-model="model_data.status" disabled></input>
+						</div>
+					</div>
+
+                    <text-item formlabel="Max Time" modelname="model_data.max_time"></text-item>
+                </form>
+            </div>
+            <submit-form id="model_data.id" updatedata="onUpdateRow()"></submit-form>
+        </div>
+    </div>
+</div>
+
+<dialog-delete title="Destination" modelname="model_data.name" deletedata="deleteRow()"></dialog-delete>

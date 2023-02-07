@@ -1,0 +1,175 @@
+<style>
+	#dept-dropdown-menu .dropdown-menu {
+		max-height: 150px;
+		overflow-y: auto;
+	}
+	#esc-dropdown-menu .dropdown-menu {
+		max-height: 150px;
+		overflow-y: auto;
+	}
+	#usergroup-dropdown-menu .dropdown-menu {
+		max-height: 150px;
+		overflow-y: auto;
+	}
+</style>
+<input type="hidden" id="id" value="-1" ng-model="model_data.id"/>
+
+	<div class="panel panel-default"> 
+		<div class="panel-heading wrapper"> 
+			<button type="button" class="btn btn-success btn-sm" style="float:right; margin-top: -5px" data-toggle="modal" data-target="#addModal" ng-disabled="job_role!='SuperAdmin'&&edit_flag==0" ng-click="onShowEditRow(-1)">
+				<span class="glyphicon glyphicon-plus"></span>
+				<b> Add New </b>
+			</button>                             
+			<i class="fa fa-street-view"></i>                            
+			<span class="font-bold">Task Group Management</span>
+		</div>                         
+		<div class=""> 
+			<table id="table_grid" class="table table-hover table-bordered" style="text-align: center;width:100%" ng-model = "table_grid"> 
+				<thead> 
+					<tr> <!--
+						<th no-sort style="text-align: center">
+							<input type="checkbox" id="checkall" />
+						</th>-->
+						<th style="text-align: center" ng-repeat = "field in fields">
+							<b>{{field}}</b>
+						</th>						
+						<th style="text-align: center">Edit</th>
+						<th style="text-align: center">Delete</th>
+					</tr>                                     
+				</thead>                    
+			</table>                             
+		</div>
+	</div>
+	
+<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"> 
+	<div class="modal-dialog" role="document"> 
+		<div class="panel"> 
+			<div class="modal-header bg"> 
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"> 
+					<span aria-hidden="true">&times;</span> 
+				</button>                             
+				<h5 class="modal-title font-bold" style="color:#2691d9" ng-if="model_data.id<0">
+					<i class="fa fa-plus"></i>&nbsp;Add Task Group</h5>
+				<h5 class="modal-title font-bold" style="color:#2691d9" ng-if="model_data.id>=0">
+					<i class="fa fa-pencil"></i>&nbsp;Edit Task Group</h5>				
+			</div>                         
+			<div class="modal-body"> 
+				<br> 
+				<form class="form-horizontal"> 
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Department Function:</label>
+						<div id="dept-dropdown-menu" class="col-sm-5">
+							<input class="form-control input-sm col-sm-5" type="text" ng-model="deptfunc"
+								   uib-typeahead="func.function for func in getdepartmentfunc($viewValue)"
+								   typeahead-min-length="0"
+								   typeahead-on-select="ondepartmentfunc(dept_function, $item, $model, $label)"
+								   required />
+						</div>
+					</div>
+				
+					<text-item formlabel="Task Group" modelname="model_data.name"></text-item>
+					
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Department Function:</label>
+						<div class="col-sm-5">
+							<input type="checkbox" id="escalation_flag" ng-checked="escalation_flag" ng-model="model_data.escalation"> Escalate(should be a switch)
+						</div>
+					</div>
+
+					<link href="/lib/angular/angular-toggle-switch-bootstrap-3.css" media="all" rel="stylesheet" type="text/css">
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Selected by Guest:</label>
+						<div class="col-sm-5">
+							<div toggle-switch class="switch-primary" ng-model="model_data.by_guest_flag"></div>
+						</div>
+					</div>
+					
+					<div class="form-group" hidden>
+						<label class="control-label col-sm-4" for="Property">Escalation Group:</label>
+						<div id="esc-dropdown-menu" class="col-sm-5">							
+							<input class="form-control input-sm col-sm-5" type="text" ng-model="escalationgroup"
+								   uib-typeahead="escalation.name for escalation in getEscalationGroup($viewValue)"
+								   typeahead-min-length="0"
+								   typeahead-on-select="onEscalationGroup(escalation, $item, $model, $label)"
+								   required />
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">User Group:</label>						
+						<div id="usergroup-dropdown-menu" class="col-sm-5">
+							<input class="form-control input-sm col-sm-5" type="text" ng-model="usergroup"
+								   uib-typeahead="user.name for user in getusergroup($viewValue)"
+								   typeahead-min-length="0"
+								   typeahead-on-select="onusergroup(user_group, $item, $model, $label)"
+								   required />
+						</div>
+					</div>
+					<text-item formlabel="Duration" modelname="model_data.max_time"></text-item>		
+					<text-item formlabel="Request Reminder" modelname="model_data.request_reminder"></text-item>		
+
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Frequency notification:</label>
+						<div class="col-sm-5">
+							<div toggle-switch class="switch-primary" ng-model="model_data.frequency_notification_flag"></div>
+						</div>
+					</div>
+
+					<div class="form-group" ng-show="model_data.frequency_notification_flag">
+						<label class="control-label col-sm-4" for="Property">Frequency Notify User:</label>
+						<div id="usergroup-dropdown-menu" class="col-sm-8">		
+							<tags-input ng-model="freq_job_role_name_list" placeholder="Add Job Role" replace-spaces-with-dashes="false" style="margin-top: -5px">
+								<auto-complete source="loadFiltersValue('Job Role',$query)" min-length="0" debounce-delay="0" load-on-focus="true" load-on-empty="true"
+								 max-results-to-show="100">
+								</auto-complete>
+							</tags-input>	   
+						</div>
+					</div>			
+					<text-item ng-show="model_data.frequency_notification_flag" formlabel="Frequency" modelname="model_data.frequency"></text-item>					
+					<text-item ng-show="model_data.frequency_notification_flag" formlabel="Period" modelname="model_data.period"></text-item>					
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Hold notification:</label>
+						<div class="col-sm-5">
+							<div toggle-switch class="switch-primary" ng-model="model_data.hold_notification_flag"></div>
+						</div>
+					</div>
+					<div class="form-group" ng-show="model_data.hold_notification_flag">
+						<label class="control-label col-sm-4" for="Property">Hold Notify User:</label>
+						<div id="usergroup-dropdown-menu" class="col-sm-8">		
+							<tags-input ng-model="hold_job_role_name_list" placeholder="Add Job Role" replace-spaces-with-dashes="false" style="margin-top: -5px">
+								<auto-complete source="loadFiltersValue('Job Role',$query)" min-length="0" debounce-delay="0" load-on-focus="true" load-on-empty="true"
+								 max-results-to-show="100">
+								</auto-complete>
+							</tags-input>	   
+						</div>
+					</div>
+
+					<text-item formlabel="Hold Timeout(minutes)" modelname="model_data.hold_timeout"></text-item>										
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Unassign:</label>
+						<div class="col-sm-5">
+							<div toggle-switch class="switch-primary" ng-model="model_data.unassigne_flag"></div>
+						</div>
+					</div>
+
+					<text-item ng-show="model_data.unassigne_flag" formlabel="Start Duration" modelname="model_data.start_duration"></text-item>	
+					<text-item formlabel="Max Time" modelname="model_data.max_time"></text-item>	
+					
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Add Cost:</label>
+						<div class="col-sm-5">
+							<div toggle-switch class="switch-primary" ng-model="model_data.cost_flag"></div>
+						</div>
+					</div>
+
+				</form>                             
+			</div>     
+
+			<!--<div class="col-md-12" style="clear:both;margin-bottom: 20px" ng-include="'/adminpanel/partials/fragments/uploader.html'"></div>-->
+			<div style="clear:both">			
+				<submit-form id="model_data.id" updatedata="onUpdateRow()"></submit-form>						
+			</div>	
+		</div>                     
+	</div>                 
+</div>             
+
+<dialog-delete title="Task Group" modelname="model_data.name" deletedata="deleteRow()"></dialog-delete>

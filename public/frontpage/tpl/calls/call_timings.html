@@ -1,0 +1,256 @@
+<!--<style>
+    .call_div{
+        height:50px;
+    }
+    .profileinput {
+        width:150px;
+    }
+</style>-->
+<style>
+	.form-group {
+		margin-left: 0 !important;
+		margin-right: 0 !important;
+		padding-left: 20px;
+	}
+	.padding-bottom-10 {
+		padding-bottom: 10px !important;
+	}
+
+	.time-input {
+		border-color: #cfdadd !important;
+	}
+
+	select, input {
+		border-color: #cfdadd !important;
+	}
+
+	.disabled-div {
+		pointer-events: none;
+		opacity: 0.8;
+	}
+
+</style>
+<div ng-controller="CallTimingsController">
+	<div class="row" style="padding-top: 30px; padding-bottom: 30px; display: flex;">
+		<div class="col-lg-6" style="margin: auto">
+			<div class="form-group text-center">
+				<h2>Test whatsapp outmessage api</h2>
+			</div>
+			<div class="form-group">
+				<label>Auth Key</label>
+				<input class="form-control" ng-model="testWhatsappKey">
+			</div>
+			<div class="form-group">
+				<label>Authorization</label>
+				<input class="form-control" ng-model="testWhatsappAuthorization">
+			</div>
+			<div class="form-group">
+				<label>Channel Id</label>
+				<input class="form-control" ng-model="testChannelId">
+			</div>
+			<div class="form-group">
+				<label>Phone Number</label>
+				<input class="form-control" ng-model="testPhoneNumber">
+			</div>
+			<div class="form-group">
+				<label>Message Content</label>
+				<textarea class="form-control" ng-model="testMessageContent" rows="4"></textarea>
+			</div>
+			<div class="form-group text-right">
+				<button ng-click="onCheckWhatsapp()" style="width: 150px" class="btn btn-info {{testLoading == true ? 'disabled' : ''}}">
+					{{testLoading == true ? 'Sending...' : 'Check Whatsapp'}}
+				</button>
+			</div>
+		</div>
+	</div>
+	<form class="form-horizontal form-validation" style="padding-top: 20px; padding-bottom: 100px">
+		<div class="row" style="margin: 0">
+			<div class="col-lg-9 col-md-12 col-sm-12">
+				<div class="form-group" style="padding-bottom: 20px;">
+					<div class="col-lg-3 col-md-4">
+						<select ng-model="selectedSkillId" class="form-control" ng-options="value.id as value.name for (key, value) in skillList" style="max-width: 200px" ng-change="onSelectSkill()">
+						</select>
+					</div>
+					<div class="col-lg-3 col-md-4 pull-right text-right">
+						<button class="btn btn-info btn-large {{bChangedDays == false || isLoadingDays == true ? 'disabled' : ''}}" style="min-width: 80px" ng-click="onSaveDaysTimingInfo()">Save</button>
+						<button class="btn btn-danger btn-large {{bChangedDays == false ||  isLoadingDays == true ? 'disabled' : ''}}" style="min-width: 80px" ng-click="onResetDaysTimingInfo()">Reset</button>
+					</div>
+				</div>
+				<div class="form-group padding-bottom-10" ng-repeat="(dataKey, data) in daysTimingArr">
+					<div class="col-lg-2 col-md-3 col-sm-12" style="display: flex; align-items: center">
+						<label style="font-size: 1.2em; width: 80px; margin: 0;margin-right: 10px;">{{data.day}}: </label> &nbsp;&nbsp;
+						<select class="form-control" ng-model="data.type" ng-change="onCompareChangeDaysTimingInfo()">
+							<option value="all">All Day</option>
+							<option value="time">Times</option>
+						</select>
+					</div>
+					<div class="col-lg-10 col-md-9 col-sm-12" ng-if="data.type === 'all'">
+						<div class="row" style="display: flex; align-items: center">
+							<div class="col-lg-4 col-sm-6">
+								<input class="form-control" type="text" value="All day" disabled/>
+							</div>
+							<div class="col-lg-2 col-sm-6">
+							</div>
+							<div class="col-lg-3 col-sm-6">
+								<select class="form-control" ng-model="data.all_info.type" ng-change="onCompareChangeDaysTimingInfo()" >
+									<option value="hotlync">HotLync</option>
+									<option value="alternate">Alternate</option>
+								</select>
+							</div>
+							<div class="col-lg-3 col-sm-6" ng-if="data.all_info.type === 'alternate'">
+								<input type="text" class="form-control" ng-model="data.all_info.number" ng-change="onCompareChangeDaysTimingInfo()">
+							</div>
+						</div>
+					</div>
+					<div class="col-lg-10 col-md-9 col-sm-12" ng-if="data.type === 'time'">
+						<div class="row {{data.time_details.length > 1 && detailKey < data.time_details.length - 1 ? 'padding-bottom-10': 0}}" ng-repeat="(detailKey, timeDetail) in data.time_details" style="display: flex; align-items: center;">
+							<div class="col-lg-4 col-sm-6" style="display: flex; align-items: center; justify-content: center">
+								<input type="time" class="form-control time-input"
+									   ng-model="timeDetail.model_start_time"
+									   value="{{timeDetail.start_time}}"
+									   ng-blur="changeStartTime(selectedSkillId, dataKey, detailKey, timeDetail, data.time_details, 'day')"
+									   id="{{selectedSkillId + '_' + dataKey + '_' + detailKey}}_start_time"
+									   required>
+								<span style="padding-right: 10px; padding-left: 10px">~</span>
+								<input type="time" class="form-control time-input"
+									   ng-model="timeDetail.model_end_time"
+									   value="{{timeDetail.end_time}}"
+									   ng-blur="changeEndTime(selectedSkillId, dataKey, detailKey, timeDetail, data.time_details, 'day')"
+									   id="{{selectedSkillId + '_' + dataKey + '_' + detailKey}}_end_time"
+									   required>
+							</div>
+							<div class="col-lg-2 col-sm-6">
+								<button class="btn btn-danger btn-circle" title="Add" ng-click="onAddDetail(selectedSkillId, dataKey, detailKey, timeDetail, data.time_details, 'day')">
+									<i class="fa fa-plus"></i>
+								</button>
+								&nbsp;&nbsp;
+								<button ng-if="data.time_details.length > 1" class="btn btn-info btn-circle" title="Delete" ng-click="onRemoveDetail(selectedSkillId, dataKey, detailKey, timeDetail, data.time_details, 'day')">
+									<i class="fa fa-minus"></i>
+								</button>
+							</div>
+							<div class="col-lg-3 col-sm-6">
+								<select class="form-control" ng-model="timeDetail.type" ng-change="onCompareChangeDaysTimingInfo()">
+									<option value="hotlync">HotLync</option>
+									<option value="alternate">Alternate</option>
+								</select>
+							</div>
+							<div class="col-lg-3 col-sm-6" ng-if="timeDetail.type === 'alternate'">
+								<input type="text" class="form-control" ng-model="timeDetail.number" ng-change="onCompareChangeDaysTimingInfo()">
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row" style="margin: 0; padding-top: 20px">
+			<div class="col-lg-9 col-md-12 col-sm-12">
+				<div class="form-group">
+					<div class="col-lg-6 col-md-4" style="display: flex">
+						<input type="checkbox" class="checkbox" style="width: 20px" ng-model="bDatesTiming" ng-change="onCompareChangeDatesTimingInfo()">
+						&nbsp;&nbsp;
+						<h3 style="margin: 0">Set Special Dates</h3>
+					</div>
+					<div class="col-lg-3 col-md-4 text-right">
+						<button class="btn btn-primary btn-large {{bDatesTiming == false || isLoadingDates == true ? 'disabled' : ''}}" style="min-width: 80px" ng-click="onAddDates()">
+							<i class="fa fa-plus"></i>&nbsp;Add Dates
+						</button>
+					</div>
+					<div class="col-lg-3 col-md-4 text-right">
+						<button class="btn btn-info btn-large {{bChangedDates == false || isLoadingDates == true ? 'disabled' : ''}}" style="min-width: 80px" ng-click="onSaveDatesTimingInfo()">Save</button>
+						<button class="btn btn-danger btn-large {{bChangedDates == false ||  isLoadingDates == true ? 'disabled' : ''}}" style="min-width: 80px" ng-click="onResetDatesTimingInfo()">Reset</button>
+					</div>
+				</div>
+				<div class="{{bDatesTiming == false ? 'disabled-div': ''}} padding-bottom-10" ng-repeat="(dataKey, data) in datesTimingArr">
+					<div class="form-group">
+						<div class="col-lg-4 col-md-6 col-sm-12" style="display: flex; align-items: center">
+							<input type="date" class="form-control daterangepicker"
+								   ng-model="data.model_start_date"
+								   value="{{data.start_date}}"
+								   ng-blur="changeDate(selectedSkillId, dataKey, data, 'start')"
+								   id="{{selectedSkillId + '_date_' + dataKey}}_start_date"
+								   required>
+							<span style="padding-right: 10px; padding-left: 10px">~</span>
+							<input type="date" class="form-control daterangepicker"
+								   ng-model="data.model_end_date"
+								   value="{{data.end_date}}"
+								   ng-blur="changeDate(selectedSkillId, dataKey, data, 'end')"
+								   id="{{selectedSkillId + '_date_' + dataKey}}_end_date"
+								   required>
+						</div>
+						<div class="col-lg-2 col-md-3 col-sm-12"style="display: flex; align-items: center">
+							<select class="form-control" ng-model="data.type" ng-change="onCompareChangeDatesTimingInfo()">
+								<option value="all">All Day</option>
+								<option value="time">Times</option>
+							</select>
+						</div>
+						<div class="col-lg-2 col-md-6 col-sm-12">
+							<button class="btn btn-danger btn-circle" title="Delete" ng-click="onRemoveDate(dataKey)">
+								<i class="fa fa-trash"></i>
+							</button>
+						</div>
+					</div>
+					<div class="form-group">
+
+						<div class="col-lg-10 col-md-9 col-sm-12 pull-right" ng-if="data.type === 'all'">
+							<div class="row" style="display: flex; align-items: center">
+								<div class="col-lg-4 col-sm-6">
+									<input class="form-control" type="text" value="All day" disabled/>
+								</div>
+								<div class="col-lg-2 col-sm-6">
+								</div>
+								<div class="col-lg-3 col-sm-6">
+									<select class="form-control" ng-model="data.all_info.type" ng-change="onCompareChangeDaysTimingInfo()" >
+										<option value="hotlync">HotLync</option>
+										<option value="alternate">Alternate</option>
+									</select>
+								</div>
+								<div class="col-lg-3 col-sm-6" ng-if="data.all_info.type === 'alternate'">
+									<input type="text" class="form-control" ng-model="data.all_info.number" ng-change="onCompareChangeDaysTimingInfo()">
+								</div>
+							</div>
+						</div>
+						<div class="col-lg-10 col-md-9 col-sm-12 pull-right" ng-if="data.type === 'time'">
+							<div class="row {{data.time_details.length > 1 && detailKey < data.time_details.length - 1 ? 'padding-bottom-10': 0}}" ng-repeat="(detailKey, timeDetail) in data.time_details" style="display: flex; align-items: center;">
+								<div class="col-lg-4 col-sm-6" style="display: flex; align-items: center; justify-content: center">
+									<input type="time" class="form-control time-input"
+										   ng-model="timeDetail.model_start_time"
+										   value="{{timeDetail.start_time}}"
+										   ng-blur="changeStartTime(selectedSkillId, dataKey, detailKey, timeDetail, data.time_details, 'date')"
+										   id="{{selectedSkillId + '_date_' + dataKey + '_' + detailKey}}_start_time"
+										   required>
+									<span style="padding-right: 10px; padding-left: 10px">~</span>
+									<input type="time" class="form-control time-input"
+										   ng-model="timeDetail.model_end_time"
+										   value="{{timeDetail.end_time}}"
+										   ng-blur="changeEndTime(selectedSkillId, dataKey, detailKey, timeDetail, data.time_details, 'date')"
+										   id="{{selectedSkillId + '_date_' + dataKey + '_' + detailKey}}_end_time"
+										   required>
+								</div>
+								<div class="col-lg-2 col-sm-6">
+									<button class="btn btn-danger btn-circle" title="Add" ng-click="onAddDetail(selectedSkillId, dataKey, detailKey, timeDetail, data.time_details, 'date')">
+										<i class="fa fa-plus"></i>
+									</button>
+									&nbsp;&nbsp;
+									<button ng-if="data.time_details.length > 1" class="btn btn-info btn-circle" title="Delete" ng-click="onRemoveDetail(selectedSkillId, dataKey, detailKey, timeDetail, data.time_details, 'date')">
+										<i class="fa fa-minus"></i>
+									</button>
+								</div>
+								<div class="col-lg-3 col-sm-6">
+									<select class="form-control" ng-model="timeDetail.type" ng-change="onCompareChangeDatesTimingInfo()">
+										<option value="hotlync">HotLync</option>
+										<option value="alternate">Alternate</option>
+									</select>
+								</div>
+								<div class="col-lg-3 col-sm-6" ng-if="timeDetail.type === 'alternate'">
+									<input type="text" class="form-control" ng-model="timeDetail.number" ng-change="onCompareChangeDatesTimingInfo()">
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</form>
+
+
+</div>

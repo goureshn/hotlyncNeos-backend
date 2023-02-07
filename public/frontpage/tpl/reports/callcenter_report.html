@@ -1,0 +1,197 @@
+<div ng-controller="CallcenterReportController">
+	<style>
+		.datetime .popover {
+		max-width: 650px;
+		}
+	</style>
+	<script type="text/ng-template" id="datetime_ranger.html">
+		<div style="width: 700px">
+			<div rg-range-picker="myDatetimeRange" labels="myDatetimeLabels">
+			</div>
+		</div>
+	</script>
+	<div class="col-lg-12 col-centered">
+        <div class="panel-default">
+          	<div class="form-horizontal" ng-show="!data.isHidden" style="width:100%; margin: auto;">
+				<div class="row form-group" style="width:100%; margin:auto;">
+					<div class="form-horizontal form-validation" style="float:left; width:100%; height:20%; display:inline-block;">
+						<div class="fieldset1 panel panel-default" style="border-radius: 4px">
+							<div class="panel-heading">
+								<div>
+									<label class="font-bold text-sm"><i class="fa fa-columns text-default"></i>&nbsp;&nbsp;Grouping</label>&nbsp;&nbsp;
+								</div>
+							</div>
+							<div style="padding-top: 15px">
+								<form class="form-horizontal form-validation">
+									<div class="col-sm-12">
+										<label class="control-label text-xs text-muted">Report Type : </label>
+										<select class='form-control' ng-model="report_type" ng-change="onChangeReportType()" ng-options="type for type in reporttypes">
+										</select>
+									</div>
+                      				<div class="col-sm-12">
+										<label class="control-label text-xs text-muted">Report By : </label>
+										<select class='form-control' ng-model="report_by" ng-change="onChangeReportBy()" ng-options="type for type in reportby_list" >
+										</select>
+									</div>
+                      				<div class="col-sm-12">
+										<label class="control-label text-xs text-muted">Chart Graph : </label><br>
+										<label class="i-switch m-t-xs m-r">
+											<input type="checkbox" ng-model="chart_graph_flag"><i></i>
+										</label>
+									</div>
+								</form>
+							</div>
+						</div>	
+									
+						<div class="fieldset2 panel panel-default" style="border-radius: 4px; width: 80%">
+							<div class="panel-heading">
+								<div>
+									<button type="submit" class="btn btn-sm btn-info pull-right" onclick="loadBlockingUi();" ng-click="onGenerateReport()" style="margin-top: -5px">
+										<i class="fa fa-file-text"></i>&nbsp;&nbsp;Generate Report&nbsp;
+									</button>
+									<button type="submit" class="btn btn-sm btn-default pull-right" style="color: white; background-color:#a9a9a9; margin-top: -5px;
+										margin-right: 2px" ng-if="!auth_svc.isValidModule('app.reports.schedule')">
+										<i class="glyphicon glyphicon-calendar"></i>&nbsp;&nbsp;Schedule Report
+									</button>
+									<button type="submit" class="btn btn-sm btn-info pull-right" ng-if="auth_svc.isValidModule('app.reports.schedule')"
+										ng-click="onShowSchedule()" style="margin-top: -5px; margin-right: 2px">
+										<i class="glyphicon glyphicon-calendar"></i>&nbsp;&nbsp;Schedule Report
+									</button>
+								</div>
+								<div>
+									<label class="font-bold text-sm"><i class="fa fa-columns text-default"></i>&nbsp;&nbsp;Apply Filters</label>&nbsp;&nbsp;
+								</div>
+							</div>
+							<div class="panel-body">
+								<form class="form-horizontal form-validation">
+									<div class="row form-horizontal">
+										<div class="btn-group col-sm-12" style="margin-top: -2px">
+											<label class="btn btn-info btn-sm" ng-click="dateShort('Today')" >Today</label>
+											<label class="btn btn-info btn-sm" ng-click="dateShort('Yesterday')">Yesterday</label>
+											<label class="btn  btn-info btn-sm" ng-click="dateShort('This Week')">This Week</label>
+											<label class="btn  btn-info btn-sm" ng-click="dateShort('Last Week')">Last Week</label>
+											<label class="btn  btn-info btn-sm" ng-click="dateShort('This Month')">This Month</label>
+											<label class="btn  btn-info btn-sm" ng-click="dateShort('Last Month')">Last Month</label>
+											<label class="btn  btn-info btn-sm" ng-click="dateShort('This Year')">This Year</label>
+											<label class="btn  btn-info btn-sm" ng-click="dateShort('Custom')">Custom</label>
+										</div>
+												
+										<div class="col-sm-6" ng-show="valid_flag[0]">
+											<label class="control-label text-xs text-muted">Period :</label>
+											<div class="datetime">										
+												<input type="text" ng-model="time_range" ng-disabled="date_short!='Custom'" ui-jq="daterangepicker" ui-options="dateRangeOption" class="form-control input-sm">
+											</div>
+										</div>
+
+										<div class="col-sm-6">
+											<label class="control-label text-xs text-muted">Origin :</label>
+											<tags-input ng-model="origin_tags" placeholder="Add Origin" replace-spaces-with-dashes="false" style="margin-top: -5px">
+												<auto-complete source="loadFilters($query, 'origin')"
+													min-length="0"
+													debounce-delay="0"
+													load-on-focus="true"
+													load-on-empty="true"
+													max-results-to-show="100">
+												</auto-complete>
+											</tags-input>
+										</div>
+										<div class="col-sm-12">
+											<div class="col-sm-2" ng-show = "report_by != 'Auto Attendant'">
+												<label class="control-label text-xs text-muted">Status :</label><br>
+												<div ng-dropdown-multiselect="" options="statuses" selected-model="status_ids" checkboxes="true"
+													extra-settings="statuslist_hint_setting" translation-texts="statuslist_hint">
+												</div>
+											</div>
+											
+											<div class="col-sm-2" ng-show = "report_by != 'Auto Attendant'">
+												<label class="control-label text-xs text-muted">Agents :</label>
+												<div ng-dropdown-multiselect="" options="agentlist" selected-model="agent_ids" checkboxes="true" extra-settings="agentlist_hint_setting"
+													translation-texts="agentlist_hint">
+												</div>
+											</div>
+											<div class="col-sm-2" ng-show = "report_by != 'Auto Attendant'">
+												<label class="control-label text-xs text-muted">Call Type :</label>
+												<div ng-dropdown-multiselect="" options="call_types" selected-model="call_type_ids" checkboxes="true"
+													extra-settings="call_type_hint_setting" translation-texts="call_type_hint">
+												</div>
+											</div>
+											<div class="col-sm-3" ng-show = "report_by == 'Auto Attendant'">
+												<label class="control-label text-xs text-muted">Call Type :</label>
+												<div ng-dropdown-multiselect="" options="call_auto_type" selected-model="call_type_auto_ids" checkboxes="true"
+													extra-settings="call_type_auto_hint_setting" translation-texts="call_type_auto_hint">
+												</div>
+											</div>
+											<div class="col-sm-2" ng-show = "report_by != 'Auto Attendant'">
+												<label class="control-label text-xs text-muted">Type :</label>
+												<div ng-dropdown-multiselect="" options="types" selected-model="type_ids" checkboxes="true"
+													extra-settings="type_hint_setting" translation-texts="type_hint">
+												</div>
+											</div>
+											<div class="col-sm-2" ng-show = "report_by != 'Auto Attendant'">
+												<label class="control-label text-xs text-muted">Modify :</label><br>
+												<select class='form-control' ng-model="follow_up" ng-change="onChangeReportType()" ng-options="type for type in follow_ups">
+												</select>
+											</div>
+											<div class="col-sm-2"  ng-show = "report_by != 'Auto Attendant'" style="margin: auto">
+												<label class="control-label text-xs text-muted">Taken : </label>
+												<br>
+												<label class="i-switch m-t-xs m-r">
+													<input type="checkbox" ng-model="taken_flag" checked>
+													<i></i>
+												</label>
+											</div>
+										</div>
+										<div class="col-sm-12">
+											<div class="col-sm-2" ng-show = "report_by != 'Auto Attendant'">
+												<label class="control-label text-xs text-muted">Channel :</label>
+												<div ng-dropdown-multiselect="" options="channel_types" selected-model="channel_type_ids" checkboxes="true"
+													extra-settings="call_type_hint_setting" translation-texts="channel_type_hint">
+												</div>
+											</div>
+											<div class="col-sm-2" ng-show = "report_by != 'Auto Attendant'">
+												<label class="control-label text-xs text-muted">Call Duration :</label><br>
+												<select class="form-control" style="display: inline;width:45px;" ng-model="call_duration" ng-change="onChangeReportType()"
+													ng-options="type for type in call_durations">
+												</select>
+												<input type="number" maxlength="3" style="width: 60px;display: inline;"  class="form-control input-sm" ng-model="call_duration_time">
+											</div>
+											<div class="col-sm-2" ng-show = "report_by != 'Auto Attendant'">
+												<label class="control-label text-xs text-muted">Time on Queue :</label><br>
+												<select class="form-control" style="display: inline;width:45px;" ng-model="time_in_queue" ng-change="onChangeReportType()"
+													ng-options="type for type in time_in_queues">
+												</select>
+												<input type="number" maxlength="3"  style="width: 60px;display: inline;"  class="form-control input-sm" ng-model="time_in_queue_time">
+											</div>
+											<div class="col-sm-2" ng-show = "report_by != 'Auto Attendant'">
+												<label class="control-label text-xs text-muted">Skill Group :</label>
+												<div ng-dropdown-multiselect="" options="skill_group" selected-model="skill_group_ids" checkboxes="true"
+													extra-settings="skill_group_hint_setting" translation-texts="skill_group_hint">
+												</div>
+											</div>
+										
+											<div class="col-sm-4">
+												<div class="col-sm-6">
+												<label class="control-label text-xs text-muted">Call Time Start :</label>
+												<input type="time"  placeholder="HH:mm:ss"  class="form-control input-sm"  ng-model="call_time_start">
+												</div>
+												<div class="col-sm-6">
+												<label class="control-label text-xs text-muted">Call End Time :</label>
+												<input type="time"  class="form-control input-sm" ng-model="call_time_end">
+												</div>
+											</div>
+										</div>
+									</div>
+								</form>
+							</div>
+						</div>								
+					</div>
+				</div>
+			</div>
+        	
+			<!-- Preview -->
+			<div ng-include="'tpl/reports/report_preview.html'">
+			</div>
+		</div>
+	</div>
+
+</div>

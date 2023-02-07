@@ -1,0 +1,40 @@
+<div class="modal-body wrapper-lg">
+    <div class="row">
+        <div class="col-sm-12 b-r">
+            <h3 class="m-t-none m-b font-thin">Manual Posting</h3>
+
+            <div>
+                <md-content>
+                    <md-tabs md-dynamic-height md-border-bottom>                        
+                        <md-tab>
+                            <md-tab-label >
+                                Internal
+                            </md-tab-label>
+                            <md-tab-body>
+                                <div ng-include="'tpl/guestservice/modal/internal_pbx_posting.html'">
+                            </md-tab-body>
+                        </md-tab>   
+
+                        <md-tab>
+                            <md-tab-label >
+                                PBX
+                            </md-tab-label>
+                            <md-tab-body>
+                                <div ng-include="'tpl/guestservice/modal/pbx_posting.html'">
+                            </md-tab-body>
+                        </md-tab>     
+                        
+                        <md-tab>
+                            <md-tab-label >
+                                TableCheck
+                            </md-tab-label>
+                            <md-tab-body>
+                                <div ng-include="'tpl/guestservice/modal/tablecheck.html'">
+                            </md-tab-body>
+                        </md-tab>     
+                    </md-tabs>
+                </md-content>
+            </div>
+        </div>
+    </div>
+</div>

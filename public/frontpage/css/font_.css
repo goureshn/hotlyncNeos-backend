@@ -1,0 +1,18 @@
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 300;
+  src: local('Source Sans Pro Light'), local('Titillium-Light'), url('../fonts/titillium/Titillium-Light.woff') format('woff');
+}
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Source Sans Pro'), local('Titillium-Regular'), url('../fonts/titillium/Titillium-Regular.woff') format('woff');
+}
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Source Sans Pro Bold'), local('SourceSansPro-Bold'), url('../fonts/titillium/Titillium-Bold.woff') format('woff');
+}

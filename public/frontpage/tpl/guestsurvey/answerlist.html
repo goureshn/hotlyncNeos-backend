@@ -1,0 +1,92 @@
+<div ng-controller="AnswerlistController as ctrl" style="{{full_height}}">
+  <div class="wrapper-md1 bg-light b-b">
+    <h1 class="m-n font-thin h3">Guest Survey Builder</h1>
+  </div>
+  <div class="wrapper-md1">
+    <div class="col-sm-4">
+      <div class="panel panel-default">
+        <div class="panel-heading"><i class="fa fa-plus" aria-hidden="true"></i>&nbsp;Survey Group List</div>
+        <div class="panel-body">
+          <table  st-table="datalist"  st-pipe="getGroupList" class="table ticket" >
+            <thead >
+            <tr>
+              <th><b>Name</b></th>
+              <th><b>Guest Type</b></th>
+              <th><b>Room Type</b></th>
+            </tr>
+            </thead>
+            <tbody ng-hide="isGroupLoading" ng-repeat="row in grouplist">
+            <tr>
+              <td><a ng-click="onClickGroup(row)">{{row.name}}</a></td>
+              <td>{{getGuestType(row)}}</td>
+              <td>{{getRoomTypes(row)}}</td>
+            </tr>
+            </tbody>
+            <tbody ng-show="isGroupLoading">
+            <tr>
+              <td colspan="4" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+            </tr>
+            </tbody>
+            <tfoot ng-hide="isGroupLoading">
+            <tr ng-show="paginationOptions.totalItems > paginationOptions.pageSize">
+              <td colspan="4" class="text-center">
+                <div st-pagination="" st-items-by-page="paginationOptions.pageSize" st-displayed-pages="7" class="no-margin"></div>
+              </td>
+            </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-8">
+      <div class="panel panel-default">
+        <div class="panel-heading"><i class="fa fa-list-ul" aria-hidden="true"></i>&nbsp;Survey List</div>
+        <div class="panel-body">
+          <table  st-table="datalist"  st-pipe="getDataList" class="table ticket" >
+            <thead >
+            <tr>
+              <th><b>Guest Name</b></th>
+              <th><b>Guest Email</b></th>
+              <th><b>Guest Mobile</b></th>
+              <th><b>Answer Date</b></th>
+            </tr>
+            </thead>
+            <tbody ng-hide="isLoading" ng-repeat="row in datalist">
+            <tr class="" ng-click="onClickRow(row, $index)" >
+              <td>
+                <i ng-if="row.collapse" class="fa fa-arrow-down" style="color:#66BB6A;"></i>
+                <i ng-if="!row.collapse" class="fa fa-arrow-right" style="color:#66BB6A;"></i>
+                &nbsp;{{row.guest_name}}</td>
+              <td>{{row.email}}</td>
+              <td>{{row.mobile}}</td>
+              <td>{{row.answer_at}}</td>
+            </tr>
+            <tr ng-show="row.collapse" class="checklist-bg">
+              <td colspan="4">
+                <mw-form-viewer form-data="row.formData" template-data="row.templateData" read-only="true" form-status="row.formStatus" options="row.formOptions" api="row.formViewer" response-data="row.responseData" on-submit="ctrl.saveResponse(row)"></mw-form-viewer>
+                <!--<pre>-->
+                <!--{{row.responseData|json}}-->
+                <!--</pre>-->
+              </td>
+            </tr>
+            </tbody>
+            <tbody ng-show="isLoading">
+            <tr>
+              <td colspan="4" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+            </tr>
+            </tbody>
+            <tfoot ng-hide="isLoading">
+            <tr ng-show="paginationOptions.totalItems > paginationOptions.pageSize">
+              <td colspan="4" class="text-center">
+                <div st-pagination="" st-items-by-page="paginationOptions.pageSize" st-displayed-pages="7" class="no-margin"></div>
+              </td>
+            </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

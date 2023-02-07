@@ -1,0 +1,27 @@
+<input type="hidden" id="id" value="-1" ng-model="model_data.id"/>
+
+<div class="panel panel-default">
+    <div class="panel-heading wrapper">        
+        <i class="fa fa-user-circle-o"></i>
+        <span class="font-bold">Job Role List</span>
+    </div>
+    <div class="">
+        <table id="table_grid" class="table table-hover table-bordered" style="text-align: center;width:100%" ng-model = "table_grid">
+            <thead>
+            <tr>
+            <tr>                
+                <th style="text-align: center" ng-repeat = "field in fields">
+                    <b>{{field}}</b>
+                </th>                
+            </tr>
+            </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<div class="col-sm-offset-1 col-md-10" style="margin-bottom: 10px">
+    <div ng-include="'/adminpanel/partials/fragments/multimove.html'">
+    </div>
+</div>
+

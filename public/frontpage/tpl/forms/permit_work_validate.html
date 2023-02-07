@@ -1,0 +1,710 @@
+<style>
+	p::first-letter {
+		text-transform: capitalize;
+	}
+	.text-xs {
+	  margin-bottom: 0px;
+	  margin-top: 0px;
+	}
+	tags-input .tags {
+	font-size: 12px;
+	}
+}
+</style>
+<script type="text/ng-template" id="complaint_detail.html">
+  	<div ng-include="'tpl/complaint/complaint_detail.html'"></div>
+</script>
+
+
+<uib-accordion close-others="false">
+	<div class="wrapper">		
+		<!-- - - - - - REQUEST DETAIL - - - - - -->		
+		<div class="panel panel-default" style="border-radius: 4px">
+			<div class="panel-heading">
+				<div class="pull-left">
+				<label class="font-bold text-sm"><i class="fa fa-user-circle-o text-default"></i>&nbsp;&nbsp;Request Party Details</label>
+				</div>
+			<br>
+			</div>
+			
+			<div class="panel-body">
+				<form class="form-horizontal form-validation" >
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">Name</label>
+						<div>
+						<label  class="text-sm font-bold">{{complaint.request_name}}</label>
+						
+						</div>
+					</div>
+					
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">Comapny</label>
+						<div>
+						<label class="text-sm font-bold">{{::complaint.request_company}}</label>
+					
+						</div>
+						
+					</div>
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">Contact Number</label>
+						<div>
+					    <label class="text-sm font-bold">{{::complaint.request_no}}</label>
+						</div>
+					</div>
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">Floor</label>
+						<div>
+					    <label class="text-sm font-bold">{{::complaint.request_floor}}</label>
+						</div>
+					</div>
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">Request Date</label>
+						<div>
+					    <label class="text-sm font-bold">{{::complaint.request_date |mydatetime : 'D MMM YYYY hh:mm a'}}</label>
+						</div>
+					</div>
+					
+						                           
+					    
+				</form>
+			</div>
+		</div>
+		
+		<!-- - - - - - /REQUEST DETAIL - - - - - -->
+
+
+		<!-- - - - - LEASE DETAIL - - - - -->
+			
+		<div ng-show = "complaint.request_by" class="panel panel-default" style="border-radius: 4px">
+				<div class="panel-heading">
+					<label class="text-sm font-bold"><i class="fa fa-user-circle-o text-default"></i>&nbsp;&nbsp;Leasing Office Details</label>
+					<div class="pull-right" style="margin-top: -4px">
+						<div ng-show= "!complaint.leaser" class="btn-group">
+							<button type="button" class="btn btn-default btn-sm" ng-click="save()">
+								<span class="text-default">Save</span>
+							</button>
+						</div>
+					</div>
+				</div>
+				<div class="panel-body">
+					<div class="form-horizontal">
+						<div>
+							
+						<div ng-show= "!complaint.leaser">
+							<div class="col-sm-6">
+								<label class="control-label text-xs">Name<i class="text-danger">*</i></label>
+								<div>
+									<input class='form-control input-sm' ng-model = "complaint.lease_name" type="text">
+								</div>
+							</div>
+							<div class="col-sm-6">
+								<label class="control-label text-xs ">Date<i class="text-danger">*</i></label>
+								<div class = "dropdown">
+									<a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+										<div class="input-group">
+											<input type="text" class="form-control" ng-model="complaint.lease_date">
+											  <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+										</div>
+									</a>
+									<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel" >
+										 <datetimepicker ng-model="complaint.leasedatepicker" data-datetimepicker-config="{ dropdownSelector: '#dropdown2'}"
+											data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+									</ul>
+								</div>
+							</div>
+							<div class="col-sm-6">
+								<label class="control-label text-xs ">Contact Number<i class="text-danger">*</i></label>
+								<div>
+									<input class='form-control input-sm' ng-model = "complaint.lease_no" type="text">
+								</div>
+							</div>
+							<div class="col-sm-6">
+								<label class="control-label text-xs" style="margin-top: 20px">Signature</label>
+								
+									<label class="i-switch m-t-xs m-r" style="margin-top: 20px;margin-left:20px">
+										<input type="checkbox" ng-model="complaint.lease_signature" checked>
+										<i></i>
+									</label>
+								
+							</div>
+						</div>
+							
+						<div ng-show= "complaint.leaser">
+							<div class="col-sm-6">
+								<label class="control-label text-xs text-muted">Name</label>
+								<div>
+									<label class="text-sm font-bold">{{complaint.lease_name}}</label>
+								</div>
+							</div>
+							<div class="col-sm-6">
+								<label class="control-label text-xs text-muted">Contact Number</label>
+								<div>
+									<label class="text-sm font-bold">{{::complaint.lease_no}}</label>
+								</div>
+							</div>
+							<div class="col-sm-6">
+								<label class="control-label text-xs text-muted">Lease Date</label>
+								<div>
+									<label class="text-sm font-bold">{{::complaint.lease_date |mydatetime : 'D MMM YYYY hh:mm a'}}</label>
+								</div>
+							</div>
+						</div>	
+						</div>	
+					</div>
+				</div>
+	
+			</div><br>
+	
+			<!-- - - - -/ LEASE DETAIL - - - - -->
+
+		<!-- - - - - THIRD DETAIL - - - - -->
+
+		<div ng-show = "complaint.leaser" class="panel panel-default" style="border-radius: 4px">
+			<div class="panel-heading">
+				<label class="font-bold text-sm"><i class="fa fa-user-circle-o text-default"></i>&nbsp;&nbsp;Third Party Details</label>
+			
+			<br>
+			</div>
+			
+			<div  class="panel-body">
+				<form class="form-horizontal form-validation" >
+					<div ng-show ="!complaint.third_user">
+						<div class="col-sm-6">
+								<label class="control-label text-xs ">Company Name<i class="text-danger">*</i></label>
+								<div>
+									<input class='form-control input-sm' ng-model = "complaint.third_name" type="text">
+								</div>
+							</div>
+							<div class="col-sm-6">
+								<label class="control-label text-xs ">Area of Work<i class="text-danger">*</i></label>
+								<div>
+									<input class='form-control input-sm' ng-model = "complaint.third_area" type="text">
+								</div>
+							</div>
+							<div class="col-sm-6">
+								<label class="control-label text-xs ">Date of Works<i class="text-danger">*</i></label>
+								<div class = "dropdown">
+									<a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+										<div class="input-group">
+											<input type="text" class="form-control" ng-model="complaint.third_date">
+											  <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+										</div>
+									</a>
+									<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel" >
+										 <datetimepicker ng-model="complaint.thirddatepicker" data-datetimepicker-config="{ dropdownSelector: '#dropdown2'}"
+											data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+									</ul>
+								</div>
+							</div>
+							<div class="col-sm-6">
+								<label class="control-label text-xs ">Manager/Supervisor Contact Number<i class="text-danger">*</i></label>
+								<div>
+									<input class='form-control input-sm' ng-model = "complaint.manager_no" type="text">
+								</div>
+							</div>
+							<div class="col-sm-3">
+								<label class="control-label text-xs ">Start Time(s)<i class="text-danger">*</i></label>
+								<div class = "dropdown">
+									<a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+										<div class="input-group">
+											<input type="text" class="form-control" ng-model="complaint.start_time">
+											  <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+										</div>
+									</a>
+									<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel" >
+										 <datetimepicker ng-model="complaint.starttimepicker" data-datetimepicker-config="{ dropdownSelector: '#dropdown2'}"
+											data-before-render="beforeRender1($view, $dates, $leftDate, $upDate, $rightDate)"/>
+									</ul>
+								</div>
+							</div>
+							<div class="col-sm-3">
+								<label class="control-label text-xs ">End Time(s)<i class="text-danger">*</i></label>
+								<div class = "dropdown">
+									<a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+										<div class="input-group">
+											<input type="text" class="form-control" ng-model="complaint.end_time">
+											  <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+										</div>
+									</a>
+									<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel" >
+										 <datetimepicker ng-model="complaint.endtimepicker" data-datetimepicker-config="{ dropdownSelector: '#dropdown2'}"
+											data-before-render="beforeRender1($view, $dates, $leftDate, $upDate, $rightDate)"/>
+									</ul>
+								</div>
+							</div>
+							<div class="col-sm-12">
+								<label class="control-label text-xs ">Name of Person(s)<i class="text-danger">*</i></label>
+								<div>
+									<input class='form-control input-sm' ng-model = "complaint.persons" type="text">
+								</div>
+							</div>
+							<div class="col-sm-12">
+								<label class="control-label text-xs ">Scope of Work<i class="text-danger">*</i></label>
+								<textarea type="text" spellcheck="true"  ng-model = "complaint.scope" class="form-control input-sm" rows="6" style="resize: none;"></textarea>
+							</div>
+							<div class="col-sm-12">
+								<label class="control-label text-xs ">Work Equipment (if any)</label>
+								<div>
+									<input class='form-control input-sm'  ng-model = "complaint.equipment" type="text">
+								</div>
+							</div>
+							<div class="col-sm-12">
+								<label class="control-label text-xs ">Key issued?</label><br>
+								<div class="col-sm-6">
+									<input type="radio" ng-model="complaint.keyissued" style="margin-left: 30px" value="Yes">&nbsp;&nbsp;&nbsp;&nbsp;Yes
+									<input type="radio" ng-model="complaint.keyissued" style="margin-left: 30px" value="No">&nbsp;&nbsp;&nbsp;&nbsp;No
+								</div>
+								<div ng-show = "complaint.keyissued == 'Yes'" class="col-sm-6">
+									<label class="control-label text-xs ">Description</label>
+									<div>
+										<input class='form-control input-sm' ng-model = "complaint.description" type="text">
+									</div>
+								</div>
+							</div>
+							
+							<div class="col-sm-12">	
+								<label class="control-label text-xs ">Hot work permit required?</label><br>
+								<div class="col-sm-6">
+									<input type="radio" ng-model="complaint.permit_require" style="margin-left: 30px" value="Yes">&nbsp;&nbsp;&nbsp;&nbsp;Yes
+									<input type="radio" ng-model="complaint.permit_require" style="margin-left: 30px" value="No">&nbsp;&nbsp;&nbsp;&nbsp;No
+								</div>
+							</div>	
+							<div class="col-sm-12">	
+								<label class="control-label text-xs ">Fire alarm system isolation required?</label><br>
+								<div class="col-sm-6">
+									<input type="radio" ng-model="complaint.isolation_require" style="margin-left: 30px" value="Yes">&nbsp;&nbsp;&nbsp;&nbsp;Yes
+									<input type="radio" ng-model="complaint.isolation_require" style="margin-left: 30px" value="No">&nbsp;&nbsp;&nbsp;&nbsp;No
+								</div>
+								
+							</div></br>
+							
+							<div class="panel panel-default col-sm-12" style="border-radius: 4px; padding:0px;">
+								<div class="panel-heading">
+									<div class="pull-left">
+										<label class="font-bold text-sm"><i class="fa fa-info-circle text-default"></i>&nbsp;&nbsp;Check All Items That Apply To This Job</label>
+									</div><br>
+								</div>
+								<div class="panel-body" style="padding: 5px 0px">
+									<form class="form-horizontal form-validation">
+										<label class="control-label text-xs font-bold" style="margin-left: 15px">SAFETY AND PERSONAL PROTECTIVE EQUIPMENT REQUIRE</label><br><br>
+										<div class="col-sm-12">
+											<label class="md-check" style="margin: 0px 10px 7px 17px">
+												<input type="checkbox" ng-model="complaint.googles"> <i class="blue"></i>Goggles
+											</label>
+											<label class="md-check" style="margin: 0px 10px 7px 17px">
+												<input type="checkbox" ng-model="complaint.safetyglasses"> <i class="blue"></i>Safety glasses with side shields
+											</label>
+											<label class="md-check" style="margin: 0px 10px 7px 17px">
+												<input type="checkbox" ng-model="complaint.faceshield"> <i class="blue"></i>Face Shield
+											</label>
+											<label class="md-check" style="margin: 0px 10px 7px 17px">
+												<input type="checkbox" ng-model="complaint.gloves"> <i class="blue"></i>Gloves
+											</label>
+											<label class="md-check" style="margin: 0px 10px 7px 17px">
+												<input type="checkbox" ng-model="complaint.welding"> <i class="blue"></i>Welding helmet with tint protection
+											</label>
+											<label class="md-check" style="margin: 0px 10px 7px 17px">
+												<input type="checkbox" ng-model="complaint.respirator"> <i class="blue"></i>Respirator
+											</label>
+											<label class="md-check" style="margin: 0px 10px 7px 17px">
+												<input type="checkbox" ng-model="complaint.hearingprotection"> <i class="blue"></i>Hearing protection
+											</label>
+											<label class="md-check" style="margin: 0px 10px 7px 17px">
+												<input type="checkbox" ng-model="complaint.apron"> <i class="blue"></i>Leather apron
+											</label>
+											<label class="md-check" style="margin: 0px 10px 7px 17px">
+												<input type="checkbox" ng-model="complaint.showereyewash"> <i class="blue"></i>Emergency shower and eyewash
+											</label>
+											<label class="md-check" style="margin: 0px 10px 7px 17px">
+												<input type="checkbox" ng-model="complaint.fallarrest"> <i class="blue"></i>Fall Arrest
+											</label><br>
+											<label class="md-check" style="margin: 0px 10px 7px 17px">
+												<input type="checkbox" ng-model="complaint.other"> <i class="blue"></i>Other
+											</label><br>
+											<div class="col-sm-12">
+												<input ng-show = "complaint.other" class='form-control input-sm' type="text" ng-model = "complaint.other_equip">
+											</div>
+										</div>
+									</form><br>
+									
+									<form class="form-horizontal form-validation">
+										<label class="control-label text-xs font-bold" style="margin-left: 15px">POTENTIAL HAZARDS</label><br><br>
+										<div class="col-sm-12">
+											<label class="md-check" style="margin: 0px 10px 7px 17px">
+												<input type="checkbox" ng-model="complaint.toxic"> <i class="blue"></i>Toxic
+											</label>
+											<label class="md-check" style="margin: 0px 10px 7px 17px">
+												<input type="checkbox" ng-model="complaint.corrosive"> <i class="blue"></i>Corrosive
+											</label>
+											<label class="md-check" style="margin: 0px 10px 7px 17px">
+												<input type="checkbox" ng-model="complaint.radioactive"> <i class="blue"></i>Radioactive
+											</label>
+											<label class="md-check" style="margin: 0px 10px 7px 17px">
+												<input type="checkbox" ng-model="complaint.electrical"> <i class="blue"></i>Electrical
+											</label>
+											<label class="md-check" style="margin: 0px 10px 7px 17px">
+												<input type="checkbox" ng-model="complaint.thermal"> <i class="blue"></i>Thermal
+											</label>
+											<label class="md-check" style="margin: 0px 10px 7px 17px">
+												<input type="checkbox" ng-model="complaint.storedenergy"> <i class="blue"></i>Stored Energy
+											</label>
+											<label class="md-check" style="margin: 0px 10px 7px 17px">
+												<input type="checkbox" ng-model="complaint.mechanical"> <i class="blue"></i>Mechanical
+											</label>
+											<label class="md-check" style="margin: 0px 10px 7px 17px">
+												<input type="checkbox" ng-model="complaint.spills"> <i class="blue"></i>Spills
+											</label>
+											<label class="md-check" style="margin: 0px 10px 7px 17px">
+												<input type="checkbox" ng-model="complaint.fire"> <i class="blue"></i>Fire
+											</label><br>
+											<label class="md-check" style="margin: 0px 10px 7px 17px">
+												<input type="checkbox" ng-model="complaint.other1"> <i class="blue"></i>Other  
+											</label><br>
+											<div class = "col-sm-12">
+												<input  ng-show="complaint.other1" class='form-control input-sm' type="text"  ng-model = "complaint.other_hzrd">
+											</div>
+										</div>
+									</form>
+							
+									<form class="form-horizontal form-validation">
+										<label class="control-label text-xs font-bold" style="margin-left: 15px">ISOLATION REQUIRED</label><br><br>
+										<div class="col-sm-12">
+											<label class="md-check" style="margin: 0px 10px 7px 17px">
+												<input type="checkbox" ng-model="complaint.cleaning"> <i class="blue"></i>Cleaning/Purging
+											</label>
+											<label class="md-check" style="margin: 0px 10px 7px 17px">
+												<input type="checkbox" ng-model="complaint.ventilation"> <i class="blue"></i>Ventilation
+											</label>
+											<label class="md-check" style="margin: 0px 10px 7px 17px">
+												<input type="checkbox" ng-model="complaint.signbarrier"> <i class="blue"></i>Signs/Barriers
+											</label>
+											<label class="md-check" style="margin: 0px 10px 7px 17px">
+												<input type="checkbox" ng-model="complaint.weldingcurtain"> <i class="blue"></i>Welding Curtain/Shield
+											</label>
+											<label class="md-check" style="margin: 0px 10px 7px 17px">
+												<input type="checkbox" ng-model="complaint.clothes"> <i class="blue"></i>Clothes/Tarps
+											</label>
+											<label class="md-check" style="margin: 0px 10px 7px 17px">
+												<input type="checkbox" ng-model="complaint.lockout"> <i class="blue"></i>Lockout/Tag Out
+											</label>
+											<label class="md-check" style="margin: 0px 10px 7px 17px">
+												<input type="checkbox" ng-model="complaint.mechanicallinkage"> <i class="blue"></i>Disconnect Mechanical Linkages
+											</label>
+											<label class="md-check" style="margin: 0px 10px 7px 17px">
+												<input type="checkbox" ng-model="complaint.secure"> <i class="blue"></i>Secure Moving Parts
+											</label><br>
+											<label class="md-check" style="margin: 0px 10px 7px 17px">
+												<input type="checkbox" ng-model="complaint.other2"> <i class="blue"></i>Other
+											</label><br>
+											<div class = "col-sm-12">
+												<input ng-show = "complaint.other2" class='form-control input-sm' type="text" ng-model = "complaint.other_iso">
+											</div>
+										</div>
+									</form>
+								</div><br><br>
+							</div><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+							<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+							
+							<center><br><br>
+								<button style = "margin-top: 20px" type="button " class="btn btn-dark btn-sm" ng-click="update()">
+								<span class="text-success font-bold"><i class="fa fa-check"></i>&nbsp;Save</span></button>
+								
+							</center><br>
+				</div>
+				<div ng-show = "complaint.third_user">
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">Company Name</label>
+						<div>
+						<label  class="text-sm font-bold">{{complaint.third_name}}</label>
+						</div>
+					</div>
+					
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">Area of Work</label>
+						<div>
+						<label class="text-sm font-bold">{{::complaint.third_area}}</label>
+						</div>	
+					</div>
+
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">Date of Work</label>
+						<div>
+					    <label class="text-sm font-bold">{{::complaint.third_date | mydatetime : 'D MMM YYYY hh:mm a'}}</label>
+						</div>
+					</div>
+
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">Start Time</label>
+						<div>
+					    <label class="text-sm font-bold">{{::complaint.start_time}}</label>
+						</div>
+					</div>
+
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">End Time</label>
+						<div>
+					    <label class="text-sm font-bold">{{::complaint.end_time}}</label>
+						</div>
+					</div>
+
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">Manager Number</label>
+						<div>
+					    <label class="text-sm font-bold">{{::complaint.manager_no}}</label>
+						</div>
+					</div>
+
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">Name of Persons</label>
+						<div>
+						<label class="text-sm font-bold">{{::complaint.persons}}</label>
+						</div>	
+					</div>
+
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">Scope of Work</label>
+						<div>
+						<label class="text-sm font-bold">{{::complaint.scope}}</label>
+						</div>	
+					</div>
+
+					<div ng-show= "complaint.equipment"class="col-sm-6">
+						<label class="control-label text-xs text-muted">Work Equipment</label>
+						<div>
+						<label class="text-sm font-bold">{{::complaint.equipment}}</label>
+						</div>	
+					</div>
+					<div class="col-sm-12">
+						<label class="control-label text-xs text-muted">Key Issued?&nbsp;&nbsp;&nbsp;&nbsp;</label>
+						<label ng-show = "complaint.keyissued == 'Yes'" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;Yes</label>							
+						<label ng-show = "complaint.keyissued == 'No'" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;No</label>	
+					</div>
+					<div class="col-sm-12">
+						<label class="control-label text-xs text-muted">Hot Work Permit Required?&nbsp;&nbsp;&nbsp;&nbsp;</label>
+						<label ng-show = "complaint.permit_require == 'Yes'" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;Yes</label>							
+						<label ng-show = "complaint.permit_require == 'No'" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;No</label>	
+					</div>
+					<div class="col-sm-12">
+						<label class="control-label text-xs text-muted">Fire Alarm System Isolation Required?&nbsp;&nbsp;&nbsp;&nbsp;</label>
+						<label ng-show = "complaint.isolation_require == 'Yes'" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;Yes</label>							
+						<label ng-show = "complaint.isolation_require == 'No'" class="text-sm font-bold">&nbsp;&nbsp;&nbsp;&nbsp;No</label>	
+					</div>
+					
+					<div ng-show= "complaint.keyissued == 'Yes'" class="col-sm-6">
+						<label class="control-label text-xs text-muted">Key Issue Details</label>
+						<div>
+					    <label class="text-sm font-bold">{{::complaint.description}}</label>
+						</div>
+					</div>
+					<div class="col-sm-12">
+						<label class="control-label text-xs text-muted">SAFETY AND PERSONAL PROTECTIVE EQUIPMENT REQUIRE</label><br><br>
+						<div class="col-sm-6"> 
+						<label ng-show= "complaint.goggles" class="text-sm font-bold">&nbsp;&nbsp;Goggles<br/></label>
+						<label ng-show= "complaint.safetyglasses" class="text-sm font-bold" >&nbsp;&nbsp;Safety Glasses with Side Shields<br/></label>
+						<label ng-show= "complaint.faceshield" class="text-sm font-bold">&nbsp;&nbsp;Face Shield<br/></label>
+						<label ng-show= "complaint.gloves" class="text-sm font-bold">&nbsp;&nbsp;Gloves<br/></label>
+						<label ng-show= "complaint.respirator" class="text-sm font-bold">&nbsp;&nbsp;Respirator<br/></label>
+						</div>
+						<div class="col-sm-6">
+						<label ng-show= "complaint.hearingprotection" class="text-sm font-bold">&nbsp;&nbsp;Hearing Protection<br/></label>
+						<label ng-show= "complaint.welding" class="text-sm font-bold">&nbsp;&nbsp;Welding Helmet with Tint Protection<br/></label>
+						<label ng-show= "complaint.apron" class="text-sm font-bold">&nbsp;&nbsp;Leather Apron<br/></label>
+						<label ng-show= "complaint.showereyewash" class="text-sm font-bold">&nbsp;&nbsp;Emergency Shower and Eyewash<br/></label>
+						<label ng-show= "complaint.fallarrest" class="text-sm font-bold">&nbsp;&nbsp;Fall Arrest<br/></label>
+						</div>
+					</div>
+					<div ng-show= "complaint.other" class="col-sm-6">
+						<label class="control-label text-xs text-muted">Other</label>
+						<div>
+						<label class="text-sm font-bold">{{::complaint.other_equip}}</label>
+					
+						</div>
+						
+					</div>
+					<div class="col-sm-12">
+						<label class="control-label text-xs text-muted">POTENTIAL HAZARDS</label><br><br>
+						<div class="col-sm-6"> 
+						<label ng-show= "complaint.toxic" class="text-sm font-bold">&nbsp;&nbsp;Toxic<br/></label>
+						<label ng-show= "complaint.corrosive" class="text-sm font-bold" >&nbsp;&nbsp;Corrosive<br/></label>
+						<label ng-show= "complaint.radioactive" class="text-sm font-bold">&nbsp;&nbsp;Radioactive<br/></label>
+						<label ng-show= "complaint.electrical" class="text-sm font-bold">&nbsp;&nbsp;Electrical<br/></label>
+						<label ng-show= "complaint.thermal" class="text-sm font-bold">&nbsp;&nbsp;Thermal<br/></label>
+						</div>
+						<div class="col-sm-6">
+						<label ng-show= "complaint.storedenergy" class="text-sm font-bold">&nbsp;&nbsp;Stored Energy<br/></label>
+						<label ng-show= "complaint.mechanical" class="text-sm font-bold">&nbsp;&nbsp;Mechanical<br/></label>
+						<label ng-show= "complaint.spills" class="text-sm font-bold">&nbsp;&nbsp;Spills<br/></label>
+						<label ng-show= "complaint.fire" class="text-sm font-bold">&nbsp;&nbsp;Fire<br/></label>
+						</div>
+					</div>
+					<div ng-show= "complaint.other1" class="col-sm-6">
+						<label class="control-label text-xs text-muted">Other</label>
+						<div>
+						<label class="text-sm font-bold">{{::complaint.other_hzrd}}</label>
+					
+						</div>
+						
+					</div>
+					<div class="col-sm-12">
+						<label class="control-label text-xs text-muted">ISOLATION REQUIRED</label><br><br>
+						<div class="col-sm-6"> 
+						<label ng-show= "complaint.cleaning" class="text-sm font-bold">&nbsp;&nbsp;Cleaning/Purging<br/></label>
+						<label ng-show= "complaint.ventilation" class="text-sm font-bold" >&nbsp;&nbsp;Ventilation<br/></label>
+						<label ng-show= "complaint.signbarrier" class="text-sm font-bold">&nbsp;&nbsp;Sign/Barriers<br/></label>
+						<label ng-show= "complaint.weldingcurtain" class="text-sm font-bold">&nbsp;&nbsp;Welding Curtain/Shield<br/></label>
+						</div>
+						<div class="col-sm-6">
+						<label ng-show= "complaint.lockout" class="text-sm font-bold">&nbsp;&nbsp;Lockout/Tag OUt<br/></label>
+						<label ng-show= "complaint.mechanicallinkage" class="text-sm font-bold">&nbsp;&nbsp;Disconnect Mechanical Linkages<br/></label>
+						<label ng-show= "complaint.secure" class="text-sm font-bold">&nbsp;&nbsp;Secure Moving Parts<br/></label>
+						<label ng-show= "complaint.clothes" class="text-sm font-bold">&nbsp;&nbsp;Clothes/Tarps<br/></label>
+						</div>
+					</div>
+					<div ng-show= "complaint.other2" class="col-sm-6">
+						<label class="control-label text-xs text-muted">Other</label>
+						<div>
+						<label class="text-sm font-bold">{{::complaint.other_iso}}</label>
+					
+						</div>
+						
+					</div>
+					                
+				</div>    
+			</form>
+		</div>
+		</div><br>
+			
+		<!-- - - - - /THIRD DETAIL - - - - -->
+		<!-- - - - - - - - - - -AUTHORIZATION - - - - - -  - -->
+
+		<div class="panel panel-default" style="border-radius: 4px" ng-show = "complaint.third_user">
+			<div class="panel-heading">
+					<label class="font-bold text-sm"><i class="fa fa-user-circle-o text-default"></i>&nbsp;&nbsp;AUTHORIZATION</label>
+				<br>
+			</div>
+			<div class="panel-body">
+				<form class="form-horizontal form-validation" >
+				<div ng-show = "!complaint.auth_by">
+				<span style="padding:5px;">I have checked the location where the work is to be performed and necessary precautions as indicated on this permit checklist have been taken. The checklist is complete.</span><br><br>
+				<div class="col-sm-6"> 
+					<label class="control-label text-xs">Permit Authorizing Name<i class="text-danger">*</i></label>
+					<div>
+						<input class='form-control input-sm' type="text" ng-model = "complaint.authorize_name">
+					</div>
+				</div>
+				
+				
+				<div class="col-sm-6"> 
+					<label class="control-label text-xs">Employee Performing Work<i class="text-danger">*</i></label>
+					<div>
+						<input class='form-control input-sm' type="text" ng-model = "complaint.worker">
+					</div>
+				</div>
+				<div class="col-sm-6"> 
+					<label class="control-label text-xs">Emergency Contact<i class="text-danger">*</i></label>
+					<div>
+						<input class='form-control input-sm' type="text" ng-model = "complaint.contact">
+					</div>
+				</div>
+				<div class="col-sm-6">
+						<label class="control-label text-xs" >Signature</label>
+						
+							<label class="i-switch m-t-xs m-r" style="margin-left:20px;margin-top: 20px;margin-bottom:3px">
+								<input type="checkbox" ng-model="complaint.auth_sign" checked>
+								<i></i>
+							</label>
+						
+				</div>
+				<!--
+				<div style="text-align:center">
+					<label class="control-label text-xs font-bold"><u>FINAL CHECK</u></label><br>
+				</div>
+				<label style="padding:5px;">A final check was made after completion of the work. All work is of a satisfactory standard and all systems are returned to original state.</label><br><br>
+				<div style="text-align:center">
+					<label class="control-label text-xs font-bold">ENGINEERING</label>
+				</div>
+				<div class="col-sm-6"> 
+					<label class="control-label text-xs">Name<i class="text-danger">*</i></label>
+					<div>
+						<input class='form-control input-sm' type="text" ng-model = "final_name">
+					</div>
+				</div>
+				<div class="col-sm-6"> 
+					<label class="control-label text-xs">Date<i class="text-danger">*</i></label>
+					<div class = "dropdown">
+						<a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+							<div class="input-group">
+								<input type="text" class="form-control" ng-model="authorizing_date">
+								  <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+							</div>
+						</a>
+						<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel" >
+							 <datetimepicker ng-model="authorizedatepicker" data-datetimepicker-config="{ dropdownSelector: '#dropdown2'}"
+								data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+						</ul>
+					</div>
+				</div>
+				<div class="col-sm-6">
+					<label class="control-label text-xs" style="margin-top: 20px">Signature</label>
+					
+						<label class="i-switch m-t-xs m-r" style="margin-top: 20px;margin-left:20px">
+							<input type="checkbox" ng-model="signature" checked>
+							<i></i>
+						</label>
+					
+				</div>
+				<br><br>-->
+
+		
+			</div>
+			<div ng-show = "complaint.auth_by"> 
+					<div class="col-sm-6">
+							<label class="control-label text-xs text-muted">Permit Authorizing Name</label>
+							<div>
+							<label  class="text-sm font-bold">{{complaint.authorize_name}}</label>
+							</div>
+						</div>
+						
+						<div class="col-sm-6">
+							<label class="control-label text-xs text-muted">Employee Performing Work</label>
+							<div>
+							<label class="text-sm font-bold">{{::complaint.worker}}</label>
+							</div>	
+						</div>
+	
+						<div class="col-sm-6">
+							<label class="control-label text-xs text-muted">Emergency Contact</label>
+							<div>
+							<label class="text-sm font-bold">{{::complaint.contact}}</label>
+							</div>
+						</div>
+			</div>
+		</form>
+		
+		</div>
+		
+		</div>
+		<center><br><br>
+			<button ng-show = "!complaint.auth_by && complaint.third_user" type="button " class="btn btn-dark btn-sm" ng-click="update_auth()">
+			<span class="text-success font-bold"><i class="fa fa-check"></i>&nbsp;Update</span></button>
+			
+	</center><br><br>	
+		<!-- - - - - - - - - - -/AUTHORIZATION - - - - - -  - -->
+		
+
+
+		
+		<center>
+			<button ng-show = "complaint.auth_by && complaint.status != 'Approved Level 3'" type="button " class="btn btn-dark btn-sm" ng-click="approve()">
+			<span class="text-success font-bold"><i class="fa fa-check"></i>&nbsp;Approve</span></button>
+			
+		</center><br><br>
+	<br><br><br><br>
+			
+						
+</div>	<br><br><br>
+				          
+					
+			
+</uib-accordion>
+

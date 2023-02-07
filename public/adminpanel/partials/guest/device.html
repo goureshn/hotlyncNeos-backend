@@ -1,0 +1,176 @@
+<style>
+	.scrollable-dropdown-menu .dropdown-menu {
+		max-height: 300px;
+		overflow-y: auto;
+	}
+</style>
+
+<input type="hidden" id="id" value="-1" ng-model="model_data.id" />
+
+<div class="panel panel-default">
+	<div class="panel-heading wrapper">
+		<button type="button" class="btn btn-success btn-sm" style="float:right; margin-top: -5px" data-toggle="modal" data-target="#addModal"
+		 ng-disabled="job_role!='SuperAdmin'&&edit_flag==0" ng-click="onShowEditRow(-1)">
+			<span class="glyphicon glyphicon-plus"></span>
+			<b> Add New </b>
+		</button>
+		<button  type="button" class="btn btn-success btn-sm" style="float:right; margin-top: -5px; margin-right: 10px" data-target="#exportModal" data-toggle="modal" ng-disabled="job_role!='SuperAdmin'&&edit_flag==0" >
+			<b><i class="fa fa-download"></i> Export File </b>
+		</button>  
+		<i class="fa fa-street-view"></i>
+		<span class="font-bold">Device Management</span>
+
+		<select id='status_id' class='input-sm' style="float:right; margin-left: 5px; margin-right: 20px;" ng-model="device_status" ng-change="onChangeStatus()"
+			ng-options="value for value in status_list">>		
+		</select>	
+	</div>
+	<div class="">
+		<table id="table_grid" class="table table-hover table-bordered" style="text-align: center;width:100%" ng-model="table_grid">
+			<thead>
+				<tr>
+					<th style="text-align: center" ng-repeat="field in fields">
+						<b>{{field}}</b>
+					</th>
+					<th style="text-align: center">Edit</th>
+					<th style="text-align: center">Delete</th>
+				</tr>
+			</thead>
+		</table>
+	</div>
+</div>
+
+<div class="modal fade" id="exportModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"> 
+	<div class="modal-dialog" role="document"> 
+		<div class="panel"> 
+			<div class="modal-header bg"> 
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"> 
+					<span aria-hidden="true">&times;</span> 
+				</button>  
+				<h5 class="modal-title font-bold" style="color:#2691d9">
+						<i class="fa fa-download"></i>&nbsp;Export Report</h5>
+			</div>
+			<div class="modal-body"> 
+				<br>
+				<form class="form-horizontal form-validation">
+						<label class="control-label text-xs font-bold" style="margin-left: 15px;font-size: 10px">&nbsp;&nbsp;&nbsp;&nbsp;Do you want to export this table?</label><br><br>
+				</form>
+				<form class="form-horizontal form-validation">
+						<center>
+								<button type="button" class="btn btn-success btn-sm" ng-click="onDownloadExcel()" data-dismiss="modal">
+								<span class="font-bold"><i class="fa fa-check"></i>&nbsp;Ok</span></button>
+								<button type="button" class="btn btn-danger btn-sm" class="close" data-dismiss="modal">
+								<span class="font-bold"><i class="fa fa-times"></i>&nbsp;Cancel</span></button>           
+					  </center>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+		<div class="panel">
+			<div class="modal-header bg">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h5 class="modal-title font-bold" style="color:#2691d9" ng-if="model_data.id<0">
+					<i class="fa fa-plus"></i>&nbsp;Add Device</h5>
+				<h5 class="modal-title font-bold" style="color:#2691d9" ng-if="model_data.id>=0">
+					<i class="fa fa-pencil"></i>&nbsp;Edit Device</h5>
+			</div>
+			<div class="modal-body">
+				<br>
+				<form class="form-horizontal">
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Copy From Setting:</label>
+						<div class="scrollable-dropdown-menu col-sm-5">
+							<input class="form-control input-sm col-sm-5" type="text" ng-model="copy_device_name"
+								   uib-typeahead="item.name for item in getDeviceList($viewValue)"
+								   typeahead-min-length="0"
+								   typeahead-on-select="onSelectDevice(item, $item, $model, $label)"
+								   required />
+						</div>
+					</div>
+
+					<div class="scrollable-dropdown-menu form-group">
+						<label class="control-label col-sm-4" for="Property">Department Function:</label>
+						<div class="col-sm-5">
+							<div ng-dropdown-multiselect="" options="dept_func_list" selected-model="dept_func_array_id" checkboxes="true" extra-settings="dept_func_hint_setting"
+							 translation-texts="deptfunc_hint"></div>
+						</div>
+					</div>
+					<div class="scrollable-dropdown-menu form-group">
+						<label class="control-label col-sm-4" for="Property">Secondary Department Function:</label>
+
+						<div class="col-sm-5">
+							<div ng-dropdown-multiselect="" options="dept_func_list" selected-model="sec_dept_func" checkboxes="true" extra-settings="dept_func_hint_setting"
+							 translation-texts="deptfunc_hint"></div>
+						</div>
+					</div>
+					<text-item formlabel="Name" modelname="model_data.name"></text-item>
+					<text-item formlabel="Number" modelname="model_data.number"></text-item>
+
+					<div class="scrollable-dropdown-menu form-group">
+						<label class="control-label col-sm-4" for="Property">Type :</label>
+						<div class="col-sm-5">
+							<select id='carrier_id' class='form-control' ng-model="model_data.type" ng-options="value for value in phonetypes">
+							</select>
+						</div>
+					</div>
+					<div class="scrollable-dropdown-menu form-group">
+						<label class="control-label col-sm-4" for="Property">Location Group:</label>
+						<div class="col-sm-5">
+							<div ng-dropdown-multiselect="" options="locaton_group_list" selected-model="loc_grp_array_id" checkboxes="true" extra-settings="hint_setting"
+							 translation-texts="location_group_hint"></div>
+						</div>
+					</div>
+					<div class="scrollable-dropdown-menu form-group">
+						<label class="control-label col-sm-4" for="Property">Secondary Location Group:</label>
+						<div class="col-sm-5">
+							<div ng-dropdown-multiselect="" options="locaton_group_list" selected-model="sec_loc_grp_array_id" checkboxes="true" extra-settings="hint_setting"
+							 translation-texts="location_group_hint"></div>
+						</div>
+					</div>
+					<div class="scrollable-dropdown-menu form-group">
+						<label class="control-label col-sm-4" for="Property">Building:</label>
+						<div class="scrollable-dropdown-menu col-sm-5">
+							<div ng-dropdown-multiselect="" options="building_list" selected-model="building_ids" checkboxes="true" extra-settings="hint_setting"
+							 translation-texts="building_hint"></div>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Device ID:</label>
+						<div class="col-sm-5">
+							<select id='device_id' class='form-control' ng-model="model_data.device_id" 
+							ng-options="item for item in devices">							
+							</select>
+						</div>
+					</div>
+					<link href="/lib/angular/angular-toggle-switch-bootstrap-3.css" media="all" rel="stylesheet" type="text/css">
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="priority_flag">Enable Priority:</label>
+						<div class="col-sm-5">
+							<div toggle-switch class="switch-primary" on-label="Yes" off-label="No" ng-model="model_data.priority_flag"></div>
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="priority_flag">Enable:</label>
+						<div class="col-sm-5">
+							<div toggle-switch class="switch-primary" on-label="Yes" off-label="No" ng-model="model_data.enabled"></div>
+						</div>
+					</div>
+					<div class="form-group" ng-include="'/adminpanel/partials/fragments/uploadcsv.html'"></div>
+				</form>
+			</div>
+
+			<div class="col-md-12" style="clear:both;margin-bottom: 20px" ng-include="'/adminpanel/partials/fragments/uploader.html'"></div>
+			<div style="clear:both">
+				<submit-form id="model_data.id" updatedata="onUpdateRow()"></submit-form>
+			</div>
+		</div>
+	</div>
+</div>
+
+<dialog-delete title="Device" modelname="model_data.number" deletedata="deleteRow()"></dialog-delete>

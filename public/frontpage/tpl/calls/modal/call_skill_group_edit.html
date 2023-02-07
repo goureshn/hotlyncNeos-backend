@@ -1,0 +1,64 @@
+<style>
+    button {
+        pointer: cursor;
+    }
+
+</style>
+
+
+<form class="form-horizontal form-validation" ng-submit="createSkillGroup()">
+    <div class="modal-content">        
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">
+                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+            </button>
+            <h3 class="modal-title" style="color:#2691d9" id="Heading">Skill Group {{skill_group.id > 0 ? 'Edit' : 'Create'}}</h3>
+        </div>        
+        <div class="modal-body">        
+            <div class="form-group">
+                <div class="col-sm-12">
+                    <label class="control-label text-xs text-muted">Skill Group Name : </label>
+                    <div class="scrollable-dropdown-menu">
+                        <input type="text" ng-model="skill_group.group_name" class="form-control input-sm" required>
+                    </div>
+                </div>                    
+            </div>    
+            <div class="form-group">
+                <div class="col-sm-12">
+                    <label class="control-label text-xs text-muted">Skill List : </label>
+                    <div class="scrollable-dropdown-menu">
+                        <tags-input ng-model="skill_group.skill_tags" display-property="name" placeholder="Add a Skill" replace-spaces-with-dashes="false"
+                                        >
+                            <auto-complete source="loadSkillFilters($query)" min-length="0" load-on-focus="true" load-on-empty="true" debounce-delay="0"
+                                        max-results="6">
+                            </auto-complete>
+                        </tags-input>
+                    </div>
+                </div>    
+                <div class="col-sm-12">
+                    <label class="control-label text-xs text-muted">Department :<i class="text-danger">*</i></label>
+                    <div id="scrollable-dropdown-menu">
+                        <input class="form-control input-sm col-sm-5" type="text" ng-model="skill_group.department"
+                            uib-typeahead="department.department for department in getdepartment($viewValue)"
+                            typeahead-min-length="0"
+                            typeahead-editable="false"
+                            typeahead-on-select="ondepartment(department, $item, $model, $label)"
+                            required />
+                    </div>
+                </div>                   
+            </div>    
+        </div>
+
+        <div class="modal-footer ">
+            <button type="submit" class="btn btn-info btn-sm w-xs" data-dismiss="modal">
+                <span class="glyphicon glyphicon-ok"></span>
+                <b> {{skill_group.id > 0 ? 'Update' : 'Create'}}</b>
+            </button>
+            <button type="button" class="btn btn-default btn-sm w-xs" data-dismiss="modal" ng-click="cancel()">
+                <span class="glyphicon glyphicon-remove"></span>
+                <b> Cancel</b>
+            </button>
+        </div>
+
+    </div>
+</form>

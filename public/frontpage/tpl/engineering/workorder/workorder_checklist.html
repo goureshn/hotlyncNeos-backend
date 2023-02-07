@@ -1,0 +1,139 @@
+<style>
+    button {
+        pointer: cursor;
+    }
+
+    input[type=file] {
+        width: 150px;
+        height: 20px;
+    }
+    .tbl-sm {
+        font-size: .8vw;
+        padding: 1px 15px !important;
+        color: #67686a;
+    }
+
+    table tr td, th {        
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    td.valid {
+        background-color: #dff0d8;
+    }
+
+</style>
+
+<form class="form-horizontal form-validation">
+    <div class="modal-content">        
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">
+                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+            </button>
+            <h3 class="modal-title" style="color:#2691d9" id="Heading">{{workorder.ticket_id}} Check List</h3>
+        </div>        
+        <div class="modal-body">                 
+            <!-- checklist-->    
+            <div>
+                <table  st-table="datalist"  class="table">
+                    <thead class="tblhead-sm">
+                        <tr ng-click="cancelEdit()">
+                            <th width="15%"><b>Category</b></th>
+                            <th width="15%"><b>Task</b></th>
+                            <th width="3%"><b>Yes</b></th>
+                            <th width="3%"><b>No</b></th>                            
+                            <th width="7%"><b>Reading</b></th>                            
+                            <th><b>Comment</b></th>  
+                            <th width="50px;"><b>Attachments</b></th>                          
+                            <th width="50px;"><b>Attach</b></th>                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="" ng-repeat="row in workorder_checklist" ng-click="cancelEdit(row)">
+                            <td>{{row.category_name}}</td>
+                            <td>{{row.item_name}}</td>
+                            <td ng-click="onClickYesNo(row, 1)" ng-class="{'valid': row.item_type == 'Yes/No'}">
+                                <label class="text-center" ng-if="row.check_flag == 1 && (row.item_type == 'Yes/No' && row.yes_no == 1)" ><i style="color: blue" class="fa fa-check"></i></label>
+                                <label class="text-center" ng-if="row.check_flag == 1 && (row.item_type != 'Yes/No' || row.yes_no != 1)"></label>  
+                            </td>
+                            <td ng-click="onClickYesNo(row, 0)" ng-class="{'valid': row.item_type == 'Yes/No'}">
+                                <label class="text-center" ng-if="row.check_flag == 1 && (row.item_type == 'Yes/No' && row.yes_no == 0)"><i style="color: red" class="fa fa-times"></i></label>
+                                <label class="text-center" ng-if="row.check_flag == 1 && (row.item_type != 'Yes/No' || row.yes_no != 0)"></label>
+                            </td>
+                            <td ng-click="onClickReading(row)" ng-class="{'valid': row.item_type == 'Reading'}">                                
+                                <span ng-show="!row.reading_edit">{{row.reading}}</span>
+                                <input type="text" ng-model="row.new_reading" ng-show="row.reading_edit" my-enter="onUpdateReading(row)" class='form-control input-sm'>
+                            </td>
+                            <td ng-click="onClickComment(row)" ng-class="{'valid': row.item_type == 'Others'}">
+                                <span ng-show="!row.comment_edit">{{row.comment}}</span>
+                                <textarea type="text" ng-model="row.new_comment" ng-show="row.comment_edit" my-enter="onUpdateComment(row)" class='form-control input-sm' style="resize:none" spellcheck="true"></textarea>
+                            </td>
+                            <td style = "{{row.download_array.length > 0 ? 'display:flex' : ''}}">
+                                <div ng-repeat="path in row.download_array" style="margin: 0 auto;padding:3px;width:30%;float:left;" download>								
+                                    <img style="width:100%;height:30px;" src = "/{{path}}" ng-if="!pdf_type_flag[$index]" ng-click="openModalImage(path);$event.stopPropagation();" />
+                                    <i class="fa {{icon_class[$index]}}" style="font-size: 20px; color:red; margin-right: 15px; vertical-align: middle;" ng-if="pdf_type_flag[$index]" ng-click="downloadFile(path);$event.stopPropagation();"></i>
+                                   <span class="glyphicon icon-close" style="color: red; " 
+                                        ng-click="removeFile($index, row)">
+                                    </span>
+                                
+                                </div>
+                                <div ng-if="row.download_array.length < 1" style="font-style: italic; font-size: 10px">No Attachment</div>
+                            </td>
+                            <td>
+                                <!--
+                                <a class="btn default btn-xs green" ng-click="onAttachCheckList(row)">
+                                    <i class="fa fa-paperclip"></i></a>    
+                                -->
+                                <a class="btn default btn-xs green" ngf-select="uploadFiles($files, row)" multiple ngf-max-files="5"
+                                    ngf-max-size="10MB" ngf-accept="'image/*,application/pdf,.eml'"
+                                    ngf-pattern="'image/*,application/pdf,.eml'" ngf-capture="'camera'"
+                                    >
+                                    <i class="fa fa-paperclip"></i>
+                                </a>                            
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Attached Image -->
+            <!--
+            <div class="row" style="margin-top: 10px">
+                <div class="label-group col-sm-12" style="margin-top: 15px">
+                    <div class="col-sm-2 control-label">          
+                        <button class="btn btn-dark btn-sm" ngf-select="uploadFiles($files)" multiple ngf-max-files="5"
+                            ngf-max-size="10MB" ngf-accept="'image/*,application/pdf,.eml'"
+                            ngf-pattern="'image/*,application/pdf,.eml'" ngf-capture="'camera'"
+                            >
+                            <span class="text-success font-bold"><i class="fa fa-upload"></i>&nbsp;Select Files</span>
+                        </button>
+                    </div>
+                    <div class="col-sm-10 ">
+                        <a ng-repeat="path in download_array" style="position:relative" download>								
+                            <img style="width:auto;height:50px;" src = "/{{path}}" ng-if="!pdf_type_flag[$index]" ng-click="openModalImage(path);$event.stopPropagation();" />
+                            <i class="fa {{icon_class[$index]}}" style="font-size: 20px; color:red; margin-right: 15px; vertical-align: middle;" ng-if="pdf_type_flag[$index]" ng-click="downloadFile(path);$event.stopPropagation();"></i>
+                            <span class="glyphicon icon-close" style="color: red; position: absolute;top:120%;right:0;" 
+                                ng-click="removeFile($index)">
+                            </span>
+                        </a>
+                        <a ng-if="download_array.length < 1" style="font-style: italic; font-size: 10px">No Attachment</a>
+                    </div>  
+                </div>
+            </div>
+        -->
+
+        </div>
+
+        <div class="modal-footer ">
+            <button type="button" class="btn btn-info btn-sm w-xs" data-dismiss="modal" ng-click="onConfirm()">
+                <span class="glyphicon glyphicon-ok"></span>
+                <b> Confirm</b>
+            </button>
+            <button type="button" class="btn btn-default btn-sm w-xs" data-dismiss="modal" ng-click="cancel()">
+                <span class="glyphicon glyphicon-remove"></span>
+                <b> Cancel</b>
+            </button>
+        </div>
+
+    </div>
+</form>

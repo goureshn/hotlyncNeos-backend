@@ -1,0 +1,7 @@
+aside {
+	float:left; 
+	width:41px;
+	height:721px;
+	background-image:url(/images/left_back.png);
+	background-repeat:repeat-y;
+}

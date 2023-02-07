@@ -1,0 +1,230 @@
+<input type="hidden" id="id" value="-1" ng-model="model_data.id"/>
+
+<div class=" panel panel-default" style="border-color: #dee5e7">
+    <div class="panel-heading wrapper">
+        <div  style="float:right; margin-top: -5px; background: #efefef;padding:5px 10px 5px 10px;color: #868585;font-size: 16px; " >
+            <strong>{{message}}</strong>
+        </div>
+        <i class="fa fa-cog"></i>
+        <span class="font-bold"> &nbsp;&nbsp;Configuration</span>
+    </div>
+    <div class="" style="background-color: #eeeeee">
+        <!----------------------left  general --->
+        <div class="col-sm-6">
+            <div style="margin-left: 30px">
+                <div>
+                    <h5><strong>Call Accounting</strong></h5>
+                </div>
+                <div class="form-horizontal wrapper" >
+                    <div class="form-group">
+                        <label class="col-sm-3">Call end Setting</label>
+                        <div class="col-sm-3">
+                            <select id='prpty_id' class='form-control' ng-model="call_end_setting"
+                                    ng-options="type for type in call_end_setting_list"
+                                    ng-change="saveCallAccount('call_end_setting', call_end_setting, 'call_account')" >
+                            </select>
+                        </div>
+                        <div class="col-sm-6">
+                           Options: SE,S,E
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3">Mininum approval duration</label>
+                        <div class="col-sm-3">
+                            <input type="text" class="form-control" ng-model="min_approval_duration"
+                                   ng-keypress="($event.which === 13)?saveCallAccount('min_approval_duration', min_approval_duration, 'call_account'):0"/>
+                        </div>
+                        <div class="col-sm-6">
+                            Minutes(Range:1-60) To disabled, select 0
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3">Mininum approval amount</label>
+                        <div class="col-sm-3">
+                            <input type="text" class="form-control" ng-model="min_approval_amount"
+                                   ng-keypress="($event.which === 13)?saveCallAccount('min_approval_amount', min_approval_amount, 'call_account'):0" />
+                        </div>
+                        <div class="col-sm-6">
+                            User chould not be able to enter a number here. Max number should be 3 digits
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3">Pre approved type</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" ng-model="pre_approved_call_types"
+                                   ng-keypress="($event.which === 13)?saveCallAccount('pre_approved_call_types', pre_approved_call_types, 'call_account'):0" />
+                        </div>
+                        <div class="col-sm-5">
+                          This value(call type:duration) should be comma divided such as Internal:10,International:0,Local:10,
+                            Mobile:10,Missed:10,
+                            National:10,Received:10,Toll Free:10
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3">Max Unmarked Count</label>
+                        <div class="col-sm-3">
+                            <input type="text" class="form-control" ng-model="max_unmarked_count"
+                                   ng-keypress="($event.which === 13)?saveCallAccount('max_unmarked_count', max_unmarked_count, 'call_account'):0" />
+                        </div>
+                        <div class="col-sm-6">
+                            (Range:1-1000) To disable, press 0.
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3">Max Approver Notify</label>
+                        <div class="col-sm-3">
+                            <input type="text" class="form-control" ng-model="max_approver_notify"
+                                   ng-keypress="($event.which === 13)?saveCallAccount('max_approver_notify', max_approver_notify, 'call_account'):0" />
+                        </div>
+                        <div class="col-sm-6">
+                            (Range:1-1000) To disable, press 0.
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3">Max Close Notify</label>
+                        <div class="col-sm-3">
+                            <input type="text" class="form-control" ng-model="max_close_notify"
+                                   ng-keypress="($event.which === 13)?saveCallAccount('max_close_notify', max_close_notify, 'call_account'):0" />
+                        </div>
+                        <div class="col-sm-6">
+                            (Range:1-1000) To disable, press 0.
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3">Call Reminder Date</label>
+                        <div class="col-sm-3">
+                            <input type="text" class="form-control" ng-model="call_reminder_date"
+                                   ng-keypress="($event.which === 13)?saveCallAccount('call_reminder_date', call_reminder_date, 'call_account'):0" />
+                        </div>
+                        <div class="col-sm-6">
+                            (Range:1-1000) To disable, press 0.
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3">Check Call Classification Time</label>
+                        <div class="col-sm-3">
+                            <input type="text" class="form-control" ng-model="check_call_classification_time"
+                                   ng-keypress="($event.which === 13)?saveCallAccount('check_call_classification_time', check_call_classification_time, 'call_account'):0" />
+                        </div>
+                        <div class="col-sm-6">
+                            (Range:1-1000) To disable, press 0.
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3">Max Unmarked Calls</label>
+                        <div class="col-sm-3">
+                            <input type="text" class="form-control" ng-model="max_unmarked_cost"
+                                   ng-keypress="($event.which === 13)?saveCallAccount('max_unmarked_cost', max_unmarked_cost, 'call_account'):0" />
+                        </div>
+                        <div class="col-sm-6">
+                            (Range:1-1000) To disable, press 0.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--------------right ---------->
+        <div class="col-sm-6">
+            <div style="margin-left: 30px">
+                <div>
+                    <h5><strong>Night Audit Report</strong></h5>
+                </div>
+                <div class="form-horizontal wrapper" >
+                    <div class="form-group">
+                        <label class="col-sm-4">Report Type</label>
+                        <div class="col-sm-5">
+                            <select class='form-control' ng-model="night_audit_report_type"
+                                    ng-options="type for type in night_audit_report_type_list"
+                                    ng-change="saveNightAudit('night_audit_report_type', night_audit_report_type, 'night_audit')" >
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-4">Report Extensions</label>
+                        <div class="col-sm-3">
+                            <select  class='form-control' ng-model="night_audit_report_extensions"
+                                    ng-options="type for type in night_audit_report_extensions_list"
+                                    ng-change="saveNightAudit('night_audit_report_extensions', night_audit_report_extensions, 'night_audit')" >
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="checkbox" style="margin-bottom: 20px" >
+                        <label>
+                            <input type="checkbox"  ng-model="night_audit_email_flag" ng-checked = "night_audit_email_flag_check"
+                                   ng-click="saveNightAudit('night_audit_email_flag', night_audit_email_flag, 'night_audit')" />
+                            Send Night Audit report
+                        </label>
+                    </div>
+
+                    <div class="checkbox" style="margin-bottom: 20px" >
+                        <label>
+                            <input type="checkbox"  ng-model="night_audit_include_mb" ng-checked = "night_audit_include_mb"
+                                   ng-change="saveNightAudit('night_audit_include_mb', night_audit_include_mb, 'night_audit')" />
+                            Add Minibar to Night Audit report
+                        </label>
+                    </div>
+
+                    <div class="checkbox" style="margin-bottom: 20px" >
+                        <label>
+                            <input type="checkbox"  ng-model="complaint_in_nightaudit" ng-checked = "complaint_in_nightaudit"
+                                   ng-change="saveNightAudit('complaint_in_nightaudit', complaint_in_nightaudit, 'night_audit')" />
+                            Add Complaint to Night Audit report
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-4">Night Audit Recipients</label>
+                        <div class="col-sm-6">
+                            <input type="text" class="form-control" ng-model="night_audit_recipients"
+                                   ng-keypress="($event.which === 13)?saveNightAudit('night_audit_recipients', night_audit_recipients, 'night_audit'):0" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-4">Night Audit file type</label>
+                        <div class="col-sm-3">
+                            <select  class='form-control' ng-model="night_audit_file_type"
+                                    ng-options="type for type in night_audit_file_type_list"
+                                    ng-change="saveNightAudit('night_audit_file_type', night_audit_file_type, 'night_audit')" >
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-4">Night Audit Report Subject</label>
+                        <div class="col-sm-6">
+                            <input type="text" class="form-control" ng-model="night_audit_report_subject"
+                                   ng-keypress="($event.which === 13)?saveNightAudit('night_audit_report_subject', night_audit_report_subject, 'night_audit'):0" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-4">Night Audit Admin Report Subject</label>
+                        <div class="col-sm-6">
+                            <input type="text" class="form-control" ng-model="night_audit_admin_report_subject"
+                                   ng-keypress="($event.which === 13)?saveNightAudit('night_audit_admin_report_subject', night_audit_admin_report_subject, 'night_audit'):0" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-4">Night Audit Guest Report Subject</label>
+                        <div class="col-sm-6">
+                            <input type="text" class="form-control" ng-model="night_audit_guest_report_subject"
+                                   ng-keypress="($event.which === 13)?saveNightAudit('night_audit_guest_report_subject', night_audit_guest_report_subject, 'night_audit'):0" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-4">Last Night Audit</label>
+                        <div class="col-sm-6">
+                            <input type="text" class="form-control" ng-model="last_night_audit"
+                                   ng-keypress="($event.which === 13)?saveNightAudit('last_night_audit_guest', last_night_audit, 'night_audit'):0" />
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

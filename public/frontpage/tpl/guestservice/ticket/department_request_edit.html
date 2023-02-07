@@ -1,0 +1,453 @@
+<style>
+	.selected-tab {
+		box-shadow: 0 0px 3px #646464;
+	}
+	
+</style>
+<script type="text/ng-template" id="staff-group-template">
+<a >
+		<span ng-bind="match.model.wholename"></span>
+		<span ng-show = 'match.model.active_status == 1' ng-class="{'label pulse' : true, 'm-l-sm': true,  
+						'bg-wakeup-success': match.model.active_status == 1,               
+						}">Online
+		</span>
+		<span ng-show = 'match.model.active_status == 0' ng-class="{'label pulse' : true, 'm-l-sm': true,
+								'bg-wakeup-canceled': match.model.active_status == 0,
+								}">Offline
+		</span><br>
+		
+
+	</a>
+</script>
+<div class="col-centered wrapper-sm" style="{{full_height}}">
+	<!-- - - - - - DEPARTMENT INFORMATION - - - - - -->
+	<div class="col-centered">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<label class="font-bold"><i class="fa fa-info" aria-hidden="true"></i>&nbsp;&nbsp;Department Information</label>
+			</div>
+			<div class="panel-body">
+				<form class="form-horizontal">
+					<div class="form-group label-group">
+						<div class="col-sm-2 control-label text-muted">Request ID</div>
+						<div class="col-sm-4 control-label" style="text-align: left">
+							<strong>{{gs.getTicketNumber(tab)}}</strong>
+						</div>
+						<div class="col-sm-2 control-label text-muted">Date created</div>
+						<div class="col-sm-4 control-label" style="text-align: left">
+							<strong>{{task.created_time | mydatetime}}</strong>
+						</div>
+					</div>
+					<div class="form-group label-group">
+						<div class="col-sm-2 control-label text-muted">Location Name</div>
+						<div class="col-sm-4 control-label" style="text-align: left">
+							<strong>{{location.name}}</strong>
+						</div>
+						<div class="col-sm-2 control-label text-muted">Location Type</div>
+						<div class="col-sm-4 control-label" style="text-align: left">
+							<strong>{{location.type}}</strong>
+						</div>
+					</div>
+				
+				</form>
+			</div>
+		</div>
+	</div>
+	<!-- - - - - - /DEPARTMENT INFORMATION - - - - - -->
+	
+	<!-- - - - - - REQUEST DETAILS - - - - - -->
+	<div class="col-centered">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<label class="font-bold"><i class="fa fa-list-alt" aria-hidden="true"></i>&nbsp;&nbsp;Request Details</label>
+				<div class="pull-right control-label" style="text-align: ">
+					<span class="field-result m-l-sm label {{gs.getStatusCssInEdit(task)}}">{{gs.getStatus(task)}}
+	          			<i ng-show="gs.getPauseState(task)" class="fa fa-pause text"></i>
+	        		</span>
+				</div>
+				<div class="pull-right control-label" ng-show="task.repeat_flag == '1'">
+					<span  style="color:Red; " class=" m-l-sm label">Repeat
+	          			
+	        		</span>
+				</div>
+			<div ng-hide="task.status=='Feedback'||task.status=='Completed'||task.status=='Timeout'||task.status=='Canceled'" class="pull-right control-label"
+			 style="text-align: ">
+				<span style="margin-top: -25px">Feedback</span>
+				<span>
+					<label class="i-switch m-t-xs m-r">
+						<input type="checkbox" ng-model="task.feedback" ng-change="feedbackFlag()" ng-disabled="task.status=='Escalated'" checked>
+						<i></i>
+					</label>
+				</span>
+			</div>
+			<div ng-show="((task.status=='Feedback')||(!task.feedback_closed_flag &&(task.status=='Timeout'||task.status=='Completed'||task.status=='Canceled')))"
+			 class="pull-right control-label" style="text-align: ">
+			
+				<button type="button" class="btn btn-xs m-b-xs w-xs btn-dark text-success font-bold" ng-click="onFeedback(task)">
+					<span class="text-success">
+						<i class="fa fa-plus" aria-hidden="true"></i>&nbsp;Feedback
+					</span>
+				</button>
+			</div>
+		</div>
+			<div class="panel-body">
+				<form class="form-horizontal">
+					<div class="form-group label-group">
+						<div class="col-sm-2 control-label text-muted">Request</div>
+						<div class="col-sm-4 control-label" style="text-align: left">
+							<strong>{{task.quantity}}&nbsp;-&nbsp;{{task.task_name}}</strong>
+						</div>
+						<div class="col-sm-2 control-label text-muted">Created By</div>
+						<div class="col-sm-4 control-label" ng-show="task.attendant != 0"  style="text-align: left">
+							<strong>{{task.attendant_name}}</strong>
+						</div>
+						<div class="col-sm-4 control-label" ng-show="task.attendant == 0" style="text-align: left">
+							<strong>{{task.attendant_auto}}</strong>
+						</div>			
+					</div>
+					<div class="form-group label-group">
+						<div class="col-sm-2 control-label text-muted">Department</div>
+						<div class="col-sm-4 control-label" style="text-align: left">
+							<strong>{{task.department}}</strong>
+						</div>
+						<div class="col-sm-2 control-label text-muted">Function</div>
+						<div class="col-sm-4 control-label" style="text-align: left">
+							<strong>{{task.function}}</strong>
+						</div>
+					</div>
+					<div class="form-group label-group">
+						<div class="col-sm-2 control-label text-muted">Staff</div>
+						<div class="col-sm-4 control-label" style="text-align: left">
+							<strong>{{task.wholename}}</strong>
+						</div>
+						<div class="col-sm-2 control-label text-muted">Device</div>
+						<div class="col-sm-4 control-label" style="text-align: left">
+							<strong>{{task.device}}</strong>
+						</div>
+					</div>
+					
+					<div class="form-group label-group">
+						<div class="col-sm-2 control-label text-muted">Priority</div>
+						<div class="col-sm-4 control-label" style="text-align: left">
+							<strong>{{task.priority_name}}</strong>
+						</div>
+						<div class="col-sm-2 control-label text-muted" style="white-space:nowrap">
+							Duration ({{task.max_time * 1000 | duration:'mm'}}mins)
+						</div>
+						<div class="col-sm-4 control-label" style="text-align: left">
+							<span class="font-bold" style="{{remain_time_style}}">&nbsp;{{(remain_time | duration:'hh:mm:ss')}}</span>
+						</div>						
+					</div>
+					<!--
+					<div class="form-group label-group">
+						<div class="col-sm-2 control-label text-muted">Notes</div>
+						<div  ng-hide = "task.status=='Timeout'||task.status=='Completed'||task.status=='Canceled'||task.closed_flag == 1" class="control-label form-horizontal" style="text-align: left">	
+							<textarea class="form-control input-sm col-md-4"
+								rows="2" ng-model="task.custom_message" style="width: 250px; margin-left: 15px; resize:none"></textarea>
+							<button type="button" style="margin-left: 5px" class="input-sm btn btn-default btn-sm pull-left"
+								ng-click="changeComment()">
+								<span class="text-success">
+									<i class="fa fa-check-square-o" aria-hidden="true"></i>Update
+								</span>
+							</button>							
+						</div>
+						<div ng-show = "task.status=='Timeout'||task.status=='Completed'||task.status=='Canceled'||task.closed_flag == 1" class="col-sm-8 control-label" style="text-align: left">
+							<strong>{{task.custom_message}}</strong>
+						</div>			
+					</div>
+				    -->
+					<div class="form-group label-group">
+						<div class="col-sm-2 control-label text-muted">Notes</div>
+						<div ng-hide = "task.status=='Timeout'||task.status=='Completed'||task.status=='Canceled'||task.closed_flag == 1" class=" col-sm-8 control-label font-bold" style="text-align: left;margin-bottom : 10px;padding-bottom:10px; display: inline-block; max-width: 85vh; overflow-wrap: break-word; overflow-x: hidden;">
+							<div ng-bind-html="task.custom_message" ng-click="editComment(task);$event.stopPropagation();" ng-show="comment_edit_flag == false"></div>	
+							<div inline-text-editor ng-model="task.custom_message" class="inline-text-editor" ng-click="$event.stopPropagation();" ng-show="comment_edit_flag == true" contentEditable></div>	
+							<button type="button" class="btn btn-info btn-xs w-xxs" ng-click="changeComment(task)" ng-show="comment_edit_flag == true">
+								<span class="glyphicon glyphicon-ok"></span>
+								<b> Save</b>
+							</button>
+							<button type="button" class="btn btn-default btn-xs w-xxs" data-dismiss="modal" ng-click="cancelComment(task)" ng-show="comment_edit_flag == true">
+								<span class="glyphicon glyphicon-remove"></span>
+								<b> Cancel</b>
+							</button>
+						</div>
+						<div ng-show = "task.status=='Timeout'||task.status=='Completed'||task.status=='Canceled'||task.closed_flag == 1" class="col-sm-8 control-label font-bold" style="text-align: left"
+								ng-bind-html="task.custom_message">
+						</div>	
+					</div>
+					<div ng-show="task.feedback_closed_flag==1">
+						<div class="form-group label-group">
+							<div class="col-sm-2 control-label text-muted">Feedback</div>
+							<div class="col-sm-4 control-label" ng-if="task.feedback_type==2" style="text-align: left">
+								<strong style="color: red">{{task.feedback_choice}}</strong>
+							</div>
+							<div class="col-sm-4 control-label" ng-if="task.feedback_type==1" style="text-align: left">
+								<strong style="color: green">{{task.feedback_choice}}</strong>
+							</div>
+
+						</div>
+						<!---
+						<div class="form-group label-group">
+							<div class="col-sm-2 control-label text-muted">Guest Feedback</div>
+							<div class="col-sm-8 control-label" style="text-align: left">
+								<strong>{{task.guest_feedback}}</strong>
+							</div>
+
+						</div>
+					-->
+						<div class="form-group label-group">
+						<div class="col-sm-2 control-label text-muted">Guest Feedback</div>
+						<div class="control-label form-horizontal" style="text-align: left">
+							
+							<textarea class="form-control input-sm col-md-4"
+								rows="2" ng-model="task.guest_feedback" style="width: 250px; margin-left: 15px; resize:none"></textarea>
+							<button type="button" style="margin-left: 5px" class="input-sm btn btn-default btn-sm pull-left"
+								ng-click="changeFeedback()">
+								<span class="text-success">
+									<i class="fa fa-check-square-o" aria-hidden="true"></i>Update
+								</span>
+							</button>							
+						</div>	
+						</div>
+					</div>
+					<div class="form-group label-group" ng-show="task.status_id == 5" ng-disable>
+						<div class="col-sm-2 control-label text-muted">Scheduled</div>
+						<div class="col-sm-4 control-label" style="text-align: left">
+							<span class="font-bold">{{task.start_date_time}}</span>						
+						</div>
+					</div>
+
+					<div class="form-group label-group" ng-show="task.repeat_flag == 1" ng-disable>
+						<div class="col-sm-2 control-label text-muted">Next Request</div>
+						<div class="col-sm-4 control-label" style="text-align: left">
+							<span class="font-bold">{{task.currentTime}}</span>						
+						</div>
+
+						<div class="col-sm-2 control-label text-muted">Cancel Repeat</div>
+						<div class="col-sm-1" style="padding-top: 7px">
+							<label class="i-switch m-t-xs m-r">
+								<input type="checkbox" ng-change="cancelrepeatFlag()" ng-model="task.cancel_repeat_flag" checked>
+								<i></i>
+							</label>
+						</div>
+					</div>
+
+					<div class="form-group label-group" ng-hide="task.status_id == 0 || task.status_id == 4 || task.status_id == 5 || task.closed_flag == 1 || row.task_type > 100 || action_disable_flag">
+						<div class="col-sm-2 control-label text-muted">Update Status</div>
+						<div class="col-sm-4 form-horizontal btn-group" uib-dropdown>
+							<button id="split-button" type="button" class="btn {{StatusCss(task.action)}} btn-sm">{{task.action}}</button>
+							<button type="button" class="btn {{StatusCss(task.action)}} btn-sm" uib-dropdown-toggle>
+								<span class="caret"></span>
+								<span class="sr-only"></span>
+							</button>
+							<ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="split-button">
+								<li ng-repeat="action in actions" ng-click="onChangeAction(action)"><a href>{{action}}</a></li>
+							</ul>
+						</div>
+						<div class="col-sm-2 control-label text-muted"
+							ng-show="task.action == 'Extend' || task.action == ' '">Extend for</div>
+						<div class="col-sm-2 control-label form-horizontal" style="text-align: left; display: inline">
+							<input type="number" class="form-control input-sm" min="1"
+								ng-show="task.action == 'Extend' || task.action == ' '"
+								ng-model="task.extend_time" style="width: 60px; margin-top: -7px" required>
+						</div>
+						<div class="col-sm-2 control-label form-horizontal" style="text-align: left; display: inline">
+							<p ng-show="task.action == 'Extend' || task.action == 'Scheduled'" class="text-muted"
+								style="font-size:10px; margin-top:2px; margin-left: -20px">mins.</p>
+						</div>
+					</div>
+
+					<div class="form-group label-group" ng-show="task.action == 'Scheduled' || task.status_id == 5">						
+						<div class="col-sm-2 control-label text-muted">Repeat</div>
+						<div class="col-sm-1" style="padding-top: 7px">
+							<label class="i-switch m-t-xs m-r">
+								<input type="checkbox" ng-model="task.repeat_flag" checked>
+								<i></i>
+							</label>
+						</div>
+						<div class="col-sm-2 control-label text-muted" ng-show="task.repeat_flag && !task.until_checkout_flag">End Date</div>
+						<div class="col-sm-4 control-label" style="text-align: left" ng-show="task.repeat_flag && !task.until_checkout_flag">
+							<div class="input-group">
+								<span class="input-group-btn">
+									<button type="button" class="btn btn-default btn-sm" ng-click="open($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+								</span>
+								<input type="text" class="form-control input-sm" uib-datepicker-popup="yyyy-MM-dd" ng-model="task.repeat_end_date" is-open="opened" datepicker-options="dateOptions" close-text="Close" required  ng-change="select(task.repeat_end_date)"/>
+							</div>
+						</div>
+					</div>
+
+					<div class="form-group label-group" ng-show="task.action == 'Scheduled' || task.status_id == 5">
+						<div class="col-sm-2 control-label text-muted">Schedule</div>
+						<div class="col-sm-1" style="padding-top: 7px">
+							<label class="i-switch m-t-xs m-r">
+								<input type="checkbox" ng-model="task.schedule_flag" ng-change="cancelScheduleTicket()" checked>
+								<i></i>
+							</label>
+						</div>
+						<div class="dropdown control-label col-sm-3">
+							<a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+								<div class="input-group">
+								<input type="text" class="form-control" ng-disabled="!task.schedule_flag" ng-model="task.start_date_time">
+								<span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+								</div>
+							</a>
+							<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel" ng-show="task.schedule_flag">
+							<datetimepicker ng-model="datetime.date" data-datetimepicker-config="{ dropdownSelector: '#dropdown2' }"
+								data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+							</ul>
+						</div>			
+						<div class="control-label form-horizontal" style="text-align: left">
+							<button type="button" style="margin-left: 5px" class="input-sm btn btn-default btn-sm pull-left" ng-click="onUpdateTime()">
+								<span class="text-success">
+									<i class="fa fa-clock-o" aria-hidden="true"></i>&nbsp;&nbsp;Update Time
+								</span>
+							</button>
+						</div>			
+					</div>
+										
+					<!-- - - - Cancel & Hold Comment - - - -->
+					<div class="form-group label-group" ng-show="task.action == 'Open' || task.action == 'Complete' || task.action == 'Cancel' || task.action == 'Hold'">
+						<div class="col-sm-2 control-label text-muted">Comment</div>
+						<div class="control-label form-horizontal" style="text-align: left">
+							
+							<textarea class="form-control input-sm col-md-4"
+								rows="3" ng-model="task.reason" style="width: 250px; margin-left: 15px; resize:none"></textarea>
+							<button type="button" style="margin-left: 5px" class="input-sm btn btn-default btn-sm pull-left"
+								ng-click="changeTask()">
+								<span class="text-success">
+									<i class="fa fa-check-square-o" aria-hidden="true"></i>Update
+								</span>
+							</button>
+							<button type="button" class="btn btn-sm m-b-xs w-xs btn-dark text-success font-bold" ng-click="onForward()"
+								ng-show="task.action == 'Cancel' || task.action == 'Hold'">
+								<span class="text-success"><i class="fa fa-forward" aria-hidden="true"></i>&nbsp;Forward</span>
+							</button>							
+						</div>
+					</div>
+					
+					<div class="form-group label-group" ng-show="task.action == 'Extend' || task.action == 'Comment'">
+						<div class="col-sm-2 control-label text-muted">Comment</div>
+						<div class="control-label form-horizontal" style="text-align: left">
+							<textarea ng-show="task.action == 'Extend' || task.action == 'Comment'" class="form-control input-sm col-md-4"
+								rows="3" ng-model="task.reason" style="width: 250px; margin-left: 15px; resize:none"></textarea>
+							<button type="button" ng-show="task.action == 'Extend'  || task.action == 'Comment'"
+								style="margin-left: 5px" class="input-sm btn btn-default btn-sm pull-left"
+								ng-click="changeTask()">
+								<span class="text-success">
+									<i class="fa fa-check-square-o" aria-hidden="true"></i>Update
+								</span>
+							</button>
+						</div>
+					</div>
+					<div class="form-group label-group" ng-show="task.action == 'Assign' && task.status_id != 5">
+						<div class="col-sm-2 control-label text-muted">User</div>
+						<div class="col-sm-4 control-label" style="text-align: left">
+							<input type="text" ng-model="task.username" class="form-control  input-sm" 
+							placeholder="Enter Username"
+							uib-popover="Enter Username" popover-trigger="mouseenter"
+							uib-typeahead="item.wholename for item in task.userlist | filter:{wholename:$viewValue} | limitTo:10"
+							 typeahead-min-length="0" typeahead-template-url = "staff-group-template" typeahead-editable="false" typeahead-on-select="onStaffSelect($item, $model, $label)" required>
+						</div>
+					
+						<div class="control-label form-horizontal" style="text-align: left">
+							<button type="button" style="margin-left: 5px" class="input-sm btn btn-default btn-sm pull-left" ng-click="onReassign()">
+								<span class="text-success">
+									<i class="fa fa-check-square-o" aria-hidden="true"></i>&nbsp;&nbsp;Assign
+								</span>
+							</button>
+						</div>
+					</div>
+					<div class="form-group label-group" ng-show="task.action == 'Reassign'">
+						<div class="col-sm-2 control-label text-muted">User</div>
+						<div class="col-sm-4 control-label" style="text-align: left" >
+							<input type="text" ng-model="task.username" class="form-control input-sm" placeholder="Enter Username"
+							uib-popover="Enter Username" popover-trigger="mouseenter"
+					            uib-typeahead="item.wholename for item in task.userlist | filter:$viewValue | limitTo:10"
+					            typeahead-min-length="0"
+								typeahead-editable="false"
+								typeahead-template-url = "staff-group-template"
+					            typeahead-on-select="onStaffSelect($item, $model, $label)" required>
+						</div>
+
+						<div class="control-label form-horizontal" style="text-align: left">		
+							<button type="button" style="margin-left: 5px" class="input-sm btn btn-default btn-sm pull-left"
+								ng-click="onReassign()">
+								<span class="text-success">
+									<i class="fa fa-check-square-o" aria-hidden="true"></i>Assign
+								</span>
+							</button>							
+						</div>
+					</div>
+
+
+					<div class="form-group label-group" ng-show="task.pictureflag">
+						<div ng-show="task.pictureflag" class="col-sm-2 control-label text-muted">Attachment</div>
+						<div class="col-sm-10 control-label" style="text-align: left">
+							<div ng-repeat="path in task.picturepath" style="max-width: 120px;display: inline-block;margin-right: 5px">
+							<img src="/{{ path }}" style="width:100%;" ng-click="openModalImage(path, $index)">
+							</div>
+						</div>
+					</div>					
+				</form>
+			</div>
+		</div>
+	</div>	
+	
+	<!-- - - - - - REQUEST HISTORY - - - - - -->
+
+	<div class="col-centered">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<button class="btn btn-default font-bold {{selectedTable == 'history' ? 'selected-tab' : ''}}" ng-click="onSelectTable('history')"><i class="fa fa-history" aria-hidden="true"></i>&nbsp;&nbsp;Request History</button>
+				<button class="btn btn-default font-bold {{selectedTable == 'notification' ? 'selected-tab' : ''}}" ng-click="onSelectTable('notification')"><i class="fa fa-history" aria-hidden="true"></i>&nbsp;&nbsp;Notification History</button>
+			</div>
+			<div class="table table-responsive">
+				<table ng-show="selectedTable == 'history'"  st-table="ticketlist" class="table ticket table-striped b-t b-light">
+					<thead class="tblhead-sm" style="font-size: .7vw">
+						<tr>
+							<th class="text-center"><b>Date & Time</b></th>
+							<th class="text-center"><b>Status</b></th>
+							<th class="text-center"><b>Type</b></th>
+							<th class="text-center"><b>Comment</b></th>
+							<th class="text-center"><b>Method</b></th>
+							<th class="text-center"><b>User</b></th>
+						</tr>
+					</thead>
+					<tbody ng-hide="isLoading">
+						<tr ng-repeat="row1 in messageList">
+							<td><span>{{row1.log_time | mydateminute}}</span></td>
+							<td><span>{{row1.status}}</span></td>
+							<td><span>{{row1.log_type}}</span></td>
+							<td><span>{{row1.log_type == 'Timeout' ? 'System' : row1.comment}}</span></td>
+							<td><span>{{row1.method}}</span></td>
+							<td><span>{{row1.wholename}}</span></td>
+						</tr>
+					</tbody>
+				</table>
+				<table ng-show="selectedTable == 'notification'" st-table="ticketlist" class="table ticket table-striped b-t b-light" style="width:97%; margin:auto">
+					<thead class="tblhead-sm" style="font-size: .7vw">
+					<tr>
+						<th class="text-center"><b>ID</b></th>
+						<th class="text-center"><b>Staff</b></th>
+						<th class="text-center"><b>Time</b></th>
+						<th class="text-center"><b>Type</b></th>
+						<th class="text-center"><b>Job Role</b></th>
+						<th class="text-center"><b>Method</b></th>
+					</tr>
+					</thead>
+					<tbody>
+					<tr ng-repeat="row in notifylist">
+						<td><span>{{row.id}}</span></td>
+						<td><span>{{row.staff}}</span></td>
+						<td><span>{{row.send_time}}</span></td>
+						<td><span>{{row.type == 'Timeout' ? 'System' : row.job_role}}</span></td>
+						<td><span>{{row.job_role}}</span></td>
+						<td><span>{{row.mode}}</span></td>
+					</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+	<!-- - - - - - /REQUEST HISTORY - - - - - -->
+</div>
+

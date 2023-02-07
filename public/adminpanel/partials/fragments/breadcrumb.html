@@ -1,0 +1,13 @@
+<div class="page-bar"> 
+	<ul class="page-breadcrumb"> 
+		<li> 
+			<i class="fa fa-home"></i> 
+			<a href="#">Home</a> 						
+			<i class="fa fa-angle-right"></i> 
+		</li>     		
+		<li ng-repeat="menu in menus"> 			
+			<a>{{menu.name}}</a> 						
+			<i class="fa fa-angle-right" ng-show="!$last"></i> 
+		</li>                             		
+	</ul>                         	                 
+</div>  

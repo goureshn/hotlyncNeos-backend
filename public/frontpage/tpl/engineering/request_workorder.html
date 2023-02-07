@@ -1,0 +1,196 @@
+<style>
+    button {
+        pointer: cursor;
+    }
+
+    input[type=file] {
+        width: 150px;
+        height: 20px;
+    }
+    .tbl-sm {
+        font-size: .8vw;
+        padding: 1px 15px !important;
+        color: #67686a;
+    }
+</style>
+<script type="text/ng-template" id="workorder_part.html">
+    <div ng-include="'tpl/engineering/workorder/workorder_partmodal.html'"></div>
+</script>
+
+<script type="text/ng-template" id="staffTypeahead.html">
+    <a>
+        <span ng-bind="match.model.name"></span><br>
+        <span style="font-size: 10px" ng-bind="match.model.type"></span><br>
+    </a>
+</script>
+
+<div class="wrapper">
+    <div class="panel panel-default" style="border-radius: 4px">
+        <div class="panel-heading">
+            <label class="font-bold"><i class="fa fa-warning text-default"></i>&nbsp;&nbsp;Work Order Create</label>
+            <div class="pull-right" style="margin-top: -3px">
+                <button type="button" class="btn btn-dark btn-sm" ng-click="createWorkorder()">
+                    <span class="text-success font-bold"><i class="fa fa-check"></i>&nbsp;Create</span></button>
+                <button type="button" class="btn btn-dark btn-sm" ng-click="cancelWorkorder()">
+                    <span class="text-danger font-bold"><i class="fa fa-times"></i>&nbsp;Cancel</span></button>
+            </div>
+        </div>
+        <div class="panel-body">
+            <form class="form-horizontal form-validation">
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-3 text-right control-label text-muted" style="margin-bottom: 0px">Name</label>
+                    <div class="col-sm-9 scrollable-dropdown-menu">
+                        <input class="form-control input-sm"  ng-model="workorder.name"  required readonly
+                               popover-trigger="mouseenter">
+                    </div>
+                </div>
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-3 text-right control-label text-muted" style="margin-bottom: 0px">Asset</label>
+                    <div class="col-sm-9 scrollable-dropdown-menu">
+                        <input class="form-control input-sm col-sm-11" type="text" ng-model="workorder.equipment_name"
+                               popover-trigger="mouseenter"
+                               uib-typeahead="group.name for group in getEquipmentList($viewValue)"
+                               typeahead-min-length="0"
+                               typeahead-on-select="onEquipmentSelect(workorder, $item, $model, $label)">
+
+                    </div>
+                </div>
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-3 text-right control-label text-muted" style="margin-bottom: 0px">Location</label>
+                    <div class="col-sm-9 scrollable-dropdown-menu">
+                        {{workorder.equipment_location.name}}
+                        <label ng-if="workorder.equipment_location != null"> : </label>
+                        {{workorder.equipment_location.type}}
+                    </div>
+                </div>
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-3 text-right control-label text-muted" style="margin-bottom: 0px">Type</label>
+                    <div class="col-sm-9">
+                        <select  class='form-control' ng-model="workorder.work_order_type" readonly
+                                 ng-options="type for type in work_order_types">
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-3 text-right control-label text-muted" style="margin-bottom: 0px">Priority</label>
+                    <div class="col-sm-9 scrollable-dropdown-menu">
+                        <select class='form-control input-sm' ng-model="workorder.priority" readonly
+                                ng-options="value for value in prioritys" />
+                    </div>
+                </div>
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-3 text-right control-label text-muted" style="margin-bottom: 0px">Description</label>
+                    <div class="col-sm-9">
+                        <textarea class="form-control input-sm" rows="3" ng-model="workorder.description"
+                                  style="resize:none"  popover-trigger="mouseenter" ></textarea>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-3 text-right control-label text-muted" style="margin-bottom: 0px">Checklist</label>
+                    <div class="col-sm-9 scrollable-dropdown-menu">
+                        <input type="text" ng-model="workorder.checklist_name" class="form-control input-sm"
+                               popover-trigger="mouseenter" popover-placement="top"
+                               uib-typeahead="checklist.name for checklist in getCheckList($viewValue)"
+                               typeahead-min-length="0"
+                               typeahead-on-select="onChecklistSelect(workorder, $item, $model, $label)">
+                    </div>
+                </div>
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-4 text-right control-label text-muted" style="margin-bottom: 0px">Start Date</label>
+                    <div class="col-sm-8">
+                        <a class="dropdown-toggle" id="dropdown3" role="button" data-toggle="dropdown" data-target="#">
+                            <div class="input-group">
+                                <input type="text" class="form-control" ng-model="workorder.start_date"  readonly />
+                                <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                            </div>
+                        </a>
+                        <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+                            <datetimepicker ng-model="datetime.start_date"
+                                            data-datetimepicker-config="{ dropdownSelector: '#dropdown3',startView:'day', minView:'day' }"
+                                            data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+                        </ul>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-4 text-right control-label text-muted" style="margin-bottom: 0px">End Date</label>
+                    <div class="col-sm-8">
+                        <a class="dropdown-toggle" id="dropdown4" role="button" data-toggle="dropdown" data-target="#">
+                            <div class="input-group">
+                                <input type="text" class="form-control" ng-model="workorder.end_date" readonly  />
+                                <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                            </div>
+                        </a>
+                        <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+                            <datetimepicker ng-model="datetime.end_date"
+                                            data-datetimepicker-config="{ dropdownSelector: '#dropdown4',startView:'day', minView:'day'  }"
+                                            data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+                        </ul>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-3 text-right control-label text-muted" style="margin-bottom: 0px">Staff/Group</label>
+                    <div class="col-sm-6 scrollable-dropdown-menu" >
+                        <input class="form-control input-sm col-sm-11" type="text" ng-model="workorder.staff_name"
+                               popover-trigger="mouseenter" popover-placement="top"
+                               uib-typeahead="staff.name for staff in getStaffList($viewValue)"
+                               typeahead-min-length="0"
+                               typeahead-template-url="staffTypeahead.html"
+                               typeahead-on-select="onStaffSelect(workorder, $item, $model, $label)">
+
+                    </div>
+                    <div class="col-sm-3 scrollable-dropdown-menu" >
+                        {{workorder.staff_cost}} /Hour
+                        <!--<input class="form-control input-sm col-sm-11" type="text" ng-model="workorder.staff_cost" readonly />-->
+                    </div>
+                </div>
+                <div  class="form-group" ng-if="part_group.length > 0 " >
+                    <table  st-table="datalist"  st-pipe="getDataList" class="table ticket"  >
+                        <thead class="tblhead-sm" style="background: #e7e8eb;color: #0a0a0a">
+                        <tr>
+                            <th><b>No</b></th>
+                            <th><b>Parts</b></th>
+                            <th><b>Count</b></th>
+                            <th><b>Cost</b></th>
+                            <th style="width: 20px"><b>Action</b></th>
+                        </tr>
+                        </thead>
+                        <tbody ng-hide="isLoading" ng-repeat="row in part_group">
+                        <tr>
+                            <td class="tbl-sm">
+                                {{$index+1}}
+                            </td>
+                            <td class="tbl-sm">{{row.part_name}}</td>
+                            <td class="tbl-sm">{{row.part_number}}</td>
+                            <td class="tbl-sm">{{row.part_cost}}</td>
+                            <td class="tbl-sm">
+                                <a class="btn default btn-xs" style="background: #d9dadc" ng-click="deleteParts(row.part_id)">
+                                    <i class="fa fa-times"></i></a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-2 text-right control-label text-muted" style="margin-bottom: 0px">Parts</label>
+                    <div class="col-sm-4 scrollable-dropdown-menu">
+                        <input class="form-control input-sm col-sm-12" type="text" ng-model="workorder.part_name"
+                               popover-trigger="mouseenter"
+                               uib-typeahead="group.name for group in getPartList($viewValue)"
+                               typeahead-min-length="0"
+                               typeahead-on-select="onPartelect(workorder, $item, $model, $label)">
+                    </div>
+                    <div class="col-sm-1" style="padding-top:5px;" >
+                        {{workorder.part_stock}}
+                    </div>
+                    <div class="col-sm-3" >
+                        <input class="form-control input-sm" type="number" data-ng-model="workorder.part_number"
+                               popover-trigger="mouseenter" popover-placement="top" />
+                    </div>
+                    <div class="col-sm-1">
+                        <i class="fa fa-plus-circle fa-2x text-danger " style="cursor: pointer" title="Create Parts" ng-click="CreateParts()"></i>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

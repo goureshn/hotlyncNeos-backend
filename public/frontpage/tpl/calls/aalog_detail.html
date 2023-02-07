@@ -1,0 +1,56 @@
+<div style="{{full_height}} padding-bottom:150px">
+	
+
+<div class="wrapper">
+  <fieldset>
+    <legend>
+        <label style="font-size:1vw">&nbsp;&nbsp;<i class="fa fa-info"></i>&nbsp;Call Information</label>
+    </legend>
+    
+    <form class="form-horizontal form-validation">
+	    <div class="text-right" style="margin-top: -25px">
+				<a href="{{log.filepath+log.filename}}"><i class="fa fa-download" style="font-size: 20px"></i></a>
+				<div class="btn">
+					<audio src="{{log.filepath+log.filename}}" controls> </audio>
+				</div>
+			</div>
+
+      <div class="form-group">
+        <label class="col-sm-2 control-label">Caller ID </label>
+        <div class="col-sm-4">
+          <input type="text" ng-model="log.callerid" class="form-control input-sm" disabled>
+        </div>
+        <label class="col-sm-2 control-label">Reference No</label>
+        <div class="col-sm-4">
+          <input class="form-control input-sm" ng-model="log.id" disabled required>
+        </div>
+      </div>
+    </form>
+    <form class="form-horizontal form-validation">
+		      <div class="form-group">
+		        <label class="col-sm-2 control-label">Extension No</label>
+		        <div class="col-sm-4">
+		          <input type="text" ng-model="log.ext" class="form-control input-sm" disabled>
+		        </div>
+		        <label class="col-sm-2 control-label">Duration </label>
+		        <div class="col-sm-4">
+		          <input class="form-control input-sm" placeholder="Guest Name" ng-model="log.duration" disabled>
+		        </div>
+		      </div>
+		    </form>
+    
+  </fieldset>
+</div>
+
+  </div>
+  <!--
+  <div class="wrapper-md1">
+    <div class="col-sm-12 input-group text-right">
+      <button class="btn m-b-xs w-xs btn-primary">&nbsp;&nbsp;&nbsp;OK&nbsp;&nbsp;&nbsp;</button>
+      <button class="btn m-b-xs w-xs btn-default" style="margin-left: 5px">Cancel</button>
+    </div>
+  </div>
+  -->
+</fieldset>
+</div>
+</div>

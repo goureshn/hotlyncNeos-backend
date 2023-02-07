@@ -1,0 +1,95 @@
+
+<form class="form-horizontal form-validation">
+    <style>
+        .search-filter .checkbox {
+            margin: 0px;
+        }
+        table tr.selected-row {
+            background-color: #3b8ef4;
+        }
+
+        table tr.selected-row td {
+            color: #fff;
+        }
+
+    </style>
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">
+                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+            </button>
+            <h3 class="modal-title" style="color:#2691d9" id="Heading">Add Checklist</h3>
+        </div>
+        <div class="modal-body">
+            <div class="row">
+                <div class="col-sm-6">
+                    <h3 style="margin-top: 0">Select Checklist</h3>
+                </div>
+                <div class="col-sm-6 search-filter">
+                    <div class="input-group pull-right" style="width: 300px; margin-left: 2px;padding-left:1px;">
+                        <input type="text" ng-model="searchTextForAdd" my-enter="onSearch()" class="form-control input-sm bg-light no-border rounded padder" placeholder="Search">
+                        <span class="input-group-btn">
+                            <button class="btn btn-sm bg-light rounded" ng-click="onSearch()"><i class="fa fa-search"></i></button>
+                        </span>
+                    </div>
+                    <div class="btn-toolbar pull-right">
+                        <button class="btn btn-sm btn-icon btn-default" style="border-radius: 50%" data-toggle="tooltip" title="Refresh" data-placement="bottom" ng-click="getDataListForAdd()">
+                            <i class="fa fa-refresh"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!---view list -->
+            <div class="table table-responsive" fill-height additional-padding="400">
+                <table  st-table="datalist"  st-pipe="getDataListForAdd" class="table ticket">
+                    <thead class="tblhead-sm" style="background: #88888a">
+                    <tr>
+                        <th><b>Name</b></th>
+                        <th><b>Assigner</b></th>
+                        <th><b>Frequency</b></th>
+                        <th><b>Start Date</b></th>
+                        <th><b>Next Date</b></th>
+                        <th><b>Location Mode</b></th>
+                    </tr>
+                    </thead>
+                    <tbody ng-hide="isLoading">
+                    <tr class="{{row.id == selectedIndex ? 'selected-row' : ''}}" ng-repeat="row in dataListForAdd" ng-click="onSelectRow(row)" ng-dblclick="onSelectAndAdd(row)">
+                        <td>{{row.name}}</td>
+                        <td>{{row.assigner}}</td>
+                        <td>{{row.frequency}} - {{row.freq_unit}}</td>
+                        <td>{{row.start_date}}</td>
+                        <td>{{row.next_date}}</td>
+                        <td>{{row.location_mode}}</td>
+                    </tr>
+                    </tbody>
+                    <tbody ng-show="isLoadingForAdd">
+                    <tr>
+                        <td colspan="9" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+                    </tr>
+                    </tbody>
+                    <tfoot ng-hide="isLoadingForAdd">
+                    <tr ng-show="paginationOptionsForAdd.totalItems > paginationOptionsForAdd.pageSize">
+                        <td colspan="13" class="text-center">
+                            <div st-pagination="" st-items-by-page="paginationOptionsForAdd.pageSize" st-displayed-pages="7" class="no-margin"></div>
+                        </td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <div class="modal-footer ">
+            <button type="button" class="btn btn-info btn-sm w-xs {{isLoadingForSubmit ? 'disabled' : ''}}" ng-click="onAddChecklistTask()">
+                <span ng-show="!isLoadingForSubmit" class="glyphicon glyphicon-ok"></span>
+                <b> {{isLoadingForSubmit ? 'Loading' : 'Add'}}</b>
+            </button>
+
+            <button type="button" class="btn btn-default btn-sm" data-dismiss="modal" ng-click="cancel()">
+                <span class="glyphicon glyphicon-remove"></span>
+                <b> Cancel</b>
+            </button>
+        </div>
+
+    </div>
+
+</form>

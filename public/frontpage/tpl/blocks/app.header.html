@@ -1,0 +1,88 @@
+<!-- navbar header -->
+<style>
+    .notify_container .popover {
+        max-width: 650px;
+    }
+
+    .notify_container .popover-content {
+        padding: 0px;
+    }
+</style>
+
+<script type="text/ng-template" id="notifylist.html">
+    <div style="width: 400px">
+        <div class="panel-heading wrapper b-b b-light">
+            <span class="btn btn-xs btn-primary text-xs text-muted pull-right" ng-show="notifylist.length > 0" ng-click="clearAll()">
+                clear all
+            </span>
+            <h5 class="font-thin m-t-none m-b-none text-muted"><strong style="color: red">{{notify_count}} pending</strong> <span>notifications</span></h5>
+        </div>
+        <div class="list-group" style="margin-bottom: 0px; max-height: 500px; overflow-y: auto;">
+            <li class="list-group-item" ng-show="notify_loading">
+                <a href class="thumb-sm m-r">
+                    <img src="/images/mark.png" class="r r-2x">
+                </a>
+                <a href>Loading...</a>
+            </li>
+
+            <li ng-repeat="notify in notifylist" class="list-group-item" ng-show="!notify_loading">
+                <span>
+                    <a href class="thumb-sm m-r">
+                        <img src="/images/mark.png" class="r r-2x">
+                    </a>
+                </span>
+                <span class="pull-right label bg-white inline m-t-sm">{{notify.fromnow}}</span>
+                <span><a sglclick="onClickNotifyItem(notify)" ng-dblclick="onDblClickNotifyItem(notify)">{{notify.content}}</a></span>
+            </li>
+        </div>
+    </div>
+</script>
+
+<div class="navbar-header" style="height: 42px;">
+    <!-- brand -->
+    <a href="/" class="navbar-brand text-lt">
+		<img src="img/header_logo.png" alt="HotLync" style="margin-left: -7px; width:250px; height: 30px">
+    </a>
+
+    <div class="text-danger wrapper pull-right" style="margin-top:1px;font-size:20px">
+         {{license_info.message}}
+    </div>
+    <!-- / brand -->
+</div>
+<!-- / navbar header -->
+
+<!-- navbar collapse -->
+<div class="collapse navbar-collapse navbar-inverse box-shadow" style="margin: auto">	
+	<ul class="nav navbar-nav navbar-right" style="margin: 0px">		
+        <li class="notify_container">
+            <a href="/hotlyncBO" style="font-size: 16px;" ng-if="auth_svc.isValidModule('app.backoffice.user')" >
+              Back Office
+            </a>
+        </li>
+        <li class="notify_container" style="margin-top: 5px">
+            <a href uib-popover-template="'notifylist.html'" popover-trigger="outsideClick" popover-is-open="header.isopen" popover-placement="bottom-right" ng-click="onClickNotify()">
+                <i class="icon-bell fa-fw" style="font-size: 18px"></i>
+                <span ng-if="notify_count > 0" class="badge badge-sm up bg-danger pull-right-xs" >{{notify_count}}</span>
+            </a>
+        </li>
+
+        <li class="dropdown" uib-dropdown style="margin-top: 5px">
+          <a href class="dropdown-toggle" uib-dropdown-toggle>
+            
+            <span class="hidden-sm hidden-md" style="font-size: 16px;">{{profile.username}}</span> <span class="caret"></span>
+            <span class="thumb-xs avatar m-t-n-sm m-b-n-sm m-l-sm">
+              <img src="{{profile.picture}}" alt="..." >
+              <i class="on md b-white bottom"></i>
+            </span>
+          </a>
+          <ul class="dropdown-menu w" style="margin-top: 3px; z-index: 1002" role="menu">
+						<li style="white-space: nowrap"><a ui-sref="app.profile"><i class="icon-user"></i>&nbsp;&nbsp;&nbsp;Profile</a></li>
+						<li><a ui-sref="app.faq"><i class="fa fa-edit"></i>&nbsp;&nbsp;&nbsp;FAQ</a></li>
+						<li class="divider"></li>
+						<li ng-click="logout()"><a href=""><i class="fa fa-power-off"></i>&nbsp;&nbsp;&nbsp;Logout</a></li>
+          </ul>
+        </li>
+    </ul>
+    <!-- / navbar right -->
+</div>
+<!-- / navbar collapse -->

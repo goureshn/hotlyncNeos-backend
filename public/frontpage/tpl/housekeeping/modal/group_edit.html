@@ -1,0 +1,51 @@
+<div class="modal-content">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">
+            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        </button>
+        <h3 class="modal-title" style="color:#2691d9" id="Heading">Select Group</h3>
+    </div>
+    <br>
+    <div class="modal-body">
+        <form class="form-horizontal form-validation">
+            <div class="form-group" >
+                <label class="col-sm-3 text-right control-label text-muted" >Group</label>
+                <div class="col-sm-9  scrollable-dropdown-menu">
+                    <input class="form-control input-sm"  ng-model="model.new_name"  required
+                           placeholder="Group Name">
+                </div>
+            </div>            
+        </form>
+
+        <div class="table table-responsive" ng-show="check_group_list.length > 0">
+            <label class="font-bold"><i class="fa fa-history" aria-hidden="true"></i>&nbsp;&nbsp;Check Group List</label>
+            <table  st-table="ticketlist" class="table ticket table-striped b-t b-light">
+                <thead class="tblhead-sm" style="font-size: .7vw">
+                    <tr>
+                        <th class="text-center"><b>Name</b></th>
+                        <th class="text-center"><b>Date</b></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="row in check_group_list">
+                        <td class="text-center" ng-click="selectRow(row)"><span style="cursor:pointer">{{row.name}}</span></td>
+                        <td class="text-center"><span>{{row.created_at | mydatetime}}</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal-footer ">
+        <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal" ng-click="createGroup()">
+            <span class="glyphicon glyphicon-ok"></span>
+            <b> Create</b>
+        </button>
+        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal" ng-click="cancel()">
+            <span class="glyphicon glyphicon-remove"></span>
+            <b> Cancel</b>
+        </button>
+    </div>
+
+</div>
+

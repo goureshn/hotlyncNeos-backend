@@ -1,0 +1,525 @@
+<div class="hbox" ng-controller="RepairRequestController">
+    <style>
+        .tab-container .tab-content {
+            padding: 0px;
+        }
+
+        .nopadding {
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        .splitdiv {
+            border-right: 1px solid #d7d6d4;
+            border-bottom: 1px solid #d7d6d4;
+        }
+
+        .popover-container .popover-content {
+            padding-left: 6px;
+            padding-right: 6px;
+
+        }
+
+        .popover-container .popover {
+            max-width: 650px;
+        }
+
+
+        .pink{
+            background-color: rgb(250, 131, 33);
+        }
+
+        .popover-title {
+            font-weight: bold;
+        }
+
+        table thead tr{
+            height: 50px;
+        }
+
+        .ticket-table tbody tr {
+            height: 65px;
+        }
+
+        table tbody tr td {
+            padding-left: 5px !important;
+            padding-right: 5px !important;
+        }
+
+    </style>
+
+    <script type="text/ng-template" id="Comments.html">
+        <div class="text-ellipsis text-sm clear font-bold small" style="white-space: normal;" ng-repeat="item in row.comment_list">
+            {{item.comment}} - {{item.wholename}} - {{item.created_at | mydate}}
+        </div>
+    </script>
+
+    <script type="text/ng-template" id="staff-template">
+        <div class="autocomplete-template">
+            <div class="right-panel">
+                <span ng-bind-html="$highlight($getDisplayText())"></span><br>
+                <span style="font-size: 10px">{{data.job_role_name}} </span>
+            </div>
+        </div>
+    </script>
+
+    <script type="text/ng-template" id="location-template">
+        <div class="autocomplete-template">
+            <div class="right-panel">
+                <span ng-bind-html="$highlight($getDisplayText())"></span><br>
+                <span style="font-size: 10px">{{data.type}} </span>
+            </div>
+        </div>
+    </script>
+
+    <script type="text/ng-template" id="staff-group-template">
+        <div class="autocomplete-template">
+            <div class="right-panel">
+                <span ng-bind-html="$highlight($getDisplayText())"></span>
+                <span ng-show = 'data.active_status == 1' ng-class="{'label pulse' : true, 'm-l-sm': true,
+                                'bg-wakeup-success': data.active_status == 1,
+                                }">Online
+                </span>
+                <span ng-show = 'data.active_status == 0' ng-class="{'label pulse' : true, 'm-l-sm': true,
+                                        'bg-wakeup-canceled': data.active_status == 0,
+                                        }">Offline
+                </span><br>
+                <span ng-show = 'data.label == "Team"'style="font-size: 10px">{{data.label}} </span>
+
+            </div>
+        </div>
+    </script>
+
+    <script type="text/ng-template" id="locationTypeahead.html">
+        <a>
+            <span ng-bind="match.model.name"></span><br>
+            <span style="font-size: 10px" ng-bind="match.model.type"></span> - <span style="font-size: 10px" ng-bind="match.model.property"></span><br>
+        </a>
+    </script>
+
+    <script type="text/ng-template" id="filter_template.html">
+        <div style="width: 400px">
+            <form class="form-horizontal form-validation" ng-submit="createRepairRequest()">
+                <div class="form-group">
+                    <!-- Assignee Filter -->
+                    <div class="col-sm-12">
+                        <label class="control-label text-xs text-muted">Assignee : </label>
+                        <div class="scrollable-dropdown-menu">
+                            <tags-input ng-model="filter.staff_tags" display-property="wholename" key-property="id"
+                                    style="margin-top: -5px"
+                                    placeholder="Add Assignee"
+                                    on-tag-added="pageChanged()" on-tag-removed="pageChanged()"
+                                    replace-spaces-with-dashes="false"  >
+                                    <auto-complete source="staffTagFilter($query)"
+                                                    min-length="0"
+                                                    load-on-focus="true"
+                                                    load-on-empty="true"
+                                                    debounce-delay="0"
+                                                    max-results="10"
+                                                    template="staff-template">
+                                    </auto-complete>
+                            </tags-input>
+                        </div>
+                    </div>
+
+                    <!-- Status Filter -->
+                    <div class="col-sm-12">
+                        <label class="control-label text-xs text-muted">Status : </label>
+                        <div class="scrollable-dropdown-menu">
+                            <tags-input ng-model="filter.status_names" display-property="name"  key-property="id"
+                                        style="margin-top: -5px"
+                                        placeholder="Status Name"
+                                        on-tag-added="pageChanged()" on-tag-removed="pageChanged()"
+                                        replace-spaces-with-dashes="false"  >
+                                <auto-complete source="statusNameFilter($query)"
+                                               min-length="0"
+                                               load-on-focus="true"
+                                               load-on-empty="true"
+                                               debounce-delay="0"
+                                               max-results="10"
+                                >
+                                </auto-complete>
+                            </tags-input>
+                        </div>
+                    </div>
+
+                    <!-- Category Filter -->
+                    <div class="col-sm-12">
+                        <label class="control-label text-xs text-muted">Category : </label>
+                        <div class="scrollable-dropdown-menu">
+                            <tags-input ng-model="filter.category_tags" display-property="category_name" key-property="id"
+                                style="margin-top: -5px"
+                                placeholder="Add Category"
+                                on-tag-added="pageChanged()" on-tag-removed="pageChanged()"
+                                replace-spaces-with-dashes="false"  >
+                                <auto-complete source="categoryTagFilter($query)"
+                                                min-length="0"
+                                                load-on-focus="true"
+                                                load-on-empty="true"
+                                                debounce-delay="0"
+                                                max-results="10"
+                                                >
+                                </auto-complete>
+                            </tags-input>
+                        </div>
+                    </div>
+
+                     <!-- Location Filter -->
+                     <div class="col-sm-12">
+                        <label class="control-label text-xs text-muted">Department : </label>
+                        <div class="scrollable-dropdown-menu">
+                            <tags-input ng-model="filter.dept_tags" display-property="department" key-property="id"
+                                style="margin-top: -5px"
+                                placeholder="Add Department"
+                                on-tag-added="pageChanged()" on-tag-removed="pageChanged()"
+                                replace-spaces-with-dashes="false"  >
+                                <auto-complete source="deptTagFilter($query)"
+                                                min-length="0"
+                                                load-on-focus="true"
+                                                load-on-empty="true"
+                                                debounce-delay="0"
+                                                max-results="10"
+                                                >
+                                </auto-complete>
+                            </tags-input>
+                        </div>
+                    </div>
+
+                    <!-- Location Filter -->
+                    <div class="col-sm-12">
+                        <label class="control-label text-xs text-muted">Location : </label>
+                        <div class="scrollable-dropdown-menu">
+                            <tags-input ng-model="filter.location_tags" display-property="name" key-property="id"
+                                style="margin-top: -5px"
+                                placeholder="Add Location"
+                                on-tag-added="pageChanged()" on-tag-removed="pageChanged()"
+                                replace-spaces-with-dashes="false"  >
+                                <auto-complete source="locationTagFilter($query)"
+                                                min-length="0"
+                                                load-on-focus="true"
+                                                load-on-empty="true"
+                                                debounce-delay="0"
+                                                max-results="10"
+                                                template="location-template"
+                                                >
+                                </auto-complete>
+                            </tags-input>
+                        </div>
+                    </div>
+
+                    <!-- Equipment Filter -->
+                    <div class="col-sm-12">
+                        <label class="control-label text-xs text-muted">Asset : </label>
+                        <div class="scrollable-dropdown-menu">
+                            <tags-input ng-model="filter.equipment_tags" display-property="name" key-property="id"
+                                style="margin-top: -5px"
+                                placeholder="Add Asset"
+                                on-tag-added="pageChanged()" on-tag-removed="pageChanged()"
+                                replace-spaces-with-dashes="false"  >
+                                <auto-complete source="equipmentTagFilter($query)"
+                                                min-length="0"
+                                                load-on-focus="true"
+                                                load-on-empty="true"
+                                                debounce-delay="0"
+                                                max-results="10"
+                                                >
+                                </auto-complete>
+                            </tags-input>
+                        </div>
+                    </div>
+
+                    <!-- Equipment ID Filter -->
+                    <div class="col-sm-12">
+                        <label class="control-label text-xs text-muted">Asset ID : </label>
+                        <div class="scrollable-dropdown-menu">
+                            <tags-input ng-model="filter.equip_id_tags" display-property="equip_id" key-property="equip_id"
+                                style="margin-top: -5px"
+                                placeholder="Add Asset ID"
+                                on-tag-added="pageChanged()" on-tag-removed="pageChanged()"
+                                replace-spaces-with-dashes="false"  >
+                                <auto-complete source="equipIdTagFilter($query)"
+                                                min-length="0"
+                                                load-on-focus="true"
+                                                load-on-empty="true"
+                                                debounce-delay="0"
+                                                max-results="10"
+                                                template="location-template">
+                                </auto-complete>
+                            </tags-input>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </script>
+
+    <div>
+        <div class="hbox">
+            <div class="col b-r" style="width:80vw;">
+                <div class="wrapper bg-light lter b-b">
+                    <div class="btn-group pull-right">
+                        <button type="button" class="btn btn-sm btn-bg btn-default">
+                            {{paginationOptions.numberOfPages}}/{{paginationOptions.countOfPages}} - {{paginationOptions.totalItems}} Items
+                        </button>
+                        <button type="button" class="btn btn-sm btn-bg btn-default" ng-click="onPrevPage()" ng-disabled="paginationOptions.numberOfPages <= 1">
+                            <i class="fa fa-chevron-left"></i>
+                        </button>
+
+                        <button type="button" class="btn btn-sm btn-bg btn-default" ng-click="onNextPage()" ng-disabled="paginationOptions.numberOfPages >= paginationOptions.countOfPages">
+                            <i class="fa fa-chevron-right"></i>
+                        </button>
+                    </div>
+
+                    <div class="btn-toolbar" style="padding-left: 2px">
+                        <div class="btn-group">
+                            <h3 class="m-n font-thin" style="color: #5fbae8;">Work Request&nbsp;&nbsp;</h3>
+                        </div>
+                        <div class="btn-group popover-container">
+                            <button id="dateranger" class="btn btn-sm btn-icon btn-default" data-toggle="tooltip" data-placement="bottom"
+                                    title="Date" ui-jq="daterangepicker" ui-options="dateRangeOption">
+                                <i class="glyphicon glyphicon-calendar"></i>
+                            </button>
+                            <button class="btn btn-sm btn-icon btn-default" data-toggle="tooltip" title="Refresh"
+                                    data-placement="bottom" ng-click="refreshTickets()">
+                                <i class="fa fa-refresh"></i>
+                            </button>
+                            <button class="btn btn-sm btn-bg btn-default" data-toggle="tooltip" data-placement="bottom" title="View Mode" ng-click="listmode=!listmode">
+                                <i ng-if="listmode" class="fa fa-list"></i><i ng-if="!listmode" class="icon-grid"></i>
+                            </button>
+
+                            <button class="btn btn-sm btn-icon btn-default" data-toggle="tooltip" title="Filter" data-placement="bottom"
+                                uib-popover-template="'filter_template.html'" popover-trigger="outsideClick" popover-placement="bottom-left">
+                                <i class="fa fa-filter" ng-style="{'color': filter_apply ? '#23b7e5' : '#58666e'}"></i>
+                            </button>
+                        </div>
+
+                        <div class="input-group col-md-2 pull-left">
+                            <input type="text" ng-model="searchtext" ng-keyup="pageChanged()" class="form-control input-sm bg-light no-border rounded padder"
+                                   placeholder="Search">
+                            <span class="input-group-btn">
+                                <button type="submit" class="btn btn-sm bg-light rounded">
+                                    <i class="fa fa-search"></i>
+                                </button>
+                            </span>
+                        </div>
+                        <div class="col-sm-2">
+                            <button type="button" class="btn btn-sm btn-bg btn-default" ng-click="onExportExcel()">
+                                <i class="fa fa-file-excel-o"></i>&nbsp;Export Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="wrapper" style="text-align: right;">
+                <button type="button" class="btn btn-sm btn-bg btn-default" ng-click="Close()" ng-show="detailview">
+                    <i class="fa fa-window-close" aria-hidden="true"></i>&nbsp;Close
+                </button>
+                <button type="button" class="btn btn-sm btn-bg btn-default" ng-click="onCreateRequest()">
+                    <i class="fa fa-plus-circle"></i>&nbsp;New
+                </button>
+            </div>
+        </div>
+
+        <div>
+
+            <!-- list -->
+            <div class="bg-light lter" style="width:100%">
+                <ul id="list_ticket" class="list-group list-group-lg no-radius table-striped m-b-none m-t-n-xxs" ng-style="{'height': ticketlist_height}"  ng-if="listmode">
+                    <li ng-repeat="row in ticketlist" class="list-group-item  clearfix b-l-5x ">
+                        <!--<a class="avatar thumb pull-left m-r" href="#/app/page/profile"></a>-->
+                        <div class="pull-right text-muted">
+                            <!--<span class="hidden-xs ">{{row.onlytime}}</span><br>-->
+                            <span class="hidden-xs ">{{row.onlydate}}</span><br>
+                        </div>
+                        <div class="clear" ng-click="onSelectTicket(row)">
+                            <div>
+                                <a class="text-sm">
+                                    <i class="fa fa-ticket"></i>&nbsp;{{getTicketNumber(row)}}&nbsp;-&nbsp;
+                                    <i  class="icon-user"></i>&nbsp;{{::row.wholename}}&nbsp;&nbsp;
+                                    <i class="glyphicon glyphicon-home"></i>&nbsp;{{row.equip_id}} - {{row.equip_name}}
+                                </a>
+
+                                <span  ng-class="{'label pulse' : true, 'm-l-sm': true,
+                                'bg-wakeup-pending': row.status_name == 'Pending',
+                                'bg-wakeup-busy': row.status_name == 'Assigned',
+                                'bg-wakeup-progress': row.status_name == 'In Progress',
+                                'bg-wakeup-waiting': row.status_name == 'On Hold',
+                                'bg-wakeup-success': row.status_name == 'Completed',
+                                'bg-wakeup-canceled': row.status_name == 'Rejected',
+                                'bg-info': row.status_name == 'Pre-Approved',
+                                'bg-complaint-ack': row.status_name == 'Closed',
+                                }">{{::row.status_name}}
+                                        </span>
+                                <span class="label bg-light m-l-sm " ng-if = "row.assignee_name != null && row.assignee_name != '' ">Assigned to - {{::row.assignee_name}}</span>
+                                &nbsp;&nbsp;&nbsp;&nbsp; Priority: <span ng-class="{'label pulse' : true, 'm-l-sm': true,
+                                'bg-info': row.priority == 'Low',
+                                'bg-wakeup-waiting': row.priority == 'Medium',
+                                'pink': row.priority == 'High',
+                                'bg-wakeup-failed': row.priority == 'Urgent',
+                                }">{{row.priority}}</span>
+
+                            </div>
+                            <div class="text-ellipsis m-t-xs ">{{row.repair}}</div>
+                            <span class="label bg-light m-l-sm ">Comment: {{row.comments}}</span>
+
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- / list -->
+            <!-- Grid Table -->
+
+            <div class="portlet" ng-if="!listmode" ng-style="{'height': ticketlist_height, 'overflow-y': 'auto'}">
+                <div class="portlet-body">
+                    <div class="table table-responsive">
+                        <table  st-table="ticketlist" style="table-layout: fixed" st-pipe="pageChanged" class="table ticket ticket-table table-striped b-t b-light">
+                            <thead class="tblhead-sm" style="font-size: .8vw">
+                            <tr class="text-center">
+                                <th class="text-center" st-sort="id" st-sort-default="reverse"  style="width:7%"><b>&nbsp;&nbsp;ID</b></th>
+                                <th class="text-center" st-sort="status" style="width:80px"><b>Status</b></th>
+                                <th class="text-center" style="width:13%"><b>Summary</b></th>
+                                <th class="text-center" ng-if="repair_request_cofig.repair_request_equipment_status" st-sort="equip_id" style="width:13%"><b>Asset</b></th>
+                                <th class="text-center" st-sort="location_id" style="width:8%"><b>Location</b></th>
+                                <th class="text-center" st-sort="category_id" style="width:5%"><b>Category</b></th>
+                                <th class="text-center" st-sort="priority" style="width:80px"><b>Priority</b></th>
+                                <th class="text-center" st-sort="wholename" style="width:9%"><b>Requestor</b></th>
+                                <th class="text-center" style="width:6%"><b>Comments</b></th>
+                                <th class="text-center" st-sort="created_at" style="width:6%"><b>Created</b></th>
+                                <th class="text-center" st-sort="schedule_date" style="width:6%"><b>Scheduled</b></th>
+                                <th class="text-center" st-sort="assignee_name" style="width:8%"><b>Assignee</b></th>
+                                <th class="text-center" st-sort="start_date" style="width:80px"><b>Start</b></th>
+                                <th class="text-center" st-sort="end_date"  style="width:80px"><b>End</b></th>
+                            </tr>
+                            </thead>
+
+                            <tbody >
+                                <tr class="highlight2 no-radius m-b-none m-t-n-xxs" ng-repeat="row in ticketlist" ng-click="onSelectTicket(row, $index)">
+                                    <td class="highlight" style="white-space: nowrap; border-left: 8px solid {{::row.ticket_type_color}};margin-top: 4px ;margin-bottom: 6px;text-align:left;">
+                                        <div class="text-sm" title="{{getTicketNumber(row)}}" style="display:inline-block; width:100%; max-width:100%; overflow: hidden; text-overflow:ellipsis;">
+                                            <a>{{getTicketNumber(row)}}</a>
+                                        </div>
+                                    </td>
+                                    <td class="highlight" style="white-space: nowrap; text-align:center">
+                                        <div class="text-sm" title="{{::row.status_name}}" style="display:inline-block; width:100%; max-width:100%; overflow: hidden; text-overflow:ellipsis;">
+                                            <a>
+                                                <span  ng-class="{'label pulse' : true, 'm-l-sm': true,
+                                                    'bg-wakeup-pending': row.status_name == 'Pending',
+                                                    'bg-wakeup-busy': row.status_name == 'Assigned',
+                                                    'bg-wakeup-progress': row.status_name == 'In Progress',
+                                                    'bg-wakeup-waiting': row.status_name == 'On Hold',
+                                                    'bg-wakeup-success': row.status_name == 'Completed',
+                                                    'bg-wakeup-canceled': row.status_name == 'Rejected',
+                                                    'bg-info': row.status_name == 'Pre-Approved',
+                                                    'bg-complaint-ack': row.status_name == 'Closed',
+                                                    }">
+                                                    {{::row.status_name}}
+                                                </span>
+                                            </a>
+                                        </div>
+                                    </td>
+                                    <td class="highlight" style="white-space: nowrap;text-align:left;">
+                                        <div title="{{::row.repair}}" class="text-sm" style="display:inline-block; width:100%; max-width:100%; overflow: hidden; text-overflow:ellipsis;">
+                                            <a> {{::row.repair}}</a>
+                                        </div>
+                                    </td>
+                                    <td class="highlight" style="white-space: nowrap;text-align:left;" ng-if="repair_request_cofig.repair_request_equipment_status" >
+                                        <div class="text-sm" title="{{row.equip_id ? (row.equip_id + ' - ') : ''}}{{row.equip_id ? row.equip_name : ''}}" style="display:inline-block; width:100%; max-width:100%; overflow: hidden; text-overflow:ellipsis;">
+                                            <a><i class="fa fa-cogs"  ng-show = "row.equip_name" aria-hidden="true"></i>&nbsp;{{row.equip_id ? (row.equip_id + ' - ') : ''}}{{row.equip_id ? row.equip_name : ''}}</a>
+                                        </div>
+                                    </td>
+                                    <td class="highlight" style="white-space: nowrap;text-align:left;">
+                                        <div class="text-sm" title="{{::row.location_name}}" style="display:inline-block; width:100%; max-width:100%; overflow: hidden; text-overflow:ellipsis;">
+                                            <a><i class="fa fa-map-marker"  ng-show = "row.location_name" style="color: #cc3918;"></i>&nbsp;{{::row.location_name}}</a>
+                                        </div>
+                                    </td>
+                                    <td class="highlight"  style="white-space: nowrap;text-align:left;">
+                                        <div class="text-sm" title="{{::row.category_name}}" style="display:inline-block; width:100%; max-width:100%; overflow: hidden; text-overflow:ellipsis;">
+                                            <a> {{::row.category_name}}</a>
+                                        </div>
+                                    </td>
+                                    <td class="highlight" style="white-space: nowrap; text-align:center">
+                                        <div class="text-sm" title="{{row.priority}}" style="display:inline-block; width:100%; max-width:100%; overflow: hidden; text-overflow:ellipsis;">
+                                            <span ng-class="{'label pulse' : true, 'm-l-sm': true,
+                                            'bg-info': row.priority == 'Low',
+                                            'bg-wakeup-waiting': row.priority == 'Medium',
+                                            'pink': row.priority == 'High',
+                                            'bg-wakeup-failed': row.priority == 'Urgent',
+                                            }">{{row.priority}}
+                                        </span>
+                                        </div>
+                                    </td>
+                                    <td class="highlight" style="white-space: nowrap;text-align:center;">
+                                        <div class="text-sm" title="{{::row.wholename}}" style="display:inline-block; width:100%; max-width:100%; overflow: hidden; text-overflow:ellipsis;">
+                                            <a> <i class="fa fa-address-book-o text-warning-dker" ng-show = "row.wholename" style="font-size: 12px"></i>&nbsp;{{::row.wholename}}</a>
+                                        </div>
+                                    </td>
+                                    <td class="highlight"  style="white-space: nowrap;text-align:center;">
+                                    <span type="text"
+                                            uib-popover-template="'Comments.html'" popover-trigger="mouseenter" popover-title="Comments"
+                                            popover-placement="bottom">
+                                            <i ng-show="row.comment_list.length >= 1" class="fa fa-comment" style="font-size: 12px; color: #1565C0;"></i>
+                                    </span>
+                                    </td>
+                                    <td class="highlight"  style="white-space: nowrap;text-align:left;">
+                                        <div class="text-sm" title="{{::row.created_at | mydate}}" style="display:inline-block; width:100%; max-width:100%; overflow: hidden; text-overflow:ellipsis;">
+                                            <a> {{::row.created_at | mydate}}</a>
+                                        </div>
+
+                                    </td>
+                                    <td class="highlight"  style="white-space: nowrap;text-align:center;">
+                                        <div class="font-bold text-sm" title="{{::row.schedule_date | mydate}}" style="display:inline-block;width:100%; max-width:100%; overflow: hidden;text-overflow:ellipsis;">
+                                        <a> {{::row.schedule_date | mydate}}</a>
+                                        </div>
+                                    </td>
+                                    <td style="white-space: nowrap; width:200px">
+                                        <div class="font-bold text-sm" title="{{row.supplier_id > 0 ? row.supplier : row.assignee_name}}" style="display:inline-block;width:100%; max-width:100%; overflow: hidden;text-overflow:ellipsis;">
+                                        <i ng-if = "row.assignee_name != null && row.assignee_name != '' " class="fa fa-user-circle" color: #1565C0"></i>&nbsp;{{row.supplier_id > 0 ? row.supplier : row.assignee_name}}
+                                        </div>
+                                    </td>
+                                    <td class="highlight"  style="white-space: nowrap;text-align:left;">
+                                        <div ng-show="row.status_name=='In Progress' || row.status_name=='Completed' || row.status_name=='Closed'" style="text-align:center; display:inline-block;width:100%; max-width:100%; overflow: hidden;text-overflow:ellipsis;">
+                                            <div>
+                                                <a class="text-sm"> {{::row.start_date | mydate}}</a>
+                                            <div>
+                                            <div>
+                                                <a class="text-sm"> {{::row.start_time}}</a>
+                                            <div>
+                                        </div>
+                                    </td>
+                                    <td class="highlight"  style="white-space: nowrap;text-align:left;">
+                                        <div ng-show="row.status_name=='Completed' || row.status_name=='Closed'" style="text-align:center; display:inline-block;width:100%; max-width:100%; overflow: hidden;text-overflow:ellipsis;">
+                                            <div>
+                                                <a class="text-sm"> {{::row.end_date | mydate}}</a>
+                                            </div>
+                                            <div>
+                                                <a class="text-sm"> {{::row.end_time}}</a>
+                                            <div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tbody ng-show="isLoading">
+                                <tr>
+                                    <td colspan="10" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+                                </tr>
+                            </tbody>
+                            <tfoot ng-hide="isLoading" ng-if="0">
+                                <tr ng-show="paginationOptions.totalItems > paginationOptions.pageSize">
+                                    <td colspan="10" class="text-center">
+                                        <div st-pagination="" st-items-by-page="paginationOptions.pageSize" st-displayed-pages="7" class="no-margin"></div>
+                                    </td>
+                                </tr>
+                            </tfoot>
+
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
+
+    </div>
+</div>

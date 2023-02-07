@@ -1,0 +1,26 @@
+<style>
+    #scrollable-dropdown-menu .dropdown-menu {
+        max-height: 150px;
+        overflow-y: auto;
+    }
+</style>
+<input type="hidden" id="id" value="-1" ng-model="model_data.id"/>
+
+<div class="panel panel-default">
+    <div class="panel-heading wrapper">
+
+        <i class="fa fa-laptop"></i>
+        <span class="font-bold">Database Daily Backup</span>
+    </div>
+    <div>
+        <table id="table_grid" class="table table-hover table-bordered" style="text-align: center; width:100%" ng-model = "table_grid">
+            <thead>
+            <tr>
+                <th style="text-align: center" ng-repeat = "field in fields">
+                    <b>{{field}}</b>
+                </th>
+            </tr>
+            </thead>
+        </table>
+    </div>
+</div>

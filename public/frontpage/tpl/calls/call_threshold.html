@@ -1,0 +1,206 @@
+<div ng-controller="CallThresholdController" style="padding-top: 5px">
+	<stye>
+		
+	</style>
+	<div class="col-sm-6">
+		<div class="panel panel-default" style="border-radius: 4px">
+			<div class="panel-heading">
+				<label class="font-bold text-sm"><i class="fa fa-user-circle-o text-default"></i>&nbsp;&nbsp;Agent Statistics</label>				
+			</div>
+			
+			<div class="panel-body" style="padding: 5px 0px">
+				<table class="table setting table-striped b-t b-light">
+					<thead class="tblhead-sm" style="font-size: .8vw">
+						<tr class="text-center">
+							<th><b>&nbsp;&nbsp;Agent Statistics</b></th>
+							<th colspan=2 align="center"><b>Yellow Threshold</b></th>
+							<th colspan=2 align="center"><b>Red Threshold</b></th>
+						</tr>
+					</thead>
+
+					<tbody >
+						<tr class="highlight2 no-radius m-b-none m-t-n-xxs">
+							<td>
+								Abandoned Rate
+							</td>
+
+							<td align="right">
+								<input type="text" class="form-control input-sm" ng-model="setting.call_center_abandoned_yellow"
+                                   ng-keypress="($event.which === 13) ? saveCallCenter('call_center_abandoned_yellow') : 0"/>
+							</td>
+							<td>
+								
+							</td>
+							<td align="right">
+								<input type="text" class="form-control input-sm" ng-model="setting.call_center_abandoned_red"
+                                   ng-keypress="($event.which === 13) ? saveCallCenter('call_center_abandoned_red') : 0"/>
+							</td>
+							<td>
+								
+							</td>
+						</tr>
+						<tr class="highlight2 no-radius m-b-none m-t-n-xxs">
+							<td>
+								ACW Duration
+							</td>
+
+							<td align="right">
+								<input type="text" class="form-control input-sm" ng-model="setting.call_center_acw_dur_yellow"
+                                   ng-keypress="($event.which === 13) ? saveCallCenter('call_center_acw_dur_yellow') : 0"/>
+							</td>
+							<td>
+								(hh:mm:ss)
+							</td>
+							<td align="right">
+								<input type="text" class="form-control input-sm" ng-model="setting.call_center_acw_dur_red"
+                                   ng-keypress="($event.which === 13) ? saveCallCenter('call_center_acw_dur_red') : 0"/>
+							</td>
+							<td>
+								(hh:mm:ss)
+							</td>
+						</tr>
+
+						<tr class="highlight2 no-radius m-b-none m-t-n-xxs">
+							<td>
+								AUX Duration
+							</td>
+
+							<td align="right">
+								<input type="text" class="form-control input-sm" ng-model="setting.call_center_aux_dur_yellow"
+                                   ng-keypress="($event.which === 13) ? saveCallCenter('call_center_aux_dur_yellow') : 0"/>
+							</td>
+							<td>
+								(hh:mm:ss)
+							</td>
+							<td align="right">
+								<input type="text" class="form-control input-sm" ng-model="setting.call_center_aux_dur_red"
+                                   ng-keypress="($event.which === 13) ? saveCallCenter('call_center_aux_dur_red') : 0"/>
+							</td>
+							<td>
+								(hh:mm:ss)
+							</td>
+						</tr>
+
+						<tr class="highlight2 no-radius m-b-none m-t-n-xxs">
+							<td>
+								Average Handling Time
+							</td>
+
+							<td align="right">
+								<input type="text" class="form-control input-sm" ng-model="setting.call_center_avg_handling_time_yellow"
+                                   ng-keypress="($event.which === 13) ? saveCallCenter('call_center_avg_handling_time_yellow') : 0"/>
+							</td>
+							<td>
+								(hh:mm:ss)
+							</td>
+							<td align="right">
+								<input type="text" class="form-control input-sm" ng-model="setting.call_center_avg_handling_time_red"
+                                   ng-keypress="($event.which === 13) ? saveCallCenter('call_center_avg_handling_time_red') : 0"/>
+							</td>
+							<td>
+								(hh:mm:ss)
+							</td>
+						</tr>
+
+						<tr class="highlight2 no-radius m-b-none m-t-n-xxs">
+							<td>
+								Average Speed of Answer
+							</td>
+
+							<td align="right">
+								<input type="text" class="form-control input-sm" ng-model="setting.call_center_avg_speed_answer_yellow"
+                                   ng-keypress="($event.which === 13) ? saveCallCenter('call_center_avg_speed_answer_yellow') : 0"/>
+							</td>
+							<td>
+								(hh:mm:ss)
+							</td>
+							<td align="right">
+								<input type="text" class="form-control input-sm" ng-model="setting.call_center_avg_speed_answer_red"
+                                   ng-keypress="($event.which === 13) ? saveCallCenter('call_center_avg_speed_answer_red') : 0"/>
+							</td>
+							<td>
+								(hh:mm:ss)
+							</td>
+						</tr>
+
+						<tr class="highlight2 no-radius m-b-none m-t-n-xxs">
+							<td>
+								Current Call Duration
+							</td>
+
+							<td align="right">
+								<input type="text" class="form-control input-sm" ng-model="setting.call_center_current_call_dur_yellow"
+                                   ng-keypress="($event.which === 13) ? saveCallCenter('call_center_current_call_dur_yellow') : 0"/>
+							</td>
+							<td>
+								(hh:mm:ss)
+							</td>
+							<td align="right">
+								<input type="text" class="form-control input-sm" ng-model="setting.call_center_current_call_dur_red"
+                                   ng-keypress="($event.which === 13) ? saveCallCenter('call_center_current_call_dur_red') : 0"/>
+							</td>
+							<td>
+								(hh:mm:ss)
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>	
+
+		<div class="panel panel-default" style="border-radius: 4px">
+			<div class="panel-heading">
+				<label class="font-bold text-sm"><i class="fa fa-user-circle-o text-default"></i>&nbsp;&nbsp;Call Center Statistics</label>				
+			</div>
+			
+			<div class="panel-body" style="padding: 5px 0px">
+				<table class="table setting table-striped b-t b-light">
+					<thead class="tblhead-sm" style="font-size: .8vw">
+						<tr class="text-center">
+							<th><b>&nbsp;&nbsp;Call Center Statistics</b></th>
+							<th colspan=2 align="center"><b>Yellow Threshold</b></th>
+							<th colspan=2 align="center"><b>Red Threshold</b></th>
+						</tr>
+					</thead>
+
+					<tbody >
+						<tr class="highlight2 no-radius m-b-none m-t-n-xxs">
+							<td>
+								Current Calls on Queue
+							</td>
+
+							<td colspan=2>
+								<input type="text" class="form-control input-sm" ng-model="setting.call_center_call_on_queue_yellow"
+                                   ng-keypress="($event.which === 13) ? saveCallCenter('call_center_call_on_queue_yellow') : 0"/>
+							</td>
+							<td colspan=2>
+								<input type="text" class="form-control input-sm" ng-model="setting.call_center_call_on_queue_red"
+                                   ng-keypress="($event.which === 13) ? saveCallCenter('call_center_call_on_queue_red') : 0"/>
+							</td>							
+						</tr>
+						<tr class="highlight2 no-radius m-b-none m-t-n-xxs">
+							<td>
+								Current Longest Waiting Call
+							</td>
+
+							<td align="right">
+								<input type="text" class="form-control input-sm" ng-model="setting.call_center_longest_waiting_call_yellow"
+                                   ng-keypress="($event.which === 13) ? saveCallCenter('call_center_longest_waiting_call_yellow') : 0"/>
+							</td>
+							<td>
+								(hh:mm:ss)
+							</td>
+							<td align="right">
+								<input type="text" class="form-control input-sm" ng-model="setting.call_center_longest_waiting_call_red"
+                                   ng-keypress="($event.which === 13) ? saveCallCenter('call_center_longest_waiting_call_red') : 0"/>
+							</td>
+							<td>
+								(hh:mm:ss)
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>	
+	</div>
+</div>

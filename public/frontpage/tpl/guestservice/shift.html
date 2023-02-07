@@ -1,0 +1,103 @@
+<div ng-controller="ShiftController" style="{{full_height}}">
+    <script type="text/ng-template" id="edit_shift_dialog.html">
+        <div ng-include="'tpl/guestservice/modal/edit_shift_dialog.html'"></div>
+    </script>
+    <script type="text/ng-template" id="confirm_modal.html">
+        <div ng-include="'tpl/modal/modal_confirm.html'"></div>
+    </script>
+    <div class="wrapper-md1 bg-light b-b">
+        <h3 class="m-n font-thin h3">Shifts</h3>
+    </div>
+    <div class="hbox hbox-auto-xs hbox-auto-sm" style="background-color: #f0f3f4">
+        <div class="col w1 w-auto-xs bg-light dk bg-auto b-l">
+            <div class="wrapper">
+                <h6 class="font-bold">Staff : </h6>
+                <select class='form-control input-sm m-b' ng-model="shift.staff_list" ng-change="onChangeAction(task.action)"
+                        ng-options="value.id as value.wholename for (key, value) in staff_list" style="height: auto" multiple>
+                </select>
+                <h6 class="font-bold">Department Function : </h6>
+                <select class='form-control input-sm m-b' ng-model="shift.dept_func_list" ng-change="onSelectDeptfunc()"
+                        ng-options="value.id as value.function for (key, value) in dept_func_list" data-ng-attr-size="{{dept_func_list.length > 10 ? 10 : dept_func_list.length}}" multiple>
+                </select>
+                <h6 class="font-bold">Task Group : </h6>
+                <select class='form-control input-sm m-b' ng-model="shift.task_group_list"
+                        ng-options="value.id as value.name for (key, value) in task_group_list" data-ng-attr-size="{{task_group_list.length > 10 ? 10 : task_group_list.length}}" multiple>
+                </select>
+                <h6 class="font-bold">Location Group : </h6>
+                <select class='form-control input-sm m-b' ng-model="shift.location_group_list"
+                        ng-options="value.id as value.name for (key, value) in location_group_list" data-ng-attr-size="{{location_group_list.length > 10 ? 10 : location_group_list.length}}" multiple>
+                </select>
+            </div>
+        </div>
+        <div class="col wrapper-md1">
+            <div class="clearfix m-b">
+                <button type="button" tooltip="Double click on calendar day to create event" class="btn btn-sm btn-primary btn-addon" ng-click="createShift()">
+                    <i class="fa fa-plus"></i>Create
+                </button>
+                <div class="pull-right">
+                    <button type="button" class="btn btn-sm btn-default" ng-click="today()">today</button>
+                    <div class="btn-group m-l-xs">
+                        <button class="btn btn-sm btn-default" ng-click="changeView('agendaDay')">Day</button>
+                        <button class="btn btn-sm btn-default" ng-click="changeView('agendaWeek')">Week</button>
+                        <button class="btn btn-sm btn-default" ng-click="changeView('month')">Month</button>
+                    </div>
+                </div>
+            </div>
+            <div class="pos-rlt">
+                <div class="fc-overlay">
+                    <div class="panel bg-white b-a pos-rlt">
+                        <span class="arrow"></span>
+                        <div class="h4 font-thin m-b-sm">
+                            {{event.title}}
+                            <div id="shift_control" class="pull-right" style="margin-top: -4px; margin-right: -4px">
+                                <button type="button" style="font-size: 10px" class="btn btn-primary btn-xs" ng-click="onEditShift(event)">Edit</button>
+                                <button type="button" style="font-size: 10px" class="btn btn-danger btn-xs" ng-click="onDeleteShift(event)">Delete</button>
+                            </div>
+                        </div>
+                        <div class="line b-b b-light"></div>
+                        <div><i class="icon-calendar text-muted m-r-xs"></i> {{event.start.format('HH:mm:ss') | date:'medium'}}</div>
+                        <div class="ng-hide" ng-show='event.end'><i class="icon-clock text-muted m-r-xs"></i> {{event.end.format('HH:mm:ss') | date:'medium'}}</div>
+                        <div class="m-t-sm">{{event.info}}</div>
+                        <div class="line b-b b-light"></div>
+                        <div class="wrapper">
+                            <div class="h5 font-bold m-b-sm">Task List</div>
+                            <ul class="nav-sm">
+                                <li ng-repeat="item in event.task_group_list"  class="{{getTaskCss(item)}}">
+                                    <a>
+                                        {{item.name}}
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="wrapper">
+                            <div class="h5 font-bold m-b-sm">Location Groups</div>
+                            <ul class="nav-sm">
+                                <li ng-repeat="item in event.location_group_list">
+                                    <a>
+                                        <!--<b class="badge bg-info pull-right">{{item.badge}}</b>-->
+                                        {{item.name}}
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="calendar" ng-model="eventSources" config="uiConfig.calendar" ui-calendar="uiConfig.calendar"></div>
+            </div>
+        </div>
+        <div class="col w1 w-auto-xs bg-light dk bg-auto b-l">
+            <div class="wrapper">
+                <h6 class="font-bold">Shift : </h6>
+                <select class='form-control input-sm m-b' ng-model="shift.shift_id"
+                        ng-options="value.shift as value.shname for (key, value) in shift_list">
+                </select>
+                <h6 class="font-bold">Day off : </h6>
+                <select class='form-control input-sm m-b' ng-model="shift.day_off" ng-change="onSelectDays()"
+                        ng-options="day for day in days" size="7" multiple>
+                </select>
+                <h6 class="font-bold">Vacation : </h6>
+                <input style="width: 100%" ng-model="shift.vacation" ui-jq="daterangepicker" ui-options="dateRangeOption" class="form-control w-md active">
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,234 @@
+<style>
+    button {
+        pointer: cursor;
+    }
+
+    input[type=file] {
+        width: 150px;
+        height: 20px;
+    }
+    .tbl-sm {
+        font-size: .8vw;
+        padding: 1px 15px !important;
+        color: #67686a;
+    }
+</style>
+
+<script type="text/ng-template" id="staffTypeahead.html">
+    <a>
+        <span ng-bind="match.model.name"></span><br>
+        <span style="font-size: 10px" ng-bind="match.model.type"></span><br>
+    </a>
+</script>
+
+<div class="wrapper">
+    <div class="panel panel-default" style="border-radius: 4px">
+        <div class="panel-heading">
+            <label class="font-bold"><i class="fa fa-warning text-default"></i>&nbsp;&nbsp;Create Contract</label>
+            <!--
+            <div class="pull-right" style="margin-top: -3px">
+                <button type="button" class="btn btn-dark btn-sm" ng-click="createContract()">
+                    <span class="text-success font-bold"><i class="fa fa-check"></i>&nbsp;Create</span></button>
+                <button type="button" class="btn btn-dark btn-sm" ng-click="cancelContract()">
+                    <span class="text-danger font-bold"><i class="fa fa-times"></i>&nbsp;Clear</span></button>
+            </div>
+        -->
+        </div>
+        <div class="panel-body">
+            <form class="form-horizontal form-validation" my-enter="createRepairRequest()" my-esc="cancelRepairRequest()">
+
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-3 text-right control-label text-muted" style="margin-bottom: 0px">Contractor</label>
+                    <div class="col-sm-9 scrollable-dropdown-menu">
+                        <input class="form-control input-sm col-sm-11" type="text" ng-model="contract.leasor" />
+
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-right: 0px">
+                <label class="col-sm-3 text-right control-label text-muted" style="margin-bottom: 0px">Start Date</label>
+                <div class="col-sm-9">
+                    <a class="dropdown-toggle" id="dropdown4" role="button" data-toggle="dropdown" data-target="#">
+                        <div class="input-group">
+                            <input type="text" class="form-control" ng-model="contract.start_date" readonly  />
+                            <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                        </div>
+                    </a>
+                    <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+                        <datetimepicker ng-model="datetime1.date"
+                                        data-datetimepicker-config="{ dropdownSelector: '#dropdown4',startView:'day', minView:'day'  }"
+                                        data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+                    </ul>
+                </div>
+            </div>
+
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-3 text-right control-label text-muted" style="margin-bottom: 0px">End Date</label>
+                    <div class="col-sm-9">
+                        <a class="dropdown-toggle" id="dropdown5" role="button" data-toggle="dropdown" data-target="#">
+                            <div class="input-group">
+                                <input type="text" class="form-control" ng-model="contract.end_date" readonly  />
+                                <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                            </div>
+                        </a>
+                        <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+                            <datetimepicker ng-model="datetime2.date"
+                                            data-datetimepicker-config="{ dropdownSelector: '#dropdown5',startView:'day', minView:'day'  }"
+                                            data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+                        </ul>
+                    </div>
+                </div>
+
+
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-3 text-right control-label text-muted" style="margin-bottom: 0px">Apartment No</label>
+                    <div class="col-sm-9 scrollable-dropdown-menu">
+                        <input type="text" ng-model="contract.location_name" class="form-control input-sm" placeholder="Enter location name"
+                            uib-popover="Enter location name" popover-trigger="mouseenter"
+                            uib-typeahead="item.name for item in location_list | filter:$viewValue | limitTo:10"
+                            typeahead-min-length="0"
+                            typeahead-editable="false"
+                            typeahead-template-url="locationTypeahead.html"
+                            typeahead-on-select="onLocationSelect($item, $model, $label)" required>
+
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-3 text-right control-label text-muted" style="margin-bottom: 0px">Description</label>
+                    <div class="col-sm-9 scrollable-dropdown-menu">
+                        <textarea class="form-control input-sm" rows="3" ng-model="contract.description"
+                        style="resize:none" required></textarea>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-3 text-right control-label text-muted" style="margin-bottom: 0px">Contract Value</label>
+                    <div class="col-sm-9 scrollable-dropdown-menu">
+                        <input class="form-control input-sm col-sm-11" type="number" min="0.00" max="100000.00" step="0.01" ng-model="contract.contract_value" />
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-3 text-right control-label text-muted" style="margin-bottom: 0px">Contact</label>
+                    <div class="col-sm-9 scrollable-dropdown-menu">
+                        <input class="form-control input-sm col-sm-11" type="text" ng-model="contract.leasor_contact" />
+
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-3 text-right control-label text-muted" style="margin-bottom: 0px">Email</label>
+                    <div class="col-sm-9 scrollable-dropdown-menu">
+                        <input class="form-control input-sm col-sm-11" type="email"
+                               ng-pattern="/^[\w-]+(\.[\w-]+)*@([a-z0-9-]+(\.[a-z0-9-]+)*?\.[a-z]{2,6}|(\d{1,3}\.){3}\d{1,3})(:\d{4})?$/"
+                               required  ng-model="contract.leasor_email" />
+                        <span style="color:red;" class="email-error" ng-show="contract.leasor_email.$error.required">Required</span>
+                        <span style="color:red" class="error" ng-show="contract.leasor_email.$error.pattern">Email not valid</span>
+
+                    </div>
+                </div>
+<!--
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-3 text-right control-label text-muted" style="margin-bottom: 0px">Age</label>
+                    <div class="col-sm-9 scrollable-dropdown-menu">
+                        <input class="form-control input-sm col-sm-11" type="number" min="1" max="150" step="1" ng-model="contract.age" />
+
+                    </div>
+                </div>
+            -->
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-3 text-right control-label text-muted" style="margin-bottom: 0px">Reminder</label>
+                    <div class="col-sm-9 scrollable-dropdown-menu">
+                        <label class="i-switch m-t-xs m-r">
+                            <input type="checkbox" ng-model="contract.reminder" checked>
+                            <i></i>
+                        </label>
+
+                    </div>
+                </div>
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-3 text-right control-label text-muted" style="margin-bottom: 0px">Reminder Days</label>
+                    <div class="col-sm-9 scrollable-dropdown-menu">
+                        <input class="form-control input-sm col-sm-11" type="text" ng-model="contract.reminder_days"  
+                        uib-popover="Enter value as days with comma seperated. For eg. 30,90 This will send an expiry reminder for the contract before 30 and 90 days of expiry." 
+                        popover-trigger="mouseenter" />
+
+                    </div>
+                </div>
+
+<!--
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-3 text-right control-label text-muted" style="margin-bottom: 0px">Additional members</label>
+                    <div class="col-sm-9 scrollable-dropdown-menu">
+                        <div class="col-sm-12" style="padding: 0px">
+                            <div class="col-sm-4" style="padding: 0px">
+                                <label class="control-label text-xs text-muted">Name</label>
+                                <input class="form-control input-sm col-sm-4 " type="text" ng-model="added_member.name" />
+                            </div>
+                            <div class="col-sm-3" style="padding:  0 0 0 5px ;">
+                                <label class="control-label text-xs text-muted">Age</label>
+                                <input class="form-control input-sm col-sm-4 " type="number" min="1" max="150" step="1" ng-model="added_member.age" />
+                            </div>
+                            <div class="col-sm-3" style="padding:  0 0 0 5px ;">
+                                <label class="control-label text-xs text-muted">Gender</label>
+                                <select class="form-control input-sm col-sm-3" type="text" ng-model="added_member.gender">
+                                    <option>Male</option>
+                                    <option>Female</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-2" style = "padding-top:25px;">
+                                <i class="fa fa-plus-circle fa-2x text-info" style="cursor: pointer" title="Add member" ng-click="addmember()" role="button" tabindex="0"></i>
+                            </div>
+
+                        </div>
+
+                        <div ng-if="contract.added_members.length>0" class=" form-group col-lg-12 "  style="padding: 10px 10px">
+                            <div class="table table-responsive">
+                                <label class="text-sm"><i class="fa fa-info-circle" aria-hidden="true"></i>&nbsp;&nbsp;Added Members</label>
+                                <table  class="table ticket table-striped b-t b-light">
+                                    <thead class="text-sm " style = "background: #ececec;">
+                                    <tr>
+                                        <th class="text-center"><b>Name</b></th>
+                                        <th class="text-center"><b>Age</b></th>
+                                        <th class="text-center"><b>Gender</b></th>
+                                        <th></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody ng-if="contract.added_members.length>0" ng-hide="isLoading">
+                                    <tr class="text-sm" ng-repeat="member in contract.added_members">
+                                        <td class="text-center"><span>{{member.name}}</span></td>
+                                        <td class="text-center"><span>{{member.age}}</span></td>
+                                        <td class="text-center"><span>{{member.gender}}</span></td>
+
+                                        <td>
+
+                                            <a class="btn default btn-xs red" ng-click="removeMember($index)">
+                                                <i class="fa fa-times"></i></a>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                    <tbody ng-if="contract.added_members.length==0">
+                                    <tr  style = "text-align:center;"><td colspan = "4"><label>No Member</label></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+            -->
+
+            </form>
+        </div>
+        <div class="panel-footer">
+            <div align = "center" style="margin-top: -3px">
+                <button type="button" class="btn btn-dark btn-sm" ng-click="createContract()">
+                    <span class="text-success font-bold"><i class="fa fa-check"></i>&nbsp;Create</span></button>
+                <button type="button" class="btn btn-dark btn-sm" ng-click="cancelContract()">
+                    <span class="text-danger font-bold"><i class="fa fa-times"></i>&nbsp;Clear</span></button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,195 @@
+<style>
+    button {
+        pointer: cursor;
+    }
+
+    input[type=file] {
+        width: 150px;
+        height: 20px;
+    }    
+    .tbl-sm {
+        font-size: .8vw;
+        padding: 1px 15px !important;
+        color: #67686a        
+    }
+</style>
+
+<script type="text/ng-template" id="staffTypeahead.html">
+    <a>
+        <span ng-bind="match.model.name"></span><br>
+        <span style="font-size: 10px" ng-bind="match.model.type"></span><br>
+    </a>
+</script>
+<script type="text/ng-template" id="userTypeahead.html">
+    <a>
+        <span ng-bind="match.model.wholename"></span><br>
+        <span style="font-size: 10px" ng-bind="match.model.job_role_name"></span><br>
+        <span style="font-size: 10px" ng-bind="match.model.department"></span><br>
+    </a>
+</script>
+
+<form class="form-horizontal form-validation" ng-submit="createReservation()">
+    <div class="modal-content">        
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">
+                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+            </button>
+            <h3 class="modal-title" style="color:#2691d9" id="Heading">Guest Reservation {{model.id > 0 ? 'Update' : 'Create'}}</h3>
+        </div>        
+        <div class="modal-body">                    
+            <div class="form-group">
+                <div class="col-sm-6">
+                    <label class="control-label text-xs text-muted">Reservation ID: </label>
+                    <div>
+                        <input type="text" ng-model="model.res_id" class="form-control input-sm" required>
+                    </div>
+                </div>    
+                <div class="col-sm-6">
+                    <label class="control-label text-xs text-muted">Room : </label>
+                    <div>
+                        <input type="text" ng-model="model.room" class="form-control input-sm" placeholder="Room No."                            
+                            uib-typeahead="room.room for room in room_list | filter:$viewValue | limitTo:10"
+                            typeahead-editable="false"
+                            typeahead-min-length="0"
+                            typeahead-on-select="onRoomSelect($item, $model, $label)">
+                    </div>
+                </div>  
+            </div>    
+
+            <div class="form-group">
+                <div class="col-sm-6">
+                    <label class="control-label text-xs text-muted">Guest Name: </label>
+                    <div>
+                        <input type="text" ng-model="model.guest_name" class="form-control input-sm" required>
+                    </div>
+                </div>    
+                <div class="col-sm-6">
+                    <label class="control-label text-xs text-muted">First Name : </label>
+                    <div>
+                        <input type="text" ng-model="model.first_name" class="form-control input-sm" required>
+                    </div>
+                </div>  
+            </div>    
+
+            <div class="form-group">
+                <div class="col-sm-6">
+                    <label class="control-label text-xs text-muted">Booking Start Date: </label>
+                    <div class="input-group">                        
+                        <input type="text" class="form-control input-sm" uib-datepicker-popup="yyyy-MM-dd" ng-model="model.start_date" is-open="datetime.is_start_date_open" required>
+                        <span class="input-group-btn">
+                            <button type="button" class="btn btn-default btn-sm" ng-click="datetime.is_start_date_open = true"><i class="glyphicon glyphicon-calendar"></i></button>
+                        </span>
+                    </div>                    
+                </div>    
+                <div class="col-sm-6">
+                    <label class="control-label text-xs text-muted">Booking End Date: </label>
+                    <div class="input-group">                        
+                        <input type="text" class="form-control input-sm" uib-datepicker-popup="yyyy-MM-dd" ng-model="model.end_date" is-open="datetime.is_end_date_open" required>
+                        <span class="input-group-btn">
+                            <button type="button" class="btn btn-default btn-sm" ng-click="datetime.is_end_date_open = true"><i class="glyphicon glyphicon-calendar"></i></button>
+                        </span>
+                    </div>
+                </div>  
+            </div>    
+
+            <div class="form-group">
+                <div class="col-sm-4">
+                    <label class="control-label text-xs text-muted">Adult: </label>
+                    <div>
+                        <input type="number" ng-model="model.adult" class="form-control input-sm">
+                    </div>
+                </div>    
+                <div class="col-sm-4">
+                    <label class="control-label text-xs text-muted">Child : </label>
+                    <div>
+                        <input type="number" ng-model="model.chld" class="form-control input-sm">
+                    </div>
+                </div>  
+
+                <div class="col-sm-4">
+                    <label class="control-label text-xs text-muted">Booking Rate : </label>
+                    <div>
+                        <input type="number" ng-model="model.booking_rate" class="form-control input-sm">
+                    </div>
+                </div>  
+            </div> 
+
+            <div class="form-group">
+                <div class="col-sm-6">
+                    <label class="control-label text-xs text-muted">Email: </label>
+                    <div>
+                        <input type="text" ng-model="model.email" class="form-control input-sm">
+                    </div>
+                </div>    
+                <div class="col-sm-6">
+                    <label class="control-label text-xs text-muted">Mobile : </label>
+                    <div>
+                        <input type="text" ng-model="model.mobile" class="form-control input-sm">
+                    </div>
+                </div>  
+            </div> 
+
+            <div class="form-group">
+                <div class="col-sm-6">
+                    <label class="control-label text-xs text-muted">Company: </label>
+                    <div>
+                        <input type="text" ng-model="model.company" class="form-control input-sm">
+                    </div>
+                </div>    
+                <div class="col-sm-6">
+                    <label class="control-label text-xs text-muted">Nationality : </label>
+                    <div>
+                        <select class='form-control input-sm' ng-model="model.nationality"
+                            ng-options="value for value in country_list" />
+                    </div>
+                </div>  
+            </div> 
+
+            <div class="form-group">
+                <div class="col-sm-6">
+                    <label class="control-label text-xs text-muted">Booking Source: </label>
+                    <div>
+                        <input type="text" ng-model="model.booking_src" class="form-control input-sm">
+                    </div>
+                </div>    
+                <div class="col-sm-6">
+                    <label class="control-label text-xs text-muted">Status : </label>
+                    <div>
+                        <select class='form-control input-sm' ng-model="model.status"
+                            ng-options="value for value in status_list" />
+                    </div>
+                </div>  
+            </div> 
+
+            
+            <div class="form-group" >
+                <div class="col-sm-12">
+                    <label class="control-label text-xs text-muted">Booking Note : </label>
+                    <div>
+                        <textarea class="form-control input-sm" rows="3" ng-model="model.booking_note"
+                                style="resize:none" maxlength="160" required></textarea>
+                    </div>
+                </div>                 
+                <div class="col-sm-12">
+                    <label class="control-label text-xs text-muted">Special Request : </label>
+                    <div>
+                        <textarea class="form-control input-sm" rows="3" ng-model="model.special_req"
+                                style="resize:none" required></textarea>
+                    </div>
+                </div>                    
+            </div>
+        </div>
+
+        <div class="modal-footer ">            
+            <button type="submit" class="btn btn-info btn-sm w-xs" data-dismiss="modal">
+                <span class="glyphicon glyphicon-ok"></span>
+                <b> {{model.id > 0 ? 'Update' : 'Create'}}</b>
+            </button>
+            <button type="button" class="btn btn-default btn-sm w-xs" data-dismiss="modal" ng-click="cancel()">
+                <span class="glyphicon glyphicon-remove"></span>
+                <b> Cancel</b>
+            </button>
+        </div>
+
+    </div>
+</form>

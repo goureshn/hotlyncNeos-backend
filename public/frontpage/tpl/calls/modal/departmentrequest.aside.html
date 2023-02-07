@@ -1,0 +1,33 @@
+<div class="aside" style="height: 100%;" tabindex="-1">
+	<md-content>
+		<md-tabs md-dynamic-height md-border-bottom
+			md-autoselect 
+			md-selected="selected_index"
+		>
+			<md-tab label="New Request" index="100" >
+				<md-content fill-height additional-padding="100" ng-include="'tpl/guestservice/ticket/department_request.html'">	
+					<b>New Request</b>				
+				</md-content>					
+			</md-tab>
+			<md-tab label="Previous List" md-on-select="getPreviousHistory()" index="101" >
+				<md-content fill-height additional-padding="100" ng-include="'tpl/calls/modal/guestservice.list.html'">
+					<b>Previous List {{prev_history.length}}</b> 
+				</md-content>
+			</md-tab>	
+
+			<md-tab ng-repeat="tab in selectedTickets" label="{{gs.getTicketNumber(tab)}}" index="{{102 + tab.id}}">
+				<md-tab-label>
+					&nbsp;{{gs.getTicketNumber(tab)}}
+					<i class="fa fa-times" style="margin-left: 5px; color:#FF0000" ng-click="onSelectTicket(tab)"></i>
+				</md-tab-label>
+				<md-tab-body>
+					<div fill-height ng-if="tab.type == 1" additional-padding="100" debounce-wait="10" ng-controller="GuestrequestEditController" ng-include="'tpl/guestservice/ticket/guest_request_edit.html'" ng-init="init(tab)" >
+					</div>
+					<div fill-height ng-if="tab.type == 2" additional-padding="100" debounce-wait="10" ng-controller="DepartmentrequestEditController" ng-include="'tpl/guestservice/ticket/department_request_edit.html'" ng-init="init(tab)" >
+					</div>
+				</md-tab-body>
+			</md-tab>	
+		</md-tabs>
+	</md-content>
+
+</div>

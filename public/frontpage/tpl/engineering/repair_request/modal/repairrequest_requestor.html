@@ -1,0 +1,77 @@
+<div class="modal-content">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">
+            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        </button>
+        <h3 class="modal-title" style="color:#2691d9" id="Heading">Add New Requestor</h3>
+    </div>
+    <br>
+    <div class="modal-body">
+        <form class="form-horizontal form-validation">
+          
+            <div class="form-group" >
+                <div class="col-sm-6">
+                    <label class="control-label text-xs text-muted">Name<i class="text-danger">*</i></label>
+                    <div>
+                        <input type="text" ng-model="repair_request.new_requestor" class="form-control input-sm" 
+                            uib-popover="Enter Requestor Name" popover-trigger="mouseenter" required>
+                    </div>
+                </div>               
+                <div class="col-sm-6">
+                    <label class="control-label text-xs text-muted">Email<i class="text-danger">*</i></label>
+                    <div>
+                        <input type="text" ng-model="repair_request.new_email" class="form-control input-sm"
+                         uib-popover="Enter Email address" popover-trigger="mouseenter" required>
+                    </div>
+                </div>                   
+            </div>     
+            <div class="form-group" >
+                <div class="col-sm-6">
+                    <label class="control-label text-xs text-muted">Contact</label>
+                    <div>
+                        <input type="text" ng-model="repair_request.new_contact" class="form-control input-sm" 
+                            uib-popover="Enter Contact" popover-trigger="mouseenter">
+                    </div>
+                </div>               
+                                          
+            </div>          
+        </form>
+
+        <div class="table table-responsive" ng-show="tenant_list.length > 0">
+            <label class="font-bold"><i class="fa fa-history" aria-hidden="true"></i>&nbsp;&nbsp;Requestor List</label>
+            <table  st-table="ticketlist" class="table ticket table-striped b-t b-light">
+              <thead class="tblhead-sm" style="font-size: .7vw">
+                <tr>
+                  <th class="text-center"><b>Name</b></th>
+                  <th class="text-center"><b>Email</b></th>
+                  <th class="text-center"><b>Contact</b></th>
+                  <th class="text-center"><b>Added By</b></th>
+                  <th class="text-center"><b>Created Date</b></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="row in tenant_list">
+                  <td class="text-center" ng-click="selectRow(row)"><span>{{row.tenant_name}}</span></td>
+                  <td class="text-center"><span>{{row.email}}</span></td>
+                  <td class="text-center"><span>{{row.contact}}</span></td>
+                  <td class="text-center"><span>{{row.added_by}}</span></td>
+                  <td class="text-center"><span>{{row.created_at | mydatetime}}</span></td>
+                </tr>
+              </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal-footer ">
+        <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal" ng-click="addrequestor()">
+            <span class="glyphicon glyphicon-ok"></span>
+            <b> Add</b>
+        </button>
+        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal" ng-click="cancel()">
+            <span class="glyphicon glyphicon-remove"></span>
+            <b> Cancel</b>
+        </button>
+    </div>
+
+</div>
+

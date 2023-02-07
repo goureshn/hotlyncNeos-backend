@@ -1,0 +1,250 @@
+<style>
+	p::first-letter {
+		text-transform: capitalize;
+	}
+	.text-xs {
+	  margin-bottom: 0px;
+	  margin-top: 0px;
+	}
+	tags-input .tags {
+	font-size: 12px;
+	}
+}
+</style>
+<script type="text/ng-template" id="complaint_detail.html">
+  	<div ng-include="'tpl/complaint/complaint_detail.html'"></div>
+</script>
+
+
+<uib-accordion close-others="false">
+	<div class="full_height wrapper">		
+		<!-- - - - - - REQUEST DETAIL - - - - - -->		
+		<div class="panel panel-default" style="border-radius: 4px">
+			<div class="panel-heading">
+				<div class="pull-left">
+				<label class="font-bold text-sm"><i class="fa fa-user-circle-o text-default"></i>&nbsp;&nbsp;Request Party Details</label>
+				</div>
+			<br>
+			</div>
+			
+			<div class="panel-body">
+				<form class="form-horizontal form-validation" >
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">Name</label>
+						<div>
+						<label class="text-sm font-bold">{{complaint.request_name}}</label>
+						
+						</div>
+					</div>
+					
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">Company</label>
+						<div>
+						<label class="text-sm font-bold">{{::complaint.request_company}}</label>
+					
+						</div>
+						
+					</div>
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">Contact Number</label>
+						<div>
+					    <label class="text-sm font-bold">{{::complaint.request_no}}</label>
+						</div>
+					</div>
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">Floor</label>
+						<div>
+					    <label class="text-sm font-bold">{{::complaint.request_floor}}</label>
+						</div>
+					</div>
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">Request Date</label>
+						<div>
+					    <label class="text-sm font-bold">{{::complaint.request_date |mydatetime : 'D MMM YYYY hh:mm a'}}</label>
+						</div>
+					</div>
+					
+						                           
+					    
+				</form>
+			</div>
+		</div>
+		
+		<!-- - - - - - /REQUEST DETAIL - - - - - -->
+
+		<!-- - - - - THIRD DETAIL - - - - -->
+
+		<div class="panel panel-default" style="border-radius: 4px">
+			<div class="panel-heading">
+				<div class="pull-left">
+				<label class="font-bold text-sm"><i class="fa fa-user-circle-o text-default"></i>&nbsp;&nbsp;Third Party Details</label>
+				</div>
+			<br>
+			</div>
+			
+			<div class="panel-body">
+				<form class="form-horizontal form-validation" >
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">Name</label>
+						<div>
+						<label  class="text-sm font-bold">{{complaint.third_name}}</label>
+						
+						</div>
+					</div>
+					
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">Company</label>
+						<div>
+						<label class="text-sm font-bold">{{::complaint.third_company}}</label>
+					
+						</div>
+						
+					</div>
+					                
+					    
+				</form>
+			</div>
+		</div>
+		
+		
+	
+			
+		<!-- - - - - /THIRD DETAIL - - - - -->
+
+
+		<!-- - - - - REQUEST DETAIL - - - - -->
+
+		<div class="panel panel-default" style="border-radius: 4px">
+			<div class="panel-heading">
+				<div class="pull-left">
+				<label class="font-bold text-sm"><i class="fa fa-info-circle text-default"></i>&nbsp;&nbsp;Request Details</label>
+				</div>
+			<br>
+			</div>
+			
+			<div class="panel-body">
+				<form class="form-horizontal form-validation" >
+						<label class="text-xs text-muted">General Access/Services/Deliveries</label>
+					<div class="col-sm-12">
+						
+						<label ng-show= "complaint.prptyrmv" class="text-sm font-bold">Property removal<br></label>
+						<label ng-show= "complaint.food_items" class="text-sm font-bold">Food Items<br></label>
+						<label ng-show= "complaint.printed_materials" class="text-sm font-bold">Printed Materials/Documents<br></label>
+						<label ng-show= "complaint.stationery" class="text-sm font-bold">Stationery and Supplies<br/></label>
+						<label ng-show= "complaint.furniture" class="text-sm font-bold">Furniture<br/></label>
+						<label ng-show= "complaint.it_products" class="text-sm font-bold">IT Products<br/></label>
+						<label ng-show= "complaint.cleaning" class="text-sm font-bold">Cleaning<br/></label>
+						<label ng-show= "complaint.pest_control" class="text-sm font-bold">Pest Control<br/></label>
+						<label ng-show= "complaint.fit_out" class="text-sm font-bold">Fit out Work/MEP Work<br/></label>
+						<label ng-show= "complaint.permit_work" class="text-sm font-bold">Permit to Work<br/></label>
+						
+						
+					</div>
+
+					<div ng-show= "complaint.others" class="col-sm-6">
+						<label class="control-label text-xs text-muted">Other</label>
+						<div>
+						<label class="text-sm font-bold">{{::complaint.other_items}}</label>
+					
+						</div>
+						
+					</div>
+					
+					<div ng-show= "complaint.prptyrmv" class="col-sm-6">
+						<label class="control-label text-xs text-muted">Reason for Removal</label>
+						<div>
+						<label class="text-sm font-bold">{{::complaint.reason}}</label>
+					
+						</div>
+						
+					</div>
+					                
+					    
+				</form>
+			</div>
+		</div>
+		
+		
+	
+			
+		<!-- - - - - /REQUEST DETAIL - - - - -->
+
+		<!-- - - - - PROPERTY LIST DETAIL - - - - -->
+
+		
+			<div class="panel panel-default" style="border-radius: 4px" ng-show= "complaint.prptyrmv">
+				<div class="panel-heading">
+					<label class="font-bold">Property Added</label>
+				</div>
+			<div class="table  table-responsive" additional-padding="40" style="margin-bottom: 10px;">
+				<table class="table table-striped ticket" st-pipe="prptylist" st-table="datalist">
+				  
+				  <tbody ng-hide="isLoading">
+				  <tr class="" ng-repeat="row in datalist">
+					<!--<td class="text-center" >{{row.id}}</td>-->
+					
+							<td class= "text-center text-sm" >{{row.items}}</td>
+							<td class="text-left text-sm" >{{row.quantity}}</td>		
+				  </tr>
+				  </tbody>
+						 <tbody ng-show="isLoading">
+					<tr>
+					  <td colspan="9" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+					</tr>
+				  </tbody>
+					  
+				</table>
+				
+			  </div>
+			</div>
+
+		<!-- - - - - /PROPERTY LIST DETAIL - - - - -->
+		
+		<!-- - - - - LEASE DETAIL - - - - -->
+			
+		<div class="panel panel-default" style="border-radius: 4px">
+			<div class="panel-heading">
+				<label class="text-sm font-bold"><i class="fa fa-user-circle-o text-default"></i>&nbsp;&nbsp;Leasing Office Details</label>
+				
+			</div>
+			<div class="panel-body">
+				<div class="form-horizontal">
+					<div disable-all="disable_all">
+						
+						
+						<div class="col-sm-6">
+							<label class="control-label text-xs text-muted">Name</label>
+							<div>
+								<label class="text-sm font-bold">{{complaint.lease_name}}</label>
+							</div>
+						</div>
+						<div class="col-sm-6">
+							<label class="control-label text-xs text-muted">Contact Number</label>
+							<div>
+								<label class="text-sm font-bold">{{::complaint.lease_no}}</label>
+							</div>
+						</div>
+						<div class="col-sm-6">
+							<label class="control-label text-xs text-muted">Lease Date</label>
+							<div>
+								<label class="text-sm font-bold">{{::complaint.lease_date |mydatetime : 'D MMM YYYY hh:mm a'}}</label>
+							</div>
+						</div>
+						
+				    </div>	
+				</div>
+			</div>
+
+		</div><br>
+
+		<!-- - - - -/ LEASE DETAIL - - - - -->
+		
+		<center>
+			<button  ng-show = "complaint.status != 'Approved Level 3'"type="button " class="btn btn-dark btn-sm" ng-click="approve()">
+			<span class="text-success font-bold"><i class="fa fa-check"></i>&nbsp;Approve</span></button>
+			
+		</center><br><br>
+					
+			
+</uib-accordion>
+

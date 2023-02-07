@@ -1,0 +1,160 @@
+<style>
+	#scrollable-dropdown-menu .dropdown-menu {
+		max-height: 150px;
+		overflow-y: auto;
+	}
+</style>
+<input type="hidden" id="id" value="-1" ng-model="model_data.id"/>
+
+	<div class="panel panel-default"> 
+		<div class="panel-heading wrapper"> 
+			<button type="button" class="btn btn-success btn-sm" style="float:right; margin-top: -5px" data-toggle="modal" data-target="#addModal" ng-click="onShowEditRow(-1)">
+				<span class="glyphicon glyphicon-plus"></span>
+				<b> Add New </b>
+			</button> 
+			<button  type="button" class="btn btn-success btn-sm" style="float:right; margin-top: -5px; margin-right: 10px" data-target="#exportModal" data-toggle="modal" ng-disabled="job_role!='SuperAdmin'&&edit_flag==0" >
+				<b><i class="fa fa-download"></i> Export File </b>
+			</button>                            
+			<i class="fa fa-street-view"></i>                            
+			<span class="font-bold">Task List Management</span>
+		</div>                         
+		<div class=""> 
+			<table id="table_grid" class="table table-hover table-bordered" style="text-align: center;width:100%" ng-model = "table_grid"> 
+				<thead> 
+					<tr> <!--
+						<th no-sort style="text-align: center">
+							<input type="checkbox" id="checkall" />
+						</th>-->
+						<th style="text-align: center" ng-repeat = "field in fields">
+							<b>{{field}}</b>
+						</th>						
+						<th style="text-align: center">Edit</th>
+						<th style="text-align: center">Delete</th>
+					</tr>                                     
+				</thead>                    
+			</table>                             
+		</div>
+	</div>
+	
+	<div class="modal fade" id="exportModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"> 
+		<div class="modal-dialog" role="document"> 
+			<div class="panel"> 
+				<div class="modal-header bg"> 
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"> 
+						<span aria-hidden="true">&times;</span> 
+					</button>  
+					<h5 class="modal-title font-bold" style="color:#2691d9">
+							<i class="fa fa-download"></i>&nbsp;Export Report</h5>
+				</div>
+				<div class="modal-body"> 
+					<br>
+					<form class="form-horizontal form-validation">
+							<label class="control-label text-xs font-bold" style="margin-left: 15px;font-size: 10px">&nbsp;&nbsp;&nbsp;&nbsp;Do you want to export this table?</label><br><br>
+					</form>
+					<form class="form-horizontal form-validation">
+							<center>
+									<button type="button" class="btn btn-success btn-sm" ng-click="onDownloadExcel()" data-dismiss="modal">
+									<span class="font-bold"><i class="fa fa-check"></i>&nbsp;Ok</span></button>
+									<button type="button" class="btn btn-danger btn-sm" class="close" data-dismiss="modal">
+									<span class="font-bold"><i class="fa fa-times"></i>&nbsp;Cancel</span></button>           
+						  </center>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"> 
+	<div class="modal-dialog" role="document"> 
+		<div class="panel"> 
+			<div class="modal-header bg"> 
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"> 
+					<span aria-hidden="true">&times;</span> 
+				</button>                             
+				<h5 class="modal-title font-bold" style="color:#2691d9" ng-if="model_data.id<0">
+					<i class="fa fa-plus"></i>&nbsp;Add Task</h5>
+				<h5 class="modal-title font-bold" style="color:#2691d9" ng-if="model_data.id>=0">
+					<i class="fa fa-pencil"></i>&nbsp;Edit Task</h5>				
+			</div>                         
+			<div class="modal-body"> 
+				<br> 
+				<form class="form-horizontal"> 
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Task Group:</label>
+						<div id="scrollable-dropdown-menu" class="col-sm-5">
+							<!--<select id='prpty_id' class='form-control' ng-model="model_data.taskgroup_id"-->
+								<!--ng-options="value.id as value.name for (key, value) in taskgroups">		-->
+							<!--</select>-->
+							<input class="form-control input-sm col-sm-5" type="text" ng-model="taskgroup_name"
+								   uib-typeahead="tasks.name for tasks in gettaskgroups($viewValue)"
+								   typeahead-min-length="0"
+								   typeahead-on-select="ontaskgroups(taskgroups, $item, $model, $label)"
+								   required />
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Task Category:</label>
+						<div id="scrollable-dropdown-menu" class="col-sm-5">
+							<!--<select id='prpty_id' class='form-control' ng-model="model_data.taskgroup_id"-->
+								<!--ng-options="value.id as value.name for (key, value) in taskgroups">		-->
+							<!--</select>-->
+							<input class="form-control input-sm col-sm-5" type="text" ng-model="taskcategory_name"
+								   uib-typeahead="tasks.name for tasks in gettaskcategorys($viewValue)"
+								   typeahead-min-length="0"
+								   typeahead-on-select="ontaskcategorys(categorys, $item, $model, $label)"
+								   required />
+						</div>
+					</div>
+				
+					<text-item formlabel="Task Name" modelname="model_data.tasklist_name"></text-item>
+
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="status">Type:</label>
+						<div class="col-sm-5">
+							<select id='prpty_id' class='form-control' ng-model="model_data.type_id"  ng-change="onSelectType(model_data.type_id)">
+								<option value="None">None</option>
+								<option value="Amenities">Amenities</option>
+							</select>
+						</div>
+					</div>
+					<div class="form-group" ng-show="cost_flag">
+						<label class="control-label col-sm-4" for="status">Cost:</label>
+						<div class="col-sm-5">
+							<input class="form-control input-sm col-sm-5" type="number" ng-model="model_data.cost"
+								   typeahead-min-length="0"
+								    />
+						</div>
+					</div>
+					<div class="form-group">
+							<label class="control-label col-sm-4" for="status">Languages:</label>
+					</div>
+					<div class="form-group">
+							<li ng-repeat="row in model_data.lang" class="list-group-item clearfix b-l-5x">
+								<label class="control-label col-sm-4" for="status">{{row.lang}}</label>
+								<div class="col-sm-5">
+									<input class="form-control input-sm col-sm-5" ng-model="row.text"/>
+								</div>
+							</li>
+					</div>
+					<link href="/lib/angular/angular-toggle-switch-bootstrap-3.css" media="all" rel="stylesheet" type="text/css">
+
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="status">Active:</label>
+						<div class="col-sm-5">
+							<div toggle-switch class="switch-primary" on-label="Yes" off-label="No" ng-model="model_data.status"></div>
+						</div>
+					</div>
+
+					<!--<div class="form-group" ng-include="'/adminpanel/partials/fragments/uploadcsv.html'"></div>-->
+				</form>                             
+			</div>     
+
+			<!-- <div class="col-md-12" style="clear:both;margin-bottom: 20px" ng-include="'/adminpanel/partials/fragments/uploader.html'"></div> -->
+			<div style="clear:both">			
+				<submit-form id="model_data.id" updatedata="onUpdateRow()"></submit-form>						
+			</div>	
+		</div>                     
+	</div>                 
+</div>             
+
+<dialog-delete title="Task List" modelname="model_data.tasklist_name" deletedata="deleteRow()"></dialog-delete>

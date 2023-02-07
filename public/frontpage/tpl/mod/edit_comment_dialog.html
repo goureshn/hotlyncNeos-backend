@@ -1,0 +1,60 @@
+<script type="text/ng-template" id="locationTypeahead.html">
+    <a>
+        <span ng-bind="match.model.category_name"></span><br>
+    </a>
+</script>
+<form class="form-horizontal form-validation" ng-submit="onSave()">
+    <style>
+        .search-filter .checkbox {
+            margin: 0px;
+        }
+        table tr.selected-row {
+            background-color: #3b8ef4;
+        }
+
+        table tr.selected-row td {
+            color: #fff;
+        }
+
+        .btn-disabled {
+            pointer-events: none !important;
+        }
+
+    </style>
+    <div class="modal-content">
+        <div class="modal-header bg">
+            <button type="button" class="close" ng-click="onCancel()">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <h5 class="modal-title font-bold" style="color:#2691d9">
+                <i class="fa {{type == 'Add' ? 'fa-plus' : 'fa-edit'}}"></i>&nbsp;{{type}} Comment of "{{item_name}}"
+            </h5>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <div class="col-sm-12">
+                    <textarea class="form-control input-sm" rows="4" ng-model="comment"
+                              style="resize:none;"></textarea>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-12 text-right">
+                    <button type="button" class="btn btn-process btn-sm {{comment == old_comment ? 'disabled btn-disabled' : ''}}" ng-click="onReset()">
+                        <i class="fa fa-reset"></i>
+                        <b> Reset</b>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer ">
+            <button type="submit" class="btn btn-info btn-sm w-xs">
+                <i class="fa fa-check"></i>
+                <b> Save</b>
+            </button>
+            <button type="submit" class="btn btn-danger btn-sm w-xs">
+                <i class="fa fa-times"></i>
+                <b> Cancel</b>
+            </button>
+        </div>
+    </div>
+</form>

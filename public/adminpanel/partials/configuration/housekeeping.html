@@ -1,0 +1,70 @@
+<div class=" panel panel-default" style="border-color: #dee5e7">
+    <div class="panel-heading wrapper">
+        <div  style="float:right; margin-top: -5px; background: #efefef;padding:5px 10px 5px 10px;color: #868585;font-size: 16px; " >
+            <strong>{{message}}</strong>
+        </div>
+        <i class="fa fa-cog"></i>
+        <span class="font-bold"> &nbsp;&nbsp;Configuration</span>
+    </div>
+    <div class="" style="background-color: #eeeeee">
+        <!----------------------left  general --->
+        <div class="col-sm-6">
+            <div>
+                <h5><strong> Housekeeping</strong></h5>
+            </div>
+            <div style="margin-left: 30px">
+                <div class="form-horizontal" >
+                    <div class="form-group">
+                        <label class="col-sm-3">Maximun Turn Down Duration</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" ng-model="max_turndown_duration"
+                                   ng-keypress="($event.which === 13)?saveHouseKeeping('max_turndown_duration', max_turndown_duration, 'housekeeping'):0" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3">Turn Down Service</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" ng-model="turn_down_service"
+                                   ng-keypress="($event.which === 13)?saveHouseKeeping('turn_down_service', turn_down_service, 'housekeeping'):0" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3">Housekeeping Cleaning Time</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" ng-model="hskp_cleaning_time"
+                                   ng-keypress="($event.which === 13)?saveHouseKeeping('hskp_cleaning_time', hskp_cleaning_time, 'housekeeping'):0" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-4"class="checkbox" style="margin-bottom: 20px" >
+                             <label>
+                                 <input type="checkbox"  ng-model="hskp_inspection" ng-checked = "hskp_inspection"
+                                   ng-change="saveHouseKeeping('hskp_inspection', hskp_inspection, 'housekeeping')" />
+                                    HouseKeeping Inspection
+                            </label>
+                       
+                        </div>
+                        <div class="col-sm-6">
+                            This is to enable/disable inspection requirement after room is cleaned.
+                        </div>
+                   </div>
+                   <div class="form-group">
+                        <label class="col-sm-3">Housekeeping Department ID</label>
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control" ng-model="housekeeping_dept_id"
+                               ng-keypress="($event.which === 13)?saveHouseKeeping('housekeeping_dept_id', housekeeping_dept_id, 'housekeeping'):0" />
+                            </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3">Housekeeping Supervisor Jobrole ID</label>
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control" ng-model="supervisor_job_role"
+                               ng-keypress="($event.which === 13)?saveHouseKeeping('supervisor_job_role', supervisor_job_role, 'housekeeping'):0" />
+                            </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,31 @@
+{
+  "name": "angular-auto-height",
+  "version": "0.0.5",
+  "authors": [
+    "Emanuel Imhof <hello@m43nu.ch>"
+  ],
+  "description": "An AngularJS directive to automatically adjust the height of an element corresponding to the parent and siblings.",
+  "main": "dist/auto-height.js",
+  "keywords": [
+    "angular",
+    "js",
+    "m43nu",
+    "auto",
+    "height",
+    "angularjs"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests",
+    "src",
+    "gulpfile.js",
+    "*.nupkg"
+  ],
+    "dependencies": {
+        "angular": "~1.2"
+    }
+}

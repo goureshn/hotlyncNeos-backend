@@ -1,0 +1,234 @@
+<input type="hidden" id="id" value="-1" ng-model="model_data.id"/>
+<link href="/lib/angular/angular-toggle-switch-bootstrap-3.css"
+      media="all" rel="stylesheet" type="text/css">
+
+<style>
+    .pointer-events-none {
+        pointer-events: none !important;
+        background-color: #eee;
+        cursor: not-allowed !important;
+    }
+    .pointer-events-none .tags {
+        background-color: #eee !important;
+    }
+    .pointer-events-none input {
+        background-color: #eee !important;
+    }
+</style>
+<div class=" panel panel-default" style="border-color: #dee5e7">
+    <div class="panel-heading wrapper">
+        <div  style="float:right; margin-top: -5px; background: #efefef;padding:5px 10px 5px 10px;color: #868585;font-size: 16px; " >
+            <strong>{{message}}</strong>
+        </div>
+        <i class="fa fa-cog"></i>
+        <span class="font-bold"> &nbsp;&nbsp;Configuration</span>
+    </div>
+    <div class="" style="background-color: #eeeeee">
+        <div class="col-sm-6">
+            <div>
+                <h5><strong> Complaint</strong></h5>
+            </div>
+            <div style="margin-left: 30px">
+                <div class="form-horizontal" >
+                    <div class="form-group">
+                        <label class="col-sm-3">Main Location Mandatory</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" ng-model="setting.main_complaint_location_mandatory"
+                                   ng-keypress="($event.which === 13)?saveSetting('main_complaint_location_mandatory', setting.main_complaint_location_mandatory):0" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3">Main Category Mandatory</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" ng-model="setting.main_complaint_maincategory_mandatory"
+                                   ng-keypress="($event.which === 13)?saveSetting('main_complaint_maincategory_mandatory', setting.main_complaint_maincategory_mandatory):0" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3">Close Comment</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" ng-model="setting.close_comment"
+                                   ng-keypress="($event.which === 13)?saveSetting('close_comment', setting.close_comment):0" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3">Close maincomplaint without Sub complaint</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" ng-model="setting.close_maincomplaint_without_subcomplaint"
+                                   ng-keypress="($event.which === 13)?saveSetting('close_maincomplaint_without_subcomplaint', setting.close_maincomplaint_without_subcomplaint):0" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- - - - - - All Departments - - - - - -->
+            <div style="display: flex; align-items: center">
+                <div>
+                    <h4><i class="fa fa-laptop"></i> <strong>&nbsp;All Departments &nbsp;&nbsp;(</strong>&nbsp;&nbsp;</h4>
+                </div>
+                <div toggle-switch class="switch-primary"
+                     ng-model="complaint_data_for_email.all_department.enable_flag"
+                     ng-change="saveDepartment()"
+                >
+                </div>
+                <div>
+                    <h4><strong>&nbsp;&nbsp;)</strong></h4>
+                </div>
+            </div>
+            <div style="padding-left: 16px">
+                <div class="checkbox">
+                    <label style="font-size: 15px">
+                        <input type="checkbox"
+                               ng-disabled="complaint_data_for_email.all_department.enable_flag != true"
+                               ng-model="complaint_data_for_email.all_department.job_role"
+                               ng-change="checkChanged()"/> <strong>Job Role to notify</strong>
+                    </label>
+                </div>
+                <div class="scrollable-dropdown-menu">
+                    <tags-input
+                            ng-model="complaint_data_for_email.all_department.job_list" display-property="job_role"
+                            style="margin-top: -5px"
+                            class="{{complaint_data_for_email.all_department.enable_flag != true
+                                || complaint_data_for_email.all_department.job_role != true
+                                ? 'pointer-events-none' : ''}}"
+                            replace-spaces-with-dashes="false" placeholder="Add Job Role"
+                            min-length="0"
+                            on-tag-added="checkChanged()"
+                            on-tag-removed="checkChanged()"
+
+                    >
+                        <auto-complete source="joblistFilter($query)"
+                                       min-length="0"
+                                       debounce-delay="0"
+                                       load-on-focus="true"
+                                       load-on-empty="true"
+                                       max-results-to-show="10"
+                                       required
+                        >
+                        </auto-complete>
+                    </tags-input>
+                </div>
+                <br>
+                <h5 ><strong>Frequenty</strong></h5>
+                <div class="form-horizontal" style="padding-left: 16px;">
+                    <div class="form-group">
+                        <div class="checkbox col-sm-3">
+                            <label style="font-size: 15px">
+                                <input type="checkbox"
+                                       ng-disabled="complaint_data_for_email.all_department.enable_flag != true"
+                                       ng-model="complaint_data_for_email.all_department.frequency.daily"
+                                       ng-change="checkChanged()"/> Daily
+                            </label>
+                        </div>
+                        <div class="col-sm-7">
+                            <div class="bootstrap-touchspin" style="width: 130px">
+                                <input type="time"
+                                       ng-disabled="complaint_data_for_email.all_department.enable_flag != true
+                                     || complaint_data_for_email.all_department.frequency.daily != true"
+                                       value="{{complaint_data_for_email.all_department.frequency.daily_time}}"
+                                       ng-model="tempAllDailyTime"
+                                       ng-blur="changeTime('all_daily_time')"
+                                       id="all_daily_time"
+                                       class="form-control text-center"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-horizontal" style="padding-left: 16px;">
+                    <div class="form-group">
+                        <div class="checkbox col-sm-3">
+                            <label style="font-size: 15px">
+                                <input type="checkbox"
+                                       ng-disabled="complaint_data_for_email.all_department.enable_flag != true"
+                                       ng-model="complaint_data_for_email.all_department.frequency.weekly"
+                                       ng-change="checkChanged()"
+                                /> Weekly
+                            </label>
+                        </div>
+                        <div class="col-sm-3">
+                            <select class='form-control {{complaint_data_for_email.all_department.enable_flag != true
+                          || complaint_data_for_email.all_department.frequency.weekly != true ? "pointer-events-none" : ""}}'
+                                    ng-model="complaint_data_for_email.all_department.frequency.weekly_day"
+                                    ng-options="type for type in weekly_options"
+                                    ng-change="checkChanged()" >
+                            </select>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="bootstrap-touchspin" style="width: 130px">
+                                <input type="time"
+                                       ng-disabled="complaint_data_for_email.all_department.enable_flag != true
+                                     || complaint_data_for_email.all_department.frequency.weekly != true"
+                                       ng-blur="changeTime('all_weekly_time')"
+                                       ng-model="tempAllWeeklyTime"
+                                       value="{{complaint_data_for_email.all_department.frequency.weekly_time}}"
+                                       class="form-control text-center"
+                                       id="all_weekly_time"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-horizontal" style="padding-left: 16px;">
+                    <div class="form-group">
+                        <div class="checkbox col-sm-3">
+                            <label style="font-size: 15px">
+                                <input type="checkbox"
+                                       ng-disabled="complaint_data_for_email.all_department.enable_flag != true"
+                                       ng-model="complaint_data_for_email.all_department.frequency.monthly"
+                                       ng-change="checkChanged()"
+                                /> Monthly
+                            </label>
+                        </div>
+                        <div class="col-sm-7">
+
+                            <div class="bootstrap-touchspin" style="width: 130px">
+                                <input type="time" ng-disabled="complaint_data_for_email.all_department.enable_flag != true
+                               || complaint_data_for_email.all_department.frequency.monthly != true"
+                                       ng-model="tempAllMonthlyTime"
+                                       value="{{complaint_data_for_email.all_department.frequency.monthly_time}}"
+                                       ng-blur="changeTime('all_monthly_time')" class="form-control text-center"
+                                       id="all_monthly_time"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-horizontal" style="padding-left: 16px;">
+                    <div class="form-group">
+                        <div class="checkbox col-sm-3">
+                            <label style="font-size: 15px">
+                                <input type="checkbox"
+                                       ng-disabled="complaint_data_for_email.all_department.enable_flag != true"
+                                       ng-change="checkChanged()"
+                                       ng-model="complaint_data_for_email.all_department.frequency.yearly"
+                                /> Yearly
+                            </label>
+                        </div>
+                        <div class="col-sm-7">
+                            <div class="bootstrap-touchspin" style="width: 130px">
+                                <input ng-disabled="complaint_data_for_email.all_department.enable_flag != true
+                              || complaint_data_for_email.all_department.frequency.yearly != true"
+                                       ng-model="tempAllYearlyTime"
+                                       value="{{complaint_data_for_email.all_department.frequency.yearly_time}}"
+                                       id="all_yearly_time"
+                                       ng-blur="changeTime('all_yearly_time')" type="time" class="form-control text-center"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group text-right">
+                <button type="button" style="margin-right: 30px; min-width: 100px"
+                        class="btn btn-info {{bChanged || isLoading ? '' : 'disabled'}}"
+                        ng-click="saveComplaintDataInfo()">
+                    {{isLoading ? 'Loading' : 'Update'}}</button>
+                <button type="button" style="min-width: 100px"
+                        class="btn btn-danger {{bChanged || isLoading ? '' : 'disabled'}}"
+                        ng-click="onReset()">Reset</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+

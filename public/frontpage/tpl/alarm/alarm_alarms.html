@@ -1,0 +1,127 @@
+<script type="text/ng-template" id="alarmTypeahead.html">
+   <a>
+        <span ng-bind="match.model.name"></span>
+   </a>
+</script>
+<div ng-controller="AlarmAlamrsController">
+    <div class="wrapper-md1">
+        <div class="col-sm-3">
+            <div class="panel panel-default">
+                <div class="panel-heading"><i class="fa fa-plus" aria-hidden="true"></i>&nbsp;Add Alarms List</div>
+                <div class="panel-body">
+                    <form class="form-horizontal form-validation">
+                        <input type="hidden" ng-model="gorup_id"  />
+                        <div class="form-group" >
+                            <div class="col-sm-12">
+                                <label class="text-muted">Alarm name</label><label class="field_title" style="color:#F44336">*</label>
+                                <input ng-model="alarm.name" class="form-control  input-sm" required/>
+                            </div>
+                        </div>
+                        <div class="form-group" >
+                            <div class="col-sm-12">
+                                <label class="text-muted">Description</label>
+                                <label style="color:#F44336">*</label>
+                                <input ng-model="alarm.description" class="form-control  input-sm" required/>
+                            </div>
+                        </div>
+                        <div class="form-group" >                           
+                            <div class="col-sm-6">
+                                <label class="text-muted">Editable</label>
+                                <label style="color:#F44336">*</label>                               
+                                <div>
+                                <label class="i-switch m-t-xs m-r">
+                                    <input type="checkbox" ng-model="alarm.editable">
+                                    <i></i>
+                                </label>
+                                </div>   
+                            </div>
+                             <div class="col-sm-6">
+                                <label class="text-muted">Active</label>
+                                <label style="color:#F44336">*</label>                               
+                                <div>
+                                <label class="i-switch m-t-xs m-r">
+                                    <input type="checkbox" ng-model="alarm.enable">
+                                    <i></i>
+                                </label>
+                                </div>                                                       
+                            </div>
+                        </div>                        
+                        <div class="form-group">
+                            <div class="col-sm-12">
+	                            <div class="pull-right">
+					                        <button type="submit" class="btn btn-sm btn-dark text-uc m-t-n-xs" ng-click="alarmAdd()"><strong>
+					                        	<span class="text-success">{{action_button}}</span></strong></button>
+					                        <button type="submit" class="btn btn-sm btn-dark text-uc m-t-n-xs" ng-click="alarmCancel()"><strong>
+					                        	<span class="text-danger">Clear</span></strong></button>
+					            </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>      
+
+        <div class="col-sm-9">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <div class="row">
+                        <div class="col-sm-8">
+                            <i class="fa fa-list-ul" aria-hidden="true"></i>
+                            &nbsp;Alarms List
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="input-group" >
+                                        <input type="text" ng-model="searchtext" ng-keyup="onSearch()" 
+                                            class="form-control input-sm bg-light no-border rounded padder" placeholder="Alarm name">
+                                        <span class="input-group-btn">
+                                            <button type="submit"   class="btn btn-sm bg-light rounded"><i class="fa fa-search"></i></button>
+                                        </span>
+                            </div>
+                        </div>
+                    </div>    
+                </div>
+                <div class="panel-body">
+                    <table  st-table="datalist"   st-pipe="getDataList" class="table ticket table-hover table-condensed b-t b-light" >
+                        <thead class="tblhead-sm" style="font-size: .8vw">
+                        <tr class="text-center">
+                            <th><b>Alarm Name</b></th>
+                            <th><b>Description</b></th>
+                            <th><b>Editable</b></th>
+                            <th><b>Active</b></th>                                
+                            <th style="width: 80px"><b>Action</b></th>
+                        </tr>
+                        </thead>
+                        <tbody  ng-hide="isLoading" ng-repeat="row in datalist">
+                            <tr class="text-center">
+                                <td align = "left">
+                                    {{row.name}}
+                                </td>
+                                <td align = "left">{{row.description}}</td>
+                                <td >{{row.editable == 1 ? 'Enable': 'Disable'}}</td>
+                                <td >{{row.enable == 1 ? 'Enable': 'Disable'}}</td>
+                                <td >
+                                    <a class="btn default btn-xs green" ng-click="editItems(row)">
+                                        <i class="fa fa-pencil"></i></a>
+                                    <!--<a class="btn default btn-xs red" ng-click="deleteItem(row)">
+                                        <i class="fa fa-times"></i></a>-->
+                                </td>
+                            </tr>
+                        </tbody>                                
+                        <tbody ng-show="isLoading">
+                            <tr>
+                                <td colspan="6" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+                            </tr>
+                        </tbody>
+                        <tfoot ng-hide="isLoading">
+                            <tr ng-show="paginationOptions.totalItems > paginationOptions.pageSize">
+                                <td colspan="6" class="text-center">
+                                    <div st-pagination="" st-items-by-page="paginationOptions.pageSize" st-displayed-pages="7" class="no-margin"></div>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,94 @@
+<script type="text/ng-template" id="tag-template">
+    <div class="tag-template">
+        <div class="right-panel">
+            <span>{{data.name}}</span>
+            <a class="remove-button" ng-click="$removeTag()">&#10006;</a>
+        </div>
+    </div>
+</script>
+<script type="text/ng-template" id="autocomplete-template">
+    <div class="autocomplete-template">
+        <div class="right-panel">
+            <span ng-bind-html="$highlight($getDisplayText())"></span><br>
+            <span style="font-size: 10px">{{data.type}}</span>
+        </div>
+    </div>
+</script>
+<div class="modal-content">
+    <form class="form-horizontal form-validation" ng-submit="create()">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">
+                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+            </button>
+            <h3 class="modal-title" style="color:#2691d9" id="Heading">Public Area Task</h3>
+        </div>
+        <br>
+        <div class="modal-body">
+            <!-- <div class="form-group" >
+                <label class="col-sm-3 text-right control-label text-muted" >Name</label>
+                <div class="col-sm-9  scrollable-dropdown-menu">
+                    <input class="form-control input-sm"  ng-model="model.name"  required
+                        placeholder="Name">
+                </div>
+            </div>        -->
+            <div class="form-group">
+                <label class="col-sm-3 text-right control-label text-muted" >Location</label>
+                <div class="col-sm-9  scrollable-dropdown-menu">
+                    <tags-input ng-model="location_tags" display-property="name" style="margin-top: -5px"
+                        replace-spaces-with-dashes="false" placeholder="Location"
+                        style="margin-top: 5px"
+                        min-length="0"
+                        template="tag-template" >
+                        <auto-complete source="getLocationList($query)"
+                            min-length="0"
+                            debounce-delay="0"
+                            load-on-focus="true"
+                            load-on-empty="true"
+                            max-results-to-show="10"
+                            template="autocomplete-template">
+                        </auto-complete>
+                    </tags-input>
+                </div>
+            </div> 
+            <!-- <div class="form-group" >
+                <label class="col-sm-3 text-right control-label text-muted" >Start Time</label>
+                <div class="col-sm-9  scrollable-dropdown-menu">
+                    <input type="time" placeholder="HH:mm:ss" ng-model="model.stime" style="min-width: 200px;" class="form-control input-sm ng-pristine ng-valid ng-not-empty ng-valid-required ng-touched" required="" aria-required="false" aria-invalid="false">
+                </div>
+            </div>     
+            <div class="form-group" >
+                <label class="col-sm-3 text-right control-label text-muted" >End Time</label>
+                <div class="col-sm-9  scrollable-dropdown-menu">
+                    <input type="time" placeholder="HH:mm:ss" ng-model="model.etime" style="min-width: 200px;" class="form-control input-sm ng-pristine ng-valid ng-not-empty ng-valid-required ng-touched" required="" aria-required="false" aria-invalid="false">
+                </div>
+            </div>  -->
+
+            <div class="form-group" >
+                <label class="col-sm-3 text-right control-label text-muted" >Time Out (Minutes)</label>
+                <div class="col-sm-9  scrollable-dropdown-menu">
+                    <input type="text" ng-model="model.time_out" style="min-width: 200px;" class="form-control input-sm ng-pristine ng-valid ng-not-empty ng-valid-required ng-touched" required="" aria-required="false" aria-invalid="false">
+                </div>
+            </div> 
+            
+            <!-- <div class="form-group" >
+                <label class="col-sm-3 text-right control-label text-muted" >Color</label>
+                <div class="col-sm-9  scrollable-dropdown-menu">
+                    <input class="form-control input-sm" type="color" value="#f6b73c"  ng-model="model.color"  required
+                        placeholder="Color">
+                </div>
+            </div>            -->
+        </div>
+
+        <div class="modal-footer ">
+            <button type="submit" class="btn btn-danger btn-sm" data-dismiss="modal" ng-click="save()">
+                <span class="glyphicon glyphicon-ok"></span>
+                <b> Edit</b>
+            </button>
+            <button type="button" class="btn btn-default btn-sm" data-dismiss="modal" ng-click="cancel()">
+                <span class="glyphicon glyphicon-remove"></span>
+                <b> Cancel</b>
+            </button>
+        </div>
+    </form>
+</div>
+

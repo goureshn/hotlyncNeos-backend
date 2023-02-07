@@ -1,0 +1,220 @@
+<style type="text/css">
+    .ql-container {
+        height: 150px;
+    }
+    .ql-tooltip.ql-editing{
+        left:150px !important;
+    }
+    .text-xs {
+	    font-size: 11px;
+	    font-weight: bold;
+	    margin-bottom: 0px;
+	    margin-top: 5px;
+    }
+</style>
+    <div class="wrapper">
+        <!--promotion information-->
+        <div class="panel panel-default" style="border-radius: 4px">
+          <div class="panel-heading">
+            <div class="pull-left">
+              <label class="font-bold text-sm"><i class="fa fa-info-circle text-default"></i>
+              &nbsp;&nbsp;Promotion Information</label>
+            </div><br>
+        	</div>
+
+          <div class="panel-body" style="padding: 5px 0px">
+	          <div class="col-sm-6">
+		          <label for="email" class="control-label text-xs text-muted">
+								Outlet Name<i class="text-danger">*</i>
+							</label>
+							<div>
+                <input type="text" class="form-control input-sm" placeholder="Store Name" maxlength="20" ng-model="promotion.outlet_name">
+              </div>
+		        </div>
+		        <div class="col-sm-12">
+		          <label for="email" class="control-label text-xs text-muted">
+								Title<i class="text-danger">*</i>
+							</label>
+							<div>
+                <input type="text" class="form-control input-sm" maxlength="100" placeholder="Title" ng-model="promotion.title" >
+              </div>
+		        </div>
+		        <div class="col-sm-6">
+		          <label for="email" class="control-label text-xs text-muted">
+								Price<i class="text-danger">*</i>
+							</label>
+							<div>
+                <input type="number" class="form-control input-sm" maxlength="4" placeholder="Price" ng-model="promotion.price">
+              </div>
+		        </div>
+		        <div class="col-sm-6">
+		          <label for="email" class="control-label text-xs text-muted">
+								Discount<i class="text-danger">*</i>
+							</label>
+							<div>
+                <input type="number" class="form-control input-sm" maxlength="2" placeholder="Discount" ng-model="promotion.discnt">
+              </div>
+		        </div>
+		        <div class="col-sm-6">
+		          <label for="email" class="control-label text-xs text-muted">
+								Start Date<i class="text-danger">*</i>
+							</label>
+							<a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+                <div class="input-group">
+                  <input type="text" class="form-control" ng-model="datetime.start_time">
+                  <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                </div>
+              </a>
+              <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+                <datetimepicker ng-model="datetime.start_date"
+                  data-datetimepicker-config="{ dropdownSelector: '#dropdown2' }"
+                  data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+              </ul>
+            </div>
+            <div class="col-sm-6">
+		          <label for="email" class="control-label text-xs text-muted">
+								End Date<i class="text-danger">*</i>
+							</label>
+							<a class="dropdown-toggle" id="dropdown1" role="button" data-toggle="dropdown" data-target="#">
+                <div class="input-group">
+                  <input type="text" class="form-control" ng-model="datetime.end_time">
+                  <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                </div>
+              </a>
+              <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel" style="left: auto !important;right: 0px;">
+                <datetimepicker ng-model="datetime.end_date"
+                  data-datetimepicker-config="{ dropdownSelector: '#dropdown1' }"
+                  data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+              </ul>
+            </div>
+            <div class="col-sm-12">
+		          <label for="email" class="control-label text-xs text-muted">
+								Disclaimer<i class="text-danger">*</i>
+							</label>
+							<input type="text" class="form-control input-sm" maxlength="150"  placeholder="Disclaimer" ng-model="promotion.disclaimer" >
+            </div>
+            <div class="col-sm-12">
+		          <label for="email" class="control-label text-xs text-muted">
+								Send enquiry to<i class="text-danger">*</i>
+							</label>
+							<textarea class="form-control input-sm" rows="2" ng-model="promotion.enquiry_to" style="resize:none"></textarea>
+							<span class="help-block m-b-none text-muted text-xs" style="font-style: italic">
+								Add multiple e-mails separated by comma. eg: email1@domain.com, email2@domain.com
+							</span>
+            </div>
+            <div class="col-sm-12">
+		          <label for="email" class="control-label text-xs text-muted">
+								Description<i class="text-danger">*</i>
+							</label>
+							<textarea class="form-control input-sm" rows="2" ng-model="promotion.description" style="resize:none"></textarea>
+            </div>
+          </div>
+        </div>
+		        
+		    
+        <!--Iamge-->
+        <div class="panel panel-default" style="border-radius: 4px">
+            <div class="panel-heading">
+                <div class="pull-left">
+                    <label class="font-bold text-sm"><i class="fa fa-picture-o text-default"></i>&nbsp;&nbsp;Image</label>
+                </div>
+                <br>
+            </div>
+
+            <div class="panel-body" style="padding: 5px 0px">
+                <div class="form-horizontal form-validation">                                                            
+                    <div class="form-group-mbl col-sm-12 label-group" style="padding: 5px 0px">
+                        <label class="col-sm-2 control-label text-muted text-xs">Upload File</label>                        
+                        <div class="col-sm-10">
+                            <button class="btn btn-dark btn-sm" ngf-select="uploadFiles($files)" multiple ngf-max-files="10" ngf-max-size="20MB"  ngf-accept="'image/*,video/*,!.jog'" ngf-pattern="'image/*,video/*,!.jog'">
+                                <span class="text-success font-bold"><i class="fa fa-folder-open"></i>&nbsp;Add file</span>
+                            </button>                           
+                        </div>
+                    </div>
+
+                    <div class="form-group-mbl col-sm-12 label-group" style="padding: 15px 0px"  >
+                            <li ng-repeat="f in files" class="text-xs" style="margin-left:15px; float:left;list-style: none" >
+                                <div class="preview"  >
+                                    <img ngf-src="!f.$error && f" height="60">
+                                    <video controls="" ngf-src="!f.$error && f" height="60"></video>
+                                 </div>
+                                <!--{{f.name}}-->&nbsp;&nbsp;&nbsp;
+                                <span class="glyphicon icon-close" style="margin-top:3px; color: red" ng-click="removeFile($index)"></span>
+                            </li>
+                    <span class="progress" ng-show="progress > 0">
+                        <div style="width:{{progress}}%" ng-bind="progress + '%'"></div>
+                    </span>
+                        {{errorMsg}}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+       
+        <!--Highlight-->
+        <div class="panel panel-default" style="border-radius: 4px">
+            <div class="panel-heading">
+                <div class="pull-left">
+                    <label class="font-bold text-sm"><i class="fa fa-pencil text-default"></i>&nbsp;&nbsp;Highlight</label>
+                </div>
+                <br>
+            </div>
+            
+            <div class="panel-body" style="padding: 5px 0px">
+                <div class="form-horizontal form-validation">                                        
+                    <div class="form-group-mbl col-sm-12 label-group" style="padding: 5px 0px">
+                        <div class="row" style="margin: 10px 0px 0px 0px">
+                            <ng-quill-editor ng-model="promotion.highlight" style="border: none" placeholder="" on-editor-created="editorCreated(editor)"  on-content-changed="contentChanged(editor, html, text)" on-selection-changed="selectionChanged(editor, range, oldRange, source)"></ng-quill-editor>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>   
+
+        <!--terms and condition-->
+        <div class="panel panel-default" style="border-radius: 4px">
+            <div class="panel-heading">
+                <div class="pull-left">
+                    <label class="font-bold text-sm"><i class="fa fa-file-text-o text-default"></i>&nbsp;&nbsp;Terms and Condition</label>
+                </div>
+                <br>
+            </div>
+
+            <div class="panel-body" style="padding: 5px 0px">
+                <div class="form-horizontal form-validation">                                                            
+                    <div class="form-group-mbl col-sm-12 label-group" style="padding: 5px 0px">
+                        <div class="row" style="margin: 10px 0px 0px 0px;">
+                            <ng-quill-editor ng-model="promotion.cond" placeholder="" on-editor-created="editorCreated(editor)"  on-content-changed="contentChanged(editor, html, text)" on-selection-changed="selectionChanged(editor, range, oldRange, source)"></ng-quill-editor>
+                        </div>
+                    </div>
+                </div>
+            </div>            
+        </div>
+
+         
+        <center style="margin-top:-10px; margin-bottom: 10px;">
+            <button type="button " class="btn btn-dark btn-sm" ng-click="createPromotion()">
+                <span class="text-success font-bold"><i class="fa fa-check"></i>&nbsp;Create</span></button>
+            <button type="button" class="btn btn-dark btn-sm" ng-click="cancelPromotion()">
+                <span class="text-danger font-bold"><i class="fa fa-times"></i>&nbsp;Cancel</span></button>
+        </center>
+
+       <!--log history-->
+        <!-- <div class="panel panel-default" style="border-radius: 4px">
+            <div class="panel-heading">
+                <div class="pull-left">
+                    <label class="font-bold text-sm"><i class="fa fa-info-circle text-default"></i>&nbsp;&nbsp;Log History</label>
+                </div>
+                <br>
+            </div>
+            
+            <div class="panel-body" style="padding: 5px 0px">
+                <div class="form-horizontal form-validation">                                                            
+                    <div class="form-group-mbl col-sm-12 label-group" style="padding: 5px 0px">
+                        <div class="grid" style="width:97%; max-height:300px; margin:auto" ui-grid="gridOptions" ui-grid-auto-resize ui-grid-pagination ui-grid-resize-columns></div>
+                    </div>
+                </div>
+            </div>
+        </div> -->
+        <!--end log history-->
+    </div>

@@ -1,0 +1,30 @@
+<style>
+    button {
+        pointer: cursor;
+    }
+
+    .btn.disabled {
+        pointer-events: none !important;
+    }
+
+</style>
+
+<form class="form-horizontal form-validation">
+    <div class="modal-content">
+        <div class="modal-body" style="padding-top: 30px; padding-bottom: 30px;">
+            <h3 style="text-align: center">{{title}}</h3>
+            <br/>
+        </div>
+
+        <div class="modal-footer ">
+            <div class="form-group" style="padding-left: 0; margin: 0; text-align: center">
+                <button type="button" ng-click="onYes()" class="btn btn-info btn-sm {{isLoading ? 'disabled' : ''}}" style="width: 80px">
+                    Yes
+                </button>
+                <button type="button" class="btn btn-danger btn-sm {{isLoading ? 'disabled' : ''}}" style="width: 80px" ng-click="onNo()">
+                    No
+                </button>
+            </div>
+        </div>
+    </div>
+</form>

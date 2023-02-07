@@ -1,0 +1,118 @@
+<style>
+    .img_size {
+        height:20px;
+        width:20px;
+    }
+</style>
+<div class="hbox stretch"  >
+    <div class="col b-r bg-auto" style="width: 300px">
+        <div>
+            <button type="button" class="btn btn-success pull-left" ng-click="onFinanceClose('department')" >Close</button>
+        </div>
+        <div class="table table-responsive" style="height:100%">
+            <table  st-table="datalist" st-pipe="getDataList" class="table ticket" >
+                <thead class="color-header">
+                <tr style="height:47px;" >
+                    <th style="text-align:left;">
+                        <input type="checkbox" ng-model="filter.depart_selected" ng-click="onChangeDepartTotalSelected()" />
+                    </th>
+                    <th style="text-align:left;"><b>Department</b></th>
+                    <th style="text-align:center;"><b>Total</b></th>
+                </tr>
+                </thead>
+                <tbody ng-hide="isLoading">
+                <tr class="" ng-repeat="row in datalist"  style="cursor:pointer"    >
+                    <td style="white-space: nowrap;">
+                        <input type="checkbox"  ng-model="row.depart_selected"   />
+                    </td>
+                    <td style="text-align:center;" ng-click="getSelectDetailCallList(row,$index)" >{{row.department}}</td>
+                    <td style="text-align:center;" ng-click="getSelectDetailCallList(row,$index)" >
+                        <!--<span style="white-space: nowrap;">{{row.cnt > 0 ? 'Pending for Approval' : 'OK'}}</span><br/>-->
+                        AED {{row.cost | number :2}}
+                    </td>
+                </tr>
+                </tbody>
+                <tbody ng-show="isLoading">
+                <tr>
+                    <td colspan="3" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col">
+        <div>
+            <button type="button" class="btn btn-success pull-right" style="margin-right: 10px;" ng-click="onFinanceClose('agent')" >Close</button>
+        </div>
+        <div class="table table-responsive" style="height:100%">
+            <table  st-table="detaillist"  st-pipe="getDetailCallList" style="width: 97%"  class="table ticket table-striped b-t b-light" >
+                <thead class="color-header">
+                <tr style="height:47px; text-align:middle;">
+                    <th style="text-align:center;"><input type="checkbox" ng-model="filter.total_selected" ng-click="onChangeTotalSelected()"></th>
+                    <th style="text-align:center;"><b>Date</b></th>
+                    <th style="text-align:center;"><b>Extention</b></th>
+                    <th style="text-align:center; white-space: nowrap;"><b>Phone #</b></th>
+                    <th style="text-align:center; white-space: nowrap"><b>Call Type</b></th>
+                    <th style="text-align:center;"><b>Cost</b></th>
+                    <th style="text-align:center; min-width:300px"><b>Reason</b></th>
+                    <th style="text-align:center;"><b>Status</b></th>
+                    <th style="text-align:center;">Action
+                        <!--<b ng-hide="selected_count > 1">Action</b>
+                        <select style="color:#212121" class='input-sm' ng-model="filter.approval_temp" ng-change="onChangeTotalApproval()" ng-show="selected_count >= 2"
+                                ng-options="type for type in approve_types">
+                        </select>-->
+                    </th>
+                </tr>
+                <tr>
+                </tr>
+                </thead>
+                <tbody ng-hide="isLoading" ng-repeat="row in detaillist">
+                    <tr class=""   >
+                        <td style="width:10px">
+                            <input type="checkbox"  ng-model="row.selected" ng-click="onChangeSelected()">
+                        </td>
+                        <td colspan="8" style="white-space: nowrap" valign="middle">{{row.wholename}}
+                            &nbsp;&nbsp;<span ng-class="row.downimage" style="cursor: pointer;"  ng-click="onClickRow(row, $index)" ></span>
+                        </td>
+                    </tr>
+                    <tr ng-if="row.collapse" ng-repeat="row1 in row.inform" >
+                        <td style="width:10px;padding-left: 30px;">
+                            <input type="checkbox"  ng-model="row1.selected" ></td>
+                        <td style="white-space: nowrap" valign="middle">{{row1.call_date | mydate}}</td>
+                        <td>{{row1.extension}}</td>
+                        <td>{{row1.called_no}}</td>
+                        <td>{{row1.call_type}}</td>
+                        <td>{{row1.carrier_charges | number:2}}</td>
+                        <td style="min-width:300px">{{row1.comment}}</td>
+                        <td style="white-space: nowrap">{{row1.approval}}</td>
+                        <td calss='text-center'style="white-space: nowrap" ng-if="row1.approval == 'Approved'">
+                            <img src="/images/big-finger-up.png" width="18" height="18" style="cursor:pointer" ng-click="onFinanceClose('child')" title="Closed" />
+                            &nbsp;&nbsp;
+                            <img src="/images/question.png" width="15" height="18" style="cursor:pointer" ng-click="onFinanceClose('child_return')" title="Returned" />
+                        </td>
+                        <!--
+                        <td  style="text-align:center;">
+                            <select class='input-sm' ng-model="row.approval_temp" ng-change="onChangeApproval(row)" ng-disabled="selected_count > 1"
+                               ng-options="type for type in approve_types">
+                            </select>
+                        </td>
+                        -->
+                    </tr>
+
+                </tbody>
+                <tbody ng-show="isChildLoading">
+                <tr>
+                    <td colspan="10" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+                </tr>
+                </tbody>
+                <tfoot ng-hide="isChildLoading">
+                <tr ng-show="paginationOptions.totalItems > paginationOptions.pageSize">
+                    <td colspan="4" class="text-center">
+                        <div st-pagination="" st-items-by-page="paginationOptions.pageSize" st-displayed-pages="7" class="no-margin"></div>
+                    </td>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>

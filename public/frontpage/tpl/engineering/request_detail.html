@@ -1,0 +1,113 @@
+<div class="modal-body wrapper-lg">
+    <h3 class="m-t-none m-b font-thin">Request Detail <i class="fa fa-star pull-right" ng-style="{ 'color':'#888' }" ></i></h3>
+    <hr/>
+    <div class ="row">
+        <div class="col-sm-3">
+            <h5 class="text-muted">ID :</h5>
+        </div>
+        <div class="col-sm-3">
+            <h5 class="text-muted">{{getTicketNumber(eng)}}</h5>
+        </div>
+    </div>
+
+    <div class ="row">
+        <div class="col-sm-3">
+            <h5 class="text-muted">Location :</h5>
+        </div>
+        <div class="col-sm-3">
+            <h5 class="text-muted">{{eng.lgm_name}}</h5>
+        </div>
+        <div class="col-sm-3">
+            <h5 class="text-muted">Location Type :</h5>
+        </div>
+        <div class="col-sm-3">
+            <h5 class="text-muted">{{eng.lgm_type}}</h5>
+        </div>
+    </div>
+
+    <div class ="row">
+        <div class="col-sm-3">
+            <h5 class="text-muted">Requestor :</h5>
+        </div>
+        <div class="col-sm-3">
+            <h5 class="text-muted">{{eng.wholename}}</h5>
+        </div>
+        <div class="col-sm-3">
+            <h5 class="text-muted">Job Role :</h5>
+        </div>
+        <div class="col-sm-3">
+            <h5 class="text-muted">{{eng.job_role}}</h5>
+        </div>
+    </div>
+
+    <div class ="row">
+        <div class="col-sm-3">
+            <h5 class="text-muted">Created date :</h5>
+        </div>
+        <div class="col-sm-3">
+            <h5 class="text-muted">{{ eng.created_at | mydatetime : 'D MMM YYYY hh:mm a'}}</h5>
+        </div>
+        <div class="col-sm-3">
+            <h5 class="text-muted">Status :</h5>
+        </div>
+        <div class="col-sm-3">
+            <h5 class="text-muted"><span class="" ng-class="{'label' : true, 'm-l-sm': true,
+							'bg-wakeup-pending': eng.status == 'Pending',
+							'bg-wakeup-waiting': eng.status == 'On Hold',
+							'bg-wakeup-progress': eng.status == 'In Progress',
+							'bg-wakeup-canceled': eng.status == 'Rejected',
+							'bg-wakeup-in-success': eng.status == 'Completed',
+							'bg-complaint-ack': eng.status == 'Default',
+									    						}">{{eng.status}}
+					</span></h5>
+        </div>
+    </div>
+    <div class ="row">
+        <div class="col-sm-3">
+            <h5 class="text-muted">Category :</h5>
+        </div>
+        <div class="col-sm-3">
+            <h5 class="text-muted">{{ eng.category_name}}</h5>
+        </div>
+        <div class="col-sm-3">
+            <h5 class="text-muted">Sub Category :</h5>
+        </div>
+        <div class="col-sm-3">
+            <h5 class="text-muted">{{eng.sub_category_name}}</h5>
+        </div>
+    </div>
+
+    <hr/>
+
+    <div class ="row">
+        <div class="col-sm-3">
+            <h5 class="text-muted">Subject :</h5>
+        </div>
+        <div class="col-sm-9">
+           <h5 class="text-muted">{{eng.subject}}</h5>
+        </div>
+    </div>
+
+    <div class ="row">
+        <div class="col-sm-3">
+            <h5 class="text-muted">Issue :</h5>
+        </div>
+        <div class="col-sm-9">
+            <h5 class="text-muted">{{eng.comment}}</h5>
+        </div>
+    </div>
+
+    <div class ="row">
+        <div class="col-sm-3">
+            <h5 class="text-muted">Download :</h5>
+        </div>
+        <div class="col-sm-9">
+            <a ng-repeat="path in eng.download_array" href="{{'/' + path}}" download><i class="fa fa-file-o" style="font-size: 20px; margin-right: 15px; margin-top: 7px"></i></a>
+        </div>
+    </div>
+
+    <div class="row">
+        <button type="button" class="btn btn-sm btn-success pull-right text-uc m-t-n-xs" ng-click="ok()"><strong>OK</strong></button>
+    </div>
+
+</div>

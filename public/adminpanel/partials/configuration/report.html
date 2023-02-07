@@ -1,0 +1,124 @@
+<div class=" panel panel-default" style="border-color: #dee5e7">
+    <div class="panel-heading wrapper">
+        <div  style="float:right; margin-top: -5px; background: #efefef;padding:5px 10px 5px 10px;color: #868585;font-size: 16px; " >
+            <strong>{{message}}</strong>           
+        </div>
+        <i class="fa fa-cog"></i>
+        <span class="font-bold"> &nbsp;&nbsp;Configuration</span>
+    </div>
+    <div class="" style="background-color: #eeeeee; height: 600px;">
+        <!--  left  general -->
+        <div class="col-sm-6">
+            <div>
+                <h5><strong> Guest Facilities Report</strong></h5>
+            </div>
+            <div style="margin-left: 30px">
+                <div class="form-horizontal" >
+                    <div class="form-group">
+                        <label class="col-sm-3">Recipients</label>
+                        <div class="col-sm-8"> 
+                            <tags-input ng-model="guest_fac_report_recipients" placeholder="Add Recipients" replace-spaces-with-dashes="false" style="margin-top: -5px" ng-change="onChangeVal1()">
+                                <auto-complete source="loadFilters($query)"
+                                    min-length="0"
+                                    debounce-delay="0"
+                                    load-on-focus="true"
+                                    load-on-empty="true"
+                                    max-results-to-show="100">
+                                </auto-complete>
+                            </tags-input>                           
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3">Time Start</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" ng-model="guest_fac_report_time_start"
+                                   ng-keypress="($event.which === 13)?saveReport('guest_fac_report_time_start', guest_fac_report_time_start, 'report'):0" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3">Time Interval</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" ng-model="guest_fac_report_time_interval"
+                                   ng-keypress="($event.which === 13)?saveReport('guest_fac_report_time_interval', guest_fac_report_time_interval, 'report'):0" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div>
+                <h5><strong> Guest Relation Log Report</strong></h5>
+            </div>
+            <div style="margin-left: 30px">
+                <div class="form-horizontal" >
+                    <div class="form-group">
+                        <label class="col-sm-3">Recipients</label>
+                        <div class="col-sm-8">                           
+                            <tags-input ng-model="guest_feedback_report_recipients" placeholder="Add Recipients" replace-spaces-with-dashes="false" style="margin-top: -5px" ng-change="onChangeVal1()">
+                                <auto-complete source="loadFilters($query)"
+                                    min-length="0"
+                                    debounce-delay="0"
+                                    load-on-focus="true"
+                                    load-on-empty="true"
+                                    max-results-to-show="100">
+                                </auto-complete>
+                            </tags-input>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3">Time Start</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" ng-model="guest_feedback_report_time_start"
+                                   ng-keypress="($event.which === 13)?saveReport('guest_feedback_report_time_start', guest_feedback_report_time_start, 'report'):0" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3">Time Interval</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" ng-model="guest_feedback_report_interval"
+                                   ng-keypress="($event.which === 13)?saveReport('guest_feedback_report_interval', guest_feedback_report_interval, 'report'):0" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-8">
+            <div>
+                <h5><strong> Guest Complaint Report</strong></h5>
+            </div>
+            <div style="margin-left: 30px">
+                <div class="form-horizontal" >
+                    <div class="form-group">
+                        <label class="col-sm-3">Recipients</label>
+                        <div class="col-sm-8">
+                            <tags-input ng-model="complaint_report_recipients" placeholder="Add Recipients" replace-spaces-with-dashes="false" style="margin-top: -5px" ng-change="onChangeVal1()">
+                                <auto-complete source="loadFilters($query)"
+                                    min-length="0"
+                                    debounce-delay="0"
+                                    load-on-focus="true"
+                                    load-on-empty="true"
+                                    max-results-to-show="100">
+                                </auto-complete>
+                            </tags-input>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3">Time Start</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" ng-model="complaint_report_time_start"
+                                   ng-keypress="($event.which === 13)?saveReport('complaint_report_time_start', complaint_report_time_start, 'report'):0" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3">Time Interval</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" ng-model="complaint_report_time_interval"
+                                   ng-keypress="($event.which === 13)?saveReport('complaint_report_time_interval', complaint_report_time_interval, 'report'):0" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,285 @@
+<style>
+      .thumbnail { height: {{dash_box_height}}px !important;}
+      .thumbnails {padding-left:5px !important;}    
+      .btn-droppable { width: 180px; height: 30px; padding-left: 4px; }
+      .btn-draggable { width: 160px; }
+      .span3 {  text-decoration:none; list-style:none; padding:0; margin:0;}    
+      
+     /**
+ * The dnd-list should always have a min-height,
+ * otherwise you can't drop to it once it's empty
+ */
+.simpleDemo ul[dnd-list] {
+    min-height: 100px;
+    padding-left: 0px;
+}
+
+/**
+ * The dndDraggingSource class will be applied to
+ * the source element of a drag operation. It makes
+ * sense to hide it to give the user the feeling
+ * that he's actually moving it.
+ */
+.simpleDemo ul[dnd-list] .dndDraggingSource {
+    display: none;
+}
+
+/**
+ * An element with .dndPlaceholder class will be
+ * added to the dnd-list while the user is dragging
+ * over it.
+ */
+.simpleDemo ul[dnd-list] .dndPlaceholder {
+    background-color: #ddd;
+    display: block;
+    min-height: 100px;
+}
+
+.simpleDemo ul[dnd-list] li {
+   //background-color: #fff;
+    //border: 1px solid #ddd;
+    border-top-right-radius: 4px;
+    border-top-left-radius: 4px;
+    display: block;
+    padding: 10px 15px;   
+}
+
+/**
+ * Show selected elements in green
+ */
+.simpleDemo ul[dnd-list] li.selected {
+    background-color: #dff0d8;
+    color: #3c763d;
+}
+.mb-0 {
+    margin-bottom:0px;
+}
+</style>
+<div ng-controller="AlarmDashboardController">     
+    <div class="wrapper-md1">
+        <div class="col-sm-3">
+            <div class="panel panel-default">
+                <div class="panel-heading"><i class="fa fa-plus" aria-hidden="true"></i>&nbsp;Add Dashboard List</div>
+                <div class="panel-body">                  
+                    <form class="form-horizontal form-validation">
+                        <input type="hidden" ng-model="dash_id"  />                        
+                        <div class="form-group mb-0"  >
+                            <div class="col-sm-12">
+                                <label class="text-muted">Dashboard Title</label><label class="field_title" style="color:#F44336">*</label>
+                                <input ng-model="dash_name" class="form-control  input-sm" required/>  
+                                <label class="err_message">{{dash_name_err}}</label>                                             
+                            </div>
+                        </div>
+                        <div class="form-group mb-0" >
+                            <div class="col-sm-12">
+                                <label class="text-muted">Dashboard Description</label><label class="field_title" style="color:#F44336">*</label>
+                                <input ng-model="dash_description" class="form-control  input-sm" required />
+                                <label class="err_message">{{dash_description_err}}</label>                                             
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-0" >
+                            <div class="col-sm-12">
+                                <div>
+                                    <p>User list</p>
+                                </div>
+                                <div>                                   
+                                    <!--<tags-input ng-model="group_name_list" placeholder="Enter Group" display-property="name" replace-spaces-with-dashes="false" style="margin-top: -5px">
+                                        <auto-complete source="loadFiltersGroup($query)" min-length="0" debounce-delay="0" load-on-focus="true" load-on-empty="true"
+                                            max-results-to-show="100">
+                                        </auto-complete>
+                                    </tags-input>                    
+                                    -->
+                                    <tags-input ng-model="user_name_list" placeholder="Enter User" display-property="wholename" replace-spaces-with-dashes="false" style="margin-top:-5px;font-size:12px;">
+                                        <auto-complete source="loadFiltersUser($query)" min-length="0" debounce-delay="0" load-on-focus="true" load-on-empty="true"
+                                            max-results-to-show="100">
+                                        </auto-complete>
+                                    </tags-input> 
+                                </div>
+                                <label class="err_message">{{user_list_err}}</label>
+                            </div>	                           
+                        </div>       
+
+                        <div class="form-group">
+                            <div class="col-sm-12">
+                                <div><p>Alarm List</p></div>
+                                <div>
+                                    <input type="text" class="form-control" ng-change="changeAlarmName()" ng-model="alarm_name"  style="font-size:1.2em;padding-bottom:5px;" placeholder="Enter alarm name" />
+                                </div>
+                                <label class="err_message">{{alarm_list_err}}</label>
+                                <!--//-->
+                                <div style="height:370px; overflow-y:scroll;overflow-x: hidden">
+                                    <!--//dnd-list-->
+                                     <div class="simpleDemo row">                        
+                                        <ul dnd-list="alarmlist">                               
+                                            <li ng-repeat="alarm in alarmlist"
+                                                dnd-draggable="alarm"
+                                                dnd-moved="alarmlist.splice($index, 1)"
+                                                dnd-effect-allowed="move"
+                                                dnd-selected="models.selected = alarm"
+                                                ng-class="{'selected': models.selected === alarm}"                                        
+                                                >
+                                                 <div ng-if="alarm.icon==NULL" style="background: linear-gradient(to right, #828694, #859398);padding: 10px; border-radius:6px;border:1px solid #7b7b7b;" >
+                                                    <div style="text-align:right;padding: 5px" >                                                                   
+                                                        <a class="alarm_object_a" ng-click="onChangeImage(alarm)">
+                                                            <i class="fa fa-file-image-o" aria-hidden="true"></i>
+                                                        </a>&nbsp;                                             
+                                                    </div>                                                
+                                                    <a>
+                                                        <label style="display: block; text-align: center;line-height: 150%; color: white; font-size: 1.0em; font-weight: bold; letter-spacing: 3px;">
+                                                        <i class="{{alarm.fa_icon}}" aria-hidden="true"></i> {{alarm.name}}</label>
+                                                    </a>
+                                                </div>
+                                                <div ng-if="alarm.icon!=NULL" style="background-image: url('{{alarm.icon}}');background-position:center;background-repeat:no-repeat;background-size:cover;padding: 10px; border-radius:6px;border:1px solid #7b7b7b;" >
+                                                    <div style="background-color:rgba(236, 236, 236, 0.7); padding: 5px 0px 5px 5px;height:75px; border-radius:6px;">
+                                                        <div style="text-align:right;padding: 5px" >                                                                   
+                                                            <a class="alarm_object_a" ng-click="onChangeImage(alarm)">
+                                                            <i class="fa fa-file-image-o" aria-hidden="true"></i>
+                                                            </a>&nbsp;                                             
+                                                        </div>                                                
+                                                        <a>
+                                                            <label style="display: block; text-align: center;line-height: 150%; color: #000000; font-size: 1.0em; font-weight: bold; letter-spacing: 3px;">
+                                                            <i class="{{alarm.fa_icon}}" aria-hidden="true"></i> {{alarm.name}}</label>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        </ul>                                                
+                                    </div>  
+                                    <!--//end dnd list-->
+                                </div>
+                                <!--//-->
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                           <div class="col-sm-12">
+                                <div class="col-sm-6" style="padding-left:0px;padding-right:5px;" >
+                                    <div class="tool-panel-group">
+                                        <button type="button" style="color: #ffffff !important;background-color: #16ad33;border-color:#16ad33;" class="btn btn-primary btn-block" ng-click="dashAdd()" >{{action_button}}</button>                                
+                                    </div>
+                                </div>
+                                <div class="col-sm-6" style="padding-left:0px;padding-right:0px;" >
+                                    <div class="tool-panel-group">
+                                        <button type="button" style="color: #ffffff !important;background-color: #eb4e4e;border-color:#eb4e4e;" class="btn btn-primary btn-block" ng-click="dashCancel()" >Clear</button>                                
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>      
+        <!--//alarm list part-->
+        <div class="col-sm-9">
+            <div class="panel panel-default" >
+                <div class="panel-heading"><i class="fa fa-list-ul" aria-hidden="true"></i>&nbsp;Selected Alarm List</div>
+                <div class="panel-body">
+                    <div class="row">
+                        <!--//start drop list -->
+                         <div class='contentWrapper ng-cloak'>
+                            <div class='content'>
+                                <div class="row-fluid">
+                                    <!--//test-->
+                                    <div>
+                                        <div ng-repeat="(listName, list) in targrt_models.lists" class="col-sm-2" style="padding-left:3px; padding-right:3px;padding-bottom:5px;" >
+                                            <div  class="simpleDemo"  style="border:1px dotted #b6b7b9;background:#ffffff;">
+                                            <ul dnd-list="list" style="margin-bottom:0px;">                                          
+                                                    <li ng-repeat="item in list"
+                                                        dnd-draggable="item"
+                                                        dnd-moved="list.splice($index, 1)"
+                                                        dnd-effect-allowed="move"
+                                                        dnd-selected="models.selected = item"
+                                                        ng-class="{'selected': models.selected === item}" style="padding:0px;"
+                                                        >
+                                                       <div style="padding-left:3px; padding-right:3px;padding-bottom:3px;" >
+                                                            <div style="background:{{item.backcolor}}; padding: 10px; border-radius:6px;background-image: url('{{item.icon}}');background-position:center;background-repeat:no-repeat;background-size:cover;border:1px solid #b3b1b1;">
+                                                                <div style="background-color:rgba(236, 236, 236, 0.7); padding: 5px 0px 5px 5px;height:75px; border-radius:6px;">
+                                                                    <div style="text-align:right;padding: 5px" >                                                                   
+                                                                        <a color-picker color-picker-model="item.backcolor" color-picker-position="left" class="alarm_object_a">
+                                                                            <i class="fa fa-paint-brush" aria-hidden="true"></i>
+                                                                        </a>&nbsp;
+                                                                        <a class="alarm_object_a" ng-click="restoreAlarm(item)">
+                                                                            <i class="fa fa-close" aria-hidden="true"></i>
+                                                                        </a>
+                                                                    </div>
+                                                                    <div style="text-align: center">
+                                                                        <a>
+                                                                            <label style="display: block; text-align: center;color: #000000; font-size: 1.0em; font-weight: bold; letter-spacing: 3px;">
+                                                                            <i class="{{item.fa_icon}}" aria-hidden="true"></i> {{item.name}}</label>
+                                                                        </a>
+                                                                    </div>                                                            
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </li>
+                                            </ul>
+                                            </div>
+                                        </div>  
+                                    </div>                                      
+                                </div>
+                            </div>
+                        </div>                      
+                        <!--//end drop list--> 
+                    </div>                   
+                </div>
+            </div>
+        </div>
+
+        <!--//end alarm list part-->
+        <!--//list dashboard-->        
+        <div class="col-sm-9">
+            <div class="panel panel-default">
+                <div class="panel-heading"><i class="fa fa-list-ul" aria-hidden="true"></i>&nbsp;Dashboard List</div>
+                <div class="panel-body">
+                    <div class="row">                        
+                        <table  st-table="datalist"   st-pipe="getDashList" class="table ticket  table-hover table-condensed b-t b-light" >
+                            <thead class="tblhead-sm" style="font-size: .8vw">
+                            <tr>
+                                <th><b>Name</b></th>
+                                <th><b>Description</b></th>
+                                <th style = "text-align: center"><b>Users Count</b></th>
+                                <th style = "text-align: center"><b>Alarms Count</b></th>
+                                <th style="width: 80px"><b>Action</b></th>
+                            </tr>
+                            </thead>
+                            <tbody  ng-hide="isLoading" ng-repeat="row in datalist">
+                                <tr >
+                                    <td align = "left">
+                                        {{row.name}}
+                                    </td>
+                                    <td align = "left">
+                                        {{row.description}}
+                                    </td>
+                                    <td align = "center">{{row.user_count}}</td>
+                                    <td align = "center">{{row.alarm_count}}</td>                                    
+                                    <td >
+                                        <a class="btn default btn-xs green" ng-click="editItems(row)">
+                                            <i class="fa fa-pencil"></i></a>
+                                        <a class="btn default btn-xs red" ng-click="deleteItem(row)">
+                                            <i class="fa fa-times"></i></a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                                
+                            <tbody ng-show="isLoading">
+                                <tr>
+                                    <td colspan="4" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+                                </tr>
+                            </tbody>
+                            <tfoot ng-hide="isLoading">
+                                <tr ng-show="paginationOptions.totalItems > paginationOptions.pageSize">
+                                    <td colspan="4" class="text-center">
+                                        <div st-pagination="" st-items-by-page="paginationOptions.pageSize" st-displayed-pages="7" class="no-margin"></div>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>                   
+                </div>
+            </div>
+        </div>        
+        <!--//end dashboard list-->
+    </div>
+</div>

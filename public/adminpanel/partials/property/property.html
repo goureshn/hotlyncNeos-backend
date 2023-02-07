@@ -1,0 +1,117 @@
+<input type="hidden" id="id" value="-1" ng-model="model_data.id"/>
+
+	<div class="panel panel-default">
+		<div class="panel-heading wrapper"> 
+			<button type="button" class="btn btn-success btn-sm" style="float:right; margin-top: -5px" data-toggle="modal" data-target="#addModal" ng-disabled="job_role!='SuperAdmin'&&edit_flag==0" ng-click="onShowEditRow(-1)">
+				<span class="glyphicon glyphicon-plus"></span>
+				<b> Add New </b>
+			</button>                             
+			<i class="fa fa-bank"></i>                           
+			<span class="font-bold">Property Management</span>
+		</div>                         
+		<div> 
+			<table id="table_grid" class="table table-hover table-bordered" style="text-align: center; width:100%" ng-model = "table_grid" >
+				<thead> 
+					<tr> <!--
+						<th class="no-sort" style="text-align: center">
+							<input style="text-align: center" type="checkbox" id="checkall" />
+						</th>-->
+						<th style="text-align: center" ng-repeat = "field in fields">
+							<b>{{field}}</b>
+						</th>
+						<th style="text-align: center" class="no-sort">Edit</th>
+						<th style="text-align: center" class="no-sort">Delete</th>
+					</tr>                                     
+				</thead>                    
+			</table>                             
+		</div>                     
+	</div>    
+	
+<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"> 
+	<div class="modal-dialog" role="document"> 
+		<div class="panel"> 
+			<div class="modal-header bg"> 
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"> 
+					<span aria-hidden="true">&times;</span> 
+				</button>                             
+				<h5 class="modal-title font-bold" style="color:#2691d9" ng-if="model_data.id<0">
+					<i class="fa fa-plus"></i>&nbsp;Add Property</h5>
+				<h5 class="modal-title font-bold" style="color:#2691d9" ng-if="model_data.id>=0">
+					<i class="fa fa-pencil"></i>&nbsp;Edit Property</h5>			
+			</div>                         
+			<div class="modal-body"> 
+				<br> 
+				<form class="form-horizontal" required >
+					<label class="col-sm-offset-4" style="padding-left:10px;color: red; ">{{error}}</label>
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Client:</label>
+						<div class="col-sm-5">
+							<select id='prpty_id' class='form-control' ng-model="model_data.client_id"
+								ng-options="value.id as value.name for (key, value) in clients">		
+							</select>							
+						</div>
+					</div>
+
+					<text-item formlabel="Property*" modelname="model_data.name"></text-item>
+					<text-item formlabel="Address*" modelname="model_data.address"></text-item>
+					<text-item formlabel="City*" modelname="model_data.city"></text-item>
+					<text-item formlabel="Country*" modelname="model_data.country"></text-item>
+					<text-item formlabel="Contact Person*" modelname="model_data.contact"></text-item>
+					<text-item formlabel="Mobile*" modelname="model_data.mobile"></text-item>
+					<text-item formlabel="Email*" modelname="model_data.email"></text-item>
+					<text-item formlabel="Short Code" modelname="model_data.shortcode"></text-item>
+					<!--<div class="form-group">-->
+						<!--<label class="control-label col-sm-4" for="Property">Modules :</label>-->
+						<!--<div class="col-sm-5">-->
+							<!--<select class='form-control' multiple='multiple' ng-model="model_data.modules"-->
+								<!--ng-options="value for value in modules">		-->
+							<!--</select>							-->
+						<!--</div>-->
+					<!--</div>-->
+					<div class="form-group">
+						<label class="col-sm-4 control-label" style="white-space: nowrap;">Select Module : </label>
+						<div class="col-md-5">
+							<div ng-dropdown-multiselect="" options="modules" selected-model="module_type" checkboxes="true" extra-settings="modules_hint_setting" translation-texts="modules_hint"></div>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Property Logo:</label>
+						<div class="col-sm-5">
+							<img src="{{model_data.logo_path}}" width="200" >
+						</div>
+					</div>
+
+					<div class="form-group" ng-include="'/adminpanel/partials/fragments/uploadimg.html'"></div>
+
+				</form>                             
+			</div>
+			<div class="col-md-12" style="clear:both;margin-bottom: 20px" ng-include="'/adminpanel/partials/fragments/uploader.html'"></div>
+			<!--&lt;!&ndash;&ndash;&gt;-->
+			<div class="modal-footer "  ng-show="model_data.id<0">
+				<button type="button" class="btn btn-success btn-sm"  data-ng-click="onUpdateRow()">
+					<span class="glyphicon glyphicon-ok"></span>
+					<b> Save</b>
+				</button>
+				<button  type="button" class="btn btn-danger btn-sm" data-dismiss="modal">
+					<span class="glyphicon glyphicon-remove"></span>
+					<b> Cancel</b>
+				</button>
+			</div>
+
+			<div class="modal-footer " ng-show="model_data.id>=0">
+				<button type="button" class="btn btn-warning btn-sm"  data-ng-click="onUpdateRow()">
+					<span class="glyphicon glyphicon-ok-sign"></span> Update
+				</button>
+				<button  type="button" class="btn btn-danger btn-sm" data-dismiss="modal">
+					<span class="glyphicon glyphicon-remove"></span>
+					<b> Cancel</b>
+				</button>
+			</div>
+			<!--&lt;!&ndash;&ndash;&gt;-->
+			<!--<submit-form id="model_data.id" updatedata="onUpdateRow()"></submit-form>						-->
+		</div>                     
+	</div>                 
+</div>             
+
+<dialog-delete title="Property" modelname="model_data.name" deletedata="deleteRow()"></dialog-delete>

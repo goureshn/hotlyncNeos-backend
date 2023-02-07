@@ -1,0 +1,272 @@
+<div style="">
+  <script type="text/ng-template" id="complaint_detail.html">
+      <div ng-include="'tpl/complaint/complaint_detail.html'"></div>
+  </script>
+  <script type="text/ng-template" id="modal_input.html">
+    <div ng-include="'tpl/modal/modal_input.html'"></div>
+  </script>
+  <script type="text/ng-template" id="complaint_category.html">
+      <div ng-include="'tpl/complaint/complaint_category.html'"></div>
+  </script>
+  <script type="text/ng-template" id="complaint_subcategory.html">
+      <div ng-include="'tpl/complaint/complaint_subcategory.html'"></div>
+  </script>
+
+  <div class="wrapper" ng-style="{'height': ticketlist_height, 'overflow-y': 'auto'}">
+  	<div class="" ng-show="complaint.guest_type != 'House Complaint'">
+      <uib-accordion close-others="false">
+        <div uib-accordion-group is-open="true">
+          <uib-accordion-heading>
+          	<div class="">
+  						<label class="font-bold"><i class="glyphicon glyphicon-user text-default"></i>&nbsp;&nbsp;Guest Complaint</label>
+  					</div>
+          </uib-accordion-heading>
+          <div>
+  	        <form class="form-horizontal form-validation">
+  						<div class="label-group col-sm-12">
+                  <div class="col-sm-2 control-label text-muted">Guest Name</div>
+                  <div class="col-sm-4 control-label font-bold" style="text-align: left">{{complaint.guest_name}}</div>
+                  <div class="col-sm-2 control-label text-muted">Guest Type</div>
+                  <div class="col-sm-4 control-label font-bold" style="text-align: left">{{complaint.guest_type}}</div>                        
+              </div>
+              <div class="label-group col-sm-12">
+                  <div class="col-sm-2 control-label text-muted">Room Number</div>
+                  <div class="col-sm-4 control-label font-bold" style="text-align: left">{{complaint.room}}</div>
+              </div>
+              <div class="label-group col-sm-12">
+                  <div class="col-sm-2 control-label text-muted">Check-in</div>
+                  <div class="col-sm-4 control-label font-bold" style="text-align: left">{{complaint.arrival | mydate}}</div>
+                  <div class="col-sm-2 control-label text-muted">Check-out</div>
+                  <div class="col-sm-4 control-label font-bold" style="text-align: left">{{complaint.departure | mydate}}</div>                        
+              </div>
+              <div class="label-group col-sm-12">
+                  <div class="col-sm-2 control-label text-muted">Mobile</div>
+                  <div class="col-sm-4 control-label font-bold" style="text-align: left">{{complaint.mobile}}</div>
+                  <div class="col-sm-2 control-label text-muted">Phone</div>
+                  <div class="col-sm-4 control-label font-bold" style="text-align: left">{{complaint.phone}}</div>                        
+              </div>
+              <div class="label-group col-sm-12">
+                  <div class="col-sm-2 control-label text-muted">Email</div>
+                  <div class="col-sm-4 control-label font-bold" style="text-align: left">{{complaint.email}}</div>
+                  <div class="col-sm-2 control-label text-muted">Gender</div>
+                  <div class="col-sm-4 control-label font-bold" style="text-align: left">{{complaint.gender}}</div>                        
+              </div>
+              <div class="label-group col-sm-12">
+                  <div class="col-sm-2 control-label text-muted">Passport No</div>
+                  <div class="col-sm-4 control-label font-bold" style="text-align: left">{{complaint.passport}}</div>
+                  <div class="col-sm-2 control-label text-muted">Nationality</div>
+                  <div class="col-sm-4 control-label font-bold" style="text-align: left">{{complaint.nationality_name}}</div>                        
+              </div>
+  	        </form>
+          </div>
+        </div>
+      </uib-accordion>
+  	</div>
+  	
+  	<uib-accordion close-others="false">
+        <div uib-accordion-group is-open="true">
+          <uib-accordion-heading>
+          	<div class="">
+  						<label class="font-bold"><i class="glyphicon glyphicon-user text-default"></i>&nbsp;&nbsp;Complaint Detail</label>
+  						<div class="pull-right" style="margin-top: -4px">
+  							<div class="btn-group" uib-dropdown is-open="status.isopen">
+                  <button type="button" class="btn btn-dark btn-sm" ng-click="viewPrimary()">
+                    <span class="text-info"><i class="fa fa-check"></i>&nbsp;View Primary Complaint</span>
+                  </button>
+                  <button type="button" class="btn btn-dark btn-sm" ng-click="onComplete()" style="margin-left: 5px"
+                  	ng-show="complaint.status == 1 || complaint.status == 3">
+                    <span class="text-success"><i class="fa fa-check"></i>&nbsp;Complete</span>
+                  </button>
+                  <button type="button" class="btn btn-dark btn-sm" ng-click="onCancel()" style="margin-left: 5px"
+                    ng-show="complaint.status <= 3 && subcomment_list.length < 2">
+                    <span class="text-success"><i class="fa fa-check"></i>&nbsp;Cancel</span>
+                  </button>
+                </div>
+              </div>
+  					</div>
+          </uib-accordion-heading>
+          <div>
+  	        <form class="form-horizontal form-validation">
+  						<div class="label-group col-sm-12">
+                  <div class="col-sm-2 control-label text-muted">Request Time</div>
+                  <div class="col-sm-4 control-label font-bold" style="text-align: left">{{complaint.created_at | mydatetime}}</div>
+                  <div class="col-sm-2 control-label text-muted">Location</div>
+                  <div class="col-sm-4 control-label font-bold" style="text-align: left">{{complaint.location}}</div>                        
+              </div>
+              <div class="label-group col-sm-12">
+                  <div class="col-sm-2 control-label text-muted">Complaint</div>
+                  <div class="col-sm-4 control-label font-bold" style="text-align: left">{{complaint.complaint}}</div>
+                  <div class="col-sm-2 control-label text-muted">Severity</div>
+                  <div class="col-sm-4 control-label font-bold" style="text-align: left">{{complaint.main_severity_name}}</div>
+              </div>
+              <div class="label-group col-sm-12">
+                  <div class="col-sm-2 control-label text-muted">Created By</div>
+                  <div class="col-sm-4 control-label font-bold" style="text-align: left">{{complaint.created_by}}</div>
+              </div>
+              <div class="label-group col-sm-12" ng-show="complaint.note_comment">
+                  <div class="col-sm-2 control-label text-muted">Note</div>
+                  <div class="col-sm-10 control-label font-bold" style="text-align: left">{{complaint.note_comment}}</div>
+              </div>
+
+            </form>
+          </div>
+        </div>
+    </uib-accordion>
+  	
+  	<div class="panel panel-default" style="border-radius: 4px">
+  		<div class="panel-heading">
+  			<label class="font-bold"><i class="fa fa-male text-default"></i>&nbsp;&nbsp;Subcomplaint</label>
+  		</div>
+  		<div class="panel-body">
+  			<form class="form-horizontal form-validation">
+  				<div class="label-group col-sm-12">
+            <div class="col-sm-2 control-label text-muted">Department</div>
+            <div class="col-sm-4 control-label font-bold" style="text-align: left">
+  	          <select class='form-control input-sm' ng-model="complaint.dept_id" ng-change="onSelectDepartment(complaint)"
+                          ng-options="value.id as value.department for (key, value) in dept_list" ng-disabled="!complaint.reassign_flag">
+              </select>
+            </div>
+            <div class="col-sm-2 control-label text-muted">Assignee</div>
+            <div class="col-sm-4 control-label font-bold" style="text-align: left">{{complaint.assignee_name}}</div>                        
+          </div>
+          <div class="label-group col-sm-12">
+            <div class="col-sm-2 control-label text-muted">Max Time</div>
+            <div class="col-sm-4 control-label font-bold" style="text-align: left">{{complaint.max_time}}</div>
+            <div class="col-sm-2 control-label text-muted">Severity</div>
+            <div class="col-sm-4 control-label font-bold" style="text-align: left">{{complaint.severity_name}}</div>
+          </div>
+          <div class="label-group col-sm-12">
+            <div class="col-sm-2 control-label text-muted">Complaint</div>
+            <div class="col-sm-4 control-label font-bold" style="text-align: left">{{complaint.complaint}}</div>
+            <div class="col-sm-2 control-label text-muted">Reassign</div>
+            <div class="form-group">
+  		        <div class="col-sm-4">
+  		          <label class="i-switch m-t-xs m-r">
+  		            <input type="checkbox" ng-model="complaint.reassign_flag"
+  		            	ng-disabled="complaint.status == 4 || complaint.status == 2"
+  		            	ng-change="onSubcomplaintChanged()" checked>
+  		            <i></i>
+  		          </label>
+  		          <button type="button" class="btn btn-dark btn-sm pull-right" ng-click="onReassign()" ng-show="complaint.reassign_flag">
+  			          <span class="text-success"><i class ="fa fa-mail-forward"></i>&nbsp;Reassign</span>
+  			        </button>
+  		        </div>
+  	        </div>
+          </div>
+          <div class="label-group col-sm-12">
+            <label class="col-sm-2 control-label text-muted" style="margin-bottom: 0px">Category</label>
+            <div class="col-sm-3 scrollable-dropdown-menu">
+                <input class="form-control input-sm col-sm-11" type="text" ng-model="complaint.category_name"                     
+                       uib-typeahead="category.name for category in getCategoryList($viewValue)"
+                       typeahead-min-length="0"
+                       typeahead-editable="false"
+                       typeahead-on-select="onCategorySelect($item, $model, $label)"
+                       ng-disabled="complaint.status == '2' || complaint.status == '4'">
+
+            </div>
+            <div class="col-sm-1">
+              <i class="fa fa-plus-circle fa-2x text-danger " style="cursor: pointer"
+              	title="Create Category" ng-click="createCategory()" ng-show="category_editable"
+              	ng-hide="complaint.status == '2' || complaint.status == '4'"></i>
+            </div>
+            <label class="col-sm-2 control-label text-muted" style="margin-bottom: 0px">Sub Category</label>
+            <div class="col-sm-3 scrollable-dropdown-menu">
+                <input class="form-control input-sm col-sm-11" type="text" ng-model="complaint.subcategory_name"                     
+                       uib-typeahead="subcategory.name for subcategory in getSubcategoryList($viewValue)"
+                       typeahead-min-length="0"
+                       typeahead-editable="false"
+                       typeahead-on-select="onSubcategorySelect($item, $model, $label)"
+                       ng-disabled="complaint.status == '2' || complaint.status == '4'">
+            </div>
+            <div class="col-sm-1">
+                <i class="fa fa-plus-circle fa-2x text-danger " style="cursor: pointer" 
+                	title="Create Sub Category"ng-click="createSubcategory()" ng-show="category_editable"
+                	ng-hide="complaint.status == '2' || complaint.status == '4'"></i>
+            </div>
+          </div>
+
+          <div class="label-group col-sm-12">
+            <div class="col-sm-2 control-label text-muted">Download</div>
+            <div class="col-sm-10 control-label" style="text-align: left">
+              <a ng-repeat="path in complaint.sub_download_array" ng-href="{{'/' + path}}" download><i class="fa fa-file-o thumb-xs avatar" style="font-size: 20px; margin-right: 15px;width: 25px"><i class="busy md b-white bottom" ng-click="removeFile($index);$event.stopPropagation();"></i></i></a>                 
+              <a ng-if="complaint.sub_download_array.length < 1" style="font-style: italic;">No Attachment</a>  
+            </div>
+          </div>
+          <div class="label-group col-sm-12" style="margin-top: 15px">
+            <div class="col-sm-2 control-label">          
+              <button class="btn btn-dark btn-sm" ngf-select="uploadFiles($files)" multiple ngf-max-files="5"
+              	ngf-max-size="10MB" ngf-accept="'image/*,application/pdf'"
+              	ngf-pattern="'image/*,application/pdf'" ngf-capture="'camera'"
+              	ng-disabled="complaint.status == '2' || complaint.status == '4'">
+                <span class="text-success font-bold"><i class="fa fa-upload"></i>&nbsp;Select Files</span></button>
+            </div>
+            <div class="col-sm-10 ">
+              <ul>
+                  <li ng-repeat="f in files" style="font:smaller">
+                      {{f.name}}
+                  </li>
+              </ul>
+              <uib-progressbar ng-show="progress >= 0" class="progress-striped progress-sm" style="margin: 5px" value="progress" type="info">                  
+              </uib-progressbar>                
+              {{errorMsg}}
+            </div>  
+          </div>
+  			</form>
+  		</div>
+  		
+      <div class="" style="margin: 0px 20px 0px 20px" ng-show="subcomment_list.length > 0">
+        <uib-accordion close-others="false">  
+          <div uib-accordion-group class="panel-default" is-open="complaint_comment_is_open">
+  					<uib-accordion-heading>
+  		        <i class="fa fa-comment"></i>&nbsp;Complaint's Comments
+  		        <i class="pull-right glyphicon"
+  		            	ng-class="{'glyphicon-chevron-down': complaint_comment_is_open, 'glyphicon-chevron-right': !complaint_comment_is_open}"></i>
+  		      </uib-accordion-heading>
+            <!-- .comment-list  -->
+  		      <div class="m-b b-l m-l-md streamline">
+  	          <div ng-repeat="row in subcomment_list" style="margin-bottom: 15px">
+  				      <a class="pull-left thumb-sm avatar m-l-n-md" style="padding-left: px">
+  					      <img src="{{row.picture}}" width="30" height="30">
+  	            </a>          
+  				      <div class="m-l-lg panel b-a">
+  				        <div class="panel-heading pos-rlt b-b b-light" style="background-color: #fff; border-bottom: 1px solid #dee5e7">
+  				          <span class="arrow left"></span>
+  				          <a href="">{{row.wholename}}</a>
+  				          <label class="label bg-primary m-l-xs">{{row.job_role}}</label> 
+  				          <span class="text-muted text-sm m-l-sm pull-right">
+  				          	<i class="fa fa-clock-o"></i>
+  				                {{getTime(row)}}
+  				          </span>
+  				        </div>
+  				        <div class="panel-body">
+  				         	<div ng-bind-html="row.comment"></div>
+  				        </div>
+  				      </div>
+  				    </div>
+            </div>  
+          </div> 
+        </uib-accordion>	
+      </div>
+      
+      <div class="panel panel-default m-t-md m-b-n-sm pos-rlt" style="margin: 0px 20px 20px 20px">
+        <form ng-submit="commitComment(complaint.sub_comment)">
+          <textarea class="form-control no-border" focus-me="!complaint.sub_comment" ng-model="complaint.sub_comment" 
+  			    row="3" placeholder="Input your comment here" style="resize: none" rows="3" placeholder="Your comment..." required>
+  			  </textarea>
+  				<div class="panel-footer bg-light lter">
+          	<button class="btn btn-sm m-b-xs w-xs btn-dark font-bold pull-right" type="submit">
+          		<span	class="text-info"><i class="fa fa-send-o" aria-hidden="true"></i>&nbsp;Post</span>
+          	</button>
+  					<ul class="nav nav-pills nav-sm" style="padding-left: 14px">
+  	          <li>
+  	          	<object class="pull-left thumb-sm avatar m-l-n-md" data="/frontpage/img/default_photo.png" type="image/png">
+  								<img src="{{row.picture}}" width="30" height="30">
+  						  </object>
+  	          </li>
+          	</ul>
+        	</div>
+        </form>
+      </div>
+    </div>
+  </div>  
+</div>

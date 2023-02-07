@@ -1,0 +1,106 @@
+<div ng-controller="MinibarLogController" style="{{full_height}}">
+    <div class="">
+        <div>
+            <div>
+	            <div class="form-horizontal col-md-12 wrapper" style="display: table; background-color: #141414; padding-top: 10px">
+								<div class="row" style="width: 200px !important; margin: 0px; display: inline-block">
+									<h3 class="m-n font-thin" style="white-space: nowrap; color: #337ab7"> <i class="fa fa-glass"></i>&nbsp;&nbsp;Minibar Logs</h3>
+								</div>
+								<div class="input-group col-md-2 pull-right">
+                    <input type="text" ng-model="searchtext" ng-keyup="onSearch()" class="form-control input-sm bg-light no-border rounded padder" placeholder="Search">
+                      <span class="input-group-btn">
+                        <button type="submit" class="btn btn-sm bg-light rounded"><i class="fa fa-search"></i></button>
+                      </span>
+                </div>
+								<div class="btn-group" style="margin-bottom: 5px;margin-right: 5px;">
+                    <button id="dateranger" class="btn btn-sm btn-icon btn-default  pull-left" data-toggle="tooltip" title="Filter" data-placement="bottom"
+                            data-title="Refresh" ui-jq="daterangepicker" ui-options="dateRangeOption" class="form-control pull-right input-sm">
+                        <i class="glyphicon glyphicon-calendar"></i>
+                    </button>
+                </div>
+	            	<!--
+                <div class="btn-group pull-left">
+                    <h3 class="m-n font-thin" style="color: #5fbae8;">Minibar Logs &nbsp;&nbsp;</h3>
+                </div>
+                -->
+            </div>
+            <div class="table table-responsive">
+                <table  st-table="guestlist"  st-pipe="getDataList" class="table table-striped ticket">
+                    <thead >
+                        <tr class="tblhead-sm">
+                            <th class="text-center" st-sort="id" st-sort-default="reverse" style="width: 5%"><b>&nbsp;ID</b></th>
+                            <th class="text-center" style="width: 15%"><b>Guest Name</b></th>
+                            <th class="text-center" style="width: 10%" st-sort="room"><b>Room Number</b></th>
+                            <th class="text-center" st-sort="item_ids" style="width: 15%"><b>Items</b></th>
+                            <th class="text-center" st-sort="total_amount" style="width: 10%"><b>Total Amount</b></th>
+                            <th class="text-center" st-sort="wholename" style="width: 10%"><b>User Name</b></th>
+                            <th class="text-center" st-sort="created_at" style="width: 10%"><b>Date</b></th>
+                            <th class="text-center" st-sort="created_at" style="width: 5%"><b>Time</b></th>
+                            <th class="text-center"  style="width: 5%"><b>Repost</b></th>
+                        </tr>
+                    </thead>
+                    <tbody ng-hide="isLoading">
+                        <tr class="" ng-repeat="row in datalist">
+                            <td class="text-center">
+                                <a>{{row.id}}</a>
+                            </td>
+                            <td ng-if="row.guest_id != 0" style="padding: 0px 30px">{{row.guest_name}}</td>
+                            <td ng-if="row.guest_id == 0">Lost Posting</td>
+                            <td class="text-center">{{row.room}}</td>
+                            <td>
+                                <div class="minibar" ng-show="!(row.minibar_items.length > 1)">
+                                    <div class="panel panel-default" >
+                                        <div class="panel-heading">
+                                            <h4 class="panel-title">
+                                            <span class="accordion-toggle">
+                                                {{row.minibar_items[0].item_name}} - {{row.minibar_items[0].quantity}}
+                                            </span>
+                                            </h4>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <uib-accordion class="minibar" ng-show="row.minibar_items.length > 1">
+                                    <uib-accordion-group is-open="open">
+                                        <uib-accordion-heading>
+                                            {{row.minibar_items[0].item_name}} - {{row.minibar_items[0].quantity}} <i class="pull-right fa fa-angle-right" ng-class="{'fa-angle-down': open, 'fa-angle-right': !open}"></i>
+                                        </uib-accordion-heading>
+                                        <li ng-repeat="item in row.minibar_items" ng-show="!$first">
+                                            <span>
+                                                {{item.item_name}} - {{item.quantity}}
+                                            </span>
+                                        </li>
+                                    </uib-accordion-group>
+                                </uib-accordion>
+                            </td>
+                            <td align="right" style="padding: 0px 30px" width="150px">{{ currency }} {{row.total_amount | number :2}}</td>
+                            <td style="padding: 0px 30px">{{row.wholename}}</td>
+                            <td class="text-center">{{getDate(row) | mydate}}</td>
+                            <td class="text-center">{{getTime(row)}}</td>
+                            <td class="text-center col-md-1">
+                                <button class="btn btn-sm m-b-xs w-sm btn-success text-success font-bold" 
+                                    ng-click="repost(row)">
+                                    <span class="">
+                                        <i class="fa fa-send"></i>&nbsp;&nbsp;Repost
+                                    </span>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tbody ng-show="isLoading">
+                    <tr>
+                        <td colspan="9" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+                    </tr>
+                    </tbody>
+                    <tfoot ng-hide="isLoading">
+                        <tr ng-show="paginationOptions.totalItems > paginationOptions.pageSize">
+                            <td colspan="9" class="text-center">
+                                <div st-pagination="" st-items-by-page="paginationOptions.pageSize" st-displayed-pages="7" class="no-margin"></div>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

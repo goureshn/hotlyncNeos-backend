@@ -1,0 +1,72 @@
+<div class="modal-body wrapper-lg">
+  <h3 class="m-t-none m-b font-thin">Complaint Reminder</h3>
+
+  <hr style="margin-top: 0px; margin-bottom: 15px" />
+
+  <div class=" ">
+    <form class="form-horizontal form-validation">
+      
+      <div class="form-group">
+        <label class="col-sm-2 control-label">Reminder</label>
+        <div class="col-sm-4">
+            <label class="i-switch m-t-xs m-r">
+              <input type="checkbox" ng-model="complaint.reminder_flag" checked>
+              <i></i>
+            </label>
+        </div>        
+      </div>      
+
+      <div class="form-group">
+          <label class="col-sm-2 control-label text-muted">Users</label>
+          <div class="col-sm-10">
+              <tags-input ng-model="user_tags" display-property="wholename" placeholder="Add User" style="margin-top: -7px" replace-spaces-with-dashes="false" ng-disabled="!complaint.reminder_flag">
+                  <auto-complete source="loadUsernameFilters($query)"
+                                 min-length="0"
+                                 load-on-focus="true"
+                                 load-on-empty="true"
+                                 debounce-delay="0"
+                                 max-results="10">
+                  </auto-complete>
+              </tags-input>
+          </div>
+      </div>
+
+      <div class="form-group">      
+        <label class="col-sm-2 control-label">Date & Time</label>
+        <div class="col-sm-10">
+          <a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+            <div class="input-group">
+              <input type="text" class="form-control" ng-disabled="!complaint.reminder_flag" ng-model="complaint.reminder_time" ng-disabled="!complaint.reminder_flag">
+              <span class="input-group-addon" ng-disabled="!complaint.reminder_flag"><i class="glyphicon glyphicon-calendar"></i></span>
+            </div>
+          </a>
+          <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel" ng-show="complaint.reminder_flag">
+            <datetimepicker ng-model="complaint.datetime" data-datetimepicker-config="{ dropdownSelector: '#dropdown2' }"
+              data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+          </ul>
+        </div>            
+      </div> 
+
+      <div class="form-group">
+        <label class="col-sm-2 control-label">Comment</label>
+        <div class="col-sm-10">
+            <textarea class="form-control input-sm" rows="3" ng-model="complaint.reminder_comment" style="resize:none" ng-disabled="!complaint.reminder_flag"></textarea>
+        </div>        
+      </div> 
+    </form>
+  </div>
+
+  <hr/>
+
+  <div class="row">
+    <div class="pull-right">  
+      <button type="button" class="btn btn-sm btn-dark m-b-xs w-xs text-uc m-t-n-xs" ng-click="ok()">
+      	<strong>Save</strong>
+      </button>
+      <button type="button" class="btn btn-sm btn-dark m-b-xs w-xs text-uc m-t-n-xs" ng-click="cancel()">
+      	<strong>Cancel</strong>
+      </button>
+    </div>  
+  </div>
+
+</div>

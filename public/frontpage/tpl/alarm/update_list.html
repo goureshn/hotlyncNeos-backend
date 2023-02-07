@@ -1,0 +1,31 @@
+<div >            
+    <div class="table table-responsive">
+        <table  class="table ticket table-striped b-t b-light">
+            <thead class="tblhead-sm" style="font-size: .8vw; height: 30px">
+                <tr>
+                    <th class="text-center" style="white-space: nowrap">
+                        <b>&nbsp;Date and time</b>
+                    </th>
+                    <th class="text-center" style="white-space: nowrap">
+                        <b>&nbsp;Update Comment</b>
+                    </th>
+                    <th class="text-center" style="white-space: nowrap">
+                        <b>&nbsp;User</b>
+                    </th>
+                    <th class="text-center" style="white-space: nowrap">
+                        <b>&nbsp;Sent to users</b>
+                    </th>                                        
+                </tr>
+            </thead>
+            <tbody ng-hide="isLoading" style="font-size: .8vw">
+                <tr class="text-center" ng-repeat="row in update_list " style="cursor:pointer;">                    
+                    <td>{{row.created_at | mydatetime}}</td>
+                    <td>{{row.message}}</td>
+                    <td>{{row.sender_user_name}}</td>
+                    <td>{{row.send_flag}}</td>                                      
+                    <td>{{row.update_user_list ? "Yes" : "No"}}</td>
+                </tr>
+            </tbody>            
+        </table>
+    </div>
+</div>

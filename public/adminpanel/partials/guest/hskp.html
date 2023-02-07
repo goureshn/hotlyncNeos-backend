@@ -1,0 +1,93 @@
+<input type="hidden" id="id" value="-1" ng-model="model_data.id"/>
+
+	<div class="panel panel-default"> 
+		<div class="panel-heading wrapper"> 
+			<button type="button" class="btn btn-success btn-sm" style="float:right; margin-top: -5px" data-toggle="modal" data-target="#addModal" ng-disabled="job_role!='SuperAdmin'&&edit_flag==0" ng-click="onShowEditRow(-1)">
+				<span class="glyphicon glyphicon-plus"></span>
+				<b> Add New </b>
+			</button>                             
+			<i class="fa fa-street-view"></i>                            
+			<span class="font-bold">Housekeeping Management</span>
+		</div>                         
+		<div class=""> 
+			<table id="table_grid" class="table table-hover table-bordered" style="text-align: center;width:100%" ng-model = "table_grid"> 
+				<thead> 
+					<tr> <!--
+						<th no-sort style="text-align: center">
+							<input type="checkbox" id="checkall" />
+						</th>-->
+						<th style="text-align: center" ng-repeat = "field in fields">
+							<b>{{field}}</b>
+						</th>						
+						<th style="text-align: center">Edit</th>
+						<th style="text-align: center">Delete</th>
+					</tr>                                     
+				</thead>                    
+			</table>                             
+		</div>
+	</div> 
+	
+<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"> 
+	<div class="modal-dialog" role="document"> 
+		<div class="panel"> 
+			<div class="modal-header bg"> 
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"> 
+					<span aria-hidden="true">&times;</span> 
+				</button>                             
+				<h5 class="modal-title font-bold" style="color:#2691d9" ng-if="model_data.id<0">
+					<i class="fa fa-plus"></i>&nbsp;Add Housekeeping</h5>
+				<h5 class="modal-title font-bold" style="color:#2691d9" ng-if="model_data.id>=0">
+					<i class="fa fa-pencil"></i>&nbsp;Edit Housekeeping</h5>				
+			</div>                         
+			<div class="modal-body"> 
+				<br> 
+				<form class="form-horizontal"> 
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Building:</label>
+						<div class="col-sm-5">
+							<select id='prpty_id' class='form-control' ng-model="model_data.bldg_id"
+								ng-options="value.id as value.name for (key, value) in buildings">		
+							</select>							
+						</div>
+					</div>
+				
+					<text-item formlabel="Status" modelname="model_data.status"></text-item>
+					<text-item formlabel="PMS Code" modelname="model_data.pms_code"></text-item>
+					
+					<link href="/lib/angular/angular-toggle-switch-bootstrap-3.css" media="all" rel="stylesheet" type="text/css">
+					
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Use different IVR code :</label>
+						<div class="col-sm-2">
+							<div toggle-switch class="switch-primary" ng-model="chk_ivr_flag"></div>						
+						</div>
+						<label class="control-label col-sm-3" for="Property">IVR Code :</label>
+						<div class="col-sm-3">
+							<input type="text" class="form-control" id="group_name" ng-disabled="!chk_ivr_flag" ng-model = "model_data.ivr_code">							
+						</div>	
+					</div>
+					
+					
+					
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Type :</label>
+						<div class="col-sm-5">
+							<select id='carrier_id' class='form-control' ng-model="model_data.type"
+								ng-options="value for value in hskptypes">		
+							</select>							
+						</div>
+					</div>
+					
+					<textarea-item formlabel="Description" texthint="Description" modelname="model_data.description"></textarea-item>		
+					
+				</form>                             
+			</div>     
+
+			<div style="clear:both">			
+				<submit-form id="model_data.id" updatedata="onUpdateRow()"></submit-form>						
+			</div>	
+		</div>                     
+	</div>                 
+</div>             
+
+<dialog-delete title="Housekeeping" modelname="model_data.function" deletedata="deleteRow()"></dialog-delete>

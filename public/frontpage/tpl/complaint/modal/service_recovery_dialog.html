@@ -1,0 +1,92 @@
+<div class="modal-content">
+    <form class="form-horizontal form-validation" ng-submit="onPostCompensation()">		
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">
+                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+            </button>
+            <h3 class="modal-title" style="color:#2691d9" id="Heading">Service Recovery</h3>
+        </div>
+        <br>
+        <div class="modal-body">
+            <div disable-all="disable_all">  	
+                <div class="form-group">
+                    <label class="col-sm-2 control-label text-muted">Service Recovery</label>
+                    <div class="col-sm-3">              
+                        <div class="scrollable-dropdown-menu">
+                            <input ng-model="comp.compensation" class="form-control  input-sm"
+                                ng-focus="onFocus($event)" empty-typeahead
+                                uib-typeahead="item.compensation for item in compensations | filter:$viewValue:stateComparator"
+                                typeahead-min-length="0"
+                                typeahead-on-select="onCompensationSelect($item, $model, $label)"
+                                typeahead-no-results="comp.no_compensation" required/>
+                            <span ng-show="auth_svc.isValidModule('app.complaint.maincompensation_add')" ng-if="comp.no_compensation" uib-dropdown uib-dropdown-toggle auto-close="disabled" is-open="true">
+                                <ul class="dropdown-menu" >
+                                    <li>
+                                        <a href ng-click="addCompensationType(0)">{{comp.compensation}} (New)</a>
+                                    </li> 
+                                </ul>
+                            </span>     
+                        </div>
+                    </div>							
+                    <div class="col-sm-2">
+                        <input type="number" ng-model="comp.cost" class="form-control  input-sm" required>
+                    </div>				
+                </div>
+                                    
+                <div class="form-group">
+                    <label class="col-sm-2 control-label text-muted">Comment</label>
+                    <div class="col-sm-10">
+                        <textarea class="form-control input-sm" rows="3" ng-model="comp.comment"
+                            style="resize:none" required>
+                        </textarea>
+                    </div>    
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label text-muted">Department</label>
+                    <div class="col-sm-3">
+                        <div class="scrollable-dropdown-menu">
+                            <input ng-model="comp.department" class="form-control  input-sm"
+                                ng-focus="onFocus($event)" empty-typeahead
+                                uib-typeahead="item.department for item in depts_list | filter:$viewValue | limitTo:10"
+                                typeahead-min-length="0"
+                                typeahead-on-select="onDepartmentSelect(comp,$item, $model, $label)"
+                                typeahead-no-results="sub.no_depart" required/>
+                        </div>  
+                    </div>    
+                    <label class="col-sm-2 control-label text-muted">Provided By</label>
+                    <div class="col-sm-3">
+                        <div class="scrollable-dropdown-menu">
+                            <input ng-model="comp.provider_name" class="form-control  input-sm"
+                                ng-focus="onFocus($event)" empty-typeahead
+                                uib-typeahead="user.wholename for user in staff_list | filter:$viewValue | limitTo:10"
+                                typeahead-min-length="0"
+                                typeahead-on-select="onProviderSelect(comp, $item, $model, $label)"
+                                typeahead-no-results="sub.no_staff" required/>
+                        </div>  
+                    </div>    
+                </div>
+                <div class="form-group" hidden>      
+                    <label class="col-sm-2 control-label text-muted">Need Approval</label>
+                    <div class="col-sm-2">
+                        <label class="i-switch m-t-xs m-r">
+                            <input type="checkbox" ng-model="comp.approve_flag" disabled>
+                            <i></i>
+                        </label>
+                    </div>							        	                    
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer ">
+            <button type="submit" class="btn btn-info btn-sm" data-dismiss="modal">
+                <span class="glyphicon glyphicon-ok"></span>
+                <b> Attach</b>            
+            </button>
+            <button type="button" class="btn btn-default btn-sm" data-dismiss="modal" ng-click="cancel()">
+                <span class="glyphicon glyphicon-remove"></span>
+                <b> Cancel</b>
+            </button>
+        </div>
+    </form>    
+</div>
+

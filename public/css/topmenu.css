@@ -1,0 +1,54 @@
+
+	#top_back{
+		margin:0 auto;
+		width:100%;
+		height:39px;
+		background-image:url(/images/top_back.png);
+		background-repeat:repeat-x;
+	}
+	
+	#top_back .icon{
+		float:left;
+		margin-left:2px;
+		width:54px;
+		height:37px;
+		background-image:url(../images/mark.png);	
+	}
+	
+	#top_back .subject{
+		float:left;
+		margin-left:6px;
+		margin-top:6px;
+		width:200px;
+		height:25px;
+		background-image:url(/images/subject.png);
+		background-repeat:no-repeat;
+	}
+
+	#setting{
+		float:right;
+		margin-right:8px;
+	}
+
+	#setting .setting_icon{
+		float:left;
+		margin-left:8px;
+		margin-top:6px;
+		width:22px;
+		height:28px;
+		background-image:url(/images/setting.png);
+		background-repeat:no-repeat;
+	}
+	
+	#top_back .setting_text{
+		float:left;
+		margin-left:8px;
+		margin-top:-8px;
+	}
+	
+	#top_back .setting_text p{
+		font-family:'Arial';
+		font-size:18px;
+		color:#7fc5d9;	
+	}
+	

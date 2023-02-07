@@ -1,0 +1,58 @@
+<div ng-controller="WorkflowController" style="{{full_height}}">
+    <div class="wrapper-md1 bg-light b-b">
+        <h1 class="m-n font-thin h3">Work flow</h1>
+    </div>
+
+
+    <uib-tabset>
+
+        <uib-tab>
+            <uib-tab-heading>
+                <b style="color:#2691d9">Notification</b>
+            </uib-tab-heading>
+            <div style="{{tab_full_height}}" ng-include="'tpl/housekeeping/notification.html'">
+            </div>
+        </uib-tab>
+
+        <uib-tab>
+            <uib-tab-heading>
+                <b style="color:#2691d9">Check List</b>
+            </uib-tab-heading>
+            <div style="{{tab_full_height}}" ng-include="'tpl/housekeeping/checklist.html'">
+            </div>
+        </uib-tab>
+
+        <uib-tab>
+            <uib-tab-heading>
+                <b style="color:#2691d9">Rules</b>
+            </uib-tab-heading>
+            <div style="{{tab_full_height}}" ng-include="'tpl/housekeeping/rules.html'">
+            </div>
+        </uib-tab>
+
+        <uib-tab>
+            <uib-tab-heading>
+                <b style="color:#2691d9">Schedule</b>
+            </uib-tab-heading>
+            <div style="{{tab_full_height}}" ng-include="'tpl/housekeeping/schedule.html'">
+            </div>
+        </uib-tab>
+
+        <uib-tab>
+            <uib-tab-heading>
+                <b style="color:#2691d9">Linen Setting</b>
+            </uib-tab-heading>
+            <div style="{{tab_full_height}}" ng-include="'tpl/housekeeping/linen_setting.html'">
+            </div>
+        </uib-tab>
+
+        <uib-tab>
+            <uib-tab-heading>
+                <b style="color:#2691d9">Public Area</b>
+            </uib-tab-heading>
+            <div style="{{tab_full_height}}" ng-include="'tpl/housekeeping/public_area.html'">
+            </div>
+        </uib-tab>
+
+    </uib-tabset>
+</div>

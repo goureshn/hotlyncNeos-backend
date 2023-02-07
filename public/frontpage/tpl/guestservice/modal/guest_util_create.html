@@ -1,0 +1,203 @@
+<style>
+
+@media only screen and (max-width: 480px)	{
+	
+	.mobile-only
+		{
+			display: block;
+			margin-top: 10px;
+		}
+	}
+	
+	.tabsdemoDynamicHeight md-content {
+  	background-color: transparent !important;
+  }
+  .tabsdemoDynamicHeight md-content md-tabs {
+    background: #f6f6f6;
+    border: 1px solid #e1e1e1;
+  }
+  
+  .tabsdemoDynamicHeight md-content md-tabs md-tabs-wrapper {
+    background: white;
+  }
+  
+  .tabsdemoDynamicHeight md-content h1:first-child {
+    margin-top: 0;
+  }
+
+</style>
+
+
+
+
+
+ 
+	<!-- - - - - - - - HEADER - - - - - - - -->
+  <div>
+    <div class="navbar-inverse box-shadow" style="vertical-align:middle;height: 40px">
+      <div class="navbar-header" style="height: 40px;">
+        <a ui-sref="app.guestservice.dashboard" class="navbar-brand text-lt">
+          <img src="img/complaint_header_logo.png" alt="HotLync" style="margin-left: -7px; width:250px; height: 30px">
+        </a>
+      </div>
+    </div>
+  </div>
+  <!-- - - - - - - - /HEADER - - - - - - - -->
+  <!--
+  <label>&nbsp;<i class="fa fa-exclamation-circle text-danger"></i>&nbsp;&nbsp;Complaint Details</label>
+  <div class="btn-group pull-right" data-toggle="buttons">
+    <label class="btn btn-primary" style="font-size: 13px">
+      <input type="radio" name="options" id="option1" autocomplete="off">Complaint No:&nbsp;&nbsp;{{complaint_id}}
+    </label>
+    <label class="btn btn-primary" style="font-size: 13px">
+      <input type="radio" name="options" id="option2" autocomplete="off"> Request Time:&nbsp;&nbsp;{{complaint.request_time}}
+    </label>
+  </div>
+     -->  
+ <div style="padding-left: 0px; padding-right: 0px; font-size: 15px" ng-cloak>
+  <md-content>
+  <md-tabs md-dynamic-height md-border-bottom>
+  <md-tab label="Create New">
+  <md-content class="md-padding">          
+  <div class="wrapper-md">
+	  <!-- - - - - - - - EMPLOYEE DETAILS - - - - - - - -->
+	
+	  
+	   <div class="panel panel-default" style="border-radius: 4px">
+			  <div class="panel-heading">
+					<div class="pull-left">
+						<label class="font-bold text-sm"><i class="fa fa-info-circle text-default"></i>&nbsp;&nbsp;Details of Facility</label>
+					</div>
+					<br>
+				</div>
+			  
+				<div class="panel-body" style="padding: 5px 0px">
+					<div class="form-horizontal form-validation">
+						<div class="form-group-mbl col-sm-6 label-group" style="padding: 5px 0px">
+							<label class="col-sm-3 control-label text-muted text-xs">Location<i class="text-danger">*</i></label>
+	            <div class="col-sm-8 scrollable-dropdown-menu">
+	              <input type="text" ng-model="guest.location" class="form-control input-sm" placeholder="Enter location name"
+                       uib-popover="Enter location name" popover-trigger="mouseenter"
+                       uib-typeahead="room.name for room in location_list | filter:$viewValue | limitTo:10"
+                       typeahead-min-length="0"
+                       typeahead-editable="false"
+                       typeahead-on-select="onLocationSelect($item, $model, $label)" required>    
+	            </div>
+						</div>
+						
+						<div class="form-group-mbl col-sm-6 label-group" style="padding: 5px 0px">
+							<label class="col-sm-3 control-label text-muted text-xs">No of Adults:</label>
+	            <div class="col-sm-8 control-label" style="text-align: left">
+							<input type="number" class="form-control input-sm ng-pristine ng-valid ng-empty ng-valid-min ng-valid-maxlength ng-touched" ng-model="guest.quantity_1" min="1" maxlength="2" style="width: 50px;" aria-invalid="false">
+						</div>
+						</div>
+						<div class="form-group-mbl col-sm-6 label-group" style="padding: 5px 0px">
+							<label class="col-sm-3 control-label text-muted text-xs">No. of kids:</label>
+	           <div class="col-sm-8 control-label" style="text-align: left">
+							<input type="number" class="form-control input-sm ng-pristine ng-valid ng-empty ng-valid-min ng-valid-maxlength ng-touched" ng-model="guest.quantity_2" min="1" maxlength="2" style="width: 50px;" aria-invalid="false">
+						</div>
+						</div>
+						<div class="form-group-mbl col-sm-6 label-group" style="padding: 5px 0px">
+							<label class="col-sm-3 control-label text-muted text-xs">Extra Members:</label>
+	           <div class="col-sm-8 control-label" style="text-align: left">
+							<input type="number" class="form-control input-sm ng-pristine ng-valid ng-empty ng-valid-min ng-valid-maxlength ng-touched" ng-model="guest.quantity_3" min="1" maxlength="2" style="width: 50px;" aria-invalid="false">
+						</div>
+						</div>
+						<div class="form-group-mbl col-sm-6 label-group" style="padding: 5px 0px">
+							<label class="col-sm-3 control-label text-muted text-xs">Entry Time:</label>
+	            <div class="col-sm-8 dropdown">
+	              <a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+                  <div class="input-group">
+                    <input type="text" class="form-control" ng-model="guest.entry_time">
+                    <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                  </div>
+                </a>
+                <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+                  <datetimepicker ng-model="guest.timepicker" data-datetimepicker-config="{ dropdownSelector: '#dropdown2', startView: 'hour' }"
+                    data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+                </ul>     
+	            </div>
+						</div>
+<!--
+						<div class="form-group-mbl col-sm-6 label-group" style="padding: 5px 0px">
+							<label class="col-sm-3 control-label text-muted text-xs">Exit Time:</label>
+	            <div class="col-sm-8 dropdown">
+	              <a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+                  <div class="input-group">
+                    <input type="text" class="form-control" ng-model="complaint.incident_time">
+                    <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                  </div>
+                </a>
+                <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+                  <datetimepicker ng-model="complaint.timepicker" data-datetimepicker-config="{ dropdownSelector: '#dropdown2', startView: 'hour' }"
+                    data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+                </ul>     
+	            </div>
+						</div>
+-->
+						<div class="form-group-mbl col-sm-6 label-group" style="padding: 5px 0px">
+							<label class="col-sm-3 control-label text-muted text-xs">Comment</label>
+	            <div class="col-sm-8">
+	              <textarea type="text" spellcheck="true" class="form-control input-sm" rows="6"
+                  style="resize:none" ng-model="guest.comment"></textarea>    
+	            </div>
+						</div>
+						
+						
+					</div>
+				</div>
+		  </div>
+		  <center>
+              <button type="button" class="btn btn-dark btn-sm" ng-click="createEntry()">
+              <span class="text-success font-bold"><i class="fa fa-check"></i>&nbsp;Create</span></button>
+              <button type="button" class="btn btn-dark btn-sm" ng-click="cancel()">
+              <span class="text-danger font-bold"><i class="fa fa-times"></i>&nbsp;Cancel</span></button>           
+          </center>
+		</div>	
+  </md-content> </md-tab>
+  <md-tab label="Facilities Log">
+  <md-content>
+   <div class="table  table-responsive" ng-init="init()" additional-padding="40" style="margin-bottom: 10px;">
+    <table class="table table-striped ticket">
+      <thead class="tblhead-sm" style="background: #89898a;">
+      <tr class="text-sm">
+        <th class="text-center"  style="width: 12%">&nbsp;&nbsp;By</th>
+        <th class="text-center"  style="width: 15%">&nbsp;&nbsp;Loc</th>
+        <th class="text-center"  style="width: 5%">&nbsp;&nbsp;Adlt</th>
+        <th class="text-center"  style="width: 5%">&nbsp;&nbsp;Chldn</th>
+        <th class="text-center"  style="width: 5%; white-space: nowrap">&nbsp;&nbsp;Extra Pax</th>
+        <th class="text-center"  style="width: 32%">&nbsp;&nbsp;Comnt</th>
+        <th class="text-center"  style="width: 10%">&nbsp;&nbsp;In</th>
+        <th class="text-center"  style="width: 10%">&nbsp;&nbsp;Out</th>
+      </tr>
+      </thead>
+      <tbody style="height: 100px; display:block;">
+      <tr class="text-xs" ng-repeat="row in guest_history">
+	      <td class="text-center" style="width: 12%">{{row.username}}</td>
+	      <td class="text-center" style="width: 15%">{{row.location}}</td>
+	      <td class="text-center" style="width: 5%">{{row.adults}}</td>
+	      <td class="text-center" style="width: 5%">{{row.kids}}</td>
+	      <td class="text-center" style="width: 5%">{{row.extra}}</td>
+	      <td class="text-center" style="width: 32%">{{row.comment}}</td>
+	      <td class="text-center" style="width: 10%">{{row.entry_time | mydatetime}}</td>
+	      <td class="text-center" style="width: 10%"><button type="button" class="btn btn-dark btn-xs" ng-show="!row.exit_time" ng-click="exit(row.id)">
+		      <span class="text-success font-bold"><i class="fa fa-check"></i>&nbsp;Exit</span></button><span ng-show="row.exit_time">{{row.exit_time | mydatetime}}</span></td>
+	 
+        
+      </tr>
+      </tbody>
+    </table>
+  </div>
+  <!------>
+  <div class="row pull-right col-sm-7" ng-show="guest_history.length>0">
+    <button type="button" class="btn btn-sm btn-success text-uc m-t-n-xs" ng-click="ok()"><strong>OK</strong></button>
+  </div>
+  </md-content>
+  </md-tab>
+  </md-tabs>
+  </md-content>            
+          
+        
+  
+  </div>  
+</div>

@@ -1,0 +1,109 @@
+<div  ng-controller="ComplaintAdvanceBriefingController" style="overflow-x: hidden">
+
+    <div ng-show="ticket_select_mode == 0"> 
+        <!-- - - - - - - - - - - - - - - - - - - - - - - - HEADER - - - - - - - - - - - - - - - - - - - - - - - -->
+        
+        <div class="row bg-light lt" style="padding: 5px; margin-left: -10px;background-color: #141414">
+            <div class="col-sm-6">
+                <h1 class="m-n font-thin h5 text-black" style="color:#337ab7">
+                    <label style="font-size: 25px; margin-bottom: 0px"><i class="fa fa-cog"></i>
+                        Advance Briefing
+                    </label>
+                </h1>
+            </div>
+            <div class="input-group col-xs-2 pull-right" style="padding-right: 15px">
+                <input type="text" ng-model="filter_value" class="form-control input-sm no-border  padder" ng-keyup="$event.keyCode == 13 && searchBriefing(filter_value)" placeholder="Search">
+                <span class="input-group-btn">
+                    <button type="submit" class="btn btn-sm " ng-click="searchBriefing(filter_value)"><i class="fa fa-search"></i></button>
+                </span>             
+            </div>
+        
+        </div>
+
+        <!-- header -->
+        <div class="wrapper bg-light lter b-b">
+            <div class="btn-group pull-right">
+                <button type="button " class="btn btn-dark btn-sm" ng-click="onCreateRoom()">
+                    <span class="text-success font-bold">&nbsp;&nbsp;&nbsp;<i class="fa fa-check"></i>&nbsp;New Briefing&nbsp;&nbsp;&nbsp;</span>
+                </button>
+
+                <button type="button" class="btn btn-sm btn-bg btn-default" style="margin-left: 10px">
+                    {{paginationOptions.numberOfPages}}/{{paginationOptions.countOfPages}} - {{paginationOptions.totalItems}} Items
+                </button>
+                <button type="button" class="btn btn-sm btn-bg btn-default" ng-click="onPrevPage()" ng-disabled="paginationOptions.numberOfPages <= 1">
+                    <i class="fa fa-chevron-left"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-bg btn-default" ng-click="onNextPage()"
+                    ng-disabled="paginationOptions.numberOfPages >= paginationOptions.countOfPages">
+                    <i class="fa fa-chevron-right"></i>
+                </button>
+            </div>
+
+            <div class="btn-toolbar" style="padding-left: 2px">
+                <div class="btn-group">
+                    <button class="btn btn-sm btn-icon btn-default" data-toggle="tooltip" title="Filter" data-placement="bottom" data-ng-click="openFilterPanel('left', true)">
+                        <i class="fa fa-filter"></i>
+                    </button>
+                </div>  
+                <div class="btn-group">
+                    <button id="dateranger" class="btn btn-sm btn-icon btn-default" data-toggle="tooltip" title="Filter" data-placement="bottom" ui-jq="daterangepicker" ui-options="dateRangeOption"  data-title="Refresh" ng-click="onClickDateFilter()">
+                        <i class="fa fa-calendar"></i>
+                    </button>                         
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-sm btn-icon btn-default" data-toggle="tooltip" title="Refresh" data-placement="bottom" ng-click="refreshLogs()">
+                        <i class="fa fa-refresh"></i>
+                    </button>
+                </div>                    
+                
+            </div>
+        </div>
+        <!-- / header -->
+        <!-- Grid Table -->
+        <div class="bg-light lter multiDemo" style="width:100%; padding: 0px; margin: 0px"
+            ng-style="{'height': tab_height, 'overflow-y': 'auto'}">
+            <div class="table table-responsive">
+                <table  st-table="ticketlist"  class="table ticket table-striped b-t b-light">
+                    <thead class="tblhead-sm" style="font-size: .8vw">
+                        <tr class="text-center">
+                            <th align="center" st-sort="id" st-sort-default="reverse"><b>&nbsp;&nbsp;ID</b></th>                              
+                            <th align="center"><b>Date Created</b></th>
+                            <th align="center"><b>Presenter</b></th>
+                            <th align="center"><b># of Attendees</b></th>
+                            <th align="center"><b>Duration</b></th>
+                            <th align="center"><b>Status</b></th>
+                            <th align="center"><b>Action</b></th>
+                        </tr>
+                    </thead>
+                
+                    <tbody >
+                        <tr ng-repeat="row in datalist">
+                            <td align="center">{{::row.id}}</td>                              
+                            <td align="center">{{::row.created_at_time}}</td>
+                            <td align="center">{{::row.presenter}}</td>
+                            <td align="center"><a>{{::row.attendees}}</a></td>
+                            <td align="center">{{calcDuration(row)}}</td>
+                            <td align="center">{{::row.status_text}}</td>                                
+                            <td align="center">
+                                <div>
+                                    <a class="btn default btn-xs green" data-toggle="tooltip" title="Edit" data-placement="bottom"
+                                        ng-if="row.created_by == profile.id && (row.status == 'Scheduled' || row.status == 'Waiting')" ng-click="onEditRoom(row); $event.stopPropagation();">
+                                        <i class="fa fa-pencil"></i>
+                                    </a>                                   
+                                    <a class="btn default btn-xs red" data-toggle="tooltip" title="Cancel" data-placement="bottom" 
+                                        ng-if="row.created_by == profile.id && (row.status == 'Scheduled' || row.status == 'Waiting')" ng-click="onCancelRoom(row); $event.stopPropagation();">
+                                        <i class="fa fa-ban"></i>
+                                    </a>
+                                    <a class="btn default btn-xs blue" data-toggle="tooltip" title="Select Tickets" data-placement="bottom"
+                                        ng-if="row.created_by == profile.id && (row.status == 'Scheduled' || row.status == 'Waiting')" ng-click="onSelectTicket(row); $event.stopPropagation();">
+                                        <i class="fa fa-ticket"></i>
+                                    </a>                                   
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>                   
+                </table>
+            </div>      
+        </div>
+    </div>    
+</div>

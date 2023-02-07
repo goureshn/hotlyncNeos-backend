@@ -1,0 +1,148 @@
+<style>
+    .pro_discnt span {
+        position:    relative;
+        top:         0px;
+        right:      0;
+        font-family: 'Titillium Web';
+        font-weight: bold;
+        font-size:   150%;
+        color:       #fff;
+        padding:     0px 20px;
+        width:       40%;
+        line-height: 100%;
+        background:  rgb(255, 145, 25);
+        background:  rgba(255, 145, 25, 0.7);
+    }
+    .pro_price span {
+        position: relative;
+        font-family: 'Titillium Web';
+        font-weight: bold;
+        font-size:   150%;
+        color:       #fff;
+        padding:     0px  70px;
+        width:       40%;
+        line-height: 150%;
+        background:  rgb(255, 145, 25);
+        background:  rgba(255, 145, 25, 0.9);
+    }
+    .first_foot {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 1005;
+        background:#2e3344;
+    }
+</style>
+
+<div  ng-controller="PromotionController" >
+    <div class="col-sm-12 col-md-6 col-md-offset-3" ng-if="pro_condition=='list'">
+        <div>
+            <div class="panel" ng-repeat="row in ticketlist" >
+                <div >
+                    <div class="pro_discnt">
+                        <span>{{row.discnt}}% OFF</span>
+                    </div>
+                    <img class="img-responsive"  src="{{row.images[0].src}}" ng-click="viewPromotion(row)" style="border: 1px solid #ff9119;cursor: pointer">
+                    <div class="pro_price">
+                        <span>AED {{row.price}}</span>
+                    </div>
+                    <p>Title: {{row.title}}</p>
+                    <p>Description: {{row.description}}</p>
+                </div>
+            </div>
+            <div class="panel" style="height: 50px;">
+
+            </div>
+        </div>
+
+    </div>
+
+
+    <!--view promotion-->
+    <div class="col-sm-12 col-md-6 col-md-offset-3" ng-if="pro_condition=='view'">
+        <div style="margin-top:20px;">
+            <div class="panel" >
+                <div>
+                    <ng-fader images="promotion.images" ></ng-fader>
+                    <!--<video ng-if="image.ext == 'video'"   controls autoplay name="media">-->
+                        <!--<source src="{{image.src}}" type="video/mp4" >-->
+                        <!--Your browser does not support HTML5 video.-->
+                    <!--</video>-->
+                    <!--Carousel :   http://angular-ui.github.io/bootstrap/-->
+                    <!--<slider images="promotion.images" />-->
+                    <div> <ng-bind-html  ng-bind-html="promotion.highlight | textToHtml"></ng-bind-html> </div>
+                    <div> <ng-bind-html  ng-bind-html="promotion.cond | textToHtml "></ng-bind-html></div>
+                    <div>
+                        <button type="button " class="btn btn-success btn-sm" ng-click="insertPromotion()">
+                            <span class="text-white font-bold">&nbsp;ENQUIRE NOW</span></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Enquiry information-->
+    <!--view promotion-->
+    <div class="col-sm-12 col-md-6 col-md-offset-3" ng-if="pro_condition=='insert'">
+        <div style="margin-top:30px;">
+            <div class="panel" >
+                <div class="form-group">
+                    <label >Name:</label>
+                    <input type="text" class="form-control" ng-model="enquiry.name" readonly >
+                </div>
+                <div class="form-group">
+                    <label >Room No:</label>
+                    <input type="text" class="form-control" ng-model="enquiry.room" readonly >
+                </div>
+                <div class="form-group">
+                    <label >Number of Pax:</label>
+                    <input type="text" maxlength="2" class="form-control" ng-model="enquiry.pax" >
+                </div>
+                <div class="form-group">
+                    <label>Date & Time:</label>
+                    <div class="dropdown">
+                        <a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+                            <div class="input-group">
+                                <input type="text" class="form-control" ng-model="datetime.start_time">
+                                <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                            </div>
+                        </a>
+                        <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+                            <datetimepicker ng-model="datetime.start_date"
+                                            data-datetimepicker-config="{ dropdownSelector: '#dropdown2' }"
+                                            data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+                        </ul>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label >Email(Optional):</label>
+                    <input type="email" class="form-control" ng-model="enquiry.email" >
+                </div>
+                <div class="form-group">
+                    <label >Contact No(Optional):</label>
+                    <input type="number" maxlength="12" class="form-control" ng-model="enquiry.contact_no" >
+                </div>
+                <div class="form-group">
+                    <label >Comment(Optional) :</label>
+                    <textarea class="form-control" rows="3" ng-model = "enquiry.comment" ></textarea>
+                </div>
+                <div class="form-group">
+                    <label >Disclaimer:</label>
+                    <input type="text" class="form-control" ng-model="promotion.disclaimer" readonly >
+                </div>
+                <button type="button" class="btn btn-success btn-lg" style="width: 100%;"  data-dismiss="modal" ng-click="sendEnquiry()">
+                    <span>Send Enquiry</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-12 col-md-6 col-md-offset-3" style="height: 70px;">
+
+    </div>
+    <footer id="footer" class="first_foot" role="footer" style="position: fixed">
+        <div class="wrapper b-t bg-light font-bold text-center">
+            Powered by Ennovatech Solutions
+        </div>
+    </footer>
+</div>

@@ -1,0 +1,23 @@
+<div ng-controller="RealtimeController">
+   
+    <uib-tabset active="active" >
+      <div class="tabs tabs-style-tzoid pull-left" >
+        <nav ui-nav class="call_menu navi clearfix" >
+          <ul class="tabs-style-tzoid nav" style="height:40px;max-width:1500px;">
+            <li style="margin:8px -5px 0px;" class="{{active == 1 ? 'tab-current' : ''}}">
+              <uib-tab index="4">
+                <uib-tab-heading>
+                  <p class="tabs-style-tzoid" style="color:#fff; font-size:12px">
+                    <i class="fa fa-tachometer fa-lg"></i>&nbsp;&nbsp;
+                    <b>Real Time</b>
+                  </p>
+                </uib-tab-heading>
+                <div style="{{tab_full_height}}; " ng-include="'tpl/housekeeping/real_time.html'">
+                </div>
+              </uib-tab>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </uib-tabset>
+</div>

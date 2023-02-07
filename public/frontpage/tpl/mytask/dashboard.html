@@ -1,0 +1,186 @@
+<style type="text/css">
+	svg text {
+		fill: white;
+	}
+
+	.nvd3 .nv-legend text {
+		font: normal 10px Arial;
+	}
+
+	.nvd3.nv-pie .nv-slice text {
+		fill: white !important;
+	}
+
+	.nvd3 .nv-discretebar .nv-groups text, .nvd3 .nv-multibarHorizontal .nv-groups text {
+		fill: rgba(255,255,255,1);
+		stroke: rgba(255,255,255,0);
+	}
+
+	.tick line{
+		opacity: 0.2;
+	}
+	.status-view:hover{
+		color:#0b2ef4;
+	}
+
+	.nopadding {
+		margin: 0px;
+	}
+
+	.modal-content {
+		background-color: #2a2a2a;
+	}
+
+</style>
+
+<script src="/libs/svgtoimage/canvas-toBlob.js"></script>
+<script src="/libs/svgtoimage/FileSaver.min.js"></script>
+
+<div  ng-controller="MytaskDashboardController" style="overflow-x: hidden; font-size: 15px;background-color: #141414">
+
+	<!-- - - - - - - - - - - - - - - - - - - - - - - - HEADER - - - - - - - - - - - - - - - - - - - - - - - -->
+	<div class="wrapper-md1 bg-light lt"  style="background-color: #141414" >
+	    <div class="col-sm-6 col-xs-12">
+	       <h1 class="m-n font-thin h3 text-black" style="color:#337ab7">
+	           <label style="font-size: 25px"><i class="fa fa-tachometer "></i>
+	               &nbsp;&nbsp;My Dashboard
+	           </label>
+	       </h1>
+	    </div>
+	   	<div class="col-sm-6 input-group text-right">
+
+			<a ui-fullscreen style="margin-right: 20px"></a>
+			<div class="btn-group">
+					<!--<a ng-click="onDownloadPDF()"><i class="fa fa-file-pdf-o" style="font-size: 30px; color:red" aria-hidden="true"></i></a>&nbsp;&nbsp;&nbsp;&nbsp;-->
+			</div> <!-- Dummy Need to add logic to export dash to pdf -->
+			<div class="btn-group">
+				<label class="btn btn-info btn-sm" ng-model="dateFilter" uib-btn-radio="'Today'">Today</label>
+				<label class="btn  btn-info btn-sm" ng-model="dateFilter" uib-btn-radio="'Weekly'">Weekly</label>
+				<label class="btn  btn-info btn-sm" ng-model="dateFilter" uib-btn-radio="'Monthly'">Monthly</label>
+				<label class="btn  btn-info btn-sm" ng-model="dateFilter" uib-btn-radio="'Yearly'">Yearly</label>
+				<label class="btn  btn-info btn-sm" ng-model="dateFilter" uib-btn-radio="'Custom Days'">Custom Days</label>
+			</div>
+	      	<input style="width: 200px; margin-left: 10px" ng-disabled="dateFilter != 'Custom Days'" ng-model="daterange" ui-jq="daterangepicker" ui-options="dateRangeOption" class="form-control pull-right input-sm">
+	    </div>
+	</div>
+		
+	<div>
+		<div style="background-color: #141414; ">		
+		<!-- complaint dashboad -->
+			<div class="row nopadding">
+				<div class="col-sm-12" ng-show="visible_flag[1]">
+					<a class="expand-dashboard" ng-click="onExpandDashboard(1)">
+			          	<i class="fa fa-expand fa-fw text" ng-hide="expand_flag[1]"></i>
+			          	<i class="fa fa-compress fa-fw text" ng-show="expand_flag[1]"></i>
+			        </a>	
+			        <div ng-show="expand_flag[1]">
+			        	<div>											
+							<label class="i-switch bg-success m-t-xs m-r" style="margin-left: 20px">
+								<input type="checkbox" ng-model="table_view_visible[1]" ng-change="onChangeChart(1)">
+								<i></i>
+							</label>
+
+							<a ng-click="onExportToImage(1)"><i class="fa fa-download fa-fw text"></i></a>							
+				  		</div>    
+			        </div>
+					<div ng-class="{'col-md-6':table_view_visible[1], 'col-md-12':!table_view_visible[1]}" style="background-color: #2a2a2a;margin-bottom: 10px; border-radius: 6px">
+						<div class="panel-body" style="padding: 0px;" element-size key="contentSize">
+							<nvd3 id="category" options="category_options" data="category_data" api="category_api"></nvd3>							
+						</div>
+					</div>
+					<div class="col-sm-6" ng-show="table_view_visible[1]">
+				        <div class="panel-body" style="padding: 0px">
+				        	<div  style="background-color: #2a2a2a">				        		
+				        		<div class="table table-responsive" style="margin-top: 3px; overflow-y: auto" ng-style="category_table_body_style">
+				        			<table  class="table ticket table-striped" >
+				        				<thead>
+				        					<tr class="tblhead-sm" style="font-size: .7vw">				        						
+				        						<th class="text-center"><b>Category Name</b></th>
+				        						<th class="text-center"><b>Total</b></th>
+				        						<th class="text-center"><b>Completed</b></th>
+				        					</tr>
+				        				</thead>
+				        				<tbody>
+				        					<tr style="height:1vw" ng-repeat="row in subcomplaint_list"  >         
+				        						<td class="text-center text-xs">{{::row.category_name}}</td>
+				        						<td class="text-center text-xs">{{::row.cnt}}</td>
+				        						<td class="text-center text-xs">{{::row.completed_cnt}}</td>
+				        					</tr>
+				        				</tbody>
+				        			</table>
+				        		</div>
+				        	</div>
+				        </div>
+				    </div>
+				</div>
+				
+			</div>
+
+			<div class="row nopadding">
+				<div ng-class="{'col-sm-6':!expand_flag[2], 'col-sm-12':expand_flag[2]}" ng-show="visible_flag[2]">
+					<a class="expand-dashboard" ng-click="onExpandDashboard(2)">
+			          	<i class="fa fa-expand fa-fw text" ng-hide="expand_flag[2]"></i>
+			          	<i class="fa fa-compress fa-fw text" ng-show="expand_flag[2]"></i>
+					</a>
+					<!--
+			        <div ng-show="expand_flag[2]">
+			        	<div>							
+			        		<label class="i-switch bg-success m-t-xs m-r" style="margin-left: 20px">
+								<input type="checkbox" ng-model="table_view_visible[2]" ng-change="onChangeChart(2)">
+								<i></i>
+							</label>				
+							
+							<a ng-click="onExportToImage(2)"><i class="fa fa-download fa-fw text"></i></a>
+				  		</div>    
+			        </div>
+
+					<div class="col-md-12" style="background-color: #2a2a2a;margin-bottom: 10px; border-radius: 6px">
+						<div class="panel-body" style="padding: 0px;">
+							<nvd3 id="severity_type" options="severity_type_options" data="severity_type_data" api="severity_type_api"></nvd3>
+						</div>
+					</div>
+				-->
+					<div ng-show="expand_flag[2]">
+						<div>							
+							<label class="i-switch bg-success m-t-xs m-r" style="margin-left: 20px">
+								<input type="checkbox" ng-model="table_view_visible[1]" ng-change="onChangeChart(1)">
+								<i></i>
+							</label>				
+							
+							<a ng-click="onExportToImage(1)"><i class="fa fa-download fa-fw text"></i></a>
+						</div>    
+					</div>
+					<div class="col-md-12" style="background-color: #2a2a2a;margin-bottom: 10px; border-radius: 6px">
+						<div class="panel-body" style="padding: 0px;">
+							<nvd3 id="severity" options="severiy_options" data="serveriy_data" api="severiy_api" on-ready="severity_callback"></nvd3>
+						</div>
+					</div>
+				</div>
+				<div ng-class="{'col-sm-6':!expand_flag[3], 'col-sm-12':expand_flag[3]}" ng-show="visible_flag[3]">
+					<a class="expand-dashboard" ng-click="onExpandDashboard(3)">
+			          	<i class="fa fa-expand fa-fw text" ng-hide="expand_flag[3]"></i>
+			          	<i class="fa fa-compress fa-fw text" ng-show="expand_flag[3]"></i>
+			        </a>
+			        <div ng-show="expand_flag[3]">
+			        	<div>							
+			        		<label class="i-switch bg-success m-t-xs m-r" style="margin-left: 20px">
+								<input type="checkbox" ng-model="table_view_visible[3]" ng-change="onChangeChart(3)">
+								<i></i>
+							</label>				
+							
+							<a ng-click="onExportToImage(3)"><i class="fa fa-download fa-fw text"></i></a>
+				  		</div>    
+			        </div>
+					<div class="col-md-12" style="background-color: #2a2a2a;margin-bottom: 10px; border-radius: 6px">
+						<div class="panel-body" style="padding: 0px;">
+							<nvd3 id="resolve_time" options="resolve_options" data="resolve_data" api="resolve_api"></nvd3>
+						</div>
+					</div>
+				</div>			
+				
+			</div>
+			
+		</div>
+	</div>
+
+</div>

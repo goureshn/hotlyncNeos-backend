@@ -1,0 +1,61 @@
+<div class="modal-content">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">
+            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        </button>
+        <h3 class="modal-title" style="color:#2691d9" id="Heading">Create External maintenance company</h3>
+    </div>
+    <br>
+    <div class="modal-body">
+        <form class="form-horizontal form-validation">
+            <div class="form-group" style="margin-right: 0px" >
+                <label class="col-sm-4 text-right control-label text-muted" >Maintenance Company</label>
+                <div class="col-sm-5  scrollable-dropdown-menu">
+                    <input class="form-control input-sm"  ng-model="maintenance_group.external_maintenance"  required
+                            popover-trigger="mouseenter">
+                </div>
+            </div>
+            <div class="form-group" style="margin-right: 0px">
+                <label class="col-sm-4 text-right control-label text-muted" >Contact</label>
+                <div class="col-sm-5">
+                    <input class="form-control input-sm" ng-model="maintenance_group.contact" required
+                            popover-trigger="mouseenter" >
+                </div>
+            </div>
+            <div class="form-group" style="margin-right: 0px">
+                <label class="col-sm-4 text-right control-label text-muted" >Phone</label>
+                <div class="col-sm-5">
+                    <input class="form-control input-sm" ng-model="maintenance_group.phone"
+                            popover-trigger="mouseenter" >
+                </div>
+            </div>
+            <div class="form-group" style="margin-right: 0px">
+                <label class="col-sm-4 text-right control-label text-muted" >Email</label>
+                <div class="col-sm-5">
+                    <input class="form-control input-sm" ng-model="maintenance_group.email"
+                            popover-trigger="mouseenter" >
+                </div>
+            </div>
+            <div class="form-group" style="margin-right: 0px">
+                <label class="col-sm-4 text-right control-label text-muted" >Url</label>
+                <div class="col-sm-5">
+                    <input class="form-control input-sm" ng-model="maintenance_group.url"
+                            popover-trigger="mouseenter" >
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="modal-footer ">
+        <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal" ng-click="createMaintenance()">
+            <span class="glyphicon glyphicon-ok"></span>
+            <b> Create</b>
+        </button>
+        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal" ng-click="cancel()">
+            <span class="glyphicon glyphicon-remove"></span>
+            <b> Cancel</b>
+        </button>
+    </div>
+
+</div>
+

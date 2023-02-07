@@ -1,0 +1,16 @@
+<div class="modal-footer " id="createButton" ng-show="id<0">
+	<button type="button" class="btn btn-success btn-sm" data-ng-click="updatedata()">
+		<span class="glyphicon glyphicon-ok"></span>
+		<b> Save</b>
+	</button>
+	<button id="closeButton" type="button" class="btn btn-danger btn-sm" data-dismiss="modal">
+		<span class="glyphicon glyphicon-remove"></span>
+		<b> Cancel</b>
+	</button>
+</div>
+
+<div class="modal-footer " id="updateButton" ng-show="id>=0">
+	<button type="button" class="btn btn-warning btn-lg" style="width: 100%;" data-ng-click="updatedata()">
+		<span class="glyphicon glyphicon-ok-sign"></span> Update
+	</button>
+</div>

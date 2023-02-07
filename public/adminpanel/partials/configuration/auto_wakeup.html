@@ -1,0 +1,98 @@
+<input type="hidden" id="id" value="-1" ng-model="model_data.id"/>
+
+<div class=" panel panel-default" style="border-color: #dee5e7">
+    <div class="panel-heading wrapper">
+        <div  style="float:right; margin-top: -5px; background: #efefef;padding:5px 10px 5px 10px;color: #868585;font-size: 16px; " >
+            <strong>{{message}}</strong>
+        </div>
+        <i class="fa fa-cog"></i>
+        <span class="font-bold"> &nbsp;&nbsp;Configuration</span>
+    </div>
+    <div class="" style="background-color: #eeeeee">
+        <!-- left  general -->
+        <div class="col-sm-6">
+            <div>
+                <h5><strong> Auto Wakeup</strong></h5>
+            </div>
+            <div style="margin-left: 30px">
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox"   ng-checked="duty_manager_notify_check"
+                               ng-click="saveWakeup('duty_manager_notify', '', 'wakeup')" /> Notify Duty Mnager for failed AWU
+                    </label>
+                </div>
+                <div class="form-horizontal" >
+                    <div class="form-group">
+                        <div class="col-sm-3">
+                            <select id='prpty_id' class='form-control' ng-model="duty_manager_device"
+                                    ng-options="type for type in device_list"
+                                    ng-keypress="($event.which === 13)?saveWakeup('duty_manager_device', duty_manager_device, 'wakeup'):0" >
+                            </select>
+                        </div>
+                        <div class="col-sm-7">
+                            <input type="text" class="form-control" ng-model="duty_manager"
+                                   ng-keypress="($event.which === 13)?saveWakeup('duty_manager', duty_manager, 'wakeup'):0"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3">Retry attempts</label>
+                        <div class="col-sm-3">
+                            <input type="text" class="form-control" ng-model="awu_retry_attemps"
+                                    ng-keypress="($event.which === 13)?saveWakeup('awu_retry_attemps', awu_retry_attemps, 'wakeup'):0"/>
+                        </div>
+                        <div class="col-sm-6">
+                            (Range:1-10) To disable, press 0,
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3">Retry Intervals</label>
+                        <div class="col-sm-3">
+                            <input type="text" class="form-control" ng-model="awu_retry_mins"
+                                   ng-keypress="($event.which === 13)?saveWakeup('awu_retry_mins', awu_retry_mins, 'wakeup'):0" />
+                        </div>
+                        <div class="col-sm-6">
+                            Minutes (Range:1-15)
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3">Max allowed snooze</label>
+                        <div class="col-sm-3">
+                            <input type="text" class="form-control" ng-model="awu_max_snooze"
+                                   ng-keypress="($event.which === 13)?saveWakeup('awu_max_snooze', awu_max_snooze, 'wakeup'):0" />
+                        </div>
+                        <div class="col-sm-6">
+                            (Range:1-10) To disable, press 0
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3">Snooze intervals</label>
+                        <div class="col-sm-3">
+                            <input type="text" class="form-control" ng-model="snooze_time"
+                                   ng-keypress="($event.which === 13)?saveWakeup('snooze_time', snooze_time, 'wakeup'):0" />
+                        </div>
+                        <div class="col-sm-6">
+                            Minutes (Range:1-15)
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3">In-prograss max wait</label>
+                        <div class="col-sm-3">
+                            <input type="text" class="form-control" ng-model="inprogress_max_wait"
+                                   ng-keypress="($event.which === 13)?saveWakeup('inprogress_max_wait', inprogress_max_wait, 'wakeup'):0" />
+                        </div>
+                        <div class="col-sm-6">
+                            Seconds(60, 120, 180, 240...)
+                        </div>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox"   ng-checked="awu_record_flag_check"
+                                   ng-click="saveWakeup('awu_record_flag', '' , 'wakeup')" /> Enable Auto Wakeup recording
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

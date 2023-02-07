@@ -1,0 +1,415 @@
+<input type="hidden" id="id" value="-1" ng-model="model_data.id"/>
+
+<div class="panel panel-default" style="border-color: #dee5e7">
+  <div class="panel-heading wrapper">
+    <div  style="float:right; margin-top: -5px; background: #efefef;padding:5px 10px 5px 10px;color: #868585">
+      <strong>{{message}}</strong>
+    </div>
+    <i class="fa fa-cog"></i>
+    <span class="font-bold"> &nbsp;&nbsp;Configuration</span>
+  </div>
+  <div style="background-color: #eeeeee">
+        <!-- - - - - - LEFT GENERAL - - - - - -->
+    <div class="col-sm-6">
+      <div style="margin-left: 10px">
+				<!-- - - - - - Password Settings - - - - - -->
+        <div>
+          <h5><strong><i class="fa fa-laptop"></i>&nbsp;Password Setting</strong></h5>
+        </div>
+        <div class="checkbox">
+          <label>
+            <input type="checkbox" ng-disabled="job_role!='SuperAdmin'&&edit_flag==0"  ng-checked="password_compare_flag_check"
+              ng-click="saveGeneral('password_compare_flag', '', 'password_setting')" /> Enforce Password Strength
+          </label>
+        </div>
+        <div class="form-horizontal" style="margin-left: 30px;">
+          <div class="form-group">
+            <label class="col-sm-3 control-label" style="text-align: left">Minimum length</label>
+            <div class="col-sm-7">
+							<div class="bootstrap-touchspin" style="width: 115px">
+								<input ui-jq="TouchSpin" type="text" value="6" class="form-control text-center" data-min="6"
+									data-max="32" style="display: block" 
+									ng-model="password_minimum_length" ng-disabled="!password_compare_flag_check"
+									ng-change="saveGeneral('password_minimum_length', password_minimum_length, 'password_setting')"/>
+							</div>
+							<span class="help-block m-b-none text-xs">(Range : 6-32 Default value is 6)</span>
+						</div>
+					</div>
+          <div class="form-group">
+            <label class="col-sm-3 control-label" style="text-align: left">Password Aging time</label>
+            <div class="col-sm-9">
+	            <div class="bootstrap-touchspin" style="width: 115px">
+								<input ui-jq="TouchSpin" type="text" value="90" class="form-control text-center text-xs" data-min="0"
+									data-max="365" style="display: block;" 
+									ng-model="password_expire_date" ng-disabled="!password_compare_flag_check"
+	                ng-change="saveGeneral('password_expire_date', password_expire_date, 'password_setting')"/>
+	            </div>
+							<span class="help-block m-b-none text-xs">Days (Range : 0-365 Default value is 365) To disable, enter 0.</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3 control-label text-sm" style="text-align: left">Number of password to store in the history</label>
+            <div class="col-sm-8">
+	            <div class="bootstrap-touchspin" style="width: 115px">
+								<input ui-jq="TouchSpin" type="text" value="1" class="form-control text-center text-xs" data-min="0"
+									data-max="50" style="display: block;" 
+									ng-model="last_use_password" ng-disabled="!password_compare_flag_check"
+		              ng-change="saveGeneral('last_use_password', last_use_password, 'password_setting')"/>
+	            </div>
+	            <span class="help-block m-b-none text-xs">(Range:1-50 Default value is 1) To disable, enter 0</span>
+            </div>
+					</div>
+          <div class="form-group">
+            <label class="col-sm-3 control-label" style="text-align: left">Password Type</label>
+            <div class="col-sm-8">
+              <select id='prpty_id' class='form-control' ng-model="password_type" ng-disabled="!password_compare_flag_check"
+                ng-options="type for type in password_type_list"
+                ng-change="saveGeneral('password_type', password_type, 'password_setting')" style="width: 115px"/>
+              </select>
+							<span class="help-block m-b-none text-xs">None, Alphanumeric, Alphanumeric_Special</span>
+						</div>
+          </div>
+        </div>
+				<!-- - - - - - /Password Settings - - - - - -->
+				
+        <!-- - - - - - Account Settings - - - - - --> 
+        <div>
+          <h5><strong><i class="fa fa-id-badge" aria-hidden="true"></i>&nbsp;Account Setting</strong></h5>
+        </div>
+        <div class="checkbox">
+          <label>
+            <input type="checkbox" value="1"  ng-checked="account_security_flag"
+              ng-click="saveGeneral('account_security_flag', '', 'account_setting')" /> Enforce Advance Account Security
+          </label>
+        </div>
+        <div class="form-horizontal" style="margin-left: 30px;">
+          <div class="form-group">
+            <label class="col-sm-3 control-label" style="text-align: left">Maximum session before timeout</label>					
+            <div class="col-sm-8">
+              <input type="text" class="form-control" ng-model="login_session_timeout" ng-disabled="!account_security_flag"
+                ng-change="saveGeneral('login_session_timeout', login_session_timeout, 'account_setting')" style="width: 115px"/>
+							<span class="help-block m-b-none text-xs">Days (Range : 0-365 Default value is 365) To disable, enter 0.</span>
+						</div>
+					</div>
+          <div class="form-group">
+            <label class="col-sm-3 text-sm">Invalid logon attempts before account lock</label>
+            <div class="col-sm-7">
+              <input type="text" class="form-control" ng-model="password_lock_attempts" ng-disabled="!account_security_flag"
+                ng-change="saveGeneral('password_lock_attempts', password_lock_attempts, 'account_setting')"  style="width: 115px"/>
+								<span class="help-block m-b-none text-xs">(Range:1-10 Default value is 3)</span>
+            </div>
+          </div>
+					<link href="/lib/angular/angular-toggle-switch-bootstrap-3.css" media="all" rel="stylesheet" type="text/css">
+
+          <div class="form-group">
+            <label class="col-sm-3 text-sm">Allow Multi Login</label>
+            <div class="col-sm-7">
+              <div toggle-switch class="switch-primary" on-label="Yes" off-label="No" ng-model="allow_multiple_login"
+                ng-change="saveGeneral('allow_multiple_login', allow_multiple_login, 'account_setting')"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="checkbox">
+          <label>
+            <input type="checkbox" value="1"  ng-checked="only_allowed_domain_in_email_flag"
+              ng-click="saveGeneral('only_allowed_domain_in_email_flag', only_allowed_domain_in_email_flag, 'account_setting')" /> Use only allowed domain in e-mail
+          </label>
+        </div>
+        <div class="form-horizontal" style="margin-left: 30px;">
+          <div class="form-group">
+            <div class="col-sm-12">
+              <input type="text" class="form-control" ng-model="allowed_domain_in_email" ng-disabled="!only_allowed_domain_in_email_flag"
+                ng-change="saveGeneral('allowed_domain_in_email', allowed_domain_in_email, 'account_setting')"/>
+              <span class="help-block m-b-none text-xs">Enter multiple domain separated by commans.</span>
+            </div>
+          </div>        
+        </div>
+
+				<!-- - - - - - /Account Settings - - - - - -->	
+            
+        <!-- - - - - - Site Directory - - - - - -->
+        <div>
+          <h5><strong><i class="fa fa-globe" aria-hidden="true"></i>&nbsp;Site Directory</strong></h5>
+        </div>
+        <div class="form-horizontal" style="margin-left: 30px; padding-bottom: 10px">
+          <div class="form-group">
+            <label class="col-sm-3">Interface Host</label>
+            <div class="col-sm-6">
+              <input type="text" class="form-control"  ng-model="interface_host"
+                ng-keypress="($event.which === 13)?saveGeneral('interface_host', interface_host, 'site_directory'):0" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3">HotLync Host</label>
+            <div class="col-sm-6">
+              <input type="text" class="form-control" ng-model="hotlync_host"
+                ng-keypress="($event.which === 13)?saveGeneral('hotlync_host', hotlync_host, 'site_directory'):0" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3">Live Host</label>
+            <div class="col-sm-6">
+              <input type="text" class="form-control" ng-model="live_host"
+                ng-keypress="($event.which === 13)?saveGeneral('live_host', live_host, 'site_directory'):0" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3">Public Live Host</label>
+            <div class="col-sm-6">
+              <input type="text" class="form-control" ng-model="public_live_host"
+                ng-keypress="($event.which === 13)?saveGeneral('public_live_host', public_live_host, 'site_directory'):0" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3">Public Domain</label>
+            <div class="col-sm-6">
+              <input type="text" class="form-control" ng-model="public_domain"
+                ng-keypress="($event.which === 13)?saveGeneral('public_domain', public_domain, 'site_directory'):0" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3">Export Server</label>
+            <div class="col-sm-6">
+              <input type="text" class="form-control" ng-model="export_server"
+                ng-keypress="($event.which === 13)?saveGeneral('export_server', export_server, 'site_directory'):0" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3">Public URL</label>
+            <div class="col-sm-6">
+              <input type="text" class="form-control" ng-model="public_url"
+                ng-keypress="($event.which === 13)?saveGeneral('public_url', public_url, 'site_directory'):0" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3">Internal HotLync Host</label>
+            <div class="col-sm-6">
+              <input type="text" class="form-control" ng-model="hotlync_internal_host"
+                ng-keypress="($event.which === 13)?saveGeneral('hotlync_internal_host', hotlync_internal_host, 'site_directory'):0" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3">Mobile Server  Host</label>
+            <div class="col-sm-6">
+              <input type="text" class="form-control" ng-model="mobile_host"
+                ng-keypress="($event.which === 13)?saveGeneral('mobile_host', mobile_host, 'site_directory'):0" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-3">Min Free Size(MB)</label>
+            <div class="col-sm-6">
+              <input type="text" class="form-control" ng-model="low_free_size"
+                ng-keypress="($event.which === 13)?saveGeneral('low_free_size', low_free_size, 'site_directory'):0" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-3 text-sm">Send Low Notify</label>
+            <div class="col-sm-7">
+              <div toggle-switch class="switch-primary" on-label="Yes" off-label="No" ng-model="low_free_notify"
+                ng-change="saveGeneral('low_free_notify', low_free_notify, 'site_directory')"
+              ></div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-3">Notify Email Address</label>
+            <div class="col-sm-6">
+              <input type="text" class="form-control" ng-model="low_free_emails"
+                ng-keypress="($event.which === 13)?saveGeneral('low_free_emails', low_free_emails, 'site_directory'):0" />
+            </div>
+          </div>
+        </div>
+        <!-- - - - - - /Site Directory - - - - - -->
+      </div>
+    </div>
+        <!-- - - - - - RIGHT GENERAL - - - - - -->
+    <div class="col-sm-6">
+      <div style="margin-left: 30px">
+        <div>
+          <h5><strong><i class="fa fa-bell" aria-hidden="true"></i>&nbsp;Notification SMTP Settings</strong></h5>
+        </div>
+            <div class="form-horizontal" style="margin-left: 30px;">
+                <div class="form-group">
+                    <label class="col-sm-3">SMTP Server</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control"  ng-model="notification_smtp_server"
+                               ng-keypress="($event.which === 13)?saveGeneral('notification_smtp_server', notification_smtp_server, 'notification'):0"  />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3">SMTP Username</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" ng-model="notification_smtp_user"
+                               ng-keypress="($event.which === 13)?saveGeneral('notification_smtp_user', notification_smtp_user, 'notification'):0" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3">SMTP Sender</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" ng-model="notification_smtp_sender"
+                               ng-keypress="($event.which === 13)?saveGeneral('notification_smtp_sender', notification_smtp_sender, 'notification'):0" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3">SMTP Password</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" ng-model="notification_smtp_password"
+                               ng-keypress="($event.which === 13)?saveGeneral('notification_smtp_password', notification_smtp_password, 'notification'):0" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3">SMTP Port</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" ng-model="notification_smtp_port"
+                               ng-keypress="($event.which === 13)?saveGeneral('notification_smtp_port', notification_smtp_port, 'notification'):0" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3">SMTP TLS</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" ng-model="notification_smtp_tls"
+                               ng-keypress="($event.which === 13)?saveGeneral('notification_smtp_tls', notification_smtp_tls, 'notification'):0" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3">SMS Gateway</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" ng-model="sms_gateway_settings"
+                               ng-keypress="($event.which === 13)?saveGeneral('sms_gateway_settings', sms_gateway_settings, 'notification'):0" />
+                    </div>
+                </div>
+            </div>
+            <!-------Report SMTP settings---------->
+            <div>
+                <h5><strong>Report SMTP Settings</strong></h5>
+            </div>
+            <div class="form-horizontal" style="margin-left: 30px;">
+                <div class="form-group">
+                    <label class="col-sm-3">SMTP Server</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" ng-model="smtp_server"
+                               ng-keypress="($event.which === 13)?saveGeneral('smtp_server', smtp_server, 'smtp'):0" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3">SMTP Username</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" ng-model="smtp_user"
+                               ng-keypress="($event.which === 13)?saveGeneral('smtp_user', smtp_user, 'smtp'):0" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3">SMTP Sender</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" ng-model="smtp_sender"
+                               ng-keypress="($event.which === 13)?saveGeneral('smtp_sender', smtp_sender, 'smtp'):0" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3">SMTP Password</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" ng-model="smtp_password"
+                               ng-keypress="($event.which === 13)?saveGeneral('smtp_password', smtp_password, 'smtp'):0" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3">SMTP Port</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" ng-model="smtp_port"
+                               ng-keypress="($event.which === 13)?saveGeneral('smtp_port', smtp_port, 'smtp'):0" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3">SMTP TLS</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" ng-model="smtp_tls"
+                               ng-keypress="($event.which === 13)?saveGeneral('smtp_tls', smtp_tls, 'smtp'):0" />
+                    </div>
+                </div>
+            </div>
+       <!-------Currency settings---------->
+            <div><br>
+              <h5><strong>Currency Settings</strong></h5>
+            </div>
+            <div class="form-horizontal" style="margin-left: 30px;">
+              <div class="form-group">
+                    <label class="col-sm-3">Currency</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" ng-model="currency"
+                              ng-keypress="($event.which === 13)?saveGeneral('currency', currency, 'currency'):0" />
+                    </div>
+              </div>
+            </div>
+
+            <div><br>
+              <h5><strong>Mobile Server Settings</strong></h5>
+            </div>
+            <div class="form-horizontal" style="margin-left: 30px;">
+              <div class="form-group">
+                    <label class="col-sm-3">Alarm To Email</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" ng-model="mobileserver_alarm_to_email"
+                              ng-keypress="($event.which === 13)?saveGeneral('mobileserver_alarm_to_email', mobileserver_alarm_to_email, 'mobileserver'):0" />
+                    </div>
+              </div>
+            </div>
+             
+          </div>
+        </div>
+         <!-------Sound settings---------->
+      <div><br>
+            <h5><strong>Sound Notification Settings</strong></h5>
+        </div>
+        <div class="form-horizontal" style="margin-left: 30px;margin-bottom:50px;">
+            <div class="form-group">
+                <label class="col-sm-3">Sound Notification</label>
+                <div class="col-sm-5">
+                    <style>
+                        .fileUpload {
+                            position: relative;
+                            overflow: hidden;
+                        }
+                        .fileUpload input.upload {
+                            position: absolute;
+                            top: 0;
+                            right: 0;
+                            margin: 0;
+                            padding: 0;
+                            font-size: 20px;
+                            cursor: pointer;
+                            opacity: 0;
+                            filter: alpha(opacity=0);
+                        }
+  
+                    </style>
+                    <div class="col-sm-12">
+                        <div class="col-sm-12" style="margin-bottom:10px;">
+                            <a href="{{ soundfile}}" target="_blank">{{ soundfile }} </a>
+                        </div>
+                        <div class="col-sm-12">
+                            <div class="col-sm-6">
+                                <div class="fileUpload btn btn-success">
+                                    <i class="fa fa-upload" aria-hidden="true"></i>
+                                    <input type="file" name="sound_file"  file-model="sound_file" class="upload" accept=".mp3"/>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <button type="button" class="btn btn-success btn-sm" style="margin-top:3px;" ng-click="saveSound('soundfile', soundfile, 'soundfile')">
+                                    <b> Update </b>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+      <!----end----->
+    </div>
+</div>
+
+<script src="../js/ui-jp.js"></script>
+ 

@@ -1,0 +1,191 @@
+<style>
+    button {
+        pointer: cursor;
+    }
+
+    input[type=file] {
+        width: 150px;
+        height: 20px;
+    }
+</style>
+<!--
+<script type="text/ng-template" id="equipment_email.html">
+    <div ng-include="'tpl/engineering/equipment/modal/equipment_email.html'"></div>
+</script>
+-->
+<script type="text/ng-template" id="locationTypeahead.html">
+    <a>
+        <span ng-bind="match.model.name"></span><br>
+        <span style="font-size: 10px" ng-bind="match.model.type"></span><br>
+    </a>
+</script>
+<div class="wrapper" style="margin-top: 7px">    <div class="panel panel-default" style="border-radius: 4px">
+        <!--<div class="panel-heading">-->
+            <!--<label class="font-bold"><i class="fa fa-warning text-default"></i>&nbsp;&nbsp;Equipment Detail</label>-->
+        <!--</div>-->
+        <div class="panel-body">
+	       
+
+            <form class="form-horizontal form-validation">
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-2 text-right" style="margin-bottom: 0px">Requestor Name</label>
+                    <div class="col-sm-4 ">
+                        {{issue.first_name}}
+                    </div>
+                    <label class="col-sm-2 text-right" style="margin-bottom: 0px">Requestor Designation</label>
+                    <div class="col-sm-4 ">
+                        {{issue.last_name}}
+                    </div>
+                </div>
+<!--
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-2 text-right" style="margin-bottom: 0px">Description</label>
+                    <div class="col-sm-4">
+                        {{equipment.description}}
+                    </div>
+                    <label class="col-sm-2 text-right" style="margin-bottom: 0px">Serial/Barcode</label>
+                    <div class="col-sm-4">
+                        {{equipment.barcode}}
+                    </div>
+                </div>
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-2 text-right" style="margin-bottom: 0px">Critical Flag</label>
+                    <div class="col-sm-2">
+                        <label class="i-switch m-t-xs m-r pull-left">
+                            <input type="checkbox" ng-model="equipment.critical_flag"  />
+                            <i></i>
+                        </label>
+                    </div>
+                    <label class="col-sm-offset-2 col-sm-2 text-right" style="margin-bottom: 0px">External Maintenance</label>
+                    <div class="col-sm-4">
+                        <label class="i-switch m-t-xs m-r pull-left">
+                            <input type="checkbox" ng-model="equipment.external_maintenance"  />
+                            <i></i>
+                        </label>
+                    </div>
+                </div>
+-->
+<!--
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-4 text-right" style="margin-bottom: 0px">External maintenance company</label>
+                    <div class="col-sm-4">
+                        {{equipment.external_maintenance_company}}
+                        <i class="fa  fa-share text-danger " style="cursor: pointer" title="Send Email" ng-click="SendEmail()"></i>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-2 text-right" style="margin-bottom: 0px">Department</label>
+                    <div class="col-sm-4 scrollable-dropdown-menu">
+                       {{equipment.department}}
+                    </div>
+                    <label class="col-sm-2 text-right" style="margin-bottom: 0px">Life</label>
+                    <div class="col-sm-4">
+                           {{equipment.life}} {{equipment.life_unit}}
+                    </div>
+                </div>.
+                <div class="form-group" style="margin-top: 5px"  ng-repeat="row in equipment.equipment_group" >
+                    <label class="col-sm-3 text-right">Equipment Group</label>
+                    <label class="col-sm-9">{{$index+1}}, {{row.name}} </label>
+                </div>
+                <div class="form-group" style="margin-top: 5px"  ng-repeat="row in equipment.part_group" >
+                    <label ng-if="row.type == 'group'" class="col-sm-3 text-right">Part Group</label>
+                    <label ng-if="row.type == 'no group'" class="col-sm-3 text-right">Part</label>
+                    <label class="col-sm-9">{{$index+1}}, {{row.name}} </label>
+                </div>
+-->
+
+                <!--<div class="form-group" style="margin-right: 0px">-->
+                    <!--<label class="col-sm-2 text-right" style="margin-bottom: 0px">Equipment Group</label>-->
+                    <!--<div class="col-sm-4 ">-->
+                        <!--{{equipment.group_name}}-->
+                    <!--</div>-->
+                    <!--<label class="col-sm-2 text-right" style="margin-bottom: 0px">Parts Group</label>-->
+                    <!--<div class="col-sm-4">-->
+                        <!--{{equipment.part_group_name}}-->
+                    <!--</div>-->
+                <!--</div>-->
+
+<!--
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-2 text-right" style="margin-bottom: 0px">Location</label>
+                    <div class="col-sm-4 scrollable-dropdown-menu " >
+                        {{equipment.location.name}} - {{equipment.location.type}}
+                    </div>
+                    <label class="col-sm-2 text-right" style="margin-bottom: 0px">Model</label>
+                    <div class="col-sm-4">
+                        {{equipment.model}}
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-2 text-right" style="margin-bottom: 0px">Purchase Cost</label>
+                    <div class="col-sm-4">
+                       {{equipment.purchase_cost}}
+                    </div>
+                    <label class="col-sm-2 text-right" style="margin-bottom: 0px">Purchase Date</label>
+                    <div class="col-sm-4">
+                        {{equipment.purchase_date}}
+                    </div>
+
+                </div>
+-->
+
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-2 text-right" style="margin-bottom: 0px">Severity</label>
+                    <div class="col-sm-4">
+                        {{issue.severity}}
+                    </div>
+                    <label class="col-sm-2 text-right" style="margin-bottom: 0px">Status</label>
+                    <div class="col-sm-4">
+                        {{issue.status}}
+                    </div>
+                </div>
+                
+                 <div class="form-group" style="margin-right: 0px">
+	                 <label class="col-sm-2 text-right" style="margin-bottom: 0px">Category</label>
+                    <div class="col-sm-4">
+                        {{issue.category}}
+                    </div>
+                    <label class="col-sm-2 text-right" style="margin-bottom: 0px">Sub-Category</label>
+                    <div class="col-sm-4 scrollable-dropdown-menu " >
+                        {{issue.subcategory}}
+                    </div>
+                    
+                </div>
+
+<!--
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-2 text-right" style="margin-bottom: 0px">Warranty Start</label>
+                    <div class="col-sm-4">
+                        {{equipment.warranty_start}}
+                    </div>
+
+                    <label class="col-sm-2 text-right" style="margin-bottom: 0px">Warranty End</label>
+                    <div class="col-sm-4">
+                       {{equipment.warranty_end}}
+                    </div>
+                </div>
+-->
+
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-2 text-right" style="margin-bottom: 0px">Subject of Issue</label>
+                    <div class="col-sm-4 scrollable-dropdown-menu">
+                       {{issue.subject}}
+                    </div>
+                    <label class="col-sm-2 text-right" style="margin-bottom: 0px">Issue</label>
+                    <div class="col-sm-4">
+                        {{issue.issue}}
+                    </div>
+                </div>
+                <hr>
+                <div class="form-group" style="margin-right:0px">
+                    <div align="center">
+                        <img src="{{issue.upload}}" style="width: 200px;height: 200px"  >
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+

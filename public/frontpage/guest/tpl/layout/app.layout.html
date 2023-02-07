@@ -1,0 +1,42 @@
+<style>
+.bg-style {
+      /*text-align:center;
+      height:70px;
+      background: #2e3344;
+      background-image: url("img/chat.png");
+      font-size: 20px;
+      font-weight: bold;
+			padding-top:20px;*/
+      
+      /*border: 2px solid #73AD21;*/
+      
+			background-position:center center;
+			background-repeat: no-repeat;
+			
+			color: #2e3344;
+			
+			-webkit-background-size: cover;
+		  -moz-background-size: cover;
+		  -o-background-size: cover;
+		  background-size: cover;
+		  -webkit-filter: blur(5px);
+			-moz-filter: blur(5px);
+			-o-filter: blur(5px);
+			-ms-filter: blur(5px);
+			filter: blur(5px);
+		}
+</style>
+<div class="md-navbar navbar"
+	data-ng-include=" 'guest/tpl/layout/app.header.html' " style="position: fixed; width: 100%;">
+</div>
+
+<toaster-container toaster-options="{'position-class': 'toast-top-right', 'close-button':true}">
+</toaster-container>
+
+<div layout="row">
+	<div class="md-content stretch bg-style" style="width: 100%; height: 100%; position: fixed; background-image: url('img/bg_GU.jpg')">
+		
+	</div>
+	<div class="clear" ng-style="{'height': '100%', 'width': '100%', 'position': ' ', 'margin-top': fullmode ? '0px' : '42px'}" ui-view> </div>
+</div>
+

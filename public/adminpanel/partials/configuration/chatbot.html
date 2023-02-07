@@ -1,0 +1,33 @@
+<div class=" panel panel-default" style="border-color: #dee5e7">
+    <div class="panel-heading wrapper">
+        <div  style="float:right; margin-top: -5px; background: #efefef;padding:5px 10px 5px 10px;color: #868585;font-size: 16px; " >
+            <strong>{{message}}</strong>
+         <!--  <button type="button" class="btn btn-success btn-sm" style="float:right; margin-top: -5px" data-toggle="modal" data-target="#addModal" ng-disabled="job_role!='SuperAdmin'&&edit_flag==0" ng-click="saveMinibar()">
+            <span class="glyphicon glyphicon-plus"></span>
+            <b> Update </b>
+        </button> -->
+        </div>
+        <i class="fa fa-cog"></i>
+        <span class="font-bold"> &nbsp;&nbsp;Configuration</span>
+    </div>
+    <div class="" style="background-color: #eeeeee">
+        <!----------------------left  general --->
+        <div class="col-sm-6">
+            <div>
+                <h5><strong> Chatbot</strong></h5>
+            </div>
+            <div style="margin-left: 30px">
+                <div class="form-horizontal" >
+                    <div class="form-group">
+                        <label class="col-sm-3">Limit Time(hours)</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" ng-model="chatbot_limit_time"
+                            ng-keypress="($event.which === 13)?saveChatbotSetting('chatbot_limit_time', chatbot_limit_time):0" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

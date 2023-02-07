@@ -1,0 +1,13 @@
+table.dataTable.stripe tbody tr.odd.selected, table.dataTable.display tbody tr.odd.selected {
+	background-color: #acbad4;
+}
+table.dataTable.stripe tbody tr.odd, table.dataTable.display tbody tr.odd {
+	background-color: #f9f9f9;
+}
+table.dataTable tbody tr.selected {
+	background-color: #B0BED9;
+}
+
+table.dataTable tbody tr {
+	background-color: #ffffff;
+}

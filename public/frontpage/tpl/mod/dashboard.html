@@ -1,0 +1,134 @@
+<style>
+
+	nav {
+		position: relative;
+		z-index: 1;
+		white-space: nowrap;
+		font-size: 12px;;
+	}
+
+	nav a {
+		position: relative;
+		display: inline-block;
+		padding: 1.5em 1.5em 1em;
+		text-decoration: none;
+		margin: 0 -7px;
+		color: #fff;
+	}
+
+	nav a:hover {
+		color: #ef6905;
+	}
+
+	nav a::before,
+	main {
+		border: .1em solid #aaa;
+	}
+
+	nav a::before {
+		content: ''; /* To generate the box */
+		position: absolute;
+		top: 0; right: 0; bottom: .5em; left: 0;
+		z-index: -1;
+		border-bottom: none;
+		border-radius: 10px 10px 0 0;
+		background: #2e3344;
+		box-shadow: 0 2px hsla(0,0%,100%,.5) inset;
+		transform: perspective(5px) rotateX(2deg);
+		transform-origin: bottom;
+	}
+
+	nav.left a {
+		padding: 1.5em 2em 1em 1em;
+	}
+
+	nav.left a::before {
+		transform-origin: bottom left;
+	}
+
+	nav.right a {
+		padding: 1.5em 1em 1em 2em;
+	}
+
+	nav.right a::before {
+		transform-origin: bottom right;
+	}
+
+	nav a.selected {
+		z-index: 2;
+	}
+
+	nav a.selected::before {
+		margin-bottom: -1px;
+		border-top-width: 1px;
+	}
+
+	nav a.selected::before
+	 {
+		background: #0e08b6;
+	}
+
+	main {
+		display: block;
+		margin: -8px 0 30px -15px;
+		padding: 1em;
+		border-radius: 3px;
+		background:#fff;
+	}
+	.tabsdemoDynamicHeight md-content {
+  background-color: transparent !important; }
+  .tabsdemoDynamicHeight md-content md-tabs {
+    background: #f6f6f6;
+    border: 1px solid #e1e1e1; }
+    .tabsdemoDynamicHeight md-content md-tabs md-tabs-wrapper {
+      background: white; }
+  .tabsdemoDynamicHeight md-content h1:first-child {
+    margin-top: 0; }
+</style>
+
+
+<div ng-controller="ModController" class="stretch" >
+	<div ng-show="flags==0" ng-cloak>
+		<md-content>
+		<md-tabs md-selected="selectedIndex" md-autoselect md-dynamic-height md-border-bottom>
+			<md-tab ng-if="auth_svc.isValidModule('app.mod.mng_checklist')"  label="Manage Checklist">
+				<md-content ng-include="'tpl/mod/mng_checklist.html'"><b>Manage Checklist</b>
+				</md-content>
+			</md-tab>
+			<md-tab ng-if="auth_svc.isValidModule('app.mod.checklist')" label="Checklist Logs">
+				<md-content ng-include="'tpl/mod/checklist_task.html'"><b>Checklist Logs</b>
+				</md-content>
+			</md-tab>
+
+			<md-tab ng-repeat="tab in selectedItems">
+				<md-tab-label>
+					{{getLogsNumber(tab)}}
+					<i class="fa fa-times" style="margin-left: 10px; color:#FF0000; cursor:pointer;" ng-click="removeItem(tab.id)"></i>
+				</md-tab-label>
+				<md-tab-body>
+					<div ng-controller="ModChecklistResultController" ng-include="'tpl/mod/checklist_result.html'" ng-init="setInit(tab)">
+					</div>
+				</md-tab-body>
+			</md-tab>
+		</md-tabs>
+		</md-content>
+	</div>
+	<div ng-show="flags==1">
+		<nav>
+			<a ng-if="auth_svc.isValidModule('app.mod.mng_checklist')"  class="{{indexname == 'mng_checklist' ? 'selected' : ''}}"
+			   		ng-click="loadContent('mng_checklist')"><b>Manage Checklist</b> </a>
+			<a ng-if="auth_svc.isValidModule('app.mod.checklist')" class="{{indexname == 'checklist_logs' ? 'selected' : ''}}"
+			   		ng-click="loadContent('checklist_logs')"><b>Checklist logs</b> </a>
+			<a ng-repeat="tab in selectedItems" class="{{indexname == tab.id ? 'selected' : ''}}"
+			   ng-click="loadContent(tab.id)"><b>{{tab.name}}</b> <i class="fa fa-times" style="margin-left: 10px; color:#FF0000; cursor:pointer;" ng-click="removeItem(tab.id)"></i></a>
+		</nav>
+		<main>
+			<div class="stretch" ng-if="indexname == 'mng_checklist' " style="{{tab_full_height}}; overflow-y: hidden"
+				 ng-include="'tpl/mod/mng_checklist.html'"></div>
+			<div class="stretch" ng-if="indexname == 'checklist_logs' " style="{{tab_full_height}}; overflow-y: hidden"
+				 ng-include="'tpl/mod/checklist_task.html'"></div>
+			<div ng-repeat="tab in selectedItems"  ng-controller="ModChecklistResultController" class="stretch" ng-if="indexname == tab.id " style="{{tab_full_height}}; overflow-y: hidden"
+				 ng-include="'tpl/mod/checklist_result_dialog.html'" ng-init="setInit(tab)"></div>
+		</main>
+	</div>
+</div>

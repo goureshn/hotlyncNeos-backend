@@ -1,0 +1,70 @@
+<div class=" panel panel-default" style="border-color: #dee5e7">
+    <div class="panel-heading wrapper">
+        <div  style="float:right; margin-top: -5px; background: #efefef;padding:5px 10px 5px 10px;color: #868585;font-size: 16px; " >
+            <strong>{{message}}</strong>
+        </div>
+        <i class="fa fa-cog"></i>
+        <span class="font-bold"> &nbsp;&nbsp;Configuration</span>
+    </div>
+    <div class="" style="background-color: #eeeeee">        
+        <div class="col-sm-6">
+            <div>
+                <h5><strong> Local Tunnel</strong></h5>
+            </div>
+
+            <div>
+                <form class="form-horizontal">
+                    <text-item formlabel="App Pin" modelname="app_pin"></text-item>
+
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label text-right">Tunnel Server Domain:</label>
+                        <div class="col-sm-5">
+                            <input type="text"  class="form-control" ng-model="central_server_domain" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label text-right">Tunnel Server Port:</label>
+                        <div class="col-sm-5">
+                            <input type="text" class="form-control" ng-model="central_port" />
+                        </div>
+                    </div>
+
+                    <div class="form-group text-center" ng-show="msg.success_message">
+                        <span class="m-b-none text-success text-center">{{msg.success_message}}</span>
+                    </div>
+
+                    <div class="form-group text-center" ng-show="msg.error_message">
+                        <span class="m-b-none text-danger">{{msg.error_message}}</span>
+                    </div>
+                        
+                    <div class="form-group">
+                        <div class="col-sm-offset-4 col-sm-5">
+                            <button type="button" class="btn btn-success btn-sm" style="width: 150px" ng-click="onUpdateApp()">
+                                <b> Save </b>
+                            </button>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="form-group">
+                        <div class="col-sm-offset-4 col-sm-8">
+                            <button type="button" class="btn btn-info btn-sm" ng-click="tunnelClientStart()">
+                                <b> Start Localtunnel Client </b>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group text-center" ng-show="msg.success_message_tunnel">
+                        <span class="m-b-none text-success text-center">{{msg.success_message_tunnel}}</span>
+                    </div>
+
+                    <div class="form-group text-center" ng-show="msg.error_message_tunnel">
+                        <span class="m-b-none text-danger">{{msg.error_message_tunnel}}</span>
+                    </div>
+
+                </form>    
+            </div>
+        </div>
+
+    </div>
+</div>
+

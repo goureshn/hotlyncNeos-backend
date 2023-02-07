@@ -1,0 +1,148 @@
+<div class="aside hbox" style="height: 100%;" tabindex="-1" role="dialog">
+	<div class="col bg-light dk b-r bg-auto" style="padding-left: 10px">
+		<div class="wrapper b-b bg">
+			<a href="" class="font-bold">Filters</a>
+			<button  type="button" class="btn btn-success btn-round-xs btn-xs pull-right"  ng-click="saveTicketFilter()" >Apply Filter</button>
+		</div>
+
+		<div class="wrapper" style="padding-left: 0px">
+			<ul class="nav nav-pills nav-stacked nav-sm">
+				<li ng-repeat="filter in complaint_filters" ng-class="{'active':filter.name == currentFilter.name}" ng-click="onSelectFilter(filter)">
+				<a>
+					<b class="badge bg-info pull-right">{{filter.badge}}</b>
+					{{filter.name}}
+				</a>
+				</li>
+			</ul>
+		</div>
+		
+		<div ng-show="currentFilter.name == 'Complaints'">
+			<!-- Ticket Filter -->
+			<div>
+				<h5><strong>Ticket</strong></h5>
+				<ul class="headfilter" role="menu" style="list-style: none; margin-left:-50px;">
+					<li class="line-sm" ng-repeat="ticket in filter_list">
+						<label class="md-check" style="margin-left: 20px">
+							<input type="radio"  ng-model="filter.ticket" ng-value="ticket"/>
+							<i class="green"></i>
+							{{ ticket }}						
+						</label>
+					</li>
+				</ul>
+			</div>
+
+			<!-- Status Filter -->
+			<div>
+				<h5><strong>Status</strong></h5>
+				<ul class="headfilter" role="menu" style="list-style: none; margin-left:-50px;">
+					<li class="line-sm" ng-repeat="(key, value) in filter.status_filter">
+						<label class="md-check" style="margin-left: 20px">
+							<input type="checkbox" ng-model="filter.status_filter[key]">
+							<i class="green"></i>
+							{{key}}
+						</label>
+					</li>
+				</ul>
+			</div>
+
+			<!-- Severity Filter -->
+			<div>
+				<h5><strong>Severity</strong></h5>
+				<ul class="headfilter" role="menu" style="list-style: none; margin-left:-50px;">
+					<li class="line-sm" ng-repeat="(key, value) in filter.severity_filter">
+						<label class="md-check" style="margin-left: 20px">
+							<input type="checkbox" ng-model="filter.severity_filter[key]">
+							<i class="green"></i>
+							{{key}}
+						</label>
+					</li>
+				</ul>
+			</div>
+
+			<!-- Service Recovery Filter -->
+			<div>
+				<h5><strong>Service Recovery</strong>
+					<label class="i-switch m-t-xs m-r pull-right" style="margin-right: 80px; margin-top: -2px">
+							<input type="checkbox" ng-model="filter.sr_flag" ng-change="onCompenChange(filter.sr_flag)">
+							<i></i>
+					</label>
+				</h5>
+				<ul class="headfilter" ng-hide="!filter.sr_flag" role="menu" style="list-style: none; margin-left:-50px;">
+					<li class="line-sm" ng-repeat="compen in filter_compen">
+						<label class="md-check" style="margin-left: 20px">
+							<input type="radio"  ng-model="filter.service_recovery" ng-value="compen"/>
+							<i class="green"></i>
+							{{compen}}
+						</label>
+					</li>
+				</ul>
+			</div>
+
+			<!-- Category Filter -->
+			<div>
+				<h5><strong>Category</strong></h5>
+				<div>
+					<tags-input ng-model="filter.category_tags" display-property="name" placeholder="Add Category" style="margin-top: -7px; margin-right: 7px" replace-spaces-with-dashes="false">
+						<auto-complete source="loadCategoryFilters($query)"
+										min-length="0"
+										load-on-focus="true"
+										load-on-empty="true"
+										debounce-delay="0"
+										max-results="10">
+						</auto-complete>
+					</tags-input>
+				</div>
+			</div>
+
+			<!-- Sub Category Filter -->
+			<div>
+				<h5><strong>Sub-category</strong></h5>
+				<div>
+					<tags-input ng-model="filter.subcategory_tags" display-property="name" placeholder="Add Sub Category" style="margin-top: -7px; margin-right: 7px" replace-spaces-with-dashes="false">
+						<auto-complete source="loadSubcategoryFilters($query)"
+										min-length="0"
+										load-on-focus="true"
+										load-on-empty="true"
+										debounce-delay="0"
+										max-results="10">
+						</auto-complete>
+					</tags-input>
+				</div>
+			</div>
+			
+			<!-- Location Filter -->
+			<div>
+				<h5><strong>Location</strong></h5>
+				<div>
+					<tags-input ng-model="filter.location_tags" key-property="id" display-property="loc_name" placeholder="Add Location" style="margin-top: -7px; margin-right: 7px" replace-spaces-with-dashes="false">
+						<auto-complete source="loadLocationFilters($query)"
+										min-length="0"
+										load-on-focus="true"
+										load-on-empty="true"
+										debounce-delay="0"
+										max-results="10">
+						</auto-complete>
+					</tags-input>
+				</div>
+			</div>
+
+			<!-- Location Type Filter -->
+			<div>
+				<h5><strong>Location Type</strong></h5>
+				<div>
+					<tags-input ng-model="filter.location_type_tags" display-property="type" placeholder="Add Location Type" style="margin-top: -7px; margin-right: 7px" replace-spaces-with-dashes="false">
+						<auto-complete source="loadLocationTypeFilters($query)"
+										min-length="0"
+										load-on-focus="true"
+										load-on-empty="true"
+										debounce-delay="0"
+										max-results="10">
+						</auto-complete>
+					</tags-input>
+				</div>
+			</div>
+		</div>
+
+
+	</div>
+</div>

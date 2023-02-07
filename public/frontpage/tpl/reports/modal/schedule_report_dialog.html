@@ -1,0 +1,122 @@
+<style>
+#scrollable-recipient-dropdown-menu .dropdown-menu {
+    max-height: 300px;
+    overflow-y: auto;
+}
+</style>
+<div class="modal-body">
+    <div class="panel panel-default">
+        <div class="panel-heading font-bold">Schedule Report</div>
+        <div class="panel-body">
+            <form class="form-horizontal form-validation" ng-submit="onSaveSchedule()">
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">Schedule Name</label>
+                    <div class="col-sm-9">
+                        <input type="text" ng-model="schedule.name" style="width: 200px" class="form-control input-sm" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">Frequency</label>
+                    <div class="col-sm-9">
+                        <div class="btn-group">
+                            <label class="btn btn-info btn-sm" ng-model="schedule.frequency" uib-btn-radio="'Daily'" >Daily</label>
+                            <label class="btn btn-info btn-sm" ng-model="schedule.frequency" uib-btn-radio="'Hourly'" >Hourly</label>
+                            <label class="btn btn-info btn-sm" ng-model="schedule.frequency" uib-btn-radio="'Weekly'">Weekly</label>
+                            <label class="btn btn-info btn-sm" ng-model="schedule.frequency" uib-btn-radio="'Monthly'">Monthly</label>
+                            <label class="btn btn-info btn-sm" ng-model="schedule.frequency" uib-btn-radio="'Custom Days'">Custom Days</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group" ng-hide="schedule.frequency == 'Daily' || schedule.frequency == 'Hourly' || schedule.frequency == 'Weekly'">
+                    <label class="col-sm-3 control-label">Date</label>
+                    <div class="col-sm-9">
+                        <div class="input-group" style="width: 300px">
+                            <input type="text" required class="form-control" uib-datepicker-popup="yyyy-MM-dd" ng-model="schedule.date" is-open="schedule.opened" date-disabled="disabled(date, mode)" datepicker-options="dateOptions" ng-required="true" close-text="Close" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-default btn-sm" ng-click="open($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group" ng-hide="schedule.frequency == 'Daily' || schedule.frequency == 'Hourly' || schedule.frequency == 'Monthly' || schedule.frequency == 'Custom Days'  ">
+                    <label class="col-sm-3 control-label">Day</label>
+                    <div class="col-sm-9">
+                        <select class="input-sm" ng-model="schedule.sel_day" ng-change="onChangeAction(task.action)" ng-options="day for day in days">
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" ng-hide="schedule.frequency == 'Custom Days' || schedule.frequency == 'Monthly' || schedule.frequency == 'Hourly' || schedule.frequency == 'Weekly'">
+                    <label class="col-md-3 col-sm-3 control-label">Start Time</label>
+                    <div class="col-md-3 col-sm-9">
+                        <input type="time" placeholder="HH:mm:ss"  ng-model="schedule.start_time"   style="width: 200px" class="form-control input-sm" required>
+                    </div>
+                
+                    <label class="col-md-2 col-sm-3 control-label">End Time</label>
+                    <div class="col-md-4 col-sm-9">
+                        <input type="time" disabled placeholder="HH:mm:ss" ng-value="schedule.end_time = schedule.start_time"  ng-model="schedule.end_time"   style="width: 200px" class="form-control input-sm" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">Scheduled Time</label>
+                    <div class="col-sm-9">
+                        <input type="time" placeholder="HH:mm:ss"  ng-model="schedule.time"   style="width: 200px" class="form-control input-sm" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">Recipient</label>
+                    <div class="col-sm-6">                       
+                        <tags-input ng-model="schedule.email_tags" placeholder="Add Email" replace-spaces-with-dashes="false" style="margin-top: -5px">
+                            <auto-complete source="loadFilters($query, 'Email')"
+                              min-length="0"
+                                debounce-delay="0"
+                                load-on-focus="true"
+                                load-on-empty="true"
+                                max-results-to-show="20">
+                            </auto-complete>
+                        </tags-input>
+                    </div> 
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">Report Format</label>
+                    <div class="col-sm-9">
+                        <input type="radio" ng-model="schedule.report_format" value="pdf">&nbsp;&nbsp;&nbsp;&nbsp;<i class="fa fa-file-pdf-o" style="font-size: 30px; color:red; margin-right: 20px" aria-hidden="true"
+                                data-toggle="tooltip" title="PDF format"></i>
+                        <input type="radio" ng-model="schedule.report_format" value="excel">&nbsp;&nbsp;&nbsp;&nbsp;<i class="fa fa-file-excel-o" style="font-size: 30px; color:green; margin-right: 20px" aria-hidden="true"
+                                data-toggle="tooltip" title="Excel format"></i>
+                        <input type="radio" ng-model="schedule.report_format" value="csv">&nbsp;&nbsp;&nbsp;&nbsp;<i class="fa fa-file-text" style="font-size: 30px; color:green; margin-right: 20px" aria-hidden="true"
+                                data-toggle="tooltip" title="CSV format"></i>
+                    </div>
+                </div>
+
+                <div class="form-group" ng-show="schedule.frequency == 'Custom Days'">
+                    <label class="col-sm-3 control-label">Repeat Schedule</label>
+                    <div class="col-sm-9">
+                        <label class="i-switch m-t-xs m-r">
+                            <input type="checkbox" ng-model="schedule.repeat" checked>
+                            <i></i>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">Send as Attachment</label>
+                    <div class="col-sm-9">
+                        <label class="i-switch m-t-xs m-r">
+                            <input type="checkbox" ng-model="schedule.attach" checked>
+                            <i></i>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="line line-dashed b-b line-lg pull-in"></div>
+                <div class="form-group">
+                    <div class="pull-right" style="margin-right: 20px">
+                        <button type="submit" class="btn btn-primary">&nbsp;&nbsp;&nbsp;&nbsp;Save&nbsp;&nbsp;&nbsp;&nbsp;</button>
+                        <button type="button" class="btn btn-default" ng-click="canselModalReport()">Cancel</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

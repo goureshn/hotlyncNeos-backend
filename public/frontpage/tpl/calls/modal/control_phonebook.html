@@ -1,0 +1,111 @@
+<style>
+
+</style>
+
+
+<form class="form-horizontal form-validation" ng-submit="ok()">
+    <div class="modal-content">        
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">
+                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+            </button>
+            <h3 class="modal-title" style="color:#2691d9" id="Heading">{{title}}</h3>
+        </div>        
+        <div class="modal-body">   
+            <div class="form-group" style="margin-right: 0px">
+                <label class="col-sm-3 text-right control-label text-muted" style="margin-bottom: 0px"> Salutation </label>
+                <div class="col-sm-9" style="margin-left: 0px">
+                    <select ng-model="info.salutation" >
+                        <option value="Mr.">Mr.</option>
+                        <option value="Mrs.">Mrs.</option>
+                        <option value="Ms.">Ms.</option>
+                        <option value="Miss.">Miss.</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group" style="margin-right: 0px">
+                <label class="col-sm-3 text-right control-label text-muted" style="margin-bottom: 0px">First Name</label>
+                <div class="col-sm-9 scrollable-dropdown-menu">
+                    <input class="form-control input-sm"  ng-model="info.first_name" required>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-right: 0px">
+                <label class="col-sm-3 text-right control-label text-muted" style="margin-bottom: 0px">Last Name</label>
+                <div class="col-sm-9 scrollable-dropdown-menu">
+                    <input class="form-control input-sm" ng-model="info.last_name" required>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-3 text-right control-label text-muted" style="margin-bottom: 0px">Nationality</label>
+                    <div class="col-sm-9 scrollable-dropdown-menu">
+                        <input class="form-control input-sm" ng-model="info.nationality">
+                    </div>
+            </div>
+            <div class="form-group" style="margin-right: 0px">
+                <label class="col-sm-3 text-right control-label text-muted" style="margin-bottom: 0px">Company</label>
+                <div class="col-sm-9 scrollable-dropdown-menu">
+                    <input class="form-control input-sm" ng-model="info.company">
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-3 text-right control-label text-muted" style="margin-bottom: 0px">Email</label>
+                    <div class="col-sm-9 scrollable-dropdown-menu">
+                        <input class="form-control input-sm" ng-model="info.email">
+                    </div>
+            </div>
+            <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-3 text-right control-label text-muted" style="margin-bottom: 0px">Alternate No</label>
+                    <div class="col-sm-9 scrollable-dropdown-menu">
+                        <input class="form-control input-sm" ng-model="info.alt_no">
+                    </div>
+            </div>
+            <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-3 text-right control-label text-muted" style="margin-bottom: 0px">Blacklist</label>
+                    <div class="col-sm-9">
+                        <label class="i-switch m-t-xs m-r">
+                            <input type="checkbox" ng-model="info.blacklist" checked>
+                            <i></i>
+                        </label>
+                    </div>
+            </div>
+            <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-3 text-right control-label text-muted" style="margin-bottom: 0px">VIP</label>
+                    <div class="col-sm-9">
+                        <label class="i-switch m-t-xs m-r">
+                            <input type="checkbox" ng-model="info.vip" checked>
+                            <i></i>
+                        </label>
+                    </div>
+            </div>
+
+
+            <div class="form-group" style="margin-right: 0px">
+                <label class="col-sm-3 text-right control-label text-muted" style="margin-bottom: 0px">Phone number</label>
+                <div class="col-sm-9 scrollable-dropdown-menu">
+                    <input class="form-control input-sm" ng-model="info.calledno" onkeydown="return ( event.ctrlKey || event.altKey
+                    || (47<event.keyCode && event.keyCode<58 && event.shiftKey==false)
+                    || (95<event.keyCode && event.keyCode<106)
+                    || (event.keyCode==8) || (event.keyCode==9)
+                    || (event.keyCode>34 && event.keyCode<40)
+                    || (event.keyCode==46) )" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer ">
+            <button type="submit" class="btn btn-info btn-sm w-xs {{isLoadingAddModal ? 'disabled' : ''}}" data-dismiss="modal">
+                <span class="glyphicon glyphicon-ok"></span>
+                <b ng-if="info.id == 0"> {{isLoadingAddModal ? 'loading' : 'Create'}}</b>
+                <b ng-if="info.id != 0"> {{isLoadingAddModal ? 'loading' : 'Update'}}</b>
+            </button>
+            <button type="button" class="btn btn-default btn-sm w-xs {{isLoadingAddModal ? 'disabled' : ''}}" data-dismiss="modal" ng-click="cancel()">
+                <span class="glyphicon glyphicon-remove"></span>
+                <b> Cancel</b>
+            </button>
+        </div>
+
+    </div>
+</form>

@@ -1,0 +1,264 @@
+<input type="hidden" id="id" value="-1" ng-model="model_data.id"/>
+<link href="/lib/angular/angular-toggle-switch-bootstrap-3.css" media="all" rel="stylesheet" type="text/css">
+
+<div class="panel panel-default" style="border-color: #dee5e7">
+    <div class="panel-heading wrapper">
+        <div  style="float:right; margin-top: -5px; background: #efefef;padding:5px 10px 5px 10px;color: #868585">
+            <strong>{{message}}</strong>
+        </div>
+        <i class="fa fa-cog"></i>
+        <span class="font-bold"> &nbsp;&nbsp;Configuration</span>
+    </div>
+    <div style="background-color: #eeeeee">
+        <!-- - - - - - LEFT GENERAL - - - - - -->
+        <div class="col-sm-6">
+            <div  style="margin-left:10px">
+                <div class = "col-sm-12">
+                    <!-- - - - - - stock notification to user gorup - - - - - -->
+                    <div>
+                        <h5><strong><i class="fa fa-laptop"></i>&nbsp;User Group for Stock notification </strong></h5>
+                    </div>
+                    <div>
+                        <div class = "col-sm-12">
+                            <label class="control-label" style="float: left; margin-top: 5px; margin-right: 20px;">User Group : </label>
+                            <div style="float: left;margin-right: 20px;" >
+                                <div ng-dropdown-multiselect="" options="usergroups" selected-model="group_type" checkboxes="true" extra-settings="usergroups_hint_setting" translation-texts="usergroups_hint"></div>
+                            </div>
+                        </div>
+                        <div style="float: left;">
+                            <button type="button" class="btn btn-success btn-sm" ng-click="saveStockNotifiGroup()">
+                                <span class="glyphicon glyphicon-plus"></span>
+                                <b> Save </b>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div style = "margin-top:15px;" class = "col-sm-12">
+                    <!-- - - - - - reminder to contract - - - - - -->
+                    <div>
+                        <h5><strong><i class="fa fa-laptop"></i>&nbsp;Reminder for contract </strong></h5>
+                    </div>
+                    <div>
+                        <div class = "col-sm-12">
+                            <label class="control-label col-sm-4" style="float: left; margin-top: 5px; margin-right: 20px;">User Groups : </label>
+                            <div class = "col-sm-8" style="float: left;margin-right: 20px;" >
+                                <tags-input ng-model="contract_data.user_group_tags" placeholder="Add User Group" replace-spaces-with-dashes="false" style="margin-top: -5px"
+                                        display-property="name" key-property="id">
+                                    <auto-complete source="loadUserGroupFilter($query)" min-length="0" debounce-delay="0" load-on-focus="true" load-on-empty="true"
+                                        max-results-to-show="100">
+                                    </auto-complete>
+                                </tags-input>		
+                            </div>
+                        </div>
+                        <div class = "col-sm-12">
+                            <label class="col-sm-4 control-label" style="float: left; margin-top: 5px; margin-right: 20px;">Remider Days: </label>
+                            <div class = "col-sm-8" style="float: left;margin-right: 20px;" >
+                                <input type="text" class="form-control input-sm" ng-model="contract_data.eng_contract_expire_days" placeholder="20,30,70"/>
+                            </div>
+                        </div>
+
+                        <div style="float: left; margin-top: 5px">
+                            <button type="button" class="btn btn-success btn-sm" ng-click="saveReminderContract()">
+                                <span class="glyphicon glyphicon-plus"></span>
+                                <b> Save </b>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div style = "margin-top:15px;" class = "col-sm-12">
+                    <!-- - - - - - imap setting - - - - - -->
+                    <div>
+                        <h5><strong><i class="fa fa-laptop"></i>&nbsp;Preventive Maintenance </strong></h5>
+                    </div>
+                    <div>
+                        <div class = "col-sm-12">
+                            <label class="control-label col-sm-4" style="float: left; margin-top: 5px; margin-right: 20px;">Week Start : </label>
+                            <div class = "col-sm-8" style="float: left;margin-right: 20px;" >                                
+                                <select class='form-control input-sm' ng-model="preventive_config.preventive_week_start"
+                                        ng-options="value.id as value.name for (key, value) in days_list">
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="float: left; margin-top: 5px">
+                            <button type="button" class="btn btn-success btn-sm" ng-click="savePreventiveConfig()">
+                                <span class="glyphicon glyphicon-plus"></span>
+                                <b> Save </b>
+                            </button>
+                        </div>             
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- - - - - - RIGHT GENERAL - - - - - -->
+        <div class="col-sm-6">
+            <div  style="margin-left:10px;height:100%%">
+                <div style = "margin-top:15px;" class = "col-sm-12">
+                    <!-- - - - - - imap setting - - - - - -->
+                    <div>
+                        <h5><strong><i class="fa fa-laptop"></i>&nbsp;Repair Request </strong></h5>
+                    </div>
+                    <div>
+                        <div class = "col-sm-12">
+                            <label class="control-label col-sm-5" style="float: left; margin-top: 5px; margin-right: 20px;">Notification User Group : </label>
+                            <div class = "col-sm-8" style="float: left;margin-right: 20px;" >
+                                <tags-input ng-model="repair_request.user_group_tags" placeholder="Add User Group" replace-spaces-with-dashes="false" style="margin-top: -5px"
+                                        display-property="name" key-property="id">
+                                    <auto-complete source="loadUserGroupFilter($query)" min-length="0" debounce-delay="0" load-on-focus="true" load-on-empty="true"
+                                        max-results-to-show="100">
+                                    </auto-complete>
+                                </tags-input>		
+                            </div>
+                        </div>
+                        <div class = "col-sm-12">
+                            <label class="control-label col-sm-4" style="float: left; margin-top: 5px; margin-right: 20px;">Force Authentification : </label>
+                            <div class = "col-sm-8" style="float: left;margin-right: 20px;" >
+                                <div toggle-switch class="switch-primary" ng-model="repair_request.repair_auth_on"></div>						                                
+                            </div>
+                        </div>
+
+                        <div class = "col-sm-12">
+                            <label class="control-label col-sm-4" style="float: left; margin-top: 5px; margin-right: 20px;">Create Workorder When Create : </label>
+                            <div class = "col-sm-8" style="float: left;margin-right: 20px;" >
+                                <div toggle-switch class="switch-primary" ng-model="repair_request.create_workorder_flag"></div>						                                
+                            </div>
+                        </div>
+
+                        <div class = "col-sm-12">
+                            <label class="control-label col-sm-4" style="float: left; margin-top: 5px; margin-right: 20px;">Completed Timeout : </label>
+                            <div class = "col-sm-8" style="float: left;margin-right: 20px;" >
+                                <input type="text" class="form-control input-sm" ng-model="repair_request.repair_completed_timeout"/>
+                            </div>
+                        </div>
+
+                        <div class = "col-sm-12">
+                            <label class="control-label col-sm-4" style="float: left; margin-top: 5px; margin-right: 20px;">Equipment Column Showing: </label>
+                            <div class = "col-sm-8" style="float: left;margin-right: 20px;" >
+                                <div toggle-switch class="switch-primary" ng-model="repair_request.repair_request_equipment_status"></div>
+                            </div>
+                        </div>
+
+                        <div style="float: left; margin-top: 5px">
+                            <button type="button" class="btn btn-success btn-sm" ng-click="saveRepairRequest()">
+                                <span class="glyphicon glyphicon-plus"></span>
+                                <b> Save </b>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div style = "margin-top:15px;" class = "col-sm-12">
+                    <!-- - - - - - imap setting - - - - - -->
+                    <div>
+                        <h5><strong><i class="fa fa-laptop"></i>&nbsp;IMAP Config </strong></h5>
+                    </div>
+                    <div>
+                        <div class = "col-sm-12">
+                            <label class="control-label col-sm-4" style="float: left; margin-top: 5px; margin-right: 20px;">Host : </label>
+                            <div class = "col-sm-8" style="float: left;margin-right: 20px;" >
+                                <input type="text" class="form-control input-sm" ng-model="imap_config.eng_imap_host"/>
+                            </div>
+                        </div>
+
+                        <div class = "col-sm-12">
+                            <label class="control-label col-sm-4" style="float: left; margin-top: 5px; margin-right: 20px;">Email : </label>
+                            <div class = "col-sm-8" style="float: left;margin-right: 20px;" >
+                                <input type="text" class="form-control input-sm" ng-model="imap_config.eng_imap_user"/>
+                            </div>
+                        </div>
+
+                        <div class = "col-sm-12">
+                            <label class="control-label col-sm-4" style="float: left; margin-top: 5px; margin-right: 20px;">Password : </label>
+                            <div class = "col-sm-8" style="float: left;margin-right: 20px;" >
+                                <input type="text" class="form-control input-sm" ng-model="imap_config.eng_imap_pass"/>
+                            </div>
+                        </div>
+
+                        <div class = "col-sm-12">
+                            <label class="control-label col-sm-4" style="float: left; margin-top: 5px; margin-right: 20px;">Port : </label>
+                            <div class = "col-sm-8" style="float: left;margin-right: 20px;" >
+                                <input type="text" class="form-control input-sm" ng-model="imap_config.eng_imap_port"/>
+                            </div>
+                        </div>
+
+                        <div class = "col-sm-12">
+                            <label class="control-label col-sm-4" style="float: left; margin-top: 5px; margin-right: 20px;">TLS : </label>
+                            <div class = "col-sm-8" style="float: left;margin-right: 20px;" >
+                                <div toggle-switch class="switch-primary" ng-model="imap_config.eng_imap_tls"></div>						                                
+                            </div>
+                        </div>
+            
+
+                        <div style="float: left; margin-top: 5px">
+                            <button type="button" class="btn btn-success btn-sm" ng-click="saveImapConfig()">
+                                <span class="glyphicon glyphicon-plus"></span>
+                                <b> Save </b>
+                            </button>
+                        </div>             
+                    </div>         
+                </div>   
+
+                <div style = "margin-top:15px;" class = "col-sm-12">
+                    <!-- - - - - - imap setting - - - - - -->
+                    <div>
+                        <h5><strong><i class="fa fa-laptop"></i>&nbsp;Helpdesk IMAP Config </strong></h5>
+                    </div>
+                    <div>
+                        <div class = "col-sm-12">
+                            <label class="control-label col-sm-4" style="float: left; margin-top: 5px; margin-right: 20px;">Host : </label>
+                            <div class = "col-sm-8" style="float: left;margin-right: 20px;" >
+                                <input type="text" class="form-control input-sm" ng-model="it_imap_config.it_imap_host"/>
+                            </div>
+                        </div>
+
+                        <div class = "col-sm-12">
+                            <label class="control-label col-sm-4" style="float: left; margin-top: 5px; margin-right: 20px;">Email : </label>
+                            <div class = "col-sm-8" style="float: left;margin-right: 20px;" >
+                                <input type="text" class="form-control input-sm" ng-model="it_imap_config.it_imap_user"/>
+                            </div>
+                        </div>
+
+                        <div class = "col-sm-12">
+                            <label class="control-label col-sm-4" style="float: left; margin-top: 5px; margin-right: 20px;">Password : </label>
+                            <div class = "col-sm-8" style="float: left;margin-right: 20px;" >
+                                <input type="text" class="form-control input-sm" ng-model="it_imap_config.it_imap_pass"/>
+                            </div>
+                        </div>
+
+                        <div class = "col-sm-12">
+                            <label class="control-label col-sm-4" style="float: left; margin-top: 5px; margin-right: 20px;">Port : </label>
+                            <div class = "col-sm-8" style="float: left;margin-right: 20px;" >
+                                <input type="text" class="form-control input-sm" ng-model="it_imap_config.it_imap_port"/>
+                            </div>
+                        </div>
+
+                        <div class = "col-sm-12">
+                            <label class="control-label col-sm-4" style="float: left; margin-top: 5px; margin-right: 20px;">TLS : </label>
+                            <div class = "col-sm-8" style="float: left;margin-right: 20px;" >
+                                <div toggle-switch class="switch-primary" ng-model="it_imap_config.it_imap_tls"></div>						                                
+                            </div>
+                        </div>
+            
+
+                        <div style="float: left; margin-top: 5px">
+                            <button type="button" class="btn btn-success btn-sm" ng-click="saveItImapConfig()">
+                                <span class="glyphicon glyphicon-plus"></span>
+                                <b> Save </b>
+                            </button>
+                        </div>             
+                    </div>         
+                </div>    
+            </div>
+        </div>        
+    </div>
+</div>
+
+

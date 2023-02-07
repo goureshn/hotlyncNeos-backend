@@ -1,0 +1,48 @@
+<div ng-controller="LiveCallDataController">
+    <uib-tabset class="tab-container" active="active">
+		<div class="tabs tabs-style-tzoid" style="pull-left">
+			<nav ui-nav class="call_menu navi clearfix">
+				<ul class="nav" style="margin-left: -9px; height:40px;">
+					<li style="margin:8px -6px 0px;" ng-if="guest_call" class="{{active == 1 ? 'tab-current' : ''}}">
+						<uib-tab index="guest">
+							<uib-tab-heading>
+								<p class="tabs-style-tzoid" style="color:#fff; font-size:12px"><i class="fa fa-users"></i>&nbsp;&nbsp;Guest</p>
+							</uib-tab-heading>
+							<div class="stretch" ng-include="'tpl/callaccounting/guest_call.html'">
+							</div>
+						</uib-tab>
+					</li>
+					<li style="margin:8px -6px 0px;" ng-if="admin_call" class="{{active == 2 ? 'tab-current' : ''}}">
+						<uib-tab index="admin">
+							<uib-tab-heading>
+								<p class="tabs-style-tzoid" style="color:#fff; font-size:12px"><i class="fa fa-user"></i>&nbsp;&nbsp;Admin</p>
+							</uib-tab-heading>
+							<div class="stretch" ng-include="'tpl/callaccounting/admin_call.html'">
+							</div>
+						</uib-tab>
+					</li>
+					<li style="margin:8px -6px 0px;"  ng-if="bc_calls" class="{{active == 3 ? 'tab-current' : ''}}">
+						<uib-tab index="bc_call">
+							<uib-tab-heading>
+								<p class="tabs-style-tzoid" style="color:#fff; font-size:12px"><i class="fa fa-user"></i>&nbsp;&nbsp;Business Centre</p>
+							</uib-tab-heading>
+							<div class="stretch" ng-include="'tpl/callaccounting/bc_call.html'">
+							</div>
+						</uib-tab>
+					</li>
+					
+					<li style="margin:8px -6px 0px;" ng-if="manual_post" class="{{active == 4 ? 'tab-current' : ''}}">
+						<uib-tab index="manual">
+							<uib-tab-heading>
+								<p class="tabs-style-tzoid" style="color:#fff; font-size:12px"><i class="fa fa-user"></i>&nbsp;&nbsp;Manual Post</p>
+							</uib-tab-heading>
+							<div style="{{tab_full_height}}" ng-include="'tpl/callaccounting/manual_post.html'">
+							</div>
+						</uib-tab>
+					
+					</li>
+				</ul>
+			</nav>
+		</div>
+    </uib-tabset>
+</div>

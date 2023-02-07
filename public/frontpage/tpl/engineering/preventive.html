@@ -1,0 +1,26 @@
+<div ng-controller="PreventiveController">
+    <div class="wrapper-md1 bg-light b-b">
+        <h1 class="m-n font-thin h3">Preventive Maintanence</h1>
+    </div>
+
+
+    <uib-tabset>
+
+        <uib-tab>
+            <uib-tab-heading>
+                <b style="color:#2691d9">Preventive Maintanence</b>
+            </uib-tab-heading>
+            <div ng-include="'tpl/engineering/preventive_maintain.html'">
+            </div>
+        </uib-tab>
+
+        <uib-tab>
+            <uib-tab-heading>
+                <b style="color:#2691d9">Check List</b>
+            </uib-tab-heading>
+            <div ng-include="'tpl/engineering/checklist.html'" ng-click="">
+            </div>
+        </uib-tab>
+
+    </uib-tabset>
+</div>

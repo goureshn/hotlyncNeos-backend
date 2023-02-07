@@ -1,0 +1,717 @@
+<style>
+.yes::-moz-selection { /* Code for Firefox */
+    color: red;
+    background: yellow;
+}
+
+.yes::selection {
+    color: red;
+    background: yellow;
+}
+.text-xs {
+	    font-size: 11px;
+	    font-weight: bold;
+	    margin-bottom: 0px;
+	    margin-top: 5px;
+}
+</style>
+
+
+<script type="text/ng-template" id="locationTypeahead.html">
+   <a>
+        <span ng-bind="match.model.name"></span><br>
+        <span style="font-size: 10px" ng-bind="match.model.type"></span> - <span style="font-size: 10px" ng-bind="match.model.property"></span><br>
+   </a>
+</script>
+
+<script type="text/ng-template" id="userTypeahead.html">
+   <a>
+        <span ng-bind="match.model.wholename"></span><br>
+        <span style="font-size: 10px" ng-bind="match.model.job_role"></span><br>
+        <span style="font-size: 10px" ng-bind="match.model.department"></span><br>
+   </a>
+</script>
+<script type="text/ng-template" id="complaint_category.html">
+  	<div ng-include="'tpl/complaint/complaint_category.html'"></div>
+</script>
+
+<script type="text/ng-template" id="guestTypeahead.html">
+   <a>
+        <span>{{match.model.guest_name}}</span><br>  
+        <span style="font-size: 10px" ng-show="match.model.arrival && match.model.departure">{{match.model.arrival}} ~ {{match.model.departure}}</span><br ng-show="match.model.arrival && match.model.departure">
+        <span style="font-size: 10px" ng-hide="match.model.arrival && match.model.departure">Email: {{match.model.email}}</span><br ng-hide="match.model.arrival && match.model.departure">
+        <span style="font-size: 10px" ng-hide="match.model.arrival && match.model.departure">Mobile: {{match.model.mobile}}</span><br ng-hide="match.model.arrival && match.model.departure">
+   </a>
+</script>
+
+<div class="wrapper-md" style="margin: auto">
+  
+  	<!-- - - - - - - - GUEST DETAILS - - - - - - - -->
+	<!--  
+	  <div>
+  		<center>
+			<button type="button" class="btn btn-sm m-b-xs w-sm btn-dark font-bold">
+			  	<span class="text-success">Feedback No:&nbsp;&nbsp;{{complaint_id}}</span>
+			</button>                            
+			<button type="button" class="btn btn-sm m-b-xs w-sm btn-dark font-bold">
+			  	<span class="text-success">Request Time:&nbsp;&nbsp;{{complaint.request_time}}</span>
+			</button>	
+		</center>
+	</div>-->
+  
+	<div class="panel panel-default" style="border-radius: 4px">
+	  	<div class="panel-heading">
+			<div class="pull-left">
+				<label class="font-bold text-sm"><i class="fa fa-user-circle-o text-default"></i>&nbsp;&nbsp;Guest Details</label>
+			</div>
+			<div class="pull-right">
+				<label class="font-bold text-sm">&nbsp;&nbsp;Feedback No:&nbsp;&nbsp;{{complaint_id}}</label>
+			</div>
+
+			<br>
+		</div>
+		  
+		<div class="panel-body" style="padding: 5px 0px"  tabindex="1" my-enter="createComplaint()" my-esc="cancelComplaint()">
+			<div class="col-sm-6" ng-show="property_list.length > 1">
+				<label for="email" class="control-label text-xs text-muted">Property<i class="text-danger">*</i></label>
+				<div>
+			    <select class='form-control input-sm' ng-model="complaint.property_id" ng-change="onChangedProperty()"
+							ng-options="value.id as value.name for (key, value) in property_list">
+					</select>
+				</div>
+			</div>
+			<div class="col-sm-6">
+				<div ng-class="{'col-sm-11' : complaint.guest_type == 'Checkout', 'col-sm-12' : complaint.guest_type != 'Checkout'}" style="padding-left: 0px; padding-right: 5px">
+					<label for="email" class="control-label text-xs text-muted">Guest Type<i class="text-danger">*</i></label>
+					<div>
+					<select class='form-control' ng-model="complaint.guest_type" ng-change="onChangeGuestType()"
+							ng-options="type for type in guest_types">
+						</select>
+					</div>
+				</div>	
+				<div ng-class="{'col-sm-1' : complaint.guest_type == 'Checkout'}" style="padding:0px" ng-show="complaint.guest_type == 'Checkout'">
+					<label class="control-label text-xs text-muted"></label>
+					<span class="input-group-btn">
+						<button type="button" class="btn btn-sm" ng-click="onSearchCheckoutGuest()"><i class="fa fa-search"></i></button>
+					</span>
+				</div>
+			</div>
+			<div class="col-sm-6" ng-hide="complaint.guest_type == 'Walk-in' || complaint.guest_type == 'House Complaint' || complaint.guest_type == 'Arrival'">
+				<div class="col-sm-10" style="padding-left: 0px">
+					<label for="email" class="control-label text-xs text-muted">Room<i class="text-danger">*</i></label>
+					<div>
+				    	<input type="text" ng-model="complaint.room" class="form-control input-sm" placeholder="Enter room number"
+								uib-popover="Enter room number" popover-trigger="mouseenter"
+							  uib-typeahead="room.room for room in roomlist | filter:$viewValue | limitTo:10"
+							  typeahead-editable="false"
+							  typeahead-min-length="0"
+							  typeahead-on-select="onRoomSelect($item, $model, $label)"
+							  ng-disabled="complaint.guest_type == 'Walk-in' || complaint.guest_type == 'Arrival' || complaint.guest_type == 'House Complaint'">
+					</div>
+				</div>
+				<div class="col-sm-2">
+					<label class="control-label text-xs text-muted"></label>
+					<div ng-show="complaint.guest_type == 'In-House'" style="height: 5px">
+							<i class="fa fa-plus-circle fa-2x text-success" style="cursor: pointer" title="Add New Guest" ng-click="addTask(true)"></i>
+					</div>
+				</div>
+			</div>
+			<div class="col-sm-6" ng-show="complaint.guest_type == 'Walk-in' || complaint.guest_type == 'Arrival'">
+				<label class="control-label text-xs text-muted">New Guest</label>
+				<div>
+			    <label class="i-switch m-t-xs m-r">
+						<input type="checkbox" ng-model="complaint.new_guest" ng-change="onChangeNewGuest()"
+							ng-disabled="complaint.guest_type != 'Walk-in' && complaint.guest_type != 'Arrival'">
+						<i></i>
+					</label>
+				</div>
+			</div>
+			<div class="col-sm-6" ng-show="complaint.guest_type == 'Walk-in' || complaint.guest_type == 'Arrival' || complaint.room_id != 0">
+				<label for="email" class="control-label text-xs text-muted" ng-hide="complaint.new_guest == true">
+					{{complaint.guest_type == 'Walk-in' || complaint.guest_type == 'Arrival' ? 'Guest Search' : 'Guest Name'}}
+				<i class="text-danger">*</i></label>
+				<div ng-show="complaint.new_guest == false || complaint.room_id > 0">
+			    <input type="text" ng-model="complaint.guest_name" minlength="3" class="form-control input-sm" placeholder="Enter name, email or mobile"
+						  uib-typeahead="user.guest_name for user in getGuestList($viewValue)"
+						  typeahead-editable="complaint.guest_type == 'Walk-in' || complaint.guest_type == 'Arrival' || !(complaint.room_id > 0) ? true : false"
+						  typeahead-on-select="onGuestSelect($item, $model, $label)"
+						  typeahead-min-length="complaint.guest_type == 'Walk-in' || complaint.guest_type == 'Arrival' || !(complaint.room_id > 0) ? 1 : 0"
+						  typeahead-template-url="guestTypeahead.html"
+						  ng-disabled="complaint.guest_type == 'In-House'">
+						<i></i>
+				</div>
+			</div>
+			<div class="col-sm-6" ng-show="complaint.new_guest == true">
+				<label class="control-label text-muted text-xs" ng-show="complaint.new_guest == true">
+					Guest Name<i class="text-danger">*</i>
+				</label>
+					<div class="scrollable-dropdown-menu">
+						<input type="text" ng-model="complaint.guest_name" minlength="3" class="form-control input-sm" placeholder="Enter guest name"
+						  uib-typeahead="user.guest_name for user in getGuestList($viewValue)"
+						  typeahead-editable="complaint.guest_type == 'Walk-in' || complaint.guest_type == 'Arrival' || !(complaint.room_id > 0) ? true : false"
+						  typeahead-on-select="onGuestSelect($item, $model, $label)"
+						  typeahead-min-length="complaint.guest_type == 'Walk-in' || complaint.guest_type == 'Arrival' || !(complaint.room_id > 0) ? 1 : 0"
+						  typeahead-template-url="guestTypeahead.html"
+						  ng-disabled="complaint.guest_type == 'In-House'">
+					</div>
+			</div>
+			<div class="col-sm-6" ng-show="(complaint.new_guest == true && complaint.guest_id > 0) ||
+							(complaint.guest_id > 0 && complaint.guest_type == 'Arrival') ||
+							(complaint.guest_id > 0 && complaint.guest_type == 'Walk-in')
+								|| complaint.new_guest == true">
+				<label for="email" class="control-label text-xs text-muted">Mobile<i class="text-danger">*</i></label>
+				<div>
+			    <input type="text" ng-model="complaint.mobile" class="form-control input-sm" ng-disabled="complaint.new_guest == false">
+				</div>
+			</div>
+			<div class="col-sm-6" ng-show="(complaint.new_guest == true && complaint.guest_id > 0) ||
+							(complaint.guest_id > 0 && complaint.guest_type == 'Arrival') ||
+							(complaint.guest_id > 0 && complaint.guest_type == 'Walk-in')
+								|| complaint.new_guest == true">
+				<label for="email" class="control-label text-xs text-muted">Email<i class="text-danger">*</i></label>
+				<div ng-show="(complaint.new_guest == true && complaint.guest_id > 0) ||
+							(complaint.guest_id > 0 && complaint.guest_type == 'Arrival') ||
+							(complaint.guest_id > 0 && complaint.guest_type == 'Walk-in')
+								|| complaint.new_guest == true">
+			    <input type="text" ng-model="complaint.email" class="form-control input-sm" ng-disabled="complaint.new_guest == false">
+				</div>
+			</div>
+			<div class="col-sm-6" ng-show="complaint.guest_type != 'Walk-in' && complaint.guest_type != 'Arrival' && complaint.guest_id > 0">
+				<label for="email" class="control-label text-xs text-muted">Check in<i class="text-danger">*</i></label>
+				<div>
+			    <input type="text" ng-model="complaint.arrival" class="form-control input-sm" disabled>
+				</div>
+			</div>
+			<div class="col-sm-6" ng-show="complaint.guest_type != 'Walk-in' && complaint.guest_type != 'Arrival' && complaint.guest_id > 0">
+				<label for="email" class="control-label text-xs text-muted">Check out<i class="text-danger">*</i></label>
+				<div>
+			    <input type="text" ng-model="complaint.departure" class="form-control input-sm" disabled>
+				</div>
+			</div>
+			<div class="col-sm-6" ng-show="complaint.guest_type == 'House Complaint'">
+				<label for="email" class="control-label text-xs text-muted">Type<i class="text-danger">*</i></label>
+				<div>
+			    <select class='form-control input-sm' ng-model="complaint.housecomplaint_id"
+						ng-options="value.id as value.name for (key, value) in housecategory_list" >
+						</select>
+				</div>
+			</div>
+			<div class="col-centered" ng-show="count == true && complaint.guest_type == 'In-House'" style="padding: 0px 20px">
+				<div class="table table-responsive">
+					<label class="text-sm"><i class="fa fa-user" aria-hidden="true"></i>&nbsp;&nbsp;Added Guest</label>
+					<table  st-table="task" class="table ticket table-striped b-t b-light">
+						<thead class="text-sm tblhead-sm" height="10px">
+							<tr>
+								<th class="text-center"><b>Room</b></th>
+								<th class="text-center"><b>Guest Name</b></th>
+								<th colspan="2" class="text-center"><b>Stay</b></th>
+							</tr>
+						</thead>
+						<tbody ng-hide="isLoading">
+							<tr class="text-sm" ng-repeat="task in complaint_tasks">
+								<td class="text-center"><span>{{task.room}}</span></td>
+								<td class="text-center"><span>{{task.guest_name}}</span></td>
+								<td class="text-center"><span>{{task.arrival | mydate}} to {{task.departure | mydate}}</span></td>
+								<td><span class="glyphicon icon-close pull-left" style="margin-top:3px;margin-right: 10px; color: red" ng-click="removeTask()"></span></td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div><br>
+			<div class="col-sm-12" style="padding-top: 10px;padding-left: -15px">
+				<div class="col-sm-6">
+					<label class="control-label text-muted text-xs">Guest Image</label>
+			
+					<button class="btn btn-dark btn-xs" ngf-select="uploadGuestImg($files)" multiple ngf-max-files="1" ngf-max-size="10MB" ngf-accept="'image/*'"
+					 ngf-pattern="'image/*'">
+						<span class="text-success font-bold">
+							<i class="fa fa-folder-open"></i>&nbsp;Add file</span>
+					</button>
+					<small class="text-muted">(Max 1 file)</small>
+					<br>
+					<small class="text-muted">Upload Image (.jpg, .jpeg, .png with max size 10MB)</small>
+			
+				</div>
+				<div class="col-sm-6">
+					<label class="text-muted text-xs">
+						<i class="fa fa-file" aria-hidden="true"></i>&nbsp;File</label>
+					<br/>
+					<ul style="list-style: none">
+						<li ng-repeat="f in guest_image" class="text-xs" style="margin-bottom: 5px">
+							{{f.name}}&nbsp;&nbsp;&nbsp;
+							<span class="glyphicon icon-close" style="margin-top:3px; color: red" ng-click="removeGuestImg($index)"></span>
+						</li>
+			
+					</ul>
+					<span class="progress_img" ng-show="progress_img > 0">
+						<div style="width:{{progress_img}}%" ng-bind="progress_img + '%'"></div>
+					</span>
+					{{errorMsg}}
+				</div>
+			</div>
+		</div>
+	</div>
+			<!--
+			<div class="form-horizontal form-validation">
+				<div class="form-group-mbl col-sm-6 label-group" style="padding: 5px 0px">
+					<label class="col-sm-4 control-label text-muted text-xs">Property<i class="text-danger">*</i></label>
+					<div class="col-sm-8">
+						<select class='form-control input-sm' ng-model="complaint.property_id" ng-change="onChangedProperty()"
+							ng-options="value.id as value.name for (key, value) in property_list">
+						</select>
+					</div>
+				</div>
+				<div class="form-group-mbl col-sm-6 label-group" style="padding: 5px 0px">
+					<label class="col-sm-4 control-label text-muted text-xs">Guest Type<i class="text-danger">*</i></label>
+					<div class="col-sm-8">
+					  <select class='form-control' ng-model="complaint.guest_type" ng-change="onChangeGuestType()"
+						  ng-options="type for type in guest_types">
+					  </select>
+					</div>
+				</div>
+				<div class="form-group-mbl col-sm-6 label-group" style="padding: 5px 0px"
+					ng-show="complaint.guest_type == 'Walk-in' || complaint.guest_type == 'Arrival'">
+					<label class="col-sm-4 control-label text-muted text-xs">New Guest</label>
+					<div class="col-sm-8">
+						<label class="i-switch m-t-xs m-r">
+							<input type="checkbox" ng-model="complaint.new_guest" ng-change="onChangeNewGuest()"
+								ng-disabled="complaint.guest_type != 'Walk-in' && complaint.guest_type != 'Arrival'">
+							<i></i>
+						</label>
+					</div>
+				</div>
+				<div class="form-group-mbl col-sm-6 label-group" style="padding: 5px 0px"
+						ng-hide="complaint.guest_type == 'Walk-in' || complaint.guest_type == 'House Complaint' || complaint.guest_type == 'Arrival'" >
+					<label class="col-sm-4 control-label text-muted text-xs">Room <i class="text-danger">*</i></label>
+					<div class="col-sm-7">
+						<input type="text" ng-model="complaint.room" class="form-control input-sm" placeholder="Enter room number"
+							uib-popover="Enter room number" popover-trigger="mouseenter"
+						  uib-typeahead="room.room for room in roomlist | filter:$viewValue | limitTo:10"
+						  typeahead-editable="false"
+						  typeahead-min-length="0"
+						  typeahead-on-select="onRoomSelect($item, $model, $label)"
+						  ng-disabled="complaint.guest_type == 'Walk-in' || complaint.guest_type == 'Arrival' || complaint.guest_type == 'House Complaint'">
+					</div>
+					<div ng-show="complaint.guest_type == 'In-House'">
+						<i class="fa fa-plus-circle fa-2x text-success" style="cursor: pointer" title="Add New Guest" ng-click="addTask(true)"></i>
+					</div>
+				</div>
+
+				<div class="form-group-mbl col-sm-6 label-group" style="padding: 5px 0px"
+						ng-show="complaint.guest_type == 'Walk-in' || complaint.guest_type == 'Arrival' || complaint.room_id != 0">
+					<label class="col-sm-4 control-label text-muted text-xs" ng-hide="complaint.new_guest == true">
+					  {{complaint.guest_type == 'Walk-in' || complaint.guest_type == 'Arrival' ? 'Guest Search' : 'Guest Name'}}
+						<i class="text-danger">*</i>
+					</label>
+					<div class="col-sm-8 scrollable-dropdown-menu" ng-show="complaint.new_guest == false || complaint.room_id > 0">
+						<input type="text" ng-model="complaint.guest_name" minlength="3" class="form-control input-sm" placeholder="Enter name, email or mobile"
+						  uib-typeahead="user.guest_name for user in getGuestList($viewValue)"
+						  typeahead-editable="complaint.guest_type == 'Walk-in' || complaint.guest_type == 'Arrival' || !(complaint.room_id > 0) ? true : false"
+						  typeahead-on-select="onGuestSelect($item, $model, $label)"
+						  typeahead-min-length="complaint.guest_type == 'Walk-in' || complaint.guest_type == 'Arrival' || !(complaint.room_id > 0) ? 1 : 0"
+						  typeahead-template-url="guestTypeahead.html"
+						  ng-disabled="complaint.guest_type == 'In-House'">
+					</div>
+					<label class="col-sm-4 control-label text-muted text-xs" ng-show="complaint.new_guest == true">
+					  Guest Name
+					  <i class="text-danger">*</i>
+					</label>
+					<div class="col-sm-8 scrollable-dropdown-menu" ng-show="complaint.new_guest == true">
+						<input type="text" ng-model="complaint.guest_name" minlength="3" class="form-control input-sm" placeholder="Enter guest name"
+						  uib-typeahead="user.guest_name for user in getGuestList($viewValue)"
+						  typeahead-editable="complaint.guest_type == 'Walk-in' || complaint.guest_type == 'Arrival' || !(complaint.room_id > 0) ? true : false"
+						  typeahead-on-select="onGuestSelect($item, $model, $label)"
+						  typeahead-min-length="complaint.guest_type == 'Walk-in' || complaint.guest_type == 'Arrival' || !(complaint.room_id > 0) ? 1 : 0"
+						  typeahead-template-url="guestTypeahead.html"
+						  ng-disabled="complaint.guest_type == 'In-House'">
+					</div>
+				</div>
+				<div class="form-group-mbl col-sm-6 label-group" style="padding: 5px 0px"
+						ng-show="(complaint.new_guest == true && complaint.guest_id > 0) ||
+							(complaint.guest_id > 0 && complaint.guest_type == 'Arrival') ||
+							(complaint.guest_id > 0 && complaint.guest_type == 'Walk-in')
+								|| complaint.new_guest == true">
+					<label class="col-sm-4 control-label text-muted text-xs">Mobile</label>
+					<div class="col-sm-8">
+					  <input type="text" ng-model="complaint.mobile" class="form-control input-sm" ng-disabled="complaint.new_guest == false">
+					</div>
+				</div>
+				<div class="form-group-mbl col-sm-6 label-group" style="padding: 5px 0px"
+						ng-show="(complaint.new_guest == true && complaint.guest_id > 0) ||
+							(complaint.guest_id > 0 && complaint.guest_type == 'Arrival') ||
+							(complaint.guest_id > 0 && complaint.guest_type == 'Walk-in')
+								|| complaint.new_guest == true">
+					<label class="col-sm-4 control-label text-muted text-xs">Email</label>
+					<div class="col-sm-8">
+					  <input type="email" ng-model="complaint.email" class="form-control input-sm" ng-disabled="complaint.new_guest == false">
+					</div>
+				</div>
+				<div class="form-group-mbl col-sm-6 label-group" style="padding: 5px 0px"
+						ng-show="complaint.guest_type != 'Walk-in' && complaint.guest_type != 'Arrival' && complaint.guest_id > 0">
+					<label class="col-sm-4 control-label text-muted text-xs">Check in</label>
+					<div class="col-sm-8">
+					  <input type="text" ng-model="complaint.arrival" class="form-control input-sm" disabled>
+					</div>
+				</div>
+				<div class="form-group-mbl col-sm-6 label-group" style="padding: 5px 0px"
+						ng-show="complaint.guest_type != 'Walk-in' && complaint.guest_type != 'Arrival' && complaint.guest_id > 0">
+					<label class="col-sm-4 control-label text-muted text-xs">Check out</label>
+					<div class="col-sm-8">
+						<input type="email" ng-model="complaint.departure" class="form-control input-sm" disabled>
+					</div>
+				</div>
+				<div class="form-group-mbl col-sm-6 label-group" style="padding: 5px 0px"
+					ng-show="complaint.guest_type == 'House Complaint'">
+					<label class="col-sm-4 control-label text-muted text-xs">Type</label>
+					<div class="col-sm-8">
+						<select class='form-control input-sm' ng-model="complaint.housecomplaint_id"
+						ng-options="value.id as value.name for (key, value) in housecategory_list" >
+						</select>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="col-centered" ng-show="count == true && complaint.guest_type == 'In-House'" style="padding: 0px 20px;">
+			<div class="table table-responsive">
+				<label class="text-sm"><i class="fa fa-user" aria-hidden="true"></i>&nbsp;&nbsp;Added Guest</label>
+				<table  st-table="task" class="table ticket table-striped b-t b-light">
+					<thead class="text-sm tblhead-sm" height="10px">
+						<tr>
+							<th class="text-center"><b>Room</b></th>
+							<th class="text-center"><b>Guest Name</b></th>
+							<th colspan="2" class="text-center"><b>Stay</b></th>
+						</tr>
+					</thead>
+					<tbody ng-hide="isLoading">
+						<tr class="text-sm" ng-repeat="task in complaint_tasks">
+							<td class="text-center"><span>{{task.room}}</span></td>
+							<td class="text-center"><span>{{task.guest_name}}</span></td>
+							<td class="text-center"><span>{{task.arrival | mydate}} to {{task.departure | mydate}}</span></td>
+							<td><span class="glyphicon icon-close pull-left" style="margin-top:3px;margin-right: 10px; color: red" ng-click="removeTask()"></span></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+</div>
+
+<!-- - - - - - - - GUEST DETAILS - - - - - - - -->
+
+<!-- - - - - - - - FEEDBACK DETAILS - - - - - - - -->
+<div class="" style="margin: auto">
+	<div class="panel panel-default" style="border-radius: 4px">
+		<div class="panel-heading">
+			<div class="pull-left">
+				<label class="font-bold text-sm"><i class="fa fa-info-circle text-default"></i>&nbsp;&nbsp;Feedback Details</label>
+			</div>
+			<br>
+		</div>
+
+		<div class="panel-body" style="padding: 5px 0px">
+			<div class="form-horizontal form-validation">
+				<div class="col-sm-6">
+					<label class="control-label text-xs text-muted">Type</label>
+					<div>
+						<select class='form-control input-sm' ng-model="complaint.feedback_type_id" ng-change="onChangeFeedbackType()"
+							ng-options="value.id as value.name for (key, value) in feedback_type_list"/>
+					</div>
+				</div>
+				<div class="col-sm-6">
+					<label class="control-label text-xs text-muted">Source</label>
+					<div>
+						<select class='form-control input-sm' ng-model="complaint.feedback_source_id"
+							ng-options="value.id as value.name for (key, value) in feedback_source_list"/>
+					</div>
+				</div>
+				<div class="col-sm-6"  >
+					<label class="control-label text-xs text-muted">Location<i class="text-danger">*</i></label>
+					<div class="scrollable-dropdown-menu">
+						<input type="text" ng-model="location.name" class="form-control input-sm" placeholder="Enter location name"
+							uib-popover="Enter location name" popover-trigger="mouseenter"
+							uib-typeahead="room.room for room in location_list | filter:$viewValue"
+							typeahead-min-length="0"
+							typeahead-editable="false"
+							typeahead-template-url="locationTypeahead.html"
+							typeahead-on-select="onLocationSelect($item, $model, $label)" required>
+					</div>
+				</div>
+
+				<!--<div class="col-sm-6" >
+					<label class="control-label text-xs text-muted">Location Type<i class="text-danger">*</i></label>
+					<div>
+						<input class="form-control input-sm" placeholder="Location type" ng-model="location.type" disabled required>
+					</div>
+				</div>-->
+				<div class="col-sm-6">
+					<label class="control-label text-xs text-muted">Status<i class="text-danger">*</i></label>
+					<div>
+						<select class='form-control' ng-model="complaint.status" ng-options="type for type in status_list">
+						</select>
+					</div>
+				</div>
+				
+				<div class="col-sm-6">
+					<label class="control-label text-xs text-muted">Time of Incident<i class="text-danger">*</i></label>
+					<div class="dropdown">
+						<a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+							<div class="input-group">
+								<input type="text" class="form-control" ng-model="complaint.incident_time">
+								<span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+							</div>
+						</a>
+						<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+							<datetimepicker ng-model="complaint.timepicker" data-datetimepicker-config="{ dropdownSelector: '#dropdown2', startView: 'hour' }"
+							data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+						</ul>
+					</div>
+				</div>
+			
+				<div class="col-sm-6" >
+					<label class="control-label text-xs text-muted">Category<i class="text-danger">*</i></label>
+					<br>
+					<div class="col-sm-10 scrollable-dropdown-menu" style="padding-bottom:10px; padding-left: 0px">
+						<input type="text" ng-model="complaint.category_name" class="form-control input-sm" placeholder="Select Main Category"
+							uib-popover="Select Main Category" popover-trigger="mouseenter"
+							uib-typeahead="item.name for item in selected_category_list | filter:$viewValue | limitTo:10"
+							typeahead-editable="false"
+							typeahead-min-length="0"
+							typeahead-on-select="onChangedCategory($item, $model, $label)"
+							>
+					</div>
+					<div class="col-sm-2">
+						<i class="fa fa-plus-circle fa-2x text-danger " style="cursor: pointer" title="Create Category" ng-click="createCategory()"
+							ng-show="category_editable"></i>
+					</div>
+				</div>
+
+				<div class="col-sm-6" >
+					<label class="control-label text-xs text-muted">Sub Category</label>
+					<br>
+					<div class="col-sm-10" style="padding-bottom:10px; padding-left: 0px">
+						<input type="text" ng-model="complaint.subcategory_name" class="form-control input-sm" placeholder="Select Sub Category"
+							uib-typeahead="item.name for item in main_subcategory_list | filter:$viewValue | limitTo:10"
+							typeahead-editable="false"
+							typeahead-min-length="0"
+							typeahead-on-select="onChangedSubCategory($item, $model, $label)"
+							>
+					</div>
+					<div class="col-sm-2">
+						<i class="fa fa-plus-circle fa-2x text-danger " style="cursor: pointer" title="Create Sub Category" ng-click="createMainSubCategory()"
+							ng-show="category_editable"></i>
+					</div>
+				</div>
+
+			
+				<div class="col-sm-6" >
+					<label class="control-label text-xs text-muted">Severity</label>
+					<div>
+						<select class='form-control input-sm' ng-model="complaint.severity" ng-change="onChangedSeverity()"
+							ng-options="value.id as value.type for (key, value) in selected_severity_list" ng-disabled="complaint.closed_flag == 1">
+						</select>	
+					</div>
+				</div>
+				<!--
+				<div class="col-sm-6">
+					<label class="control-label text-xs text-muted">Compensation Type</label>
+					<div>
+						<input class="form-control input-sm" ng-model="complaint.compensation_type" required>
+					</div>
+				</div>
+				-->
+				<div class="col-sm-12">
+					<label class="control-label text-xs text-muted">Department</label>
+					<br>
+					<div class="col-sm-12" style="padding-left: 0px">
+						<tags-input ng-model="selected_depts" placeholder="Add Department" replace-spaces-with-dashes="false" style="margin-top: -5px"
+									display-property="department" key-property="id"	
+								>
+							<auto-complete source="loadFiltersValue('Department',$query)"
+								min-length="0"
+								debounce-delay="0"
+								load-on-focus="true"
+								load-on-empty="true"
+								max-results-to-show="100">
+							</auto-complete>
+						</tags-input>
+					</div>
+				</div>
+				
+				<div class="col-sm-12">
+					<label class="control-label text-xs text-muted">Feedback<i class="text-danger">*</i></label>
+					<div>
+					<textarea type="text" spellcheck="true" class="form-control input-sm" rows="6" ng-model="complaint.comment" style="resize:none" required></textarea>
+					</div>
+				</div>
+				<div class="col-sm-12">
+					<label class="control-label text-xs text-muted">Initial Response<i class="text-danger">*</i></label>
+					<div>
+						<textarea type="text" spellcheck="true" class="form-control input-sm" rows="4"
+						style="resize:none" ng-model="complaint.initial_response"></textarea>
+					</div>
+				</div>
+
+				<div class="col-sm-12" ng-show="complaint.status == 'Resolved'">
+					<label class="control-label text-xs text-muted">Resolution<i class="text-danger">*</i></label>
+					<div>
+						<textarea type="text" spellcheck="true" class="form-control input-sm" rows="4"
+						style="resize:none" ng-model="complaint.solution"></textarea>
+					</div>
+				</div>
+				<div class="col-sm-12">
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">Upload File</label>
+							<button class="btn btn-dark btn-xs" ngf-select="uploadFiles($files)" multiple ngf-max-files="5" ngf-max-size="10MB"
+								ngf-accept="'image/*,application/pdf,.eml,.msg'" ngf-pattern="'image/*,application/pdf,.eml,.msg'">
+								<span class="text-success font-bold"><i class="fa fa-folder-open"></i>&nbsp;Add file</span>
+							</button>
+							<small class="text-muted">(Max 5 files)</small>
+							<br>
+							<small class="text-muted text-xs">Upload .jpg, .jpeg, .png, .pdf , .msg and .eml file with maximum size of 10MB is allowed.</small>
+					</div>
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted"><i class="fa fa-file" aria-hidden="true"></i>&nbsp;Files</label><br/>
+						<ul style="list-style: none">
+							<li ng-repeat="f in files" class="text-xs" style="margin-bottom: 5px">
+								{{f.name}}&nbsp;&nbsp;&nbsp;
+								<span class="glyphicon icon-close" style="margin-top:3px; color: red"
+								ng-click="removeFile($index)"></span>
+							</li>
+
+						</ul>
+						<span class="progress" ng-show="progress > 0">
+							<div style="width:{{progress}}%" ng-bind="progress + '%'"></div>
+						</span>
+						{{errorMsg}}
+					</div>
+				</div>
+
+				<!-- - - - - - COMPENSATION PANEL - - - - - -->
+		<div class="col-sm-12" style="margin: auto">			
+		<div class="panel panel-default" style="border-radius: 4px; margin-bottom: 10px" >
+		<div class="panel-heading">
+			<label class="text-sm font-bold"><i class="fa fa-dollar text-default"></i>&nbsp;&nbsp;Service Recovery</label>
+			<!--
+			<label class="i-switch m-t-xs m-r pull-right" >
+				<input type="checkbox" ng-model="complaint.compensation_flag"  checked>
+				<i></i>
+			</label>
+			-->
+			<i class="fa fa-plus-circle fa-2x text-success ng-click-active pull-right" style="cursor: pointer" title="Add Service recovery"
+				   ng-click="addCompensation(true)"></i>
+		</div>
+		<div class="panel-body" style="padding: 5px 0px">
+				
+				<div class="form-horizontal form-validation" >						  	
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">Service Recovery</label>
+					             
+							<div class="scrollable-dropdown-menu">
+								<input ng-model="compn.compensation" class="form-control  input-sm"
+									ng-focus="onFocus($event)" empty-typeahead
+									uib-typeahead="item.compensation for item in compensations | filter:$viewValue:stateComparator"
+									typeahead-min-length="0"
+									typeahead-on-select="onCompensationSelect($item, $model, $label)"
+									typeahead-no-results="compn.no_compensation" required/>
+								<span ng-if="compn.no_compensation" uib-dropdown uib-dropdown-toggle auto-close="disabled" is-open="true">
+									<ul class="dropdown-menu" >
+										<li>
+											<a href ng-click="addCompensationType(0)">{{compn.compensation}} (New)</a>
+										</li>
+									</ul>
+								</span>     
+							</div>
+					</div>
+					<div class="col-sm-6">	
+						<label class="control-label text-xs text-muted">Cost (AED)</label>
+						<div>
+							<input type="number" ng-model="compn.cost" class="form-control  input-sm" required>
+						</div>								        
+					</div>
+					<div class="col-sm-6">    
+						<label class="control-label text-xs text-muted">Department</label>
+							<div class="scrollable-dropdown-menu">
+								<input ng-model="compn.department" class="form-control  input-sm"
+									ng-focus="onFocus($event)" empty-typeahead
+									uib-typeahead="item.department for item in depts_list | filter:$viewValue | limitTo:10"
+									typeahead-min-length="0"
+									typeahead-on-select="onDepartmentSelect(compn,$item, $model, $label)"
+									typeahead-no-results="sub.no_depart" required/>
+							</div>     
+					</div>
+					<div class="col-sm-6">   
+						<label class="control-label text-xs text-muted">Provided By</label>
+							<div class="scrollable-dropdown-menu">
+								<input ng-model="compn.provider_name" class="form-control  input-sm"
+									ng-focus="onFocus($event)" empty-typeahead
+									uib-typeahead="user.wholename for user in staff_list | filter:$viewValue"
+									typeahead-min-length="0"
+									typeahead-on-select="onProviderSelect(compn, $item, $model, $label)"
+									typeahead-no-results="sub.no_staff" required/>
+							</div>    
+					</div>
+					<div class="col-sm-12">
+						<label class="control-label text-xs text-muted">Comment</label>
+						<div style="margin-bottom:5px;">
+							<textarea type="text" class="form-control input-sm" rows="3" ng-model="compn.comment"
+								style="resize:none" required>
+							</textarea>
+						</div>    
+					</div>
+				</div>    
+			
+	   
+		<br/>
+		<div class="col-sm-12" style="margin: auto" ng-show="comps.length > 0" >
+			<div class="panel panel-default" style="border-radius: 4px; margin-bottom: 10px">
+				<div class="panel-heading">
+					<label class="font-bold"><i class="fa fa-plus-square" aria-hidden="true"></i>&nbsp;&nbsp;Service Recovery Added</label>
+				</div>
+				<div class="panel-body">
+					<div class="form-horizontal form-validation wrapper">
+						<div class="form-group label-group" style="width:98%; margin:auto" ng-repeat="comp in comps">
+							<div class="form-group">
+								<div class="col-sm-3 ">
+									<span class="pull-left" style="margin-right: 20px"  >{{comp.compensation}}</span>
+								</div>
+								<div class="col-sm-1">
+									<span class="pull-left" >{{comp.cost}}</span>
+								</div>
+								<div class="col-sm-3" >
+									<span class="pull-left"   >{{comp.department}}</span>
+								</div>
+								<div class="col-sm-3">
+									<span class="pull-left" style="margin-right: 20px" >{{comp.provider_name}}</span>
+								</div>
+								<div class="col-sm-1">
+									<span class="glyphicon icon-close pull-right" style="color: red" ng-click="removeCompensation()"></span>
+								</div>
+							</div>
+							
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+
+		</div>
+	</div>
+	</div>
+							
+	<!-- - - - - - /COMPENSATION PANEL - - - - - -->
+				
+			</div>	
+		</div>
+	</div>
+	<br><br>
+	<center>
+		<button type="button " class="btn btn-dark btn-sm" ng-click="createComplaint()" ng-disabled="disable_create">
+		<span class="text-success font-bold"><i class="fa fa-check"></i>&nbsp;Create</span></button>
+		<button type="button" class="btn btn-dark btn-sm" ng-click="cancelComplaint()">
+		<span class="text-danger font-bold"><i class="fa fa-times"></i>&nbsp;Cancel</span></button>
+	</center><br>
+</div>	
+<br><br><br>
+

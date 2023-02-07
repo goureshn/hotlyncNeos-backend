@@ -1,0 +1,51 @@
+<div class="modal-content">
+    <form class="form-horizontal form-validation" ng-submit="update()">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">
+                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+            </button>
+            <h3 class="modal-title" style="color:#2691d9" id="Heading">Rulelist</h3>
+        </div>
+        <br>
+        <div class="modal-body">
+            <div class="form-group" >
+                    <label class="col-sm-3 text-right control-label text-muted">Room Type</label>
+                    <div class="col-sm-9">
+                    <select class='form-control' ng-model="model.room_type_id"
+                                ng-options="value.id as value.type for (key, value) in room_type_list" 
+                                ng-change="onChangeRoomType()">
+                    </select> 
+                    </div>
+            </div>            
+            <div class="form-group" >
+                    <label class="col-sm-3 text-right control-label text-muted">VIP Status</label>
+                    <div class="col-sm-9">
+                    <select class='form-control' ng-model="model.vip_id"
+                                ng-options="value.id as value.name for (key, value) in vip_list" 
+                                ng-change="onChangeVip()"
+                                >
+                    </select> 
+                    </div>
+            </div>  
+            <div class="form-group" >
+                    <label class="col-sm-3 text-right control-label text-muted">Days</label>
+                    <div class="col-sm-9">
+                    <input class="form-control" type = 'number' ng-model="model.days"  required
+                                placeholder="Days"> 
+                    </div>
+            </div>          
+        </div>
+
+        <div class="modal-footer ">
+            <button type="submit" class="btn btn-danger btn-sm" data-dismiss="modal">
+                <span class="glyphicon glyphicon-ok"></span>
+                <b> Update</b>
+            </button>
+            <button type="button" class="btn btn-default btn-sm" data-dismiss="modal" ng-click="cancel()">
+                <span class="glyphicon glyphicon-remove"></span>
+                <b> Cancel</b>
+            </button>
+        </div>
+    </form>
+</div>
+

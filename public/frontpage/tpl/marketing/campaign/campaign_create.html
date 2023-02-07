@@ -1,0 +1,345 @@
+<style>
+	.popover-content {
+	    padding: 3px;	 
+	}
+</style>
+
+<script type="text/ng-template" id="action_guest.html">    
+  	<ul class="nav nav-pills nav-stacked nav-sm">
+  		<li ng-click="onChangeGuest(row1, 1)" style="width: 150px">
+          	<a>		            
+	            <i class="fa fa-pencil-square-o" aria-hidden="true"></i> Modify
+          	</a>
+        </li>
+        <li ng-click="onChangeGuest(row1, 0)" style="width: 150px">
+          	<a>		            
+	            <i class="fa fa-recycle" aria-hidden="true"></i> Discard
+          	</a>
+        </li>
+  	</ul>
+</script>
+
+<script type="text/ng-template" id="action_total_guest.html">    
+  	<ul class="nav nav-pills nav-stacked nav-sm">
+  		<li ng-click="onTotalChangeGuest(1)" style="width: 150px">
+          	<a>		            
+	            <i class="fa fa-pencil-square-o" aria-hidden="true"></i> Modify
+          	</a>
+        </li>
+        <li ng-click="onTotalChangeGuest(0)" style="width: 150px">
+          	<a>		            
+	            <i class="fa fa-recycle" aria-hidden="true"></i> Discard
+          	</a>
+        </li>
+  	</ul>
+</script>
+
+<form name="campaign-form"  ng-submit="createCampaign()">
+	<div class="wrapper-md" style="margin: auto">
+		<div class="row" style="margin:0px">
+			<div class="pull-right">
+				<button type="submit " class="btn btn-dark btn-sm">
+				<span class="text-success font-bold"><i class="fa fa-check"></i>&nbsp;Create</span></button>
+				<button type="button" class="btn btn-dark btn-sm" ng-click="cancelCampaign()">
+				<span class="text-danger font-bold"><i class="fa fa-times"></i>&nbsp;Cancel</span></button>
+			</div>	
+		</div>	
+
+		<div class="panel panel-default" style="border-radius: 4px; margin-top: 10px">
+		  	<div class="panel-heading">
+				<div class="pull-left">
+					<label class="font-bold text-sm"><i class="fa fa-user-circle-o text-default"></i>&nbsp;&nbsp;Add New Campaign</label>
+				</div>
+				<br>
+			</div>
+			  
+			<div class="panel-body" style="padding: 5px 0px">
+				<div class="form-horizontal form-validation">
+					<div class="form-group-mbl col-sm-12 label-group" style="padding: 5px 0px">
+						<label class="i-switch m-t-xs m-r pull-right">
+			              	<input type="checkbox" ng-model="campaign.active" checked>
+			              	<i></i>
+			            </label>	
+					</div>
+
+					<div class="form-group-mbl col-sm-8 label-group" style="padding: 5px 0px">
+						<label class="col-sm-4 control-label text-muted text-xs">Campaign Name<i class="text-danger">*</i></label>
+						<div class="col-sm-8">
+						  	<input type="text" ng-model="campaign.name" class="form-control input-sm" required>
+						</div>
+					</div>
+
+					<div class="form-group-mbl col-sm-8 label-group" style="padding: 5px 0px">
+						<label class="col-sm-4 control-label text-muted text-xs">Type<i class="text-danger">*</i></label>
+						<div class="col-sm-8">
+						  	<select class='form-control' ng-model="campaign.type" ng-change="onChangeType()"
+								ng-options="type for type in type_list">
+						  	</select>
+						</div>
+					</div>
+
+					<div class="form-group-mbl col-sm-8 label-group" style="padding: 5px 0px">
+						<label class="col-sm-4 control-label text-muted text-xs">Campaign Period<i class="text-danger">*</i></label>
+						<div class="col-sm-8">
+						  	<input ng-model="campaign.daterange" ui-jq="daterangepicker" ui-options="dateRangeOption" class="form-control input-sm" required>
+						</div>
+					</div>
+
+					<div class="form-group-mbl col-sm-4 label-group" style="padding: 5px 0px">
+						<label class="md-check" style="margin-left: 20px; margin-top: 5px;">
+				            <input type="checkbox" ng-model="campaign.reject_flag">
+				            <i class="green"></i>
+				            Reject Option
+				        </label>				        
+					</div>
+
+					<div class="form-group-mbl col-sm-8 label-group" style="padding: 5px 0px" ng-show="campaign.type == 'Holiday'">
+						<label class="col-sm-4 control-label text-muted text-xs">Holiday<i class="text-danger">*</i></label>
+						<div class="col-sm-8">
+						  	<div class="input-group">
+					            <span class="input-group-btn">
+					                <button type="button" class="btn btn-default btn-sm" ng-click="open($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+					            </span>
+						         <input type="text" class="form-control input-sm" uib-datepicker-popup="yyyy-MM-dd" ng-model="campaign.holiday" is-open="opened" datepicker-options="dateOptions" close-text="Close" ng-required="campaign.type == 'Holiday'"  ng-change="select(complaint.holiday)"/>
+						    </div>
+						</div>
+					</div>
+
+					<div class="form-group-mbl col-sm-8 label-group" style="padding: 5px 0px">
+						<label class="col-sm-4 control-label text-muted text-xs">Send To<i class="text-danger">*</i></label>
+						<div class="col-sm-8">
+						  	<select class='form-control' ng-model="campaign.send_to" ng-change="onChangeSendTo()"
+							  	ng-options="item for item in send_to_list">
+						  	</select>
+						</div>
+					</div>
+
+					<div class="form-group-mbl col-sm-4 label-group" style="padding: 5px 0px">
+						<label class="md-check" style="margin-left: 20px; margin-top: 5px;">
+				            <input type="checkbox" ng-model="campaign.email_flag">
+				            <i class="green"></i>
+				            Email
+				        </label>
+				        <label class="md-check" style="margin-left: 20px; margin-top: 5px">
+				            <input type="checkbox" ng-model="campaign.sms_flag">
+				            <i class="green"></i>
+				            SMS
+				        </label>
+					</div>
+
+					<div class="form-group-mbl col-sm-8 label-group" style="padding: 5px 0px" ng-show="campaign.send_to == 'Address Book'">
+						<label class="col-sm-4 control-label text-muted text-xs">Address List</label>
+						<div class="col-sm-8">
+						  	<tags-input ng-model="campaign.book_tags" display-property="name" placeholder="Add Address" style="margin-top: -7px; margin-right: 7px" replace-spaces-with-dashes="false">
+					            <auto-complete source="loadAddressbookFilters($query)"
+					                           min-length="0"
+					                           load-on-focus="true"
+					                           load-on-empty="true"
+					                           debounce-delay="0"
+					                           max-results="10">
+					            </auto-complete>
+					        </tags-input>
+						</div>
+					</div>
+
+					<div class="form-group-mbl col-sm-8 label-group" style="padding: 5px 0px" ng-show="campaign.send_to == 'Upload Excelsheet'">
+						<label class="col-sm-4 control-label text-muted text-xs">Files</label>
+						<div class="col-sm-8">
+							<div class="input-group">
+								<input type="text" class="form-control input-sm" ng-model="campaign.file_name" ng-required="campaign.send_to == 'Upload Excelsheet'"/>
+						  		<span class="text-success font-bold input-group-addon" style="cursor: pointer;" 
+						  			ngf-select="uploadFiles($files)" ngf-max-size="10MB">
+									<i class="fa fa-folder-open"></i>&nbsp;Upload
+								</span>						
+							</div>	
+						</div>
+					</div>
+
+					<div class="form-group-mbl col-sm-4 label-group" style="padding: 5px 0px" ng-show="campaign.send_to == 'Upload Excelsheet'">
+						<select class='form-control' ng-model="campaign.book_id" 
+							ng-options="value.id as value.name for (key, value) in addressbook_list">
+					  	</select>
+					  	<input type="text" ng-model="campaign.addressbook_name" ng-show="campaign.book_id == 0" class="form-control input-sm" style="margin-top: 4px" ng-required="campaign.send_to == 'Upload Excelsheet' && campaign.book_id == 0">
+					</div>
+					
+					<div class="form-group-mbl col-sm-8 label-group" style="padding: 5px 0px" ng-show="campaign.send_to == 'Manually'">
+						<label class="col-sm-4 control-label text-muted text-xs">User List</label>
+						<div class="col-sm-8">
+						  	<tags-input ng-model="campaign.guest_tags" display-property="wholename" placeholder="Add User" style="margin-top: -7px; margin-right: 7px" replace-spaces-with-dashes="false">
+					            <auto-complete source="loadUserFilters($query)"
+					                           min-length="0"
+					                           load-on-focus="true"
+					                           load-on-empty="true"
+					                           debounce-delay="0"
+					                           max-results="10">
+					            </auto-complete>
+					        </tags-input>
+						</div>
+					</div>
+
+
+					<div class="form-group-mbl col-sm-8 label-group" style="padding: 5px 0px">
+						<label class="col-sm-4 control-label text-muted text-xs">Period<i class="text-danger">*</i></label>
+						<div class="col-sm-8">
+						  	<select class='form-control' ng-model="campaign.periodic" ng-change="onChangePeriodic()"
+								ng-options="item for item in periodic_list">
+						  	</select>
+						</div>
+					</div>
+
+					<div class="form-group-mbl col-sm-4 label-group" style="padding: 5px 0px" ng-show="campaign.periodic == 'Pre Deliver'">
+						<span><label class="control-label text-muted text-xs">Before</label></span>&nbsp;
+						<input type="number" min="0" ng-model="campaign.before_date" class="form-control input-sm" style="width: 70px; display: inline;" ng-required="campaign.periodic == 'Pre Deliver'">					
+						&nbsp;&nbsp; at &nbsp;&nbsp;
+						<input type="text" ng-model="campaign.trigger_at" class="form-control input-sm" style="width: 100px; display: inline;" ui-time-mask="short" ng-required="campaign.periodic == 'Pre Deliver'">
+					</div>
+
+					<div class="form-group-mbl col-sm-4 label-group" style="padding: 5px 0px" ng-show="campaign.periodic == 'Periodic'">
+						<span><label class="control-label text-muted text-xs">Every</label></span>&nbsp;
+						<input type="number" min="1" ng-model="campaign.every_date" class="form-control input-sm" style="width: 70px; display: inline;" ng-required="campaign.periodic == 'Periodic'">					
+						&nbsp;&nbsp; at &nbsp;&nbsp;
+						<input type="text" ng-model="campaign.trigger_at" class="form-control input-sm" style="width: 100px; display: inline;" ui-time-mask="short" ng-required="campaign.periodic == 'Periodic'">
+					</div>
+
+				</div>
+			</div>
+
+		</div>
+
+		<div class="panel panel-default" style="border-radius: 4px">
+		  	<div class="panel-heading">
+				<div class="pull-left">
+					<label class="font-bold text-sm"><i class="fa fa-user-circle-o text-default"></i>&nbsp;&nbsp;Content</label>
+				</div>
+				<br>
+			</div>
+			  
+			<div class="panel-body" style="padding: 5px 0px">
+				<div class="form-horizontal form-validation">
+					<div class="form-group-mbl col-sm-12 label-group" style="padding: 5px">
+						<label>MESSAGE</label>
+						<label class="pull-right">{{160 - campaign.sms_content.length}} CHARACTERS REMAINING</label>              		
+	              		<textarea type="text" spellcheck="true" class="form-control input-sm" rows="6" ng-model="campaign.sms_content" style="resize:none" ng-required="campaign.sms_flag">
+						</textarea>
+					</div>
+				</div>
+
+				<div class="form-horizontal form-validation">		
+					<div class="form-group-mbl col-sm-12 label-group" style="padding: 5px">
+						<span><label class="control-label text-muted text-xs">Email Subject</label></span>&nbsp;&nbsp;&nbsp;
+						<input type="text" ng-model="campaign.email_subject" class="form-control input-sm w-lg" ng-required="campaign.email_flag" style="margin-bottom: 3px; display: inline;">
+						<label class="md-check" style="margin-left: 20px; margin-top: 5px;">
+				            <input type="checkbox" ng-model="campaign.use_html">
+				            <i class="green"></i>
+				            Use Html
+				        </label>
+
+	              		<ng-quill-editor ng-hide="campaign.use_html" ng-model="campaign.email_content" placeholder="override default placeholder" on-editor-created="editorCreated(editor)"  on-content-changed="contentChanged(editor, html, text)" on-selection-changed="selectionChanged(editor, range, oldRange, source)" required></ng-quill-editor>
+
+	              		<textarea type="text" ng-show="campaign.use_html" class="form-control input-sm" rows="10" ng-model="campaign.email_content" style="resize:none" ng-required="campaign.email_flag && campaign.use_html">
+						</textarea>
+					</div>
+				</div>
+
+			</div>
+		</div>	
+
+		<div class="panel panel-default" style="border-radius: 4px" ng-show="guest_error_list.length > 0">
+		  	<div class="panel-heading">
+				<div class="pull-left">
+					<label class="font-bold text-sm"><i class="fa fa-user-circle-o text-default"></i>&nbsp;&nbsp;Error List</label>
+				</div>
+				<br>
+			</div>
+			  
+			<div class="panel-body" style="padding: 5px 0px">
+				<div class="table table-responsive">
+				  	<table  st-table="ticketlist" class="table ticket table-striped b-t b-light">
+						<thead class="tblhead-sm" style="font-size: .7vw">
+							<tr>
+								<th class="text-center">
+									<input type="checkbox" ng-model="campaign.total_guest_selected" ng-change="onChangeGuestTotalChange()"/>
+								</th>							
+								<th class="text-center"><b>First Name</b></th>
+								<th class="text-center"><b>Last Name</b></th>
+								<th class="text-center"><b>Birthday</b></th>
+								<th class="text-center"><b>Anniversary</b></th>
+								<th class="text-center"><b>Mobile</b></th>
+								<th class="text-center"><b>Email</b></th>
+								<th class="text-center">
+									<a href uib-popover-template="'action_total_guest.html'" popover-placement="left" popover-trigger="outsideClick" popover-is-open="campaign.total_is_open">
+				        				...
+				        			</a>
+								</th>								
+							</tr>
+					  	</thead>
+						<tbody>
+							<tr ng-repeat="row1 in guest_error_list">
+								<td class="text-center">
+									<input type="checkbox" ng-model="row1.selected"/>
+								</td>							
+								<td class="text-center"><span>{{row1.new_guest.first_name}}</span></td>							
+								<td class="text-center"><span>{{row1.new_guest.last_name}}</span></td>
+								<td class="text-center"><span>{{row1.new_guest.birthday.date | mydate}}</span></td>
+								<td class="text-center"><span>{{row1.new_guest.anniversary.date | mydate}}</span></td>
+								<td class="text-center"><span>{{row1.new_guest.mobile}}</span></td>
+								<td class="text-center"><span>{{row1.new_guest.email}}</span></td>
+								<td class="text-center">								
+									<a href uib-popover-template="'action_guest.html'" popover-placement="left" popover-trigger="outsideClick" popover-is-open="row1.is_open" ng-show="row1.error_type == 2">
+				        				...
+				        			</a>
+								</td>
+							</tr>						
+						</tbody>
+					</table>
+			  	</div>
+			</div>
+		</div>		
+
+		<div class="panel panel-default" style="border-radius: 4px">
+		  	<div class="panel-heading">
+				<div class="pull-left">
+					<label class="font-bold text-sm"><i class="fa fa-user-circle-o text-default"></i>&nbsp;&nbsp;Receipients</label>
+				</div>
+				<br>
+			</div>
+			  
+			<div class="panel-body" style="padding: 5px 0px">
+				<div class="table table-responsive">
+				  	<table  st-table="ticketlist" class="table ticket table-striped b-t b-light">
+						<thead class="tblhead-sm" style="font-size: .7vw">
+							<tr>
+								<th class="text-center"><b>ID</b></th>
+								<th class="text-center"><b>Title</b></th>
+								<th class="text-center"><b>First Name</b></th>
+								<th class="text-center"><b>Last Name</b></th>
+								<th class="text-center"><b>Anniversary</b></th>
+								<th class="text-center"><b>Mobile</b></th>
+								<th class="text-center"><b>Email</b></th>
+								<th class="text-center"><b>...</b></th>								
+							</tr>
+					  	</thead>
+						<tbody>
+							<tr ng-repeat="row1 in campaign_list">
+								<td><span>{{row1.id}}</span></td>
+								<td><span>{{row1.name}}</span></td>
+								<td><span>{{row1.first_name}}</span></td>
+								<td><span>{{row1.first_name}}</span></td>
+								<td><span>{{row1.last_name}}</span></td>
+								<td><span>{{row1.type}}</span></td>
+								<td><span>{{row1.mobile}}</span></td>
+								<td><span>{{row1.email}}</span></td>
+								<td><span>...</span></td>
+							</tr>
+							<tr ng-show="campaign_list.length < 1">
+								<td colspan="10" align="center">There is no list</td>								
+							</tr>
+						</tbody>
+					</table>
+			  	</div>
+			</div>
+		</div>	
+
+	</div>  
+
+</form>

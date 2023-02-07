@@ -1,0 +1,59 @@
+<style type="text/css">
+	svg text {
+		fill: white;
+
+	}
+
+	.nvd3 .nv-legend text {
+		font: normal 10px Arial;
+	}
+
+	.nvd3.nv-pie .nv-slice text {
+		fill: white !important;
+	}
+
+	.nvd3 .nv-discretebar .nv-groups text, .nvd3 .nv-multibarHorizontal .nv-groups text {
+		fill: rgba(255,255,255,1);
+		stroke: rgba(255,255,255,0);
+	}
+
+	.tick line{
+		opacity: 0.2;
+	}
+	.status-view:hover{
+		color:#0b2ef4;
+	}
+
+</style>
+<div  ng-controller="ComplaintBriefingViewController" style="overflow-x: hidden; font-size: 15px;">
+
+	<!-- - - - - - - - - - - - - - - - - - - - - - - - HEADER - - - - - - - - - - - - - - - - - - - - - - - -->
+	<div class="item bg-light lt" style="padding: 5px;background-color: #141414">
+		<h1 class="m-n font-thin h5 text-black" style="color:#337ab7">
+			<label style="font-size: 25px; margin-bottom: 0px"><i class="fa fa-group"></i>
+				Briefing - {{getMainTicketNumber()}} 				
+			</label>
+
+			<label style="font-size: 15px; margin-bottom: 0px" ng-show="complaint && complaint.id">
+				&nbsp;&nbsp;&nbsp;&nbsp;{{briefing_num}}/{{briefing_count}} 				
+			</label>
+
+			<i class="fa fa-star pull-right" ng-show="complaint && complaint.id" ng-style="{ 'color': complaint.flag ? 'orange' : '#888', 'margin-top' : '3px', 'margin-right' : '10px', 'font-size' : '25px' }"  ng-click="flagComplaint()"></i>
+
+			<label class="pull-right" ng-show="property_list.length > 1">
+				<select class='form-control input-sm' ng-model="current_property_id" style="width: 200px" ng-change="	onChangedProperty()"
+					ng-options="value.id as value.name for (key, value) in property_list">
+				</select>		
+			</label>	
+		</h1>    	
+		
+	</div>	
+	
+	<div style="{{tab_full_height}}" ng-show="complaint && complaint.id" ng-include="'tpl/complaint/complaint_view.html'">
+	</div>
+
+	<div ng-show="!(complaint && complaint.id)" >
+
+	</div>
+
+</div>

@@ -1,0 +1,166 @@
+<div class="col b-r" style="width: 100%;margin-bottom:50px; position: fixed;"><!-- ng-controller="LNFController"-->
+
+    <script type="text/ng-template" id="item_status_list.html">
+        <div class="btn-group" uib-dropdown is-open="status.isopen" auto-close="disabled">
+            <ul class="headfilter" role="menu" style="list-style: none;">
+                <li ng-repeat="status in lnf_status_list" style="margin-top: 2px">
+                    <label class="md-check">
+                        <input type="checkbox"
+                               ng-model="status.selected"
+                               ng-click="onChangeStatusFilter(status)">
+                        <i class="green"></i>
+                        {{status.name}}
+                    </label>
+                </li>
+            </ul>
+        </div>
+    </script>
+    <div style="">
+        <div class="wrapper bg-light lter b-b">
+            <div class="btn-group pull-right">
+                <button type="button" class="btn btn-sm w-sm btn-success" style="margin-right:20px"
+                        ng-click="onCreateItem()">
+                    Create
+                </button>
+                <button type="button" class="btn btn-sm btn-bg btn-default">
+                    {{paginationOptions.numberOfPages}}/{{paginationOptions.countOfPages}} -
+                    {{paginationOptions.totalItems}} Items
+                </button>
+                <button type="button" class="btn btn-sm btn-bg btn-default" ng-click="onPrevPage()"
+                        ng-disabled="paginationOptions.numberOfPages <= 1">
+                    <i class="fa fa-chevron-left"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-bg btn-default" ng-click="onNextPage()"
+                        ng-disabled="paginationOptions.numberOfPages >= paginationOptions.countOfPages">
+                    <i class="fa fa-chevron-right"></i>
+                </button>
+            </div>
+
+            <div class="btn-toolbar" style="padding-left: 2px">
+                <div class="btn-group">
+                    <button id="dateranger" class="btn btn-sm btn-icon btn-default" data-toggle="tooltip" title="Filter"
+                            data-placement="bottom" ui-jq="daterangepicker" ui-options="dateRangeOption"
+                            data-title="Refresh" ng-click="onClickDateFilter()">
+                        <i class="fa fa-calendar"></i>
+                    </button>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-sm btn-icon btn-default" data-toggle="tooltip" title="Refresh"
+                            data-placement="bottom" ng-click="pageChanged()">
+                        <i class="fa fa-refresh"></i>
+                    </button>
+                </div>
+
+                <div class="input-group pull-left" style="width:50%;max-width: 70%; margin-left: 10px">
+                    <div class="has-feedback">
+                        <tags-input ng-model="filterTags.text" on-tag-added="searchFilter()"
+                                    on-tag-removed="searchFilter()" use-strings="true" placeholder="Search"
+                                    add-from-autocomplete-only="true" replace-spaces-with-dashes="false"
+                                    style="padding-right:5px;margin-top: -5px">
+                            <auto-complete source="loadFiltersValue('LNF',$query)" min-length="0" debounce-delay="0"
+                                           load-on-focus="true" load-on-empty="true" max-results-to-show="100">
+                            </auto-complete>
+                        </tags-input>
+                    </div>
+                </div>
+                <div ng-if="0" class="btn-group pull-right" style="margin-right: 20px;margin-top: 5px;">
+                    <a ng-click="onDownloadPDF()">
+                        <i class="fa fa-file-pdf-o" style="font-size: 20px; color:red" aria-hidden="true"
+                           title="Summary PDF download"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <!-- / header -->
+
+        <!-- Grid Table -->
+        <div class="bg-light lter multiDemo" style="width:100%; padding: 0; margin: 0"
+             ng-style="{'height': tab_height1, 'overflow-y': 'auto'}">
+
+            <div style="padding-right:25px;">
+                <div class="table table-responsive">
+                    <table st-table="data.datalist" st-pipe="pageChanged"
+                           class="table ticket table-striped b-t b-light">
+                        <thead>
+                        <tr class="">
+                            <th class="text-center" st-sort="id"><b>ID</b><i class="fa fa-sort"></i></th>
+                            <th class="text-center" style="width: 5%"><b>Item</b></th>
+                            <!--    <th class="text-center"  style="width: 5%"><b>Brand</b></th> -->
+                            <th class="text-center" st-sort="days"><b>Days</b><i class="fa fa-sort"></i></th>
+                            <th class="text-center" style="width: 5%"><b>Category</b></th>
+                            <th class="text-center" style="width: 10%"><b>Description</b></th>
+                            <th class="text-center" style="width: 10%"><b>Photo</b></th>
+                            <th class="text-center" st-sort-default="reverse" st-sort="lnf_time" style="width: 10%"><b>Date<i
+                                    class="fa fa-sort"></i></b></th>
+                            <th class="text-center" style="width: 15%"><b>Location Found </b></th>
+                            <th class="text-center" style="width: 15%"><b>Stored Location</b></th>
+                            <th class="text-center" style="width: 10%">
+                                <b>Status</b>
+                                <b class="fa fa-fw fa-filter" uib-popover-template="'item_status_list.html'"
+                                   popover-trigger="outsideClick" popover-placement="bottom"></b>
+                            </th>
+                        </tr>
+                        </thead>
+
+                        <tbody ng-hide="isLoading">
+                        <tr class="" ng-repeat="row in data.datalist">
+
+                            <td class="text-center"><a ng-click="onSelectTicket(row, $index)"><label
+                                    style="text-decoration: underline;">{{getTicketNumber(row)}}</label></a></td>
+                            <td class="text-center">{{row.item_type}}</td>
+                            <!--    <td  class="text-center" >{{row.brand}}</td> -->
+                            <td class="text-center">{{row.days}}</td>
+                            <td class="text-center">{{row.category}}</td>
+                            <td class="text-center">{{row.comment}}</td>
+                            <td class="text-center" ng-style="{'display' : row.images_arr.length > 0 ? 'flex' : ''}">
+                                <div ng-repeat="image in row.images_arr"
+                                     style="margin: 0 auto;padding:3px;width:30%;float:left;">
+                                    <img style="width:100%;height:30px;" src="/{{image}}" alt=""/></div>
+                            </td>
+                            <td class="text-center">{{row.lnf_time | mydatetime}}</td>
+                            <td class="text-center">{{row.location_name}} - {{row.location_type}}</td>
+                            <td class="text-center">{{row.stored_loc}}</td>
+                            <td class="text-center" style="padding-left:10px">
+                                <span class='btn m-b-xs w-xs' type="text" readonly
+                                      style="color:white;cursor:pointer;width:100%;border-radius:2px;text-align:center;padding-top:1px;padding-bottom:1px"
+                                      ng-if="row.status_name != 'Available' && row.status_name != null && row.status_name != 'Matched'"
+                                      ng-class="{'available_lb': row.status_name=='Available','matched_lb': row.status_name=='Matched','lost_lb': row.status_name=='Inquiry','return_to_guest_lb':row.status_name=='Returned', 'guest_will_collect_lb':row.status_name=='GUEST WILL COLLECT', 'surrendered_lb':row.status_name=='Surrendered', 'disposed_lb': row.status_name == 'Discarded' || row.status_name == 'Disposed'}"
+                                      uib-popover popover-trigger="mouseenter" popover-placement="auto bottom-left"
+                                      uib-popover-template="'tpl.html'"
+                                >
+                                    {{row.status_name}}
+                                </span>
+                                <select class='form-control input-sm'
+                                        style="border-radius:2px;border-color:white;color:white"
+                                        ng-if="row.status_name == 'Available' || row.status_name == null || row.status_name == 'Matched'"
+                                        ng-model="row.status_name"
+                                        ng-change="onChangeStatus('status_name',row.status_name, row)"
+                                        ng-options="label for label in lnf_statuses| filter:filter_lnf_status(row)"
+                                        ng-class="{'available_lb': row.status_name=='Available','matched_lb': row.status_name=='Matched','lost_lb': row.status_name=='Inquiry','return_to_guest_lb':row.status_name=='Returned', 'guest_will_collect_lb':row.status_name=='GUEST WILL COLLECT', 'surrendered_lb':row.status_name=='Surrendered', 'disposed_lb': row.status_name == 'Discarded' || row.status_name == 'Disposed'}">
+                                </select>
+                            </td>
+                        </tr>
+                        </tbody>
+
+                        <tbody ng-show="isLoading">
+                        <tr>
+                            <td colspan="11" class="text-center">
+                                <i class="fa fa-spin fa-refresh"></i>
+                            </td>
+                        </tr>
+                        </tbody>
+                        <tfoot ng-if="0" ng-hide="isLoading">
+                        <tr ng-show="paginationOptions.totalItems > paginationOptions.pageSize">
+                            <td colspan="9" class="text-center">
+                                <div st-pagination="" st-items-by-page="paginationOptions.pageSize"
+                                     st-displayed-pages="7" class="no-margin"></div>
+                            </td>
+                        </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

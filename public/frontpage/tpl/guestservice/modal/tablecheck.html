@@ -1,0 +1,117 @@
+
+<h4 class="m-t-none m-b font-bold">Get Reservations</h4>
+<form class="form-horizontal" > 
+     
+    <div class="wrapper-md1 col-centered" style="width: 100%;">  
+                
+        <div class="form-group">
+           
+            <label   class="col-sm-2 control-label text-muted" >Shop Ref ID</label>
+            <div   class="col-sm-4" >
+                <input type="text" ng-model="tablecheck.testshopref" class="form-control input-sm" placeholder="Enter Shop Name">
+            </div>
+            <!--
+            <label   class="col-sm-2 control-label text-muted" >Date</label>
+            <div class="col-sm-4 " style="text-align: left" >
+                    <div class="input-group">
+                        <span class="input-group-btn">
+                            <button type="button" class="btn btn-default btn-sm" ng-click="open($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+                        </span>
+                        <input type="text" class="form-control input-sm" uib-datepicker-popup="yyyy-MM-dd" ng-model="tablecheck.testdate" is-open="opened" datepicker-options="dateOptions" close-text="Close" required  ng-change="select(tablecheck.testdate)"/>
+                    </div>
+            </div>
+            -->
+        </div>                             
+
+        <br/><br/><br/>
+        <div class="col-sm-8 pull-right">
+            <button type="submit" class="btn btn-sm btn-dark text-uc m-t-n-xs" ng-click="onLoadTableCheck()"><strong>
+                <span class="text-success">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Load&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></strong></button>
+            <button type="submit" class="btn btn-sm btn-dark text-uc m-t-n-xs" ng-click="cancel()"><strong>
+                <span class="text-danger">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Cancel&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></strong></button>
+        </div>      
+        <br><br>
+        <h4 class="m-t-none m-b font-thin">{{response}}</h4>
+    </div>
+</form>
+
+
+<h4 class="m-t-none m-b font-bold">Update Reservations</h4>
+<form class="form-horizontal" > 
+     
+    <div class="wrapper-md1 col-centered" style="width: 100%;">  
+                
+        <div class="form-group">
+           
+            <label   class="col-sm-2 control-label text-muted" >Reservation ID</label>
+            <div   class="col-sm-4" >
+                <input type="text" ng-model="tablecheck.testrefid" class="form-control input-sm" placeholder="Enter Ref ID">
+            </div>
+
+            <label  class=" col-sm-2 control-label text-xs text-muted">Status</label>
+				<div  class="col-sm-4" >
+			    <select class='form-control input-sm' ng-model="tablecheck.status" 
+							ng-options="type for type in status_list">
+					</select>
+				</div>
+           
+        </div>                             
+
+        <br/><br/><br/>
+        <div class="col-sm-8 pull-right">
+            <button type="submit" class="btn btn-sm btn-dark text-uc m-t-n-xs" ng-click="onUpdateTableCheck()"><strong>
+                <span class="text-success">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Update&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></strong></button>
+            <button type="submit" class="btn btn-sm btn-dark text-uc m-t-n-xs" ng-click="cancel()"><strong>
+                <span class="text-danger">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Cancel&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></strong></button>
+        </div>      
+        <br><br>
+        <h4 class="m-t-none m-b font-thin">{{response_update}}</h4>
+    </div>
+</form>
+
+<h4 class="m-t-none m-b font-bold">Walk In</h4>
+<form class="form-horizontal" > 
+     
+    <div class="wrapper-md1 col-centered" style="width: 100%;">  
+                
+        <div class="form-group">
+            <div class="col-sm-12" >
+           
+                <label   class="col-sm-2 control-label text-muted" >Number of Adults</label>
+                <div   class="col-sm-4" >
+                    <input type="text" ng-model="tablecheck.testadultno" class="form-control input-sm" placeholder="Enter Adult Number">
+                </div>
+
+                <label   class="col-sm-2 control-label text-muted" >Duration</label>
+                <div   class="col-sm-4" >
+                    <input type="number" ng-model="tablecheck.testduration" class="form-control input-sm" placeholder="">
+                </div>
+            </div>
+
+            <div class="col-sm-12">
+                <label   class="col-sm-2 control-label text-muted" >Table Name</label>
+                <div   class="col-sm-4" >
+                    <input type="text" ng-model="tablecheck.testtabname" class="form-control input-sm" placeholder="Enter Table Name">
+                </div>
+
+                <label  class=" col-sm-2 control-label text-xs text-muted">Status</label>
+				<div  class="col-sm-4" >
+			        <select class='form-control input-sm' ng-model="tablecheck.status" 
+						ng-options="type for type in status_list">
+					</select>
+                </div>
+            </div>
+           
+        </div>                             
+
+        <br/><br/><br/>
+        <div class="col-sm-8 pull-right">
+            <button type="submit" class="btn btn-sm btn-dark text-uc m-t-n-xs" ng-click="onWalkin()"><strong>
+                <span class="text-success">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Open Walkin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></strong></button>
+            <button type="submit" class="btn btn-sm btn-dark text-uc m-t-n-xs" ng-click="cancel()"><strong>
+                <span class="text-danger">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Cancel&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></strong></button>
+        </div>      
+        <br><br>
+        <h4 class="m-t-none m-b font-thin">{{response_walkin}}</h4>
+    </div>
+</form>

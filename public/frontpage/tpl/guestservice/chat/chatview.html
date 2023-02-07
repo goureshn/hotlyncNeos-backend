@@ -1,0 +1,177 @@
+<style>
+	.no-permission {
+		padding: 40px;
+		text-align: center;
+	}
+	/* The Modal (background) */
+	.modal_full_image {
+		position: fixed; /* Stay in place */
+		z-index: 10000; /* Sit on top */
+		padding-top: 120px; /* Location of the box */
+		left: 0;
+		top: 0;
+		width: 100%; /* Full width */
+		height: 100%; /* Full height */
+		overflow: auto; /* Enable scroll if needed */
+		background-color: rgb(0,0,0); /* Fallback color */
+		background-color: rgba(0,0,0,0.9); /* Black w/ opacity */
+	}
+
+	/* Modal Content (image) */
+	.modal-content_full_image {
+		margin: auto;
+		display: block;
+		max-width: 90%;
+		max-height: 90%;
+	}
+
+	/* Caption of Modal Image */
+	#caption {
+		margin: auto;
+		display: block;
+		width: 80%;
+		max-width: 700px;
+		text-align: center;
+		color: #ccc;
+		padding: 10px 0;
+		height: 150px;
+	}
+
+	/* Add Animation */
+	.modal-content_full_image, #caption {
+		-webkit-animation-name: zoom;
+		-webkit-animation-duration: 0.6s;
+		animation-name: zoom;
+		animation-duration: 0.6s;
+	}
+
+	@-webkit-keyframes zoom {
+		from {-webkit-transform:scale(0)}
+		to {-webkit-transform:scale(1)}
+	}
+
+	@keyframes zoom {
+		from {transform:scale(0)}
+		to {transform:scale(1)}
+	}
+
+	/* The Close Button */
+	.close_full_image {
+		position: absolute;
+		top: 50px;
+		right: 35px;
+		color: #f1f1f1;
+		font-size: 40px;
+		font-weight: bold;
+		transition: 0.3s;
+	}
+
+	.close_full_image:hover,
+	.close_full_image:focus {
+		color: #bbb;
+		text-decoration: none;
+		cursor: pointer;
+	}
+
+	/* 100% Image Width on Smaller Screens */
+	@media only screen and (max-width: 700px){
+		.modal-content_full_image {
+			width: 100%;
+		}
+	}
+</style>
+<div ng-controller="ChatViewController" ng-click="onCheckOutside($event)" ng-keypress="onKeyDown($event.which)">
+	<div class="modal_full_image" ng-if="isShowFullImage">
+		<span class="close_full_image" ng-click="onCancelFullImage()">&times;</span>
+		<img class="modal-content_full_image" ng-src="{{imageSrc}}" alt="">
+		<div id="caption"></div>
+	</div>
+	<div class="col" ng-style="{'height': tab_full_height, 'overflow-y': 'hidden'}">
+		<md-content class="call_menu navi clearfix">
+			<md-tabs md-selected="0"  md-disable-animation md-autoselect md-dynamic-height md-border-bottom style="height:30px;">
+				<md-tab md-disable-animation style="margin:8px -5px 0px;" class="{{active == 1 ? 'tab-current' : ''}}">
+					<md-tab-label>
+						<i class="fa fa-street-view"></i>&nbsp;&nbsp;Guest
+					</md-tab-label>
+
+					<md-tab-body>
+						<div ng-if="auth_svc.isValidModule('app.guestservicechat.guest')" class="stretch" fill-height additional-padding="50" debounce-wait="500" ng-include="'tpl/guestservice/chat/guestchat.html'">
+						</div>
+						<div class="no-permission" ng-if="!auth_svc.isValidModule('app.guestservicechat.guest')" class="stretch" fill-height additional-padding="50" debounce-wait="500">
+							There is no permission!
+						</div>
+					</md-tab-body>
+				</md-tab>
+
+				<md-tab style="margin:8px -5px 0px;">
+					<md-tab-label>
+						<i class="fa fa-user"></i>&nbsp;&nbsp;Agent
+					</md-tab-label>
+
+					<md-tab-body>
+						<div ng-if="auth_svc.isValidModule('app.guestservicechat.agent')" fill-height additional-padding="50" debounce-wait="1000" ng-include="'tpl/guestservice/chat/agentchat.html'">
+						</div>
+						<div class="no-permission" ng-if="!auth_svc.isValidModule('app.guestservicechat.agent')" fill-height additional-padding="50" debounce-wait="1000">
+							There is no permission!
+						</div>
+					</md-tab-body>
+				</md-tab>
+
+				<md-tab style="margin:8px -5px 0px;">
+					<md-tab-label>
+						<i class="fa fa-users"></i>&nbsp;&nbsp;Group
+					</md-tab-label>
+
+					<md-tab-body>
+						<div ng-if="auth_svc.isValidModule('app.guestservicechat.group')" fill-height additional-padding="50" debounce-wait="1000" ng-include="'tpl/guestservice/chat/groupchat.html'">
+						</div>
+						<div class="no-permission" ng-if="!auth_svc.isValidModule('app.guestservicechat.group')" fill-height additional-padding="50" debounce-wait="1000">
+							There is no permission!
+						</div>
+					</md-tab-body>
+				</md-tab>
+				<md-tab style="margin:8px -5px 0px;">
+					<md-tab-label>
+						<i class="fa fa-cog"></i>&nbsp;&nbsp;Setting
+					</md-tab-label>
+					<md-tab-body>
+						<div ng-if="auth_svc.isValidModule('app.guestservicechat.setting')" fill-height additional-padding="50" debounce-wait="1000" ng-include="'tpl/guestservice/chat/chatsetting.html'">
+						</div>
+						<div class="no-permission" ng-if="!auth_svc.isValidModule('app.guestservicechat.setting')" fill-height additional-padding="50" debounce-wait="1000">
+							There is no permission!
+						</div>
+					</md-tab-body>
+				</md-tab>
+
+			</md-tabs>
+
+		</md-content>
+	</div>
+
+    <uib-tabset ng-if="0" class="tab-container" active="active">
+		<div class="tabs tabs-style-tzoid">
+			<nav ui-nav class="call_menu navi clearfix">
+				<ul class="nav" style="margin-left: -9px; height:40px;">
+					<li style="margin:8px -6px 0px;" class="{{active == 1 ? 'tab-current' : ''}}">
+						<uib-tab index="1">
+							<uib-tab-heading>
+								<p class="tabs-style-tzoid" style="color:#fff; font-size:12px"><i class="fa fa-users"></i>&nbsp;&nbsp;Guest</p>
+							</uib-tab-heading>
+							<div class="stretch" ng-include="'tpl/guestservice/chat/guestchat.html'">
+							</div>
+						</uib-tab>
+					</li>
+					<li style="margin:8px -6px 0px;"  class="{{active == 2 ? 'tab-current' : ''}}">
+						<uib-tab index="2">
+							<uib-tab-heading>
+								<p class="tabs-style-tzoid" style="color:#fff; font-size:12px"><i class="fa fa-user"></i>&nbsp;&nbsp;Agent</p>
+							</uib-tab-heading>
+							<div class="stretch" ng-include="'tpl/guestservice/chat/agentchat.html'">
+							</div>
+						</uib-tab>
+					</li>
+				</ul>
+			</nav>
+		</div>
+    </uib-tabset>
+</div>

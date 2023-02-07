@@ -1,0 +1,77 @@
+<div class="modal-content">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">
+            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        </button>
+        <h3 class="modal-title" style="color:#2691d9" id="Heading">Add New Main Category</h3>
+    </div>
+    <br>
+    <div class="modal-body">
+        <form class="form-horizontal form-validation">
+            <div class="form-group" >
+                <label class="col-sm-1 text-right control-label text-muted" >Category</label>
+                <div class="col-sm-3  scrollable-dropdown-menu">
+                    <input class="form-control input-sm"  ng-model="complaint.category_new_name"  required
+                           uib-popover="Enter category name!" popover-trigger="mouseenter">
+                </div>
+                <label class="col-sm-1 text-right control-label text-muted" >Severity</label>
+                <div class="col-sm-3  scrollable-dropdown-menu">
+                    <select class='form-control input-sm' ng-model="complaint.new_severity" 
+				          ng-options="value.id as value.type for (key, value) in severity_list"/>
+                </div>
+                <label class="col-sm-1 text-right control-label text-muted" >Division</label>
+                <div class="col-sm-3  scrollable-dropdown-menu">
+                    <select class='form-control input-sm' ng-model="complaint.new_division" 
+				          ng-options="value.id as value.division for (key, value) in division_list"/>
+                </div>
+            </div>            
+        </form>
+
+        <div class="table table-responsive" ng-show="category_list.length > 0" style="height: 500px; overflow-y: auto">
+            <label class="font-bold"><i class="fa fa-history" aria-hidden="true"></i>&nbsp;&nbsp;Category List</label>
+            <table  st-table="ticketlist" class="table ticket table-striped b-t b-light">
+                <thead class="tblhead-sm" style="font-size: .7vw">
+                    <tr>
+                        <th class="text-center"><b>Category</b></th>
+                        <th class="text-center"><b>User Name</b></th>
+                        <th class="text-center"><b>Severity</b></th>
+                        <th class="text-center"><b>Division</b></th>
+                        <th class="text-center"><b>Date</b></th>    
+                        <th class="text-center"><b>Action</b></th>                  
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="row in category_list" ng-if="row.id > 0">
+                        <td class="text-center"><span>{{row.name}}</span></td>
+                        <td class="text-center"><span>{{row.wholename}}</span></td>
+                        <td class="text-center"><span>{{row.type}}</span></td>
+                        <td class="text-center"><span>{{row.division}}</span></td>
+                        <td class="text-center"><span>{{row.created_at | mydatetime}}</span></td>                  
+                        <td class="text-center">
+                            <span ng-click="onClickUpdate(row)">
+                                <i class="fa fa-pencil text-success" style="font-size: 12px"></i>&nbsp;
+                            </span>
+                            <span ng-click="onClickDelete(row)">
+                                <i class="fa fa-remove text-danger" style="font-size: 12px"></i>&nbsp;
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal-footer ">
+        <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal" ng-click="createCategory()">
+            <span class="glyphicon glyphicon-ok"></span>
+            <b ng-show="selected_category_id == 0"> Create</b>
+            <b ng-show="selected_category_id > 0"> Update</b>
+        </button>
+        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal" ng-click="cancel()">
+            <span class="glyphicon glyphicon-remove"></span>
+            <b> Cancel</b>
+        </button>
+    </div>
+
+</div>
+

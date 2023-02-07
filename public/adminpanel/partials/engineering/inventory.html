@@ -1,0 +1,95 @@
+<style>
+    #scrollable-dropdown-menu .dropdown-menu {
+        max-height: 150px;
+        overflow-y: auto;
+    }
+</style>
+<input type="hidden" id="id" value="-1" ng-model="model_data.id"/>
+
+<div class="panel panel-default">
+    <div class="panel-heading wrapper">
+        <button type="button" class="btn btn-success btn-sm" style="float:right; margin-top: -5px" data-toggle="modal" data-target="#addModal" ng-disabled="job_role!='SuperAdmin'&&edit_flag==0" ng-click="onShowEditRow(-1)">
+            <span class="glyphicon glyphicon-plus"></span>
+            <b> Add New </b>
+        </button>
+        <i class="fa fa-phone"></i>
+        <span class="font-bold">Inventory/Parts</span>
+    </div>
+    <div>
+        <table id="table_grid" class="table table-hover table-bordered" style="text-align: center; width:100%" ng-model = "table_grid">
+            <thead>
+            <tr><!--
+                <th class="no-sort" style="text-align: center">
+                    <input style="text-align: center" type="checkbox" id="checkall" />
+                </th>-->
+                <th style="text-align: center" ng-repeat = "field in fields">
+                    <b>{{field}}</b>
+                </th>
+                <th style="text-align: center" class="no-sort">Edit</th>
+                <th style="text-align: center" class="no-sort">Delete</th>
+            </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="panel">
+            <div class="modal-header bg">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h5 class="modal-title font-bold" style="color:#2691d9" ng-if="model_data.id<0">
+                    <i class="fa fa-plus"></i>&nbsp;Add Inventory</h5>
+                <h5 class="modal-title font-bold" style="color:#2691d9" ng-if="model_data.id>=0">
+                    <i class="fa fa-pencil"></i>&nbsp;Edit Inventory</h5>
+            </div>
+            <div class="modal-body">
+                <br>
+                <form class="form-horizontal">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4" for="Property">Property:</label>
+                        <div class="col-sm-5">
+                            <select id='prpty_id' class='form-control' ng-model="model_data.property_id" ng-change="onChangeProperty()"
+                                    ng-options="value.id as value.name for (key, value) in properties">
+                            </select>
+                        </div>
+                    </div>
+                    <text-item formlabel="Part ID" modelname="model_data.part_id"></text-item>
+                    <text-item formlabel="Part Name" modelname="model_data.name"></text-item>
+                    <text-item formlabel="Part Group" modelname="model_data.part_group"></text-item>
+                    <textarea-item formlabel="Description"  modelname="model_data.description"></textarea-item>
+                    <text-item formlabel="Manufacture" modelname="model_data.manufacture"></text-item>
+                    <text-item formlabel="Quantity" modelname="model_data.quantity"></text-item>
+                    <text-item formlabel="Minimum Quantity" modelname="model_data.minquantity"></text-item>
+                    <text-item formlabel="Purchase Cost" modelname="model_data.purchase_cost"></text-item>
+                    <div class="form-group">
+                        <label class="control-label col-sm-4" >Purchase Date:</label>
+                        <div class="col-sm-5">
+                           <input type="date"  ng-model="model_data.purchase_date"  />
+                        </div>
+                    </div>
+                    <text-item formlabel="Model" modelname="model_data.model"></text-item>
+                    <text-item formlabel="Barcode" modelname="model_data.barcode"></text-item>
+                    <div class="form-group">
+                        <label class="control-label col-sm-4" >Warranty Start:</label>
+                        <div class="col-sm-5">
+                            <input type="date"  ng-model="model_data.warranty_start"  />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-sm-4" >Warranty End:</label>
+                        <div class="col-sm-5">
+                            <input type="date"  ng-model="model_data.warranty_end"  />
+                        </div>
+                    </div>
+                    <text-item formlabel="Supplier" modelname="model_data.supplier"></text-item>
+                </form>
+            </div>
+            <submit-form id="model_data.id" updatedata="onUpdateRow()"></submit-form>
+        </div>
+    </div>
+</div>
+
+<dialog-delete title="Category" modelname="model_data.equipment" deletedata="deleteRow()"></dialog-delete>

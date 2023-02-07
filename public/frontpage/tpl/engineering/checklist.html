@@ -1,0 +1,147 @@
+<script type="text/ng-template" id="tag-template">
+    <div class="tag-template">
+        <div class="right-panel">
+            <span>{{data.name}}</span>
+            <a class="remove-button" ng-click="$removeTag()">&#10006;</a>
+        </div>
+    </div>
+</script>
+<script type="text/ng-template" id="autocomplete-template">
+    <div class="autocomplete-template">
+        <div class="right-panel">
+            <span ng-bind-html="$highlight($getDisplayText())"></span><br>
+            <span style="font-size: 10px">{{data.type}}</span>
+        </div>
+    </div>
+</script>
+
+<div ng-controller="ChecklistEngController" >
+    <div class="wrapper-md1 bg-light b-b">
+        <h1 class="m-n font-thin h3">Create Asset CheckList</h1>
+    </div>
+    <div class="wrapper-md1">
+        <div class="col-sm-4">
+            <div class="panel panel-default">
+                <div class="panel-heading"><i class="fa fa-plus" aria-hidden="true"></i>&nbsp;Add Check List</div>
+                <div class="panel-body" fill-height additional-padding="220" >
+                    <form class="form-horizontal form-validation" ng-submit="add()">
+                        <div class="form-group" >
+                            <div class="col-sm-12">
+                                <label class="text-muted">Check List name</label><label class="field_title" style="color:#F44336">*</label>
+                                <input ng-model="check_list_name" class="form-control  input-sm" required/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-12">
+                                <label>Asset Group</label>
+                                <label style="color:#F44336">*</label>
+                                <input class="form-control input-sm col-sm-11" type="text" ng-model="equip_group_name"
+                                           popover-trigger="mouseenter" popover-placement="top"
+                                           uib-typeahead="equipment.name for equipment in getEquipGroupList($viewValue)"
+                                           typeahead-min-length="0"
+                                           typeahead-on-select="onEquipGroupSelect(equipment, $item, $model, $label)"
+                                            required />
+
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-12">
+                                <label>Work Order Type </label>
+                                <select  class='form-control' ng-model="work_order_type"
+                                        ng-options="type for type in work_order_types">
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-12">
+                                <label>Location</label>
+                                <div class="scrollable-dropdown-menu"  >
+                                    <tags-input ng-model="location_tags" display-property="name" style="margin-top: -5px"
+                                        replace-spaces-with-dashes="false" placeholder="Location"
+                                        style="margin-top: "
+                                        min-length="0"
+                                        template="tag-template" >
+                                        <auto-complete source="getLocationList($query)"
+                                            min-length="0"
+                                            debounce-delay="0"
+                                            load-on-focus="true"
+                                            load-on-empty="true"
+                                            max-results-to-show="10"
+                                            template="autocomplete-template">
+                                        </auto-complete>
+                                    </tags-input>
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-12">
+                                <div class="pull-right">
+                                    <button type="submit" class="btn btn-sm btn-dark text-uc m-t-n-xs"><strong>
+                                        <span class="text-success">&nbsp;&nbsp;&nbsp;{{action_button}}&nbsp;&nbsp;&nbsp;</span></strong></button>
+                                    <button type="button" class="btn btn-sm btn-dark text-uc m-t-n-xs" ng-click="cancel()"><strong>
+                                        <span class="text-danger">&nbsp;&nbsp;Clear&nbsp;&nbsp;</span></strong></button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-8">
+            <div class="panel panel-default">
+                <div class="panel-heading"><i class="fa fa-list-ul" aria-hidden="true"></i>&nbsp;Check List</div>
+                <div class="panel-body" fill-height additional-padding="250">
+                    <table  st-table="datalist"  st-pipe="getDataList" class="table ticket" >
+                        <thead class="tblhead-sm">
+                        <tr>
+                            <th><b>Name</b></th>
+                            <th><b>Asset Group</b></th>
+                            <th><b>Work Order Type</b></th>
+                            <th><b>Location</b></th>
+                            <th style="width: 80px"><b>Action</b></th>
+                        </tr>
+                        </thead>
+                        <tbody ng-hide="isLoading" ng-repeat="row in datalist">
+                            <tr class="" >
+                                <td>
+                                    {{row.name}}
+                                </td>
+                                <td>{{row.equip_group_name}}</td>
+                                <td>{{row.work_order_type}}</td>
+                                <td>
+                                    <label ng-repeat=" items in row.locations">
+                                        {{items.type}} : {{items.name}},
+                                    </label>
+                                </td>                            
+                                <td>
+                                    <a class="btn default btn-xs green" ng-click="edit(row)">
+                                        <i class="fa fa-pencil"></i></a>
+                                    <a class="btn default btn-xs red" ng-click="delete(row)">
+                                        <i class="fa fa-times"></i></a>
+                                    <a class="btn default btn-xs green" ng-click="editCheck(row)">
+                                        <i class="fa fa-check"></i></a>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tbody ng-show="isLoading">
+                            <tr>
+                                <td colspan="4" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+                            </tr>
+                        </tbody>
+                        <tfoot ng-hide="isLoading">
+                            <tr ng-show="paginationOptions.totalItems > paginationOptions.pageSize">
+                                <td colspan="4" class="text-center">
+                                    <div st-pagination="" st-items-by-page="paginationOptions.pageSize" st-displayed-pages="7" class="no-margin"></div>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+

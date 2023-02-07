@@ -1,0 +1,240 @@
+<style>
+    .selected-tab {
+        box-shadow: 0 0px 3px #646464;
+    }
+</style>
+<div class="col-centered wrapper-sm" style = "{{full_height}}">
+    <div class="col-centered">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<label class="font-bold"><i class="fa fa-info" aria-hidden="true"></i>&nbsp;&nbsp;Task Information</label>
+            </div>
+            <div class="panel-body">
+				<form class="form-horizontal">
+					<div class="form-group label-group">
+						<div class="col-sm-2 control-label text-muted">Request ID</div>
+						<div class="col-sm-4 control-label" style="text-align: left">
+							<strong>{{gs.getTicketNumber(tab)}}</strong>
+						</div>
+						<div class="col-sm-2 control-label text-muted">Date created</div>
+						<div class="col-sm-4 control-label" style="text-align: left">
+							<strong>{{task.start_date_time}}</strong>
+						</div>
+					</div>
+					<div class="form-group label-group" ng-show="task.subtype == 1">
+						<div class="col-sm-2 control-label text-muted">Room</div>
+						<div class="col-sm-4 control-label" style="text-align: left">
+							<strong> {{task.room}}</strong>
+                        </div>
+                        <!--
+						<div class="col-sm-2 control-label text-muted">Guest</div>
+						<div class="col-sm-4 control-label" style="text-align: left">
+							<strong>{{task.guest_name}}</strong>
+						</div>-->
+					</div>
+					
+					<div class="form-group label-group"  ng-show="task.subtype == 2">
+						<div class="col-sm-2 control-label text-muted">Location</div>
+						<div class="col-sm-4 control-label" style="text-align: left">
+							<strong>{{task.lgm_name}}</strong>
+						</div>
+						<div class="col-sm-2 control-label text-muted">Location Type</div>
+						<div class="col-sm-4 control-label" style="text-align: left">
+							<strong>{{task.lgm_type}}</strong>
+						</div>
+                    
+						<div class="col-sm-2 control-label text-muted">Requester</div>
+						<div class="col-sm-4 control-label" style="text-align: left">
+							<strong>{{task.requester_name}}</strong>
+						</div>
+						<div class="col-sm-2 control-label text-muted">Job Role</div>
+						<div class="col-sm-4 control-label" style="text-align: left">
+							<strong>{{task.requester_job_role}}</strong>
+                        </div>
+
+                        <div  ng-show="task.notify_flag" class="col-sm-2 control-label text-muted">Mobile</div>
+						<div class="col-sm-4 control-label" style="text-align: left">
+							<strong>{{task.requester_mobile}}</strong>
+						</div>
+						<div  ng-show="task.notify_flag" class="col-sm-2 control-label text-muted">Email</div>
+						<div class="col-sm-4 control-label" style="text-align: left">
+							<strong>{{task.requester_email}}</strong>
+						</div>
+                    </div>
+                    
+                    <div class="form-group label-group" ng-show="task.subtype == 6">
+                        <div ng-show="!task.group_flag">
+						    <div class="col-sm-2 control-label text-muted">Assigner Name</div>
+						    <div class="col-sm-4 control-label" style="text-align: left">
+							    <strong> {{task.manage_user_name}}</strong>
+						    </div>
+						    <div class="col-sm-2 control-label text-muted">Assigner Mobile</div>
+						    <div class="col-sm-4 control-label" style="text-align: left">
+							    <strong>{{task.manage_user_mobile}}</strong>
+                            </div>
+                        </div>
+                        <div ng-show="task.group_flag">
+                            <div class="col-sm-2 control-label text-muted">Group Name</div>
+                            <div class="col-sm-4 control-label" style="text-align: left">
+                                <strong> {{task.manage_user_group}}</strong>
+                            </div>      
+                        </div>
+					</div>
+					
+				</form>
+			</div>
+		</div>
+	</div>
+    <!-- - - - - - /DEPARTMENT INFORMATION - - - - - -->
+	
+    <!-- - - - - - REQUEST DETAILS - - - - - -->
+    <div class="col-centered">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <label class="font-bold"><i class="fa fa-list-alt" aria-hidden="true"></i>&nbsp;&nbsp;Request Details</label>
+                    <div class="pull-right control-label" style="text-align: ">
+                        <span class="field-result m-l-sm label {{gs.getStatusCssInEdit(task)}}">{{gs.getStatus(task)}}
+                              <i ng-show="gs.getPauseState(task)" class="fa fa-pause text"></i>
+                        </span>
+                    </div>
+                </div>
+                <div class="panel-body">
+                        <form class="form-horizontal">
+                            <div class="form-group label-group" ng-show="task.subtype == 1 || task.subtype == 2">
+                                <div class="col-sm-2 control-label text-muted">Request</div>
+                                <div class="col-sm-4 control-label" style="text-align: left">
+                                    <strong>{{task.quantity}}&nbsp;-&nbsp;{{task.task_name}}</strong>
+                                </div>
+                            </div>
+                            <div class="form-group label-group" ng-show="task.subtype == 1 || task.subtype == 2">
+                                <div class="col-sm-2 control-label text-muted">Department</div>
+                                <div class="col-sm-4 control-label"   style="text-align: left">
+                                    <strong>{{task.department}}</strong>
+                                </div>
+                                <div class="col-sm-2 control-label text-muted">Function</div>
+                                <div class="col-sm-4 control-label"  style="text-align: left">
+                                    <strong>{{task.function}}</strong>
+                                </div>
+                            </div>
+                            <div class="form-group label-group" ng-show="task.subtype == 1 || task.subtype == 2">
+                                <div class="col-sm-2 control-label text-muted">Staff</div>
+                                <div class="col-sm-4 control-label"   style="text-align: left">
+                                    <strong>{{task.wholename}}</strong>
+                                </div>
+                                <div class="col-sm-2 control-label text-muted">Device</div>
+                                <div class="col-sm-4 control-label"  style="text-align: left">
+                                    <strong>{{task.device}}</strong>
+                                </div>
+                            </div>
+                            <div class="form-group label-group" ng-show="task.subtype == 1 || task.subtype == 2">
+                                <div class="col-sm-2 control-label text-muted">Priority</div>
+                                <div class="col-sm-4 control-label"  style="text-align: left">
+                                    <strong>{{task.priority_name}}</strong>
+                                </div>
+                                <div class="col-sm-2 control-label text-muted" style="white-space:nowrap">
+                                        Duration ({{task.max_time * 1000 | duration:'mm'}}mins)
+                                </div>
+                                <div class="col-sm-4 control-label" style="text-align: left">
+                                        <span class="font-bold" style="{{remain_time_style}}">&nbsp;{{(remain_time | duration:'hh:mm:ss')}}</span>
+                                </div>	
+                            </div>
+                            <div class="form-group label-group">
+                                <div class="col-sm-2 control-label text-muted">Comment</div>
+                                <div class="col-sm-4 control-label"  style="text-align: left">
+                                    <strong>{{task.custom_message}}</strong>
+                                </div>
+                            </div>
+                            <div class="form-group label-group" ng-hide="task.status_id == 0 || task.status_id == 3 || task.status_id == 4">
+                                    <div class="col-sm-2 control-label text-muted">Update Status</div>
+                                    <div class="col-sm-4 form-horizontal btn-group">
+                                        <select class='form-control input-sm m-b' ng-model="task.action" ng-change="onChangeAction(task.action)"
+                                            ng-options="action for action in actions">
+                                        </select>
+                                    </div>
+                                    <button type="button" style="margin-left: 5px" class="input-sm btn btn-default btn-sm pull-left"
+								            ng-click="changeTask()">
+								            <span class="text-success"><i class="fa fa-check-square-o" aria-hidden="true"></i>Update</span>
+							        </button>
+                            </div>
+                            <div class="form-group label-group"  ng-show="task.action == 'Complete'">
+                                    <div class="col-sm-2 control-label text-muted">Completed By</div>
+                                    <div class="col-sm-4 control-label"  style="text-align: left">
+                                            <input type="text" class="form-control input-sm" ng-model="task.assigne_name">
+                                    </div>
+                            </div>
+                            <div class="form-group label-group"  ng-show="task.action == 'Cancel'">
+                                    <div class="col-sm-2 control-label text-muted">Reason</div>
+                                    <div class="col-sm-4 control-label"  style="text-align: left">
+                                            <input type="text" class="form-control input-sm" ng-model="task.reason">
+                                    </div>
+                            </div>
+                        </form>        
+                </div>
+            </div>
+    </div>
+
+ <!-- - - - - - REQUEST DETAILS - - - - - -->
+
+<!-- - - - - - TICKET HISTORY - - - - - -->
+<div class="col-centered">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <button class="btn btn-default font-bold {{selectedTable == 'history' ? 'selected-tab' : ''}}" ng-click="onSelectTable('history')"><i class="fa fa-history" aria-hidden="true"></i>&nbsp;&nbsp;Ticket History</button>
+            <button class="btn btn-default font-bold {{selectedTable == 'notification' ? 'selected-tab' : ''}}" ng-click="onSelectTable('notification')"><i class="fa fa-history" aria-hidden="true"></i>&nbsp;&nbsp;Notification History</button>
+        </div>
+        <div class="table table-responsive">
+            <table ng-show="selectedTable === 'history'" st-table="ticketlist" class="table ticket table-striped b-t b-light">
+                <thead class="tblhead-sm" style="font-size: .7vw">
+                    <tr>
+                        <th class="text-center"><b>Date & Time</b></th>
+                        <th class="text-center"><b>Status</b></th>
+                        <th class="text-center"><b>Type</b></th>
+                        <th class="text-center"><b>Comment</b></th>
+                        <th class="text-center"><b>Method</b></th>
+                        <th class="text-center"><b>User</b></th>
+                    </tr>
+                </thead>
+                <tbody ng-hide="isLoading">
+                    <tr ng-repeat="row1 in messageList">
+                        <td><span>{{row1.log_time | mydatetime}}</span></td>
+                        <td><span>{{row1.status}}</span></td>
+                        <td><span>{{row1.log_type}}</span></td>
+                        <td><span>{{row1.log_type == 'Timeout' ? 'System' : row1.comment}}</span></td>
+                        <td><span>{{row1.method}}</span></td>
+                        <td><span>{{row1.wholename}}</span></td>
+                    </tr>
+                </tbody>
+            </table>
+            <table ng-show="selectedTable === 'notification'" st-table="ticketlist" class="table ticket table-striped b-t b-light" style="width:97%; margin:auto">
+                <thead class="tblhead-sm" style="font-size: .7vw">
+                <tr>
+                    <th class="text-center"><b>ID</b></th>
+                    <th class="text-center"><b>Staff</b></th>
+                    <th class="text-center"><b>Time</b></th>
+                    <th class="text-center"><b>Type</b></th>
+                    <th class="text-center"><b>Job Role</b></th>
+                    <th class="text-center"><b>Method</b></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="row in notifylist">
+                    <td><span>{{row.id}}</span></td>
+                    <td><span>{{row.staff}}</span></td>
+                    <td><span>{{row.send_time}}</span></td>
+                    <td><span>{{row.type == 'Timeout' ? 'System' : row.job_role}}</span></td>
+                    <td><span>{{row.job_role}}</span></td>
+                    <td><span>{{row.mode}}</span></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+    <!-- - - - - - NOTIFICATION HISTORY - - - - - -->
+    <div class="table table-responsive" ng-if="false">
+        <label class="font-bold"><i class="fa fa-history" aria-hidden="true"></i>&nbsp;&nbsp;Notification History</label>
+
+    </div>
+
+    <!-- - - - - - /NOTIFICATION HISTORY - - - - - -->
+</div>

@@ -1,0 +1,77 @@
+<div ng-controller="LogPerFloorController">
+    <div class="wrapper-md1">
+        <div class="panel panel-default">
+            <div class="panel-heading">Logs</div>
+            <div class="panel-body">
+                <form class="form-horizontal form-validation">
+                    <div class="form-group">
+                        <label class="col-sm-1 control-label">Select Floor</label>
+                        <div class="col-sm-2">
+                            <select class='input-sm' style="width: 200px" ng-model="floor_ids"
+                                    ng-options="value.id as value.floor_name for (key, value) in floor_list" multiple>
+                            </select>
+                        </div>
+                        <div class="pull-right" style="margin-right: 20px">
+                            <button type="submit" class="btn btn-primary" ng-click="onShowFloor()">Show</button>
+                            <button type="submit" class="btn btn-default">Cancel</button>
+                        </div>
+                    </div>
+                </form>
+
+                <table class="table ticket" >
+                    <thead >
+                    <tr>
+                        <th><b>Floor</b></th>
+                    </tr>
+                    </thead>
+                    <tbody ng-hide="isLoading" ng-repeat="row in datalist">
+                        <tr class="" ng-click="onClickRow(row, $index)" >
+                            <td>
+                                <i ng-if="row.collapse" class="fa fa-arrow-down" style="color:#66BB6A;"></i>
+                                <i ng-if="!row.collapse" class="fa fa-arrow-right" style="color:#66BB6A;"></i>
+                                &nbsp;{{row.floor_name}}
+                            </td>
+                        </tr>
+                        <tr ng-if="row.collapse" class="checklist-bg">
+                            <td ng-if="row.room_list.length > 0">
+                                <table class="table">
+                                    <thead >
+                                        <tr >
+                                            <th><b>ID</b></th>
+                                            <th><b>Room Number</b></th>
+                                            <th><b>Housekeeping Status</b></th>
+                                            <th><b>Assign to</b></th>
+                                            <th><b>Start Time</b></th>
+                                            <th><b>End Time</b></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="" ng-repeat="subrow in row.room_list">
+                                            <td style="width: 40px">
+                                                <a>{{subrow.id}}</a>
+                                            </td>
+                                            <td>{{subrow.room}}</td>
+                                            <td>{{subrow.status}}</td>
+                                            <td>{{subrow.assigne_to}}</td>
+                                            <td>{{subrow.start_time | mytime}}</td>
+                                            <td>{{subrow.end_time | mytime}}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                            <td ng-if="row.room_list.length <= 0" style="text-align: center">
+                                There is no room list
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tbody ng-show="isLoading">
+                        <tr>
+                            <td colspan="12" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+    </div>
+</div>

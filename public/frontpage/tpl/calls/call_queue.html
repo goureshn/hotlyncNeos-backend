@@ -1,0 +1,40 @@
+<div ng-controller="AgentStatusController">
+<div style="width: 500px; z-index: 5" >
+    <div class="panel panel-default" style="margin-bottom: 10px;">
+      <div class="panel-heading">
+        <div class="clearfix">
+          <div class="clear">
+           
+            <large class="text-muted">{{total}} Call(s) on Queue</large>
+          </div>
+        </div>
+      </div>
+      <div class="list-group no-radius alt">
+        
+      
+        <table st-table="guestlist" st-pipe="getDataListThird" class="table  b-t b-light" style="margin: 0; padding: 0; height: 100%; font-size: 8px;">
+            <thead class="tblhead-sm">
+                <tr>
+                    <th style="text-align:center" >ID</th>
+                    <th style="text-align:center" >Caller ID</th>
+                    <th style="text-align:center">Time</th>
+                   
+                </tr>
+            </thead>
+            <tbody ng-hide="isLoadingthird">
+                <tr ng-repeat="row in datalistthird">
+                    <td align="center"> {{row.id}}</td>
+                    <td align="center"> {{row.callerid}}</td>
+                    
+                    <td align="center"> {{row.time}}</td>
+                   
+                </tr>
+
+            </tbody>
+          </table>
+          
+      </div>
+    </div>
+  </div>
+</div>
+  

@@ -1,0 +1,54 @@
+
+<div class="modal-body wrapper">
+    
+                    <div class="wrapper-md">
+                    <center><h3 class="m-t-none m-b font-thin">{{added}} Details</h3></center><hr/>
+                        <div class="panel-body" style="padding: 5px 0px">
+                            <div class="form-horizontal form-validation">
+                                <div class="col-sm-6" style="padding: 5px 0px">
+                                    <label class="col-sm-12 text-muted text-xs">
+                                        <b>{{stat}} By :</b>
+                                    </label>
+                                    <div class="col-sm-12">
+                                
+                                
+                                    <b>{{call.wholename}}</b>
+                                
+                                    </div>
+                                </div>
+                                <div class="col-sm-6" style="padding: 5px 0px">
+                                    <label class="col-sm-12 text-muted text-xs">
+                                        <b>Type :</b>
+                                    </label>
+                                    <div class="col-sm-12">
+                                       
+                                        
+                                            <select id='id'  class='form-control' ng-model="call.type" ng-options="value.label as value.label for (key, value) in types"></select>
+                                        
+                                       
+                                    </div>
+                                </div>
+                                <div class="form-group-mbl col-sm-12 label-group" style="padding: 5px 0px">
+                                    <label class="col-sm-2 control-label text-muted text-xs">
+                                        <b>Comment :</b>
+                                    </label>
+                                    <div class="col-sm-12 control-label" style="text-align: left">
+                                        <textarea ng-disabled="comment_disable"type="text" class='form-control input-sm' ng-model="call.comment" style="resize:none" spellcheck="true"
+                                            rows="4"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <center>
+                        <button  type="button" class="btn btn-dark btn-sm" ng-click="addComment()">
+                            <span class="text-success font-bold">
+                                <i class="fa fa-check"></i>&nbsp;Update</span>
+                        </button>
+                        <button  type="button" class="btn btn-dark btn-sm" ng-click="cancel()">
+                            <span class="text-danger font-bold">
+                                <i class="fa fa-times"></i>&nbsp;Cancel</span>
+                        </button>
+                    </center>
+
+</div>

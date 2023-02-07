@@ -1,0 +1,169 @@
+<style>
+  @media only screen and (max-width: 480px)	{
+    .mobile-only
+      {
+        display: block;
+        margin-top: 10px;
+        position: relative;
+				min-height: 1px;
+				padding-right: 15px;
+				padding-left: 15px;
+      }
+  }
+  @media (min-width:768px) {
+    .desktop
+      {
+        display: block;
+        margin-top: 10px;
+        width: 800px;
+        
+      }
+  }
+	.btn {
+    height: 100 px;
+	}
+</style>
+
+<style>
+		.first_header {
+			background-position:center center;
+			background-repeat: no-repeat;
+			-webkit-background-size: cover;
+		  -moz-background-size: cover;
+		  -o-background-size: cover;
+		  background-size: cover;
+		  background-size: 450px 200px;
+		  width:  ;
+		}
+    .first_square {
+      /*text-align:center;
+      height:70px;
+      background: #2e3344;
+      background-image: url("img/chat.png");
+      font-size: 20px;
+      font-weight: bold;
+			padding-top:20px;
+      border-radius: 15px 50px 30px;
+      /*border: 2px solid #73AD21;*/
+			background-position:center center;
+			background-repeat: no-repeat;
+			background-size: 300px 150px;
+			color: #2e3344;
+			height: 250px;
+			-webkit-background-size: cover;
+		  -moz-background-size: cover;
+		  -o-background-size: cover;
+		  background-size: cover;
+		  margin-bottom: 15px;
+		  margin-right: 5px;
+		}
+    .first_title {
+	  	margin: 0;
+			/*background: yellow;*/
+			position: absolute;
+			top: 80%;
+			left: 50%;
+			margin-right: -50%;
+			transform: translate(-50%, -50%);
+			font-size: 18px;
+    }
+    .first_space {
+      text-valign:middel;
+      text-align:center;
+      height:20px;
+      background: #ffffff;
+    }
+    .first_foot {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 1005;
+      background:#2e3344;
+      color: white;
+    }
+    
+</style>
+ 
+    
+    <div style="padding-left: 0px; padding-right: 0px; font-size: 15px" ng-controller="HelpDeskController as ctrl" ng-init="init()" >
+      <toaster-container toaster-options="{'position-class': 'toast-top-right', 'close-button':true}">
+      </toaster-container>
+    
+      <script type="text/ng-template" id="locationTypeahead.html">
+        <a>
+          <span ng-bind="match.model.name"></span><br>
+          <span style="font-size: 10px" ng-bind="match.model.type"></span><br>
+        </a>
+      </script>
+    
+      <script type="text/ng-template" id="userTypeahead.html">
+        <a>
+          <span ng-bind="match.model.wholename"></span><br>
+          <span style="font-size: 10px" ng-bind="match.model.job_role"></span><br>
+          <span style="font-size: 10px" ng-bind="match.model.department"></span><br>
+        </a>
+      </script>
+    
+      <script type="text/ng-template" id="guestTypeahead.html">
+        <a>
+          <span>{{match.model.guest_name}}</span><br>  
+          <span style="font-size: 10px" ng-show="match.model.arrival && match.model.departure">
+              {{match.model.arrival}} ~ {{match.model.departure}}
+          </span><br ng-show="match.model.arrival && match.model.departure">
+          <span style="font-size: 10px" ng-hide="match.model.arrival && match.model.departure">
+              Email: {{match.model.email}}
+                </span><br ng-hide="match.model.arrival && match.model.departure">
+          <span style="font-size: 10px" ng-hide="match.model.arrival && match.model.departure">
+              Mobile: {{match.model.mobile}}
+          </span>
+          <br ng-hide="match.model.arrival && match.model.departure">
+        </a>
+      </script>
+        <!-- - - - - - - - HEADER - - - - - - - -->
+      <div>
+        <div class="navbar-inverse box-shadow" style="vertical-align:middle;height: 40px">
+          <div class="navbar-header" style="height: 40px;">
+            <a ui-sref="app.guestservice.dashboard" class="navbar-brand text-lt">
+              <img src="img/complaint_header_logo.png" alt="HotLync" style="margin-left: -7px; width:250px; height: 30px">
+            </a>
+          </div>
+        </div>
+      </div>
+      <!-- - - - - - - - /HEADER - - - - - - - -->
+      <!--
+      <label>&nbsp;<i class="fa fa-exclamation-circle text-danger"></i>&nbsp;&nbsp;Complaint Details</label>
+      <div class="btn-group pull-right" data-toggle="buttons">
+        <label class="btn btn-primary" style="font-size: 13px">
+          <input type="radio" name="options" id="option1" autocomplete="off">Complaint No:&nbsp;&nbsp;{{complaint_id}}
+        </label>
+        <label class="btn btn-primary" style="font-size: 13px">
+          <input type="radio" name="options" id="option2" autocomplete="off"> Request Time:&nbsp;&nbsp;{{complaint.request_time}}
+        </label>
+      </div>
+         -->           
+      <div class="wrapper-md" style="margin-top: 20px;">
+        <center>
+          <div>  
+          	<div class="form-group-mbl col-sm-12 label-group" ng-hide="clicked">
+              <div class="bg-inverse text-white first_square mobile-only desktop" ng-click="redirect('eng')" style="background-image: url('img/engineering.jpg')">
+                <span class="first_title font-bold" style="margin: auto; color: white">Engineering Helpdesk
+                </span>
+              </div>
+            </div> 
+            <div class="form-group-mbl col-sm-12 label-group" ng-hide="clicked">
+              <div class="bg-inverse text-white first_square mobile-only desktop" ng-click="redirect('it')" style="background-image: url('img/informationtechnology.jpg')">
+                <span class="first_title font-bold" style="margin: auto; color: white">IT HelpDesk
+                </span>
+              </div>
+            </div>
+						<!-- <div class="form-group-mbl col-sm-12 label-group" ng-hide="clicked"> -->
+                <div class="form-group-mbl col-sm-12 label-group" ng-hide="true">
+              <div class="bg-inverse text-white first_square mobile-only desktop" ng-click="redirect('complaint')" style="background-image: url('img/complaint.jpg')">
+                <span class="first_title font-bold" style="margin: auto; color: white">Complaints
+                </span>
+            </div>
+          </div>
+        </center>
+      </div>
+    </div>

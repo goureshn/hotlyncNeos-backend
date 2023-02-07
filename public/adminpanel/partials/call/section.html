@@ -1,0 +1,122 @@
+<style>
+	#scrollable-dropdown-menu .dropdown-menu {
+		max-height: 150px;
+		overflow-y: auto;
+	}
+</style>
+<input type="hidden" id="id" value="-1" ng-model="model_data.id"/>
+
+	<div class="panel panel-default"> 
+		<div class="panel-heading wrapper"> 
+			<button type="button" class="btn btn-success btn-sm" style="float:right; margin-top: -5px" data-toggle="modal" data-target="#addModal" ng-disabled="job_role!='SuperAdmin'&&edit_flag==0" ng-click="onShowEditRow(-1)">
+				<span class="glyphicon glyphicon-plus"></span>
+				<b> Add New </b>
+			</button>  
+			<button  type="button" class="btn btn-success btn-sm" style="float:right; margin-top: -5px; margin-right: 10px" data-target="#exportModal" data-toggle="modal" ng-disabled="job_role!='SuperAdmin'&&edit_flag==0" >
+				<b><i class="fa fa-download"></i> Export File </b>
+			</button>                            
+			<i class="fa fa-phone"></i>                           
+			<span class="font-bold">Section Management</span>
+		</div>                         
+		<div> 
+			<table id="table_grid" class="table table-hover table-bordered" style="text-align: center; width:100%" ng-model = "table_grid"> 					
+				<thead> 
+					<tr> <!--
+						<th class="no-sort" style="text-align: center">
+							<input style="text-align: center" type="checkbox" id="checkall" />
+						</th>-->
+						<th style="text-align: center" ng-repeat = "field in fields">
+							<b>{{field}}</b>
+						</th>
+						<th style="text-align: center" class="no-sort">Edit</th>
+						<th style="text-align: center" class="no-sort">Delete</th>
+					</tr>                                     
+				</thead>                    
+			</table>                             
+		</div>
+	</div>   
+	
+	<div class="modal fade" id="exportModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"> 
+		<div class="modal-dialog" role="document"> 
+			<div class="panel"> 
+				<div class="modal-header bg"> 
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"> 
+						<span aria-hidden="true">&times;</span> 
+					</button>  
+					<h5 class="modal-title font-bold" style="color:#2691d9">
+							<i class="fa fa-download"></i>&nbsp;Export Report</h5>
+				</div>
+				<div class="modal-body"> 
+					<br>
+					<form class="form-horizontal form-validation">
+							<label class="control-label text-xs font-bold" style="margin-left: 15px;font-size: 10px">&nbsp;&nbsp;&nbsp;&nbsp;Do you want to export this table?</label><br><br>
+					</form>
+					<form class="form-horizontal form-validation">
+							<center>
+									<button type="button" class="btn btn-success btn-sm" ng-click="onDownloadExcel()" data-dismiss="modal">
+									<span class="font-bold"><i class="fa fa-check"></i>&nbsp;Ok</span></button>
+									<button type="button" class="btn btn-danger btn-sm" class="close" data-dismiss="modal">
+									<span class="font-bold"><i class="fa fa-times"></i>&nbsp;Cancel</span></button>           
+						  </center>
+					</form>
+				</div>
+			</div>
+		</div>
+</div>
+	
+<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"> 
+	<div class="modal-dialog" role="document"> 
+		<div class="panel"> 
+			<div class="modal-header bg"> 
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"> 
+					<span aria-hidden="true">&times;</span> 
+				</button>                             
+				<h5 class="modal-title font-bold" style="color:#2691d9" ng-if="model_data.id<0">
+					<i class="fa fa-plus"></i>&nbsp;Add Section</h5>
+				<h5 class="modal-title font-bold" style="color:#2691d9" ng-if="model_data.id>=0">
+					<i class="fa fa-pencil"></i>&nbsp;Edit Section</h5>
+			</div>                         
+			<div class="modal-body"> 
+				<br> 
+				<form class="form-horizontal"> 
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Property:</label>
+						<div class="col-sm-5">
+							<select id='prpty_id' class='form-control' ng-model="property_id" ng-change="changeProperty()"
+								ng-options="value.id as value.name for (key, value) in properties">		
+							</select>							
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Department:</label>
+						<div class="col-sm-5" id="scrollable-dropdown-menu" >
+							<!--<select id='dept_id' class='form-control' ng-model="model_data.dept_id"  ng-change="changeDepartment()"-->
+								<!--ng-options="value.id as value.department for (key, value) in department"-->
+								<!--&gt;		-->
+							<!--</select>-->
+							<input class="form-control input-sm col-sm-5" type="text" ng-model="dept_name"
+								   uib-typeahead="department.department for department in getdepartment($viewValue)"
+								   typeahead-min-length="0"
+								   typeahead-on-select="ondepartment(department, $item, $model, $label)"
+								   required />
+						</div>
+					</div>
+					<text-item formlabel="Section Name" modelname="model_data.section"></text-item>
+					<textarea-item formlabel="Description" texthint="Description" modelname="model_data.description"></textarea-item>					
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Manager:</label>
+						<div class="col-sm-5">
+							<select id='user_id' class='form-control'  ng-model="model_data.manager_id"
+								ng-options="value.id as value.name for (key, value) in manager"
+								>								
+							</select>								
+						</div>
+					</div>
+				</form>                             
+			</div>                         
+			<submit-form id="model_data.id" updatedata="onUpdateRow()"></submit-form>						
+		</div>                     
+	</div>                 
+</div>             
+
+<dialog-delete title="Section" modelname="model_data.section" deletedata="deleteRow()"></dialog-delete>

@@ -1,0 +1,276 @@
+<div ng-controller="CallclassifyReportController">
+    <style>
+        .datetime .popover {
+            max-width: 650px;
+        }
+    </style>
+    <script type="text/ng-template" id="datetime_ranger.html">
+        <div style="width: 700px">
+            <div rg-range-picker="myDatetimeRange" labels="myDatetimeLabels"></div>
+        </div>
+    </script>
+
+    <div class="col-lg-12 col-centered">
+      <div class="panel-default">
+        <div class="form-horizontal" style="width:100%; margin: auto;" ng-show="!data.isHidden" >
+          <div class="row form-group" style="width:100%; margin:auto;">
+            <div class="form-horizontal form-validation" style="float:left; width:100%; height:20%; display:inline-block;">
+	            <div class="fieldset1 panel panel-default" style="border-radius: 4px">
+							  <div class="panel-heading">
+									<div>
+										<label class="font-bold text-sm"><i class="fa fa-columns text-default"></i>&nbsp;&nbsp;Grouping</label>&nbsp;&nbsp;
+									</div>
+								</div>
+								<div style="padding-top: px">
+									<form class="form-horizontal form-validation">
+										<div class="col-sm-12">
+											<label class="control-label text-xs text-muted">Report Type : </label>
+		                  <select class='form-control' ng-model="report_type" ng-change="onChangeReportType()" ng-options="type for type in reporttypes">
+                      </select>
+					          </div>
+										<div class="col-sm-12">
+											<label class="control-label text-xs text-muted">Report By : </label>
+		                  <select class='form-control' ng-model="report_by" ng-change="onChangeReportBy()" ng-options="type for type in reportby_list">
+                      </select>
+                              </div>
+                              <div ng-show = "report_by == 'Call Status' || report_by == 'Cost Comparison' || report_by == 'Summary Cost Comparison'" class="col-sm-12">
+                                <label class="control-label text-xs text-muted">Call Sort : </label>
+            <select class='form-control'  multiple   ng-model="call_sort" ng-options="type for type in extentionsorts">
+                                </select>
+          </div>
+                            <div ng-show = "report_type == 'Detailed' && report_by == 'Mobile'" class="col-sm-12">
+                                 <label class="control-label text-xs text-muted">Group By : </label>
+            <select class='form-control'  ng-model="group_by" ng-options="type for type in groupbysorts">
+                            </select>
+        </div>
+                              <div  ng-show = "report_by == 'Comparison'" class="col-sm-12">
+                                <label class="control-label text-xs text-muted">Filter By : </label>
+              <select class='form-control' ng-model="filter_by" ng-change="onChangeReportBy()" ng-options="type for type in filterby">
+          </select>
+                  </div>
+					        </form>
+								</div>
+						  </div>
+						  <div class="fieldset2 panel panel-default" style="border-radius: 4px; width: 80%">
+		          <div class="panel-heading">
+								<div>
+									<button type="submit" class="btn btn-sm btn-info pull-right" onclick="loadBlockingUi();" ng-click="onGenerateReport()" style="margin-top: -5px">
+                      <i class="fa fa-file-text"></i>&nbsp;&nbsp;Generate Report
+                    </button>
+                    
+				            <button type="submit" class="btn btn-sm btn-default pull-right" style="color: white; background-color:#a9a9a9; margin-top: -5px; margin-right: 2px" ng-if="!auth_svc.isValidModule('app.reports.schedule')">
+                      <i class="glyphicon glyphicon-calendar"></i>&nbsp;&nbsp;Schedule Report</button>
+				            <button type="submit" class="btn btn-sm btn-info pull-right" ng-if="auth_svc.isValidModule('app.reports.schedule')" ng-click="onShowSchedule()" style="margin-top: -5px; margin-right: 2px">
+                      <i class="glyphicon glyphicon-calendar"></i>&nbsp;&nbsp;Schedule Report
+                    </button>
+                  
+									<label class="font-bold text-sm"><i class="fa fa-columns text-default"></i>&nbsp;&nbsp;Apply Filters</label>&nbsp;&nbsp;
+								</div>
+							</div>
+							<div style="padding-top: px">
+								<form class="form-horizontal form-validation">
+                                        <div class="btn-group col-sm-12"  ng-hide = "((report_by == 'Cost Comparison') || (report_by == 'Summary Cost Comparison') || (report_by == 'Marked Date'))" style="margin-top: -2px">
+                                                <label class="btn btn-info btn-sm" ng-click="dateShort('Today')" >Today</label>
+                                                <label class="btn btn-info btn-sm" ng-click="dateShort('Yesterday')">Yesterday</label>
+                                                <label class="btn  btn-info btn-sm" ng-click="dateShort('This Week')">This Week</label>
+                                                <label class="btn  btn-info btn-sm" ng-click="dateShort('Last Week')">Last Week</label>
+                                                <label class="btn  btn-info btn-sm" ng-click="dateShort('This Month')">This Month</label>
+                                                <label class="btn  btn-info btn-sm" ng-click="dateShort('Last Month')">Last Month</label>
+                                                <label class="btn  btn-info btn-sm" ng-click="dateShort('This Year')">This Year</label>
+                                                <label class="btn  btn-info btn-sm" ng-click="dateShort('Custom')">Custom</label>
+                                              </div>
+									<div class="col-sm-6" ng-hide = "((report_by == 'Cost Comparison') || (report_by == 'Summary Cost Comparison') || (report_by == 'Marked Date'))" style="margin-top: 4px">
+										<label class="control-label text-xs text-muted">Period : </label>
+                    <input type="text" ng-model="time_range" ng-disabled="date_short!='Custom'" ui-jq="daterangepicker" ui-options="dateRangeOption" class="form-control input-sm">
+									</div>
+									
+                                    <div class="col-sm-6" ng-show= "((report_by == 'Cost Comparison') || (report_by == 'Summary Cost Comparison') || (report_by == 'Marked Date'))" style="margin-top: -2px">
+										<label class="control-label text-xs text-muted">Period : </label>
+                    <a class="dropdown-toggle" id="dropdown3" role="button" data-toggle="dropdown" data-target="#">
+											<div class="input-group">
+												<input type="text" class="form-control"  ng-model="datetime.time">
+												<span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+											</div>
+										</a>
+										<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+											<datetimepicker ng-model="datetime.date"
+															data-datetimepicker-config="{startView:'month', minView:'month', dropdownSelector: '#dropdown3' }"
+															data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+										</ul>
+                  </div>
+                  <div class="col-sm-6"  ng-hide = "report_by == 'Comparison' || report_by == 'Marked Date'" style="margin-top: -2px">
+										<label class="control-label text-xs text-muted">Call Type : </label>
+                    <div ng-dropdown-multiselect="" options="calltypes" selected-model="call_type" checkboxes="true" extra-settings="calltypes_hint_setting" translation-texts="calltypes_hint"></div>
+                                    </div>
+
+                    <div class="col-sm-2"  ng-hide = "report_by == 'Comparison' || report_by == 'Marked Date'" style="margin: -2px -198px 0 -355px">
+										<label class="control-label text-xs text-muted">Charged Calls : </label><br>
+                    <label class="i-switch m-t-xs m-r">
+											<input type="checkbox" ng-model="callcharge_flag" checked>
+											<i></i>
+										</label>
+                  </div>
+                    
+									<div class="col-sm-6"  ng-hide = "report_by == 'Comparison' || report_by == 'Marked Date'" style="margin-top: -2px">
+										<label class="control-label text-xs text-muted">Classification : </label>
+                    <select class='form-control' ng-model="classify"  ng-change="changeClassify()" ng-options="type for type in classifys">
+                    </select>
+                                    </div>
+                                    <div class="col-sm-6" ng-show="(((((filter_by != 'User') && (report_by == 'Comparison')) || (report_by == 'Cost Comparison')) || (report_by == 'Mobile'))  || (report_by == 'Summary Cost Comparison') || (report_by == 'Marked Date'))" style="margin-top: -2px">
+										<label class="control-label text-xs text-muted">Department : </label>
+                    <tags-input ng-model="department_tags" placeholder="Add Department" replace-spaces-with-dashes="false" style="margin-top: -5px">
+											<auto-complete source="loadFilters($query, 'Department')" min-length="0" debounce-delay="0" load-on-focus="true"
+												load-on-empty="true" max-results-to-show="1000">
+											</auto-complete>
+										</tags-input>
+                  </div>
+                  <div class="col-sm-6" ng-show="((((filter_by != 'Department') && (report_by == 'Comparison')) || (report_by == 'User')) || (report_by == 'Mobile'))" style="margin-top: -2px">
+                    <label class="control-label text-xs text-muted">User :</label>
+                    <tags-input ng-model="staff_tags" placeholder=" Add User" replace-spaces-with-dashes="false" style="margin-top: -5px">
+                            <auto-complete source="loadFilters($query, 'Staff')" min-length="0" debounce-delay="0" load-on-focus="true"
+                            load-on-empty="true" max-results-to-show="50"></auto-complete>
+                                        </tags-input>
+                </div>
+									<div class="col-sm-6" ng-hide = "report_by == 'Comparison' || report_by == 'Marked Date'"  style="margin-top: -2px">
+										<label class="control-label text-xs text-muted">Approval : </label>
+                    <select class='form-control' ng-model="approval" ng-disabled="approval_view"  ng-options="type for type in approvals">
+                    </select>
+                                    </div>
+									<div class="col-sm-6" ng-show="valid_flag[0]" style="margin-top: -2px">
+										<label class="control-label text-xs text-muted">Section : </label>
+                                        <tags-input ng-model="section_tags" placeholder=" Add Section" replace-spaces-with-dashes="false" style="margin-top: -5px">
+                                            <auto-complete source="loadFilters($query, 'Section')" min-length="0" debounce-delay="0" load-on-focus="true"
+                                            load-on-empty="true" max-results-to-show="50"></auto-complete>
+                                                        </tags-input>
+                                    </div>
+                                    
+                                    
+                                    <div class="col-sm-6" ng-show= "report_by == 'Marked Date'" style="margin-top: -2px">
+										<label class="control-label text-xs text-muted">Called Month : </label>
+                    <a class="dropdown-toggle" id="dropdown3" role="button" data-toggle="dropdown" data-target="#">
+											<div class="input-group">
+												<input type="text" class="form-control"  ng-model="datetime.time1">
+												<span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+											</div>
+										</a>
+										<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+											<datetimepicker ng-model="datetime.date1"
+															data-datetimepicker-config="{startView:'month', minView:'month', dropdownSelector: '#dropdown3' }"
+															data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+										</ul>
+                            </div>
+								</form>
+							</div>
+	                    <!--
+                        <fieldset class="fieldset1">
+                            <legend><h5><i class="fa fa-columns"></i>&nbsp;&nbsp;Grouping</h5></legend>
+                            <div class="sfield1">
+                                <div class="row form-horizontal" style="margin-bottom:3px;">
+                                    <label class="col-sm-5 control-label" style="white-space: nowrap;">Report Type : </label>
+                                    <div class="col-sm-7">
+                                        <select class='form-control' ng-model="report_type" ng-change="onChangeReportType()" ng-options="type for type in reporttypes">
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row form-horizontal" style="margin-bottom:3px;">
+                                    <label class="col-sm-5 control-label" style="white-space: nowrap;">Report By :</label>
+                                    <div class="col-sm-7">
+                                        <select class='form-control' ng-model="report_by" ng-change="onChangeReportBy()" ng-options="type for type in reportby_list">
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+												-->
+												<!--
+                        <fieldset class="fieldset2">
+                            <legend><h5><i class="glyphicon glyphicon-filter"></i>&nbsp;&nbsp;Apply filters</h5></legend>
+                            <div class="sfield2">
+                                <div  class="row form-horizontal" style="margin-bottom:3px; ">
+                                    <label class="col-sm-3 control-label" style="white-space: nowrap;">Period : </label>
+                                    <div class="datetime col-sm-8">										
+										<input type="text" ng-model="time_range" ui-jq="daterangepicker" ui-options="dateRangeOption" class="form-control input-sm">
+									</div>
+                                </div>
+                                <div class="row form-horizontal" style="margin-bottom:3px; ">
+                                    <label class="col-sm-3 control-label" style="white-space: nowrap;">Call Type : </label>
+                                    <div class="col-md-9">
+                                        <div ng-dropdown-multiselect="" options="calltypes" selected-model="call_type" checkboxes="true" extra-settings="calltypes_hint_setting" translation-texts="calltypes_hint"></div>
+                                    </div>
+                                </div>
+                                <div class="row form-horizontal" style="margin-bottom:3px;">
+									<label class="col-sm-3 control-label" style="white-space: nowrap;">Charged call : </label>
+									<div class="col-md-9">
+										<label class="i-switch m-t-xs m-r">
+											<input type="checkbox" ng-model="callcharge_flag" checked>
+											<i></i>
+										</label>
+									</div>
+								</div>
+                                <div class="row form-horizontal" style="margin-bottom:3px;">
+                                    <label class="col-sm-3 control-label" style="white-space: pre-wrap;">Classification : </label>
+                                    <div class="col-sm-3">
+                                        <select class='form-control' ng-model="classify"  ng-change="changeClassify()" ng-options="type for type in classifys">
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row form-horizontal" style="margin-bottom:3px; ">
+                                    <label class="col-sm-3 control-label" style="white-space: nowrap;">Approval : </label>
+                                    <div class="col-sm-3">
+                                        <select class='form-control' ng-model="approval" ng-disabled="approval_view"  ng-options="type for type in approvals">
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="sfield3">
+                                <div ng-show="valid_flag[0]" class="row form-horizontal">
+                                    <label class="col-sm-3 control-label" style="white-space: nowrap;">Section : </label>
+                                    <div class="col-md-9">
+                                        <tags-input ng-model="section_tags" placeholder="Add Section" replace-spaces-with-dashes="false" style="margin-top: -5px">
+                                            <auto-complete source="loadFilters($query, 'Section')"
+                                                           min-length="0"
+                                                           debounce-delay="0"
+                                                           load-on-focus="true"
+                                                           load-on-empty="true"
+                                                           max-results-to-show="100" ></auto-complete>
+                                        </tags-input>
+                                    </div>
+                                </div>
+                                <div class="row form-horizontal" style="margin-bottom:3px; ">
+                                    <label class="col-sm-3 control-label" style="white-space: nowrap;">User : </label>
+                                    <div class="col-md-5">
+                                        <div ng-dropdown-multiselect=""   options="stafflist" selected-model="staff_ids" checkboxes="true" extra-settings="stafflist_hint_setting" translation-texts="stafflist_hint"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>-->
+                        <!--
+                        <div class="searchbox">
+                            <div class="row form-horizontal" style="margin-bottom:3px;">
+                              <button type="submit" class="btn btn-info" ng-click="onGenerateReport()">
+                              	<i class="fa fa-file-text"></i>&nbsp;&nbsp;Generate Report&nbsp;
+                              </button>
+                            </div>
+                            <div class="row form-horizontal" style="margin-bottom:3px;">
+                                <button type="submit" class="btn btn-info" ng-if="auth_svc.isValidModule('app.reports.schedule')" ng-click="onShowSchedule()">
+                                	<i class="glyphicon glyphicon-calendar"></i>&nbsp;&nbsp;Schedule Report
+                                </button>
+                                <button type="submit" class="btn btn-info disabled" style="border:#a9a9a9;background-color:#a9a9a9" ng-if="!auth_svc.isValidModule('app.reports.schedule')">
+                                	<i class="glyphicon glyphicon-calendar"></i>&nbsp;&nbsp;Schedule Report
+                                </button>
+                            </div>
+                        </div>
+                        -->
+                    </div>
+                </div>
+            </div>
+            </div>
+
+            <!-- Preview -->
+			<div ng-include="'tpl/reports/report_preview.html'">
+			</div>    
+        </div>
+    </div>
+
+</div>

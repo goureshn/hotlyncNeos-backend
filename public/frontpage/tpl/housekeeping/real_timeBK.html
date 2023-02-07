@@ -1,0 +1,268 @@
+<style>
+  .boxed {
+  border: 2px solid black ;
+}
+.test {
+  border: 2px solid rgb(255, 255, 255) ;
+}
+    .room_status td {
+        text-align: center;
+        font-weight: bold;
+        color: #fcfcfc;  
+            
+    }
+
+    .room_status td.group {
+        width: 300px;
+        background: #bd8082;
+        border: 1px solid #555;
+    }
+
+    .room_status td.floor {
+        width: 210px;
+        /* background: #8c8cbd; */
+        border-right: 2px solid rgb(255, 255, 255);
+        border-left: 2px solid rgb(255, 255, 255);
+    }
+    .room_status td.status {
+        width: 210px;
+        /* background: #4848b6; */
+        border-right: 2px solid rgb(255, 255, 255);
+        border-left: 2px solid rgb(255, 255, 255);
+        border-top: 2px solid rgb(255, 255, 255);
+    }
+    .room_status td.noclass {
+        width: 210px;
+        /* background: #4848b6; */
+        border: 1px solid #4E4E4E;
+    }
+
+    .room_status td.room {
+        width: 200px;
+        border: 1px solid #cecece;
+        background: #6a1c8f;
+        cursor: pointer;
+    }
+
+    .room_status td.room.dirty {
+        color: white;
+        background: rgb(94,36,136);
+    }
+
+    .room_status td.room.completed {
+        color: white;
+        background: rgb(112,172,72);
+    }
+
+    .room_status td.room.declined {
+        color: white;
+        background: rgb(166,166,166);
+    }
+    .room_status td.room.unassigned {
+        color: white;
+        background: rgb(255,191,5);
+    }
+
+    .room_status td.room.postponed {
+        color: white;
+        background: rgb(237,125,29);
+    }
+
+    .room_status td.room.dnd {
+        color: white;
+        background: rgb(254,0,0);
+    }
+
+    .room_status td.room.progress {
+        color: white;
+        background: rgb(68,114,199);
+    }
+   .pending {
+       background: #4b1564;
+       color: white;
+    }
+    .cleaning {
+        background: #115ab9;
+        color: white;
+    }
+    .dnd {
+        background: #f44336;
+        color: white;
+    }
+    .refuse {
+        background: #607d8b;
+        color: white;
+    }
+    .delay {
+        background: #ff9800;
+        color: white;
+    }
+    .unassigned {
+        background: #e6c50e;
+        color: white;
+    }
+    .finished {
+        background: #86c789;
+        color: white;
+    }
+
+  .grid-container {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      grid-gap: 2px;
+  }
+
+  .grid-item {
+      border: 1px solid black;
+      padding: 5px;
+      border-radius:5px;
+      border-shadow:2px;
+  }
+
+  .grid-row-wrapper {
+      display: contents;
+  }
+
+  .grid-row-wrapper > .grid-item {
+      background: skyblue;
+  }
+
+</style>
+<div ng-controller="RealTimeController" >
+    <!-- <div class="wrapper-md1" > -->
+
+<div style=" background:white;padding: 25px 0px 25px 0px;" class="col-sm-12">
+   
+    <div class="col-sm-2">
+        <label class="">Floors:&nbsp;&nbsp;
+        
+        </label> <tags-input ng-model="filter.floor_tags" display-property="floor_name" placeholder="Add a Floor"
+            replace-spaces-with-dashes="false" on-tag-added="refreshDatalist()" on-tag-removed="refreshDatalist()">
+            <auto-complete source="loadFloorFilters($query)" min-length="0" load-on-focus="true" load-on-empty="true" debounce-delay="0"
+                max-results="6">
+            </auto-complete>
+        </tags-input>
+        
+    </div>
+    <div class="col-sm-3" style="padding-right: 10px">
+        <label class="">Staff:&nbsp;&nbsp;
+    
+        </label>
+        <tags-input  ng-model="filter.staff_tags" display-property="wholename" placeholder="Add Staff" replace-spaces-with-dashes="false"
+            on-tag-added="refreshDatalist()" on-tag-removed="refreshDatalist()">
+            <auto-complete source="loadStaffFilters($query)" min-length="0" load-on-focus="true" load-on-empty="true" debounce-delay="0"
+                max-results="6">
+            </auto-complete>
+        </tags-input>
+    
+    </div>
+    <div class="col-sm-2" style="padding-right: 20px">
+        <label class="">Room Status:&nbsp;&nbsp;
+    
+        </label>
+        <tags-input  ng-model="filter.occ_tags" display-property="status" placeholder="Add Room Status" replace-spaces-with-dashes="false"
+            on-tag-added="refreshDatalist()" on-tag-removed="refreshDatalist()">
+            <auto-complete source="loadOccupancyFilters($query)" min-length="0" load-on-focus="true" load-on-empty="true" debounce-delay="0"
+                max-results="6">
+            </auto-complete>
+        </tags-input>
+    
+    </div>
+    <div class="col-sm-2" style="padding-right: 20px;">
+        <label class="">Working Status:&nbsp;&nbsp;
+    
+        </label>
+    <tags-input ng-model="filter.status_tags" display-property="status_name" placeholder="Add Status" replace-spaces-with-dashes="false"
+        on-tag-added="refreshDatalist()" on-tag-removed="refreshDatalist()">
+        <auto-complete source="loadStatusFilters($query)" min-length="0" load-on-focus="true" load-on-empty="true" debounce-delay="0"
+            max-results="6">
+        </auto-complete>
+    </tags-input>
+    
+    </div>
+    <div class="col-sm-2" style="padding-right: 20px;">
+        <label class="">Building:&nbsp;&nbsp;
+    
+        </label>
+    <tags-input ng-model="filter.bldg_tags" display-property="name" placeholder="Add a Building" replace-spaces-with-dashes="false"
+        on-tag-added="refreshDatalist()" on-tag-removed="refreshDatalist()">
+        <auto-complete source="loadBuildingFilters($query)" min-length="0" load-on-focus="true" load-on-empty="true" debounce-delay="0"
+            max-results="6">
+        </auto-complete>
+    </tags-input>
+    
+    </div>
+    <div class="col-sm-1">
+        <label style="padding-top: 5px;" class="">Rush:&nbsp;
+    
+        </label>
+        <div  class="control-label" >
+           
+               
+                    <label class="i-switch m-t-xs m-r" >
+                        <input type="checkbox" ng-model="filter.rush" ng-change="refreshDatalist()" checked>
+                        <i></i>
+                    </label>
+              
+            
+        </div>
+       
+    
+    </div>
+</div>
+<div style="background: #4E4E4E;" >
+<table ng-hide="hide_flag" class="room_status" >
+    <tbody>
+        <tr style="border-bottom: 3px solid rgb(255, 255, 255) ;">
+            <td colspan="1" class="text-center">
+               Floor
+            </td>
+            <td colspan="12" class="text-center">
+               Room
+            </td>
+        </tr>
+        <tr ng-repeat="row in room_status">
+
+            <td height="{{cell.height}}" class="{{cell.class}}" rowspan="{{cell.span}}" colspan="{{cell.colspan ? cell.colspan : 0}}" ng-repeat="cell in row" ng-bind-html="cell.data.name" ng-click="onClickCell(cell)" >
+
+        </td>
+        </tr>
+        <tr ng-show="room_status.length < 1">
+            <td colspan="12" class="text-center">
+                <i class="fa fa-spin fa-refresh"></i>
+            </td>
+        </tr>
+    </tbody>
+</table>
+</div>
+<div style=" background:white;padding: 20px 0px 20px 30px;font-size: 15px;color:black" class="boxed col-sm-12">
+<label class="col-sm-1">&nbsp;&nbsp;Total:&nbsp;&nbsp;{{total.total}}&nbsp;&nbsp;
+
+</label>
+<label class="col-sm-2" style="text-align: center;" >Pending:&nbsp;&nbsp;{{total.pending}}&nbsp;&nbsp;
+
+</label>
+<label class="col-sm-1">DND:&nbsp;&nbsp;{{total.dnd}}&nbsp;&nbsp;
+
+</label>
+<label class="col-sm-2" style="text-align: center;">Inspected:&nbsp;&nbsp;{{total.inspected}}&nbsp;&nbsp;
+
+</label>
+<label class="col-sm-1">Delay:&nbsp;&nbsp;{{total.delay}}&nbsp;&nbsp;
+
+</label>
+<label class="col-sm-2" style="text-align: center;">Refuse:&nbsp;&nbsp;{{total.refuse}}&nbsp;&nbsp;
+
+</label>
+<label class="col-sm-1">Cleaning:&nbsp;&nbsp;{{total.cleaning}}&nbsp;&nbsp;
+
+</label>
+<label class="col-sm-2" style="text-align: center;">Finsihed:&nbsp;&nbsp;{{total.finished}}&nbsp;&nbsp;
+
+</label>
+</div>
+
+    <!-- </div> -->
+
+
+</div>

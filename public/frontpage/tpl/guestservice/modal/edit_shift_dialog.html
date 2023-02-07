@@ -1,0 +1,41 @@
+<div class="modal-body wrapper-lg">
+    <h3 class="m-t-none m-b font-thin">Edit Shift - {{shift.wholename}}</h3>
+    <div class="hbox hbox-auto-xs hbox-auto-sm">
+        <div class="col w-md w-auto-xs dk bg-auto">
+            <div class="wrapper">
+                <h6 class="font-bold">Department Function : </h6>
+                <select class='form-control input-sm m-b' ng-model="shift.dept_func_list" ng-change="onSelectDeptfunc()"
+                        ng-options="value.id as value.function for (key, value) in dept_func_list" data-ng-attr-size="{{dept_func_list.length > 10 ? 10 : dept_func_list.length}}" multiple>
+                </select>
+                <h6 class="font-bold">Task Group : </h6>
+                <select class='form-control input-sm m-b' ng-model="shift.task_group_list"
+                        ng-options="value.id as value.name for (key, value) in task_group_list" data-ng-attr-size="{{task_group_list.length > 10 ? 10 : task_group_list.length}}" multiple>
+                </select>
+                <h6 class="font-bold">Location Group : </h6>
+                <select class='form-control input-sm m-b' ng-model="shift.location_group_list"
+                        ng-options="value.id as value.name for (key, value) in location_group_list" data-ng-attr-size="{{location_group_list.length > 10 ? 10 : location_group_list.length}}" multiple>
+                </select>
+            </div>
+        </div>
+        <div class="col w-md w-auto-xs dk bg-auto">
+            <div class="wrapper">
+                <h6 class="font-bold">Shift : </h6>
+                <select class='form-control input-sm m-b' ng-model="shift.shift_id"
+                        ng-options="value.shift as value.shname for (key, value) in shift_list">
+                </select>
+                <h6 class="font-bold">Day off : </h6>
+                <select class='form-control input-sm m-b' ng-model="shift.day_off" ng-change="onSelectDays()"
+                        ng-options="day for day in days" size="7" multiple>
+                </select>
+                <h6 class="font-bold">Vacation : </h6>
+                <input style="width: 100%" ng-model="shift.vacation" ui-jq="daterangepicker" ui-options="dateRangeOption" class="form-control w-md active">
+            </div>
+        </div>
+    </div>
+    <div  class="row" style="margin-right: 10px">
+        <div class="pull-right">
+            <button type="submit" class="btn btn-primary" ng-click="onClickOK()">&nbsp;&nbsp;&nbsp;&nbsp;OK&nbsp;&nbsp;&nbsp;&nbsp;</button>
+            <button type="submit" class="btn btn-default"  ng-click="onClickCancel()">Cancel</button>
+        </div>
+    </div>
+</div>

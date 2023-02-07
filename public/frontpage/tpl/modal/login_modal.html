@@ -1,0 +1,44 @@
+<style>
+    button {
+        pointer: cursor;
+    }
+</style>
+
+
+<form class="form-horizontal form-validation" ng-submit="onLogin()">
+    <div class="modal-content">        
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">
+                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+            </button>
+            <h3 class="modal-title" style="color:#2691d9" id="Heading">Login</h3>
+        </div>        
+        <div class="modal-body">        
+            <div class="form-group">
+                <div class="col-sm-6">
+                    <label class="control-label text-xs text-muted">Username : </label>
+                    <div class="scrollable-dropdown-menu">
+                        <input type="text" ng-model="model.username" class="form-control input-sm">
+                    </div>
+                </div>    
+                <div class="col-sm-6">
+                    <label class="control-label text-xs text-muted">Password : </label>
+                    <div>
+                        <input type="password" ng-model="model.password" class="form-control input-sm">
+                    </div>
+                </div>  
+            </div>                    
+        </div>
+
+         <div class="modal-footer ">           
+            <button type="submit" class="btn btn-info btn-sm w-xs" data-dismiss="modal">
+                <span class="glyphicon glyphicon-ok"></span>
+                <b> Login</b>
+            </button>
+            <button type="button" class="btn btn-default btn-sm w-xs" data-dismiss="modal" ng-click="cancel()">
+                <span class="glyphicon glyphicon-remove"></span>
+                <b> Cancel</b>
+            </button>
+        </div>
+    </div>
+</form>

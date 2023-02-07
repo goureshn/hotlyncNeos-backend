@@ -1,0 +1,95 @@
+<style>
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  grid-gap: 25px; 
+}
+
+.grid-container_div {
+  background-color: rgba(255, 255, 255, 0.8);
+  border: 1px solid #b8b7b7;
+  text-align: center;
+  font-size: 25px;
+}
+.grid-item {
+    padding: 15px 15px;
+    border-radius:15px;
+    border-shadow:2px;
+    height:150px;
+    position:relative;
+}
+ grid-item:focus {
+    outline: none;
+    border: 0;
+ }
+.grid-item div p{
+    padding:0px;
+    margin:0px;
+    text-align:center;
+    font-size:1.1em;
+    font-weight:600;
+    color:#201f1f;
+}
+
+.bell{
+  position:relative;  
+  width:100%;
+   border-radius:6px;
+}
+.div_area{
+  width:100%; 
+  height:100%; 
+  background:red;
+  border-radius:6px;
+  background-color:rgba(236, 236, 236, 0.7);
+}
+ .grid-item:focus {
+    outline: none !important;
+    border: 0 !important;
+ }
+</style>  
+<div ng-controller="AlarmMainDashboardSubController" style="{{full_main_height}};{{back_color}}" >
+  <div class="col-sm-12" style = "margin-top:0px;">
+      <div class="wrapper b-b" style="{{full_width}};">
+          <a ui-fullscreen  style="position:absolute;right:20px;"></a>  
+         <img  src="../frontpage/img/header_logo.png" alt="logo" 
+              style="width: 150px;position:absolute;" >
+          <p class="m-n font-thin h3" style="color:white;font-size: 1.5vw;text-align:center">
+            <font face = "Baskerville Old Face">
+              {{row.name}} </font>              
+          </p>
+      </div>   
+        <div class="input-group" style="margin-bottom:10px;">
+          <input type="text" ng-model="searchtext" ng-change="onSearchAlarm()" class="form-control bg-light no-border padder" 
+            placeholder="Search Alarm">
+            <span class="input-group-btn">
+              <button type="submit" class="btn btn-sm bg-light ">
+                <i class="fa fa-search"></i>
+              </button>
+            </span>
+        </div>     
+        <!--//alarms-->
+        <div class="grid-container"> 
+            <div class="grid-item"  ng-repeat="row in alarm_list" ng-click="onClick(row)"
+                  style="border:{{row.border}};background-color: {{row.alarm_backcolor}};background-image: url('{{row.icon}}');background-position:center;background-repeat:no-repeat;background-size:cover;">                     
+                <div ng-class="{div_area: row.alarm_id != '0'}">    
+                  <div class="bell" ng-if="row.alarm_count > 0">
+                    <div class="row">                      
+                      <div class="col-sm-12 text-right">
+                        <a ng-click="goActive(row); $event.stopPropagation();">
+                          <i class="fa fa-bell" style="color:#e62101" aria-hidden="true"></i>
+                            <span class="badge badge-sm up bg-danger pull-right-xs" style="position: absolute; margin-top:3px">
+                            {{row.alarm_count}}
+                          </span>
+                        </a>
+                      </div>  
+                    </div>
+                  </div>  
+                  <p  ng-if="row.alarm_count > 0" style="text-align: center;line-height: 100%; font-weight: bold;padding-top: 20px;"><i class ="{{row.fa_icon}}"></i> {{row.name}}</p>
+                  <p  ng-if="row.alarm_count <= 0 || row.alarm_count == ''" style="text-align: center;line-height: 100%; font-weight: bold;padding-top: 45px;"><i class ="{{row.fa_icon}}"></i> {{row.name}}</p>                            
+                </div>                
+            </div>            
+        </div>
+        <!--//end alarms-->
+  </div>
+</div>

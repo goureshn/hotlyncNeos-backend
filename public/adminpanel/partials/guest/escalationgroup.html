@@ -1,0 +1,100 @@
+<style>
+	.scrollable-dropdown-menu .dropdown-menu {
+		max-height: 150px;
+		overflow-y: auto;
+	}
+</style>
+<input type="hidden" id="id" value="-1" ng-model="model_data.id"/>
+
+	<div class="panel panel-default"> 
+		<div class="panel-heading wrapper"> 
+			<button type="button" class="btn btn-success btn-sm" style="float:right; margin-top: -5px" data-toggle="modal" data-target="#addModal" ng-disabled="job_role!='SuperAdmin'&&edit_flag==0" ng-click="onShowEditRow(-1)">
+				<span class="glyphicon glyphicon-plus"></span>
+				<b> Add New </b>
+			</button>                             
+			<i class="fa fa-street-view"></i>                            
+			<span class="font-bold">Escalation Group Management</span>
+		</div>                         
+		<div class=""> 
+			<table id="table_grid" class="table table-hover table-bordered" style="text-align: center;width:100%" ng-model = "table_grid"> 
+				<thead> 
+					<tr> 
+						<th style="text-align: center" ng-repeat = "field in fields">
+							<b>{{field}}</b>
+						</th>						
+						<th style="text-align: center">Edit</th>
+						<th style="text-align: center">Delete</th>
+					</tr>                                     
+				</thead>                    
+			</table>                             
+		</div>
+	</div> 
+	<div style="height:300px">	               
+		<form class="form-horizontal"> 
+			<div class="form-group" ng-repeat="row in selected_level_list">
+				<label class="control-label col-sm-2" for="Property">Level {{row.level}}:</label>
+				<div class="scrollable-dropdown-menu col-sm-3">
+					<input class="form-control input-sm col-sm-12" type="text" ng-model="row.job_role"
+						placeholder="Select Job Role..."
+						uib-typeahead="item.job_role for item in available_jobrole_list | filter:$viewValue | limitTo:10"
+						typeahead-min-length="0"
+						typeahead-on-select="onSelectJobrole(row, $item, $model, $label)" />					
+				</div>
+				<div class="col-sm-2">
+					<select class='form-control input-sm' ng-model="row.device_type" ng-options="value.id as value.name for (key, value) in gs_device_types"
+					ng-change="onChangeDeviceType(row)"
+					>
+					</select>
+				</div>
+				<div class="col-sm-2" style="padding-left: 5px">
+					<input class="form-control input-sm" style="display: inline; width: 50px" type="text" ng-model="row.max_time" ng-change="onChangeMaxtime(row)"/>
+					<button class="btn btn-primary btn-xs" style="margin-top:-2px" ng-click="onAddLevel(row)"
+					ng-show="row.id == 0"
+					>
+						<span class="fa fa-plus"></span>
+					</button>	
+					<button class="btn btn-primary btn-xs" style="margin-top:-2px" ng-click="onDeleteLevel(row)" ng-show="row.id > 0">
+						<span class="fa fa-minus"></span>
+					</button>	
+				</div>
+			</div>
+		</form>   
+	</div>	
+	
+<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"> 
+	<div class="modal-dialog" role="document"> 
+		<div class="panel"> 
+			<div class="modal-header bg"> 
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"> 
+					<span aria-hidden="true">&times;</span> 
+				</button>                             
+				<h5 class="modal-title font-bold" style="color:#2691d9" ng-if="model_data.id<0">
+					<i class="fa fa-plus"></i>&nbsp;Add Escalation Group</h5>
+				<h5 class="modal-title font-bold" style="color:#2691d9" ng-if="model_data.id>=0">
+					<i class="fa fa-pencil"></i>&nbsp;Edit Escalation Group</h5>				
+			</div>                         
+			<div class="modal-body"> 
+				<br> 
+				<form class="form-horizontal"> 
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Department Function:</label>
+						<div class="scrollable-dropdown-menu col-sm-5">
+							<input class="form-control input-sm col-sm-5" type="text" ng-model="deptfunc"
+								   uib-typeahead="func.function for func in getdepartmentfunc($viewValue)"
+								   typeahead-min-length="0"
+								   typeahead-on-select="ondepartmentfunc(dept_function, $item, $model, $label)"
+								   required />
+						</div>
+					</div>
+				
+					<text-item formlabel="Group Name" modelname="model_data.name"></text-item>
+				</form>                             
+			</div>              
+			<div style="clear:both">			
+				<submit-form id="model_data.id" updatedata="onUpdateRow()"></submit-form>						
+			</div>				
+		</div>                     
+	</div>                 
+</div>             
+
+<dialog-delete title="Escalation Group" modelname="model_data.name" deletedata="deleteRow()"></dialog-delete>

@@ -1,0 +1,17 @@
+<div class="container w-auto-xs" style="padding-left: 0px; padding-right: 0px" ng-controller="GuestAnswerController as ctrl" ng-init="init()">
+  <a href class="navbar-brand block m-t">{{app.name}}</a>
+  <div>
+    <div class="wrapper">
+
+          <mw-form-builder ng-hide="true" api="ctrl.formBuilder" options="ctrl.optionsBuilder" form-data="ctrl.formData" form-status="ctrl.formStatus" read-only="ctrl.builderReadOnly" on-image-selection="ctrl.onImageSelection()"></mw-form-builder>
+          <mw-form-viewer form-data="ctrl.formData" template-data="ctrl.templateData"  form-status="ctrl.formStatus" options="ctrl.formOptions" api="ctrl.formViewer" response-data="ctrl.responseData" read-only="ctrl.viewerReadOnly" on-submit="ctrl.saveResponse()"></mw-form-viewer>
+         <!--<pre>-->
+          <!--{{ctrl.responseData|json}}-->
+        <!--</pre>-->
+
+    </div>
+  </div>
+  <div class="text-center" ng-include="'tpl/blocks/page_footer.html'">
+    {% include 'blocks/page_footer.html' %}
+  </div>
+</div>

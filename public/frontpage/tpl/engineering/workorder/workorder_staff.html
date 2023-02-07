@@ -1,0 +1,106 @@
+<style>
+ .tbl-sm{
+     text-align: center;
+ }
+ table thead th{
+     text-align: center;
+ }
+ .dropdown-menu.ng-isolate-scope {
+        
+        overflow-y: auto;
+        position:static;
+        
+       
+    }
+</style>
+<script type="text/ng-template" id="workorder_staff_delete.html">
+    <div ng-include="'tpl/engineering/part/part_delete.html'"></div>
+</script>
+<script type="text/ng-template" id="staffTypeahead.html">
+    <a>
+        <span ng-bind="match.model.name"></span><br>
+        <span style="font-size: 10px" ng-bind="match.model.label"></span><br>
+    </a>
+</script>
+<!-- fill-height additional-padding="320"-->
+<div style="padding: 0px 5px 9px 5px">
+    <div  class="form-group">
+        <table  st-table="datalist" class="table ticket"  >
+            <thead class="tblhead-sm" style="background: #e7e8eb;color: #0a0a0a">
+            <tr>
+                <th><b>Staff</b></th>
+                <th><b>Status</b></th>
+                <th><b>Cost</b></th>
+                <th style="width: 20px"><b>Action</b></th>
+            </tr>
+            </thead>
+            <tbody ng-hide="isLoading" ng-repeat="row in datalist">
+            <tr>
+                <td class="tbl-sm">{{row.user_name}}</td>
+                <td class="tbl-sm">{{row.status}}</td>
+                <td class="tbl-sm">{{row.staff_cost}}</td>
+                <td class="tbl-sm">
+                    <a class="btn default btn-xs green" ng-if="workorder.status !='Completed'" ng-click="onStaffEdit(row)">
+                        <i class="fa fa-pencil"></i></a>
+                    <a class="btn default btn-xs red" ng-if="workorder.status !='Completed'" ng-click="onDeleteStaffDetail(row)">
+                        <i class="fa fa-times"></i></a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="panel panel-default" style="border-radius: 4px" ng-if="saffstatus == 'create'" ng-show="workorder.status !='Completed'">
+        <div class="panel-body">
+            <form class="form-horizontal form-validation" ng-submit="onCreateStaff()">
+                <div class="form-group">
+                    <label class="col-sm-2 text-right control-label text-muted" style="margin-bottom: 0px">Staff/Group</label>
+                    <div class="col-sm-4 scrollable-dropdown-menu">
+                        <input class="form-control input-sm col-sm-11" type="text" ng-model="staffs.staff_name"
+                               popover-trigger="mouseenter" popover-placement="top"                               
+                               uib-typeahead="staff.name for staff in staff_list | filter:$viewValue"
+                               typeahead-min-length="0"
+                               typeahead-template-url="staffTypeahead.html"
+                               typeahead-on-select="onWorkorderStaffSelect(staffs, $item, $model, $label)"
+                               required
+                               >
+
+                    </div>
+                    
+                     <label class="col-sm-1 text-right control-label text-muted" style="margin-bottom: 0px">Cost</label>
+                    <div class="col-sm-3" style="margin-top: 5px;" >
+                        {{staffs.staff_cost}}
+                    </div>
+                    <div class="col-sm-2" >
+                        <button type="submit"  class="btn btn-muted btn-sm pull-right" >
+                            <span class="font-bold"><i class="fa fa-check"></i>&nbsp;Create</span></button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="panel panel-default" style="border-radius: 4px" ng-if="saffstatus == 'update'" >
+        <div class="panel-body">
+            <form class="form-horizontal form-validation" ng-submit="onUpdateStaff()">
+                <div class="form-group">
+                    <label class="col-sm-2 text-right control-label text-muted" style="margin-bottom: 0px">Staff</label>
+                    <label class="col-sm-3 text-left control-label text-muted" style="margin-bottom: 0px">{{staffs.user_name}}</label>                        
+                    <label class="col-sm-2 text-right control-label text-muted" style="margin-bottom: 0px">Status</label>
+                    <div class="col-sm-2 scrollable-dropdown-menu" >
+                        <div ng-show="staffs.statff_statuss.length > 0">
+                            <select  class='form-control' ng-model="staffs.status"
+                                     ng-options="type for type in staffs.statff_statuss " required>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-sm-3">
+                        <button type="button" class="btn btn-muted btn-sm pull-right" style="margin-left: 10px;" ng-click="onStaffCancel()">
+                            <span class="font-bold"><i class="fa fa-check"></i>&nbsp;Cancel</span></button>
+                        <button type="submit"  class="btn btn-muted btn-sm pull-right" >
+                            <span class="font-bold"><i class="fa fa-check"></i>&nbsp;Update</span></button>
+                    </div>
+                </div>                             
+            </form>
+        </div>
+    </div>  
+</div>

@@ -1,0 +1,153 @@
+<style>
+  .tabsdemoDynamicHeight md-content {
+  background-color: transparent !important;
+}
+.tabsdemoDynamicHeight md-content md-tabs {
+  background: #f6f6f6;
+  border: 1px solid #e1e1e1;
+}
+
+.tabsdemoDynamicHeight md-content md-tabs md-tabs-wrapper {
+  background: white;
+}
+
+.tabsdemoDynamicHeight md-content h1:first-child {
+  margin-top: 0;
+}
+.modal-body {
+width: 900px;
+}
+
+.modal-dialog {
+width: 900px;
+}
+
+</style>
+<div style="">
+	<div class="modal-body wrapper">
+		<div class="panel panel-default" style="border-radius: 4px; margin-bottom: 0px">
+		  	<div class="panel-heading">
+				<div>
+				  <span>Guest Rooms </span>
+	      		</div>
+			</div>
+		  	<div class="panel-body" style="padding: 5px 0px">
+				<div class="form-horizontal form-validation" style="padding: 0px">
+					<form class="form-horizontal form-validation">
+						<div class="col-sm-6">
+							<div class="form-group">
+								<label class="col-sm-3 control-label">Select Based on Guest Group</label>
+								<div class="col-sm-9">
+									<label class="i-switch m-t-xs m-r">
+										<input type="checkbox" ng-change="showRoomList()" ng-model="selected" checked>
+										<i></i>
+									</label>
+								</div>
+							</div>
+						</div>
+						<div ng-show = 'selected'class="col-sm-6">
+							<label class="control-label text-xs text-muted">Guest Group Number</label>
+						<!--  <select class='form-control' ng-model="guest_group" ng-change="showRoomList()"
+							ng-options="value.guest_group as value.guest_group for (key, value) in guest_groups">   
+										</select>-->
+							<div class="scrollable-dropdown-menu">
+								<input type="text" ng-model="guest_group" popover-trigger="mouseenter"  class="form-control input-sm"  placeholder="Enter Guest Group Number" 
+									uib-typeahead="guest_group.guest_group for guest_group in getguestgroupList($viewValue)"
+									typeahead-min-length="0"
+									typeahead-editable="false"
+									typeahead-on-select="onGroupSelect($item, $model, $label)"  required >
+							</div>
+						</div>
+						<div ng-show = 'selected' class="col-sm-12">
+							<label class="control-label text-xs text-muted">Room List : </label>
+								<select id = 'search'  class='form-control' multiple size='8'>		</select>												  
+						</div>	
+						<div ng-show = '!selected' class="col-sm-12" >
+							<label class="control-label text-xs text-muted">Room List :</label>
+							<div class="col-sm-12">								
+								<tags-input ng-model="model.rooms" placeholder="Add Room" replace-spaces-with-dashes="false" style="margin-top: -5px">
+									<auto-complete source="loadFilters($query ,'Rooms')"
+									min-length="0"
+										debounce-delay="0"
+										load-on-focus="true"
+										load-on-empty="true"
+										max-results-to-show="20">
+									</auto-complete>
+								</tags-input>
+							</div>
+						</div>
+		    		</form>
+		    	</div>
+			</div>
+		</div>
+	</div>
+	
+		
+	<div class=" modal-body wrapper">
+		<div class="panel panel-default" style="border-radius: 4px">
+		  	<div class="panel-heading">
+			  	<div>
+				  	<span><i class="fa fa-info"></i>&nbsp;Request Details</span>
+				</div>
+			</div>
+		  	<div class="panel-body" style="padding: 5px 0px">
+				<div class="wrapper form-horizontal form-validation" style="padding: 0px">
+					<form class="form-horizontal form-validation">
+						<div class="col-sm-6">
+							<label class="control-label text-xs text-muted">Time</label>
+							<div class="dropdown">
+								<a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+									<div class="input-group">
+										<input type="text" class="form-control" ng-model="datetime.time">
+										<span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+									</div>
+								</a>
+								<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+									<datetimepicker ng-model="datetime.date"
+										data-datetimepicker-config="{ dropdownSelector: '#dropdown2' }"
+										data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+								</ul>
+							</div>
+						</div>
+						<div class="col-sm-3">
+							<label class="control-label text-xs text-muted">Repeat</label><br>
+							<label class="i-switch m-t-xs m-r">
+								<input type="checkbox" ng-model="datetime.repeat" checked>
+								<i></i>
+							</label>
+						</div>
+						<div class="col-sm-3" ng-show="datetime.repeat">
+							<label class="control-label text-xs text-muted">Repeat until check-out</label>
+							<div>
+								<label class="i-switch m-t-xs m-r">
+									<input type="checkbox" ng-model="datetime.until_checkout_flag" checked>
+									<i></i>
+								</label>
+							</div>
+						</div>
+						<div class="col-sm-6" ng-show="datetime.repeat && !datetime.until_checkout_flag">
+							<label class="control-label text-xs text-muted">End Date</label>
+							<div class="input-group">
+								<span class="input-group-btn">
+									<button type="button" class="btn btn-default btn-sm" ng-click="open($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+								</span>
+								<input type="text" class="form-control input-sm" uib-datepicker-popup="yyyy-MM-dd" ng-model="datetime.repeat_end_date" is-open="datetime.is_date_open" datepicker-options="dateOptions" close-text="Close" required  ng-change="select(datetime.repeat_end_date)"/>
+							</div>
+						</div>
+		    		</form>
+		    	</div>
+		  	</div>
+		</div>
+  	</div>
+	<div class = "modal-body wrapper">
+		<center>
+			<button type="button" class="btn btn-dark btn-sm" ng-click="onSave()">
+				<span class="text-success font-bold"><i class="fa fa-check"></i>&nbsp;Save</span>
+				</button>
+			<button type="button" class="btn btn-dark btn-sm" ng-click="onCancel()">
+			<span class="text-danger font-bold"><i class="fa fa-times"></i>&nbsp;Cancel</span>
+			</button>
+				
+		</center>
+	</div>
+</div>

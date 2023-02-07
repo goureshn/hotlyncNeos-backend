@@ -1,0 +1,103 @@
+<form class="form-horizontal form-validation" ng-submit="onPostPBX()"> 
+    
+    <div class="wrapper-md1 col-centered" style="width: 100%;">
+        <div class="panel panel-default">
+            <div class="panel-heading">				
+                <label class="text-sm font-bold"><i class="fa fa-dollar text-default"></i>&nbsp;&nbsp; PBX</label>
+
+                <label class="i-switch m-t-xs m-r pull-right">
+                    <input type="checkbox" ng-model="guest.save_flag" checked>
+                    <i></i>
+                </label>
+			</div>
+            <div class="panel-body">
+                                     
+                <div class="form-group">
+                    <label class="col-sm-2 control-label text-muted">Action</label>
+                    <div class="col-sm-4">
+                        <select class="form-control" ng-model="guest.action" ng-change="onChangeAction()"
+                            ng-options="type for type in pms_action_type_list">
+                        </select>
+                    </div>    
+                </div>                            
+               
+                <div ng-show="guest.action == 'Call Charge'">    
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label text-muted">Call Date</label>                    
+                        <div class="col-sm-4">
+                            <input type="text" ng-model="guest.call_date" class="form-control input-sm">
+                        </div>
+
+                        <label class="col-sm-2 control-label text-muted">Call Time</label>                    
+                        <div class="col-sm-4">
+                            <input type="text" ng-model="guest.call_time" class="form-control input-sm">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label text-muted">Duration</label>                    
+                        <div class="col-sm-4">
+                            <input type="text" ng-model="guest.duration" class="form-control input-sm">
+                        </div>
+
+                        <label class="col-sm-2 control-label text-muted">Extension</label>                    
+                        <div class="col-sm-4">
+                            <input type="text" ng-model="guest.extension" class="form-control input-sm">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label text-muted">Trunk</label>                    
+                        <div class="col-sm-4">
+                            <input type="text" ng-model="guest.trunk" class="form-control input-sm">
+                        </div>
+
+                        <label class="col-sm-2 control-label text-muted">Transfer</label>                    
+                        <div class="col-sm-4">
+                            <input type="text" ng-model="guest.transfer" class="form-control input-sm">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label text-muted">Call Number</label>                    
+                        <div class="col-sm-4">
+                            <input type="text" ng-model="guest.calleeid" class="form-control input-sm">
+                        </div>
+
+                        <label class="col-sm-2 control-label text-muted">Call Type</label>                    
+                        <div class="col-sm-4">
+                            <select class="form-control" ng-model="guest.call_type"
+                                ng-options="value.id as value.name for (key, value) in call_type_list">
+                            </select>
+                        </div>
+                        
+                    </div>
+                </div>    
+
+                <div ng-show="guest.action == 'Room Status'">
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label text-muted">IVR Code</label>                    
+                        <div class="col-sm-4">
+                            <input type="text" ng-model="guest.ivr_code" class="form-control input-sm">
+                        </div>
+
+                        <label class="col-sm-2 control-label text-muted">Extension</label>                    
+                        <div class="col-sm-4">
+                            <input type="text" ng-model="guest.extension" class="form-control input-sm">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row" style="margin-top: 20px; margin-right: 7px">
+                    <div class="pull-right">
+                        <button type="submit" class="btn btn-sm btn-dark text-uc m-t-n-xs"><strong>
+                        	<span class="text-success">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Post&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></strong></button>
+                        <button type="submit" class="btn btn-sm btn-dark text-uc m-t-n-xs" ng-click="cancel()"><strong>
+                        	<span class="text-danger">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Cancel&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></strong></button>
+                    </div>
+                </div>       
+               
+            </div>
+        </div>
+    </div>
+</form>

@@ -1,0 +1,32 @@
+<div class="login-page" style="display: table-cell; text-align: center;">
+	<div class="container w-xxl w-auto-xs"   ng-controller="SigninFormController" ng-init="app.settings.container = false;">
+		<img class="navbar-brand block m-t" src="../frontpage/img/login_logo.png" alt="" 
+			style="width: 100%; height: auto; padding: 90px 0px 40px 0px;"m align="middle">
+  	<!--<a href class="navbar-brand block m-t">{{app.name}}</a>-->
+  	<div class="m-b-lg">
+  		<div class="wrapper text-center">
+
+  		</div>
+  		<form name="form" class="form-validation">
+  			<div class="text-danger wrapper text-center" ng-show="authError">
+  			  {{authError}}
+  			</div>
+  			<div class="list-group list-group-sm">
+  				<div class="list-group-item">
+  				  	<input type="text" placeholder="Username" class="form-control no-border" ng-model="user.username" ng-disabled="user.viewinform"  required>
+  				</div>
+  				<div class="list-group-item">
+  				   	<input type="password" placeholder="Password" class="form-control no-border" ng-model="user.password" ng-disabled="user.viewinform" required>
+  				</div>
+  			</div>
+  			<button type="submit" class="login-button" style="display: block; margin: 0 auto; font-size: 12px" ng-click="getCpmpare_flag()" ng-disabled='form.$invalid'>Log in</button>
+
+  			<div class="text-center m-t m-b" style="color:#fff; font-size: 10px"><a ui-sref="access.forgotpwd">Forgot password?</a></div>
+  			<div class="line line-dashed"></div>
+  		</form>
+  	</div>
+  	<div class="text-center" ng-include="'tpl/blocks/page_footer.html'">
+  		{% include 'blocks/page_footer.html' %}
+  	</div>
+	</div>
+</div> 

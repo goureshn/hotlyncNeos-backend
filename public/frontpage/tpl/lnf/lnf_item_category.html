@@ -1,0 +1,124 @@
+<div class="modal-content">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">
+            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        </button>
+        <h3 class="modal-title" style="color:#2691d9" id="Heading">Add New Category</h3>
+    </div>
+    <div class="modal-body">
+        <form class="form-horizontal form-validation">
+        <div class="form-group" >
+            <div class="col-sm-6">
+                <label class="control-label text-xs text-muted">Category Name</label>
+                <div>
+                    <input class="form-control input-sm"  ng-model="category.name"  required>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <label class="control-label text-xs text-muted">Send Notification</label>
+                <div>
+                    <label class="i-switch m-t-xs m-r pull-left">
+                        <input type="checkbox" ng-model="category.notify_flag"   />
+                        <i></i>
+                    </label>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <label class="control-label text-xs text-muted">Max Time(hr)</label>
+                <div>
+                    <input class="form-control input-sm"  ng-model="category.max_time"  required>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <label class="control-label text-xs text-muted">Elapse Time(%)</label>
+                <div>
+                    <input class="form-control input-sm"  ng-model="category.elapsed_time"  required>
+                </div>
+            </div>
+
+            <div class="col-sm-6">
+                <label class="control-label text-xs text-muted">Notify User</label>
+                <div>
+                    <input  type="text" ng-model="category.job_role" class="form-control input-sm" placeholder="Enter Job Role"
+                            uib-typeahead="item.job_role for item in jobrole_list | filter:$viewValue | limitTo:15"
+                            typeahead-min-length="0"
+                            typeahead-editable="false"                                                            
+                            typeahead-on-select="onJobRoleSelect($item, $model, $label)" required>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <label class="control-label text-xs text-muted">Notify Type</label>
+                <div>
+                    <tags-input ng-model="category.notify_type" placeholder="Add Type" replace-spaces-with-dashes="false" style="margin-top: -5px">
+                        <auto-complete  min-length="0" debounce-delay="0" load-on-focus="true" load-on-empty="true" source="loadNotifyTypeFilter($query)"
+                                        max-results-to-show="5">
+                        </auto-complete>
+                    </tags-input>
+                </div>
+            </div>
+
+            <div class="col-sm-6">
+                <label class="control-label text-xs text-muted">Chagen Status</label>
+                <div>
+                    <select class='form-control input-sm' 
+                        ng-model="category.status_name"                           
+                        ng-options="label for label in lnf_statuses"
+                    >
+                    </select>
+                </div>
+            </div>
+        </div>    
+        </form>
+
+        <div class="table table-responsive" style="margin-top: 20px" ng-show="list.length > 0">
+            <label class="font-bold"><i class="fa fa-history" aria-hidden="true"></i>&nbsp;&nbsp;Item Category List</label>
+            <table  st-table="ticketlist" class="table ticket table-striped b-t b-light">
+                <thead class="tblhead-sm" style="font-size: .7vw">
+                    <tr>
+                        <th class="text-center"><b>Name</b></th>
+                        <th class="text-center"><b>Max Time</b></th>
+                        <th class="text-center"><b>Elapsed Time</b></th>
+                        <th class="text-center"><b>Notify User</b></th>
+                        <th class="text-center"><b>Notify Type</b></th>
+                        <th class="text-center"><b>Change Status</b></th>
+                        <th class="text-center"><b>Notify Flag</b></th>
+                        <th class="text-center"><b>Action</b></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="row in list">
+                        <td class="text-center" ng-click="setItem(row)"><span>{{row.name}}</span></td>
+                        <td class="text-center"><span>{{row.max_time}}</span></td>
+                        <td class="text-center"><span>{{row.elapsed_time}}</span></td>
+                        <td class="text-center"><span>{{row.job_role}}</span></td>
+                        <td class="text-center"><span>{{row.notify_type}}</span></td>
+                        <td class="text-center"><span>{{row.status_name}}</span></td>
+                        <td class="text-center"><span>{{row.notify_flag == 1 ? 'Yes' : 'No'}}</span></td>
+                        <td class="text-center">
+                            <span ng-click="onClickUpdate(row)">
+                                <i class="fa fa-pencil text-success" style="font-size: 12px"></i>&nbsp;
+                            </span>
+                            <span ng-click="onClickDelete(row)">
+                                <i class="fa fa-remove text-danger" style="font-size: 12px"></i>&nbsp;
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal-footer ">
+        <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal" ng-click="createItem()">
+            <span class="glyphicon glyphicon-ok"></span>
+            <b ng-show="!(category.id > 0)"> Create</b>
+            <b ng-show="category.id > 0"> Update</b>
+        </button>
+        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal" ng-click="cancel()">
+            <span class="glyphicon glyphicon-remove"></span>
+            <b> Cancel</b>
+        </button>
+    </div>
+
+</div>
+

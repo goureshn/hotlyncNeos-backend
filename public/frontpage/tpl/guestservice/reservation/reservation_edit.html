@@ -1,0 +1,190 @@
+<div>
+  <div class="col-sm-4 b-r bg-auto" style="height: 100%;">
+    <div  class="col-centered col-sm-11">
+      <form class="form-horizontal">
+        <div class="form-group">
+          <div class="col-sm-3">
+            <p class="text-muted font-bold">Reservation #</p>
+          </div>
+          <div class="col-sm-3">
+            <p class="text-primary font-bold">{{ticket_id}}</p>
+          </div>
+          <div class="col-sm-3">
+            <p class="text-muted font-bold">{{request_time}}</p>
+          </div>
+            <div class="col-sm-2">
+                <span class="m-l-sm label {{getStatusCssInEdit(tab)}}">{{getStatus(tab)}}</span>
+                <span class="m-l-sm label {{getStatusCss(tab)}}">{{getPauseState(tab)}}</span>
+            </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="col-sm-11 col-centered">
+        <div class="panel panel-default">
+          <div class="panel-heading font-bold">Patron Information</div>
+          <div class="panel-body">
+            <form class="form-horizontal form-validation">
+              <div class="form-group">
+                <label class="col-sm-3 control-label" style="text-align: left">Outside Guest</label>
+                <div class="col-sm-2">
+                  <label class="i-switch m-t-xs m-r">
+                    <input type="checkbox" ng-model="outside_flag" checked>
+                    <i></i>
+                  </label>
+                </div>
+                <label class="col-sm-3 control-label" style="text-align: left">Room #</label>
+                <div class="col-sm-4">
+                  <input ng-model="reservation.room" class="form-control  input-sm"/>
+                </div>
+              </div>
+              <div class="form-group" >
+                <div class="col-sm-12">
+                  <label>Whole Name</label>
+                  <input ng-model="reservation.patron_name" class="form-control  input-sm" disabled/>
+                </div>
+              </div>
+              <div class="form-group" >
+                <div class="col-sm-6">
+                  <label>Email</label>
+                  <input ng-model="reservation.email" class="form-control  input-sm" disabled/>
+                </div>
+                <div class="col-sm-6">
+                  <label>Mobile</label>
+                  <input ng-model="reservation.mobile" class="form-control  input-sm" disabled/>
+                </div>
+              </div>
+
+              <div class="form-group" >
+                <div class="col-sm-6">
+                  <label>Loyalty Type</label>
+                  <input ng-model="reservation.loyalty_type" class="form-control  input-sm" disabled/>
+                </div>
+                <div class="col-sm-6">
+                  <label>Loyalty Number</label>
+                  <input ng-model="reservation.loyalty_no" class="form-control  input-sm" disabled/>
+                </div>
+              </div>
+              <div class="form-group" >
+                <div class="col-sm-6">
+                  <label>Day of Birthday</label>
+                  <input class="form-control"  ng-model="reservation.dob" disabled/>
+                </div>
+                <div class="col-sm-6">
+                  <label>Anniversary</label>
+                  <input class="form-control"  ng-model="reservation.anniversary" disabled/>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+    </div>
+
+    <div class="col-sm-11 col-centered">
+      <div class="panel panel-default">
+        <div class="panel-heading font-bold">Restaurant Information</div>
+        <div class="panel-body">
+          <form class="form-horizontal form-validation">
+            <div class="form-group" >
+              <div class="col-sm-12">
+                <label>Restaurant</label>
+                <input ng-model="reservation.restaurant" class="form-control  input-sm" disabled/>
+              </div>
+            </div>
+            <div class="form-group" >
+              <div class="col-sm-6">
+                <label>Promotion</label>
+                <input ng-model="reservation.promotion" class="form-control  input-sm" disabled/>
+              </div>
+              <div class="col-sm-6">
+                <label>Time</label>
+                <input ng-model="reservation.promotion_time" class="form-control  input-sm" disabled/>
+              </div>
+            </div>
+            <div class="form-group" >
+              <div class="col-sm-12">
+                <label>Comment</label>
+                <textarea class="form-control input-sm" rows="1" ng-model="reservation.message"></textarea>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="col-sm-8">
+    <div class="col-lg-4 b-r">
+      <div class="panel panel-default">
+        <div class="panel-heading font-bold"><h4>Select Date and Time</br>for guest reservation</h4></div>
+        <div class="panel-body">
+          <form class="form-horizontal form-validation">
+            <div class="form-group" >
+              <div class="col-sm-12">
+                <label>Date</label>
+                <div class="input-group"  ng-controller="DatetimeController">
+                  <input type="text" class="form-control" uib-datepicker-popup="yyyy-MM-dd" ng-model="reservation.date" is-open="opened" date-disabled="disabled(date, mode)" datepicker-options="dateOptions" ng-required="true" close-text="Close" required />
+                    <span class="input-group-btn">
+                      <button type="button" class="btn btn-default" ng-click="open($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+                    </span>
+                </div>
+              </div>
+            </div>
+            <div class="form-group" >
+              <div class="col-sm-12">
+                <label>Time</label>
+                <input type="text" size="8" class="form-control input-sm m-b" ng-model="reservation.time" data-time-format="h:mm:ss a" data-autoclose="1" placeholder="Time" bs-timepicker required>
+              </div>
+            </div>
+            <div class="form-group" >
+              <div class="col-sm-12">
+                <label>People</label>
+                <select class='form-control input-sm m-b' ng-model="reservation.seats"
+                        ng-options="seat for seat in seats">
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group" ng-show="actions.length > 0">
+                <div class="col-sm-12">
+                    <label>Update Status : </label>
+                    <select class='form-control input-sm m-b' ng-model="reservation.action" ng-change="onChangeAction(reservation.action)"
+                            ng-options="action for action in actions">
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group" ng-show="actions.length > 0">
+              <div class="col-sm-6">
+                <button class="btn m-b-xs w-xs btn-primary" ng-click="onSearchTables()">Search</button>
+              </div>
+              <div class="col-sm-6">
+                <button class="btn m-b-xs w-xs btn-success pull-right" ng-click="changeReservation()">Change</button>
+              </div>
+            </div>
+            <div class="form-group" ng-show="tables.avaliable_count > 0">
+              <div class="col-sm-12">
+                <label>{{tables.avaliable_count}} tables is available</label>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-8" style="{{tab_full_height}}">
+      <div class="tables-container row">
+        <div class="col-md-2 restaurant-table" ng-repeat="table in tables">
+          <h4 style="cursor:pointer"  tooltip-html-unsafe='<p>Position:{{table.location}}</p><img style="display:block;" width="320" height="225" src="{{table.image_url}}"/><p>Description: {{table.description}}</p>' tooltip-placement="bottom" tooltip-append-to-body="false">Table No. {{table.number}}</h4>
+          <p>Number of seats: {{table.seats}}</p>
+          <!-- 0: unavailable, 1, available, 2, reserved -->
+          <button class="btn btn-sm btn-default disabled" ng-show="table.status==0" disabled>Unavailable</button>
+          <button class="btn btn-sm btn-info" ng-show="table.status==1" disabled>Reserved</button>
+          <button class="btn btn-sm btn-danger" ng-show="table.status==2" ng-click="table.status = 5 - table.status">Reserve</button>
+          <button class="btn btn-sm btn-success" ng-show="table.status==3" ng-click="table.status = 5 - table.status">Cancel</button>
+        </div>
+      </div><!-- end tables container -->
+
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,158 @@
+<input type="hidden" id="id" value="-1" ng-model="model_data.id"/>
+
+	<div class="panel panel-default"> 
+		<div class="panel-heading wrapper"> 
+			<button type="button" class="btn btn-success btn-sm" style="float:right; margin-top: -5px" data-toggle="modal" data-target="#addModal" ng-disabled="viewclass" ng-click="onShowEditRow(-1)">
+				<span class="glyphicon glyphicon-plus"></span>
+				<b> Add New </b>
+			</button>                             
+			<i class="fa fa-user-circle-o"></i>                           
+			<span class="font-bold">User Group Management</span>
+		</div>                         
+		<div class=""> 
+			<table id="table_grid" class="table table-hover table-bordered" style="text-align: center;width:100%" ng-model = "table_grid"> 
+				<thead> 
+					<tr> 
+						<tr><!--
+							<th class="no-sort" style="text-align: center">
+								<input type="checkbox" id="checkall" />
+							</th>-->
+							<th style="text-align: center" ng-repeat = "field in fields">
+								<b>{{field}}</b>
+							</th>															
+							<th class="no-sort" style="text-align: center">Edit</th>
+							<th class="no-sort" style="text-align: center">Delete</th>
+						</tr>
+					</tr>                                     
+				</thead>                    
+			</table>                             
+		</div>                     
+	</div> 
+	
+<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"> 
+	<div class="modal-dialog" role="document"> 
+		<div class="panel"> 
+			<div class="modal-header bg"> 
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"> 
+					<span aria-hidden="true">&times;</span> 
+				</button>                             
+				<h5 class="modal-title font-bold" style="color:#2691d9" ng-if="model_data.id<0">
+					<i class="fa fa-plus"></i>&nbsp;Add Permission</h5>
+				<h5 class="modal-title font-bold" style="color:#2691d9" ng-if="model_data.id>=0">
+					<i class="fa fa-pencil"></i>&nbsp;Edit Permission</h5>				
+			</div>                         
+			<div class="modal-body"> 
+				<br> 
+				<form class="form-horizontal"> 
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Property:</label>
+						<div class="col-sm-5">
+							<select id='prpty_id' class='form-control' ng-model="model_data.property_id"
+								ng-options="value.id as value.name for (key, value) in properties">		
+							</select>							
+						</div>
+					</div>
+					
+					<text-item formlabel="Name" modelname="model_data.name"></text-item>
+					
+					
+					
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Location Group:</label>
+						<!-- <div class="col-sm-5">
+							<select id='prpty_id' class='form-control' ng-model="model_data.location_group"
+								ng-options="value.id as value.name for (key, value) in loc_grps">		
+							</select>							
+						</div> -->
+						<div class="col-md-5">
+							<div ng-dropdown-multiselect="" options="loc_groups" selected-model="loc_group_type" checkboxes="true" extra-settings="loc_groups_hint_setting"
+							 translation-texts="loc_groups_hint"></div>
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">VIP:</label>
+						<!-- <div class="col-sm-5">
+												<select id='prpty_id' class='form-control' ng-model="model_data.location_group"
+													ng-options="value.id as value.name for (key, value) in loc_grps">		
+												</select>							
+											</div> -->
+						<div class="col-md-5">
+							<div ng-dropdown-multiselect="" options="vips" selected-model="vip_type" checkboxes="true" extra-settings="vip_hint_setting"
+							 translation-texts="vip_hint"></div>
+						</div>
+					</div>
+					
+					<link href="/lib/angular/angular-toggle-switch-bootstrap-3.css" media="all" rel="stylesheet" type="text/css">
+					
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Group Notification:</label>
+						<div class="col-sm-5">
+							<div toggle-switch class="switch-primary" on-label="Yes" off-label="No" ng-model="group_notify_flag"></div>						
+						</div>						
+					</div>
+					
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="group_notification_select">Group Notification Type:</label>
+						<div class="col-sm-5">
+<!--							<select id='group_notification_select' multiple='multiple' class='form-control' ng-model="model_data.group_notification_type" ng-options="value for value in group_notify_types">-->
+<!--							</select>-->
+							<div ng-dropdown-multiselect="" options="group_notify_types" selected-model="model_data.group_notification_type" checkboxes="true" extra-settings="group_hint_setting"
+								 translation-texts="group_hint"></div>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Check-In Notification:</label>
+						<div class="col-sm-5">
+							<div toggle-switch class="switch-primary" on-label="Yes" off-label="No" ng-model="check_in_flag"></div>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Check-Out Notification:</label>
+						<div class="col-sm-5">
+							<div toggle-switch class="switch-primary" on-label="Yes" off-label="No" ng-model="check_out_flag"></div>
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Room Change Notification:</label>
+						<div class="col-sm-5">
+							<div toggle-switch class="switch-primary" on-label="Yes" off-label="No" ng-model="room_change_flag"></div>
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Complaint Notification:</label>
+						<div class="col-sm-5">
+							<div toggle-switch class="switch-primary" on-label="Yes" off-label="No" ng-model="complaint_notify_flag"></div>
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Sub-Complaint Notification:</label>
+						<div class="col-sm-5">
+							<div toggle-switch class="switch-primary" on-label="Yes" off-label="No" ng-model="subcomplaint_notify_flag"></div>
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Roster Based:</label>
+						<div class="col-sm-5">
+							<div toggle-switch class="switch-primary" on-label="Yes" off-label="No" ng-model="roster_flag"></div>						
+						</div>						
+					</div>
+
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Use For Eng Teams:</label>
+						<div class="col-sm-5">
+							<div toggle-switch class="switch-primary" on-label="Yes" off-label="No" ng-model="use_for_eng_teams"></div>						
+						</div>						
+					</div>
+
+					<text-item formlabel="SMS" modelname="model_data.sms"></text-item>
+					<text-item formlabel="Email" modelname="model_data.email"></text-item>													
+				</form>                             
+			</div>                         
+			<submit-form id="model_data.id" updatedata="onUpdateRow()"></submit-form>						
+		</div>                     
+	</div>                 
+</div>             
+
+<dialog-delete title="Destination" modelname="model_data.name" deletedata="deleteRow()"></dialog-delete>

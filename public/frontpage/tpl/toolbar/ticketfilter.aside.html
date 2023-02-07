@@ -1,0 +1,76 @@
+<div class="aside hbox" style="height: 100%;" tabindex="-1" role="dialog">
+  <div class="col bg-light dk b-r bg-auto" style="padding-left: 10px">
+    <div class="wrapper b-b bg">
+      <a href="" class="font-bold">Filters</a>
+      <button  type="button" class="btn btn-success btn-round-xs btn-xs pull-right"  ng-click="saveTicketFilter()" >Apply Filter</button>
+    </div>
+    <div>
+      <h5><strong>Ticket</strong></h5>
+      <ul class="headfilter" role="menu" style="list-style: none; margin-left:-50px;">
+        <li class="line-sm" ng-repeat="ticket in tickets">
+          <label class="md-check" style="margin-left: 20px">
+              <input type="radio"  name="optionname"   ng-model="ticket_filter" ng-value="ticket"  ng-click ="onChangeradio(ticket)"  />
+              <i class="green"></i>
+             <span ng-if="ticket != 'Custom Days'">
+            {{ ticket }}
+            </span>
+          </label>
+          <div ng-if="ticket == 'Custom Days'" style="display: inline-block;">
+           <input style="min-width: 100px; margin-left: 10px;height:22px;padding:2px 
+           10px;" ng-change="fetchDateBetn(this)" id="dataranger" ng-disabled="ticket_filter != 
+           'Custom Days'" ng-model="daterange2" ui-jq="daterangepicker" ui-options="dateRangeOption" 
+           class="form-control pull-right input-sm">
+         </div>
+        </li>
+      </ul>
+    </div>
+    <div>
+      <h5><strong>Status</strong></h5>
+      <ul class="headfilter" role="menu" style="list-style: none; margin-left:-50px;">
+        <li class="line-sm" ng-repeat="status in statuses">
+          <label class="md-check" style="margin-left: 20px">
+            <input type="checkbox" ng-model="status_filter[status.id]" ng-click="onChangeCallType(status.id)">
+            <i class="green"></i>
+            {{status.label}}
+          </label>
+        </li>
+      </ul>
+    </div>
+    <div>
+      <h5><strong>Priority</strong></h5>
+      <ul class="headfilter" role="menu" style="list-style: none; margin-left:-50px;">
+        <li class="line-sm" ng-repeat="priority in priorities">
+          <label class="md-check" style="margin-left: 20px">
+            <input type="checkbox" ng-model="priority_filter[priority.id]" ng-click="onChangeCallType(priority)">
+            <i class="green"></i>
+            {{priority.priority}}
+          </label>
+        </li>
+      </ul>
+    </div>
+    <div>
+      <h5 ng-if="departments.length > 0" ><strong>Department</strong></h5>
+      <ul class="headfilter" role="menu" style="list-style: none; margin-left:-50px;">
+        <li class="line-sm" ng-repeat="department in departments">
+          <label class="md-check" style="margin-left: 20px">
+            <input type="checkbox" ng-model="department_filter[department.id]" ng-click="onChangeCallType(department)">
+            <i class="green"></i>
+            {{department.department}}
+          </label>
+        </li>
+      </ul>
+    </div>
+    <div>
+      <h5  ><strong>Ticket Type</strong></h5>
+      <ul class="headfilter" role="menu" style="list-style: none; margin-left:-50px;">
+        <li class="line-sm" ng-repeat="type in types">
+          <label class="md-check" style="margin-left: 20px">
+            <input type="checkbox" ng-model="type_filter[type.id]" ng-click="onChangeCallType(type)">
+            <i class="green"></i>
+            {{type.type}}
+          </label>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
