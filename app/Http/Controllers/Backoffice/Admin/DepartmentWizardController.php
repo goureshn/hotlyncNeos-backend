@@ -63,6 +63,7 @@ class DepartmentWizardController extends Controller
 							<span class="glyphicon glyphicon-trash"></span>
 						</button></p>';
 					})				
+					->rawColumns(['checkbox', 'edit', 'delete'])
 					->make(true);
         }
 		else
@@ -81,6 +82,9 @@ class DepartmentWizardController extends Controller
     {
 		//echo 'here';
     	$input = $request->except('id');
+		if($input['short_code'] === null) $input['short_code'] = '';
+		if($input['description'] === null) $input['description'] = '';
+
 		$model = Department::create($input);
 		
 		$message = 'SUCCESS';	
@@ -195,7 +199,7 @@ class DepartmentWizardController extends Controller
 
 	public function getPropertyList(Request $request, $id) {
         $list_id = CommonDepartmentPropertyPivot::where('dept_id', $id)
-            ->select('property_id')->get()->lists('property_id');
+            ->select('property_id')->get()->pluck('property_id');
 
         $unselected = DB::table('common_property')
                 ->whereNotIn('id', $list_id)

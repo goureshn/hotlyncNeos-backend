@@ -41,6 +41,7 @@ class LicenseWizardController extends Controller
         $step = '2';
         return view('backoffice.wizard.property.license', compact('datalist', 'model', 'pagesize', 'property', 'step'));
     }
+
     public function index(Request $request)
     {
         if ($request->ajax()) {
@@ -78,6 +79,7 @@ class LicenseWizardController extends Controller
 							<span class="glyphicon glyphicon-trash"></span>
 						</button></p>';
                 })
+                ->rawColumns(['checkbox', 'down_csr_path', 'edit', 'delete'])
                 ->make(true);
         }
         else
@@ -99,6 +101,7 @@ class LicenseWizardController extends Controller
         $cur_date = date("Y-m-d");
 
         $property_id = $request->get('property_id' ,0);
+        $condition = $request->condition ?? "";
 
         $input = $request->except(['id', 'modules_ids', 'modules','module_type', 'condition', 'down_csr_path']);
         $checkdata = DB::table('common_property_license')

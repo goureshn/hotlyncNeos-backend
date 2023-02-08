@@ -1,0 +1,13 @@
+<?php
+
+namespace App\Models\Common;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Faq extends Model
+{
+    protected 	$guarded = [];
+    protected 	$table = 'common_faq';
+    public 		$timestamps = false;
+
+}

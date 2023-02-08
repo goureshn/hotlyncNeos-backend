@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Backoffice\Guest;
 use Illuminate\Http\Request;
 
 use App\Http\Controllers\UploadController;
-
+use App\Models\Common\CommonUser;
 use App\Models\Service\TaskList;
 use App\Models\Service\TaskGroupPivot;
 
@@ -18,10 +18,28 @@ class TaskListController extends UploadController
 {
    	public function index(Request $request)
     {
+		$user_id = $request->user_id ?? 0;
+		$filter = json_decode($request->filter ?? "", true);
+		$client_id = $request->client_id ?? 0;
+
+			if ($user_id > 0)
+				$property_list = CommonUser::getPropertyIdsByJobroleids($user_id);
+			else
+				$property_list = CommonUser::getProertyIdsByClient($client_id);
+
 		$datalist = DB::table('services_task_list as tl')
 						->leftJoin('services_task_group_members as tgm', 'tgm.task_list_id', '=', 'tl.id')
 						->leftJoin('services_task_group as tg', 'tgm.task_grp_id', '=', 'tg.id')
+						->leftJoin('services_dept_function as df','tg.dept_function','=','df.id')
+						->leftJoin('common_department as cd','df.dept_id','=','cd.id')
+						// ->whereIn('cd.property_id', $property_list)
 						->select(['tl.*', 'tg.name as tgname']);
+
+		if (!empty($filter)) {
+			if (!empty($filter["status"])) {
+				$datalist->whereIn('tl.status', $filter["status"]);
+			}
+		}
 
 		return Datatables::of($datalist)
 					->addColumn('checkbox', function ($data) {

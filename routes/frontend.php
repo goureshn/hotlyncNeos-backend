@@ -7,14 +7,12 @@ use App\Http\Controllers\Backoffice\Property\BuildingWizardController;
 use App\Http\Controllers\Backoffice\Property\RoomtypeWizardController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\DataController;
-use App\Http\Controllers\Frontend\CallaccountController;
 use App\Http\Controllers\Frontend\CallController;
 use App\Http\Controllers\Frontend\ComplaintController;
 use App\Http\Controllers\Frontend\GuestserviceController;
 use App\Http\Controllers\Frontend\LNFController;
 use App\Http\Controllers\Frontend\ReportController;
 use App\Http\Controllers\Frontend\WakeupController;
-use App\Http\Controllers\Frontend\ModController;
 use App\Http\Controllers\Frontend\EquipmentController;
 use App\Http\Controllers\Frontend\RepairRequestController;
 use App\Http\Controllers\Frontend\ContractController;
@@ -39,11 +37,7 @@ use Illuminate\Support\Facades\Route;
 Route::any('/call/agentstatus', [CallController::class, 'getAgentStatus']);
 Route::any('/chat/unreadcount', [DataController::class, 'getChatUnreadCount']);
 Route::any('getfavouritemenu', [FrontendController::class, 'getFavouriteMenus']);
-
-Route::any('/report/guestfacilities_excelreport', [ReportController::class, 'downloadFacilitiesReportExcel'])->withoutMiddleware('api_auth_group');
 Route::any('/report/filterlist', [ReportController::class, 'getFilterList']);
-Route::any('/report/feedback_excelreport', [ReportController::class, 'downloadFeedbackReportExcel'])->withoutMiddleware('api_auth_group');
-
 Route::get('/buildsomelist', [BuildingWizardController::class, 'getBuildingSomeList']);
 Route::any('/user/setactivestatus', [UserController::class, 'setActiveStatus']);
 Route::any('/workorder/uploadchecklistfiles', [EquipmentController::class, 'uploadAttachForChecklist']);
@@ -156,12 +150,10 @@ Route::prefix('guestservice')->group(function () {
         Route::any('updaterosterdevice', 'updateRosterForDevice');
         Route::any('transferdevice', 'transferDevice');
         Route::any('clearallrosters', 'clearAllRosters');
-        Route::any('exportguestfacility', 'exportGuestFacilityList')->withoutMiddleware('api_auth_group');
     });
     
     Route::any('manualpost', [ProcessController::class, 'postManual']);
     Route::get('roomtypelist',  [RoomtypeWizardController::class, 'getRoomTypeList']);
-    Route::any('complaintitems', [ComplaintController::class, 'getComplaintItemList']);
 
     Route::controller(ChatController::class)->group(function () {
         Route::any('chatroomlist', 'getChatSessionList');
@@ -210,63 +202,6 @@ Route::prefix('complaint')->group(function () {
         Route::any('uploadguestimage', 'uploadFileGuest');
         Route::any('categorylist', 'getCategoryList');
         Route::any('statistics', 'getStatisticInfo');
-        Route::any('list', 'getList');
-        Route::any('getcomplaintinfo', 'getComplaintInfo');
-        Route::any('getcomplaintinfo', 'getComplaintInfo');
-        Route::any('getcomments', 'getComments');
-        Route::any('guesthistory', 'getGuestHistory');
-        Route::any('logs', 'getComplaintLogs');
-        Route::any('deptlist', 'deptsList');
-        Route::any('addcomment', 'addComment');
-        Route::any('postcompensation', 'postCompensation');
-        Route::any('savereminder', 'saveReminder');
-        Route::any('createcategory', 'createCategory');
-        Route::any('subcategorylist', 'getSubcategoryList');
-        Route::any('createsubcategory', 'createSubcategory');
-        Route::any('getdeptloclist', 'getDeptLocList');
-        Route::any('savecomplaintdept', 'saveComplaintDept');
-        Route::any('assignsubcomplaint', 'assignSubcomplaint');
-        Route::any('addcompensationlistforsubcomplaint', 'addCompensationListForSubcomplaint');
-        Route::any('uploadsubfiles', 'uploadFilesToSubcomplaint');
-        Route::any('changemaincategory', 'changeMainCategory');
-        Route::any('changemainsubcategory', 'changeMainSubCategory');
-        Route::any('senddept', 'sendDept');
-        Route::any('changefeedback', 'changeFeedback');
-        Route::any('changeinitresponse', 'changeInitialResponse');
-        Route::any('updatefilepath', 'updateFilePath');
-        Route::any('getcompensationlistforsubcomplaint', 'getCompensationListForSubcomplaint');
-        Route::any('changesubcomment', 'changeSubComment');
-        Route::any('savelocation', 'saveLocation');
-        Route::any('savecategory', 'saveCategory');
-        Route::any('savesubcategory', 'saveSubcategory');
-        Route::any('removesubfiles', 'removeFilesFromSubcomplaint');
-        Route::any('addsubcomment', 'addSubcomment');
-        Route::any('getcompensationcomments', 'getCompensationComments');
-        Route::any('deletemaincompensation', 'deleteMainCompensation');
-        Route::any('acksubcomplaint', 'ackSubComplaint');
-        Route::any('addcompensationforsubcomplaint', 'addCompensationForSubcomplaint');
-        Route::any('deletecompensationforsubcomplaint', 'deleteCompensationForSubcomplaint');
-        Route::any('completesubcomplaint', 'completeSubComplaint');
-        Route::any('reopensubcomplaint', 'reopenSubComplaint');
-        Route::any('deletesubcomplaint', 'deleteSubcomplaint');
-        Route::any('updatecomment', 'updateComment');
-        Route::any('deletecomment', 'deleteComment');
-        Route::any('changelocation', 'changeLocation');
-        Route::any('changefeedbacksource', 'changeFeedbackSource');
-        Route::any('changefeedbacktype', 'changeFeedbackType');
-        Route::any('changeincidentime', 'changeIncidentTime');
-        Route::any('saveguestprofile', 'saveGuestProfile');
-        Route::any('flagguest', 'flagGuest');
-        Route::any('resolve', 'resolve');
-        Route::any('updateguest', 'updateGuest');
-        Route::any('repending', 'repending');
-        Route::any('unresolve', 'unresolve');
-        Route::any('reopen', 'reopen');
-        Route::any('reject', 'reject');
-        Route::any('close', 'close');
-        Route::any('delete', 'delete');
-        Route::any('getcomptemplate', 'getCompensationTemplate');
-        Route::any('savecomptemplate', 'saveCompensationTemplate');
         Route::any('fblist', 'getfbList');
         Route::any('feedbackid', 'getfeedbackID');
         Route::any('searchcoguestlist', 'searchCOGuestList');
@@ -395,66 +330,6 @@ Route::prefix('lnf')->group(function () {
     });
 });
 
-Route::prefix('callaccount')->group(function () {
-    Route::controller(CallaccountController::class)->group(function () {
-        Route::any('callranks', 'getCallRanks');
-        Route::any('bccall', 'getBCCalls');
-        Route::any('guestcall', 'getGuestCalls');
-        Route::any('admincall', 'getAdminCalls');
-        Route::any('mycallstats', 'getMyCallStats');
-        Route::any('myextlist', 'getMyAdminExtensionList');
-        Route::any('destlist', 'getDestinationList');
-        Route::any('myadmincall', 'getMyAdminCalls');
-        Route::any('mymobilecall', 'getMyMobileCalls');
-        Route::any('phonelist', 'getPhonebookList');
-        Route::any('addphonebook', 'addPhonebook');
-        Route::any('commentlist', 'getCallCommentList');
-        Route::any('commentlistmobile', 'getCallCommentListMobile');
-        Route::any('submitmobileapproval', 'submitMobileApproval'); // added column classify_date in call_mobile_calls
-        Route::any('updatephonebook', 'updatePhonebook');
-        Route::any('deletephonebook', 'deletePhonebook');
-        Route::any('approvallist', 'getApprovalUserList');
-        Route::any('detailcalllist', 'getApprovalListForUser');
-        Route::any('approvalmobilelist', 'getApprovalMobileUserList');
-        Route::any('detailmobilelist', 'getApprovalMobileListForUser');
-        Route::any('updatemobileapproval', 'updateApprovalMobileApproveReject');
-        Route::any('approvalapprove', 'updateApprovalApproveReject');
-        Route::any('getdestinationname', 'getDestination');
-        Route::any('departlist', 'getFinancelDepartList');
-        Route::any('financedetailcalllist', 'getFinanceListForUser');
-        Route::any('departlistmobile', 'getFinanceDepartListMobile');
-        Route::any('financedetailcalllistmob', 'getFinanceListMobForUser');
-        Route::any('getmyadmincallsfromfinance', 'getMyAdminCallsFromFinance');
-        Route::any('financedepartclose', 'updateFinanceDepartClose');
-        Route::any('getmymobilecallsfromfinance', 'getMyMobileCallsFromFinance');
-        Route::any('uploadimage', 'uploadMobileTrackList');
-    });
-
-    Route::any('calcrate', [ProcessController::class, 'getChargeValue1']);
-});
-
-Route::prefix('mod')->group(function () {
-    Route::controller(ModController::class)->group(function () {
-        Route::any('getchecklist', 'getCheckList');
-        Route::any('getchecklisttask', 'getCheckListTask');
-        Route::any('createchecklist', 'createCheckList');
-        Route::any('activechecklist', 'activeCheckList');
-        Route::any('categorylist', 'getCategoryList');
-        Route::any('getchecklistitemlist', 'getChecklistItemList');
-        Route::any('createchecklistcategory', 'createChecklistCategory');
-        Route::any('createchecklistitem', 'createChecklistItem');
-        Route::any('deletechecklistitem', 'deleteCheckListItem');
-        Route::any('deletechecklist', 'deleteCheckList');
-        Route::any('createchecklisttask', 'createChecklistTaskFromWeb');
-        Route::any('checklistresult', 'getChecklistResult');
-        Route::any('uploadchecklistfiles', 'uploadAttachForChecklist');
-        Route::any('updatechecklistattach', 'updateChecklistAttach');
-        Route::any('addchecklistitem', 'addChecklistItem');
-        Route::any('updatechecklistresult', 'updateChecklistResultFromWeb');
-        Route::any('deletechecklisttask', 'deleteChecklistTask');
-    });
-});
-
 Route::prefix('eng')->group(function () {
     Route::controller(RepairRequestController::class)->group(function () {
         Route::any('requestorlist', 'getRequestorList');
@@ -472,7 +347,6 @@ Route::prefix('eng')->group(function () {
         Route::any('createrepairrequest', 'createRequest');
         Route::any('upload_repair_attach', 'uploadFiles');
         Route::any('deleterepairrequest', 'deleteRequest');
-        Route::any('exportrepairrequest', 'exportRepairRequestList')->withoutMiddleware('api_auth_group');
     });
 
     Route::controller(EquipmentController::class)->group(function () {
@@ -506,8 +380,7 @@ Route::prefix('eng')->group(function () {
         Route::any('deletefilefromworkorder', 'deleteFileFromWorkOrder');
         Route::any('updateworkorder', 'updateWorkorder');
         Route::any('deleteworkorder', 'deleteWorkorder');
-        Route::any('changeworkdate', 'changeWorkOrderDate');//add
-        Route::any('exportworkorder', 'exportWorkorderList')->withoutMiddleware('api_auth_group');
+        Route::any('changeworkdate', 'changeWorkOrderDate');
     });
 
     Route::controller(ContractController::class)->group(function () {
@@ -550,7 +423,6 @@ Route::prefix('equipment')->group(function () {
         Route::any('getchecklist', 'getCheckList');
         Route::any('createchecklistcategory', 'createChecklistCategory');
         Route::any('equipmentimagedel', 'delEquipmentImage');
-        Route::any('importexcel', 'importExcel');
     });
 });
 
@@ -560,6 +432,5 @@ Route::prefix('part')->group(function () {
         Route::any('createpart', 'CreatePart');
         Route::any('updatepart', 'updatePart');
         Route::any('partdelete', 'deletePart');
-        Route::any('importexcelpart', 'importExcelPart');
     });
 });

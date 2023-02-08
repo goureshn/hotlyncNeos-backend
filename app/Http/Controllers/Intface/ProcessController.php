@@ -1207,7 +1207,7 @@ class ProcessController extends Controller
 
         $ids = Guest::where('room_id', $room_info->id)
             ->where('checkout_flag', 'checkin')
-            ->select('id')->get()->lists('id');
+            ->select('id')->get()->pluck('id');
 
         Guest::where('room_id', $room_info->id)
             ->where('checkout_flag', 'checkin')

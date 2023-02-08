@@ -31,7 +31,7 @@ class PropertyWizardController extends UploadController
 		$total = 0;
 		$web_root = $_SERVER["DOCUMENT_ROOT"];
 		$length = strlen($web_root) - 10;
-		$web_root = substr($web_root,0,$length);
+		if(PHP_OS !== "Linux") $web_root = substr($web_root,0,$length);
 		if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
 			$total = disk_total_space("E:");
 			$free = disk_free_space($web_root);
@@ -79,13 +79,13 @@ class PropertyWizardController extends UploadController
 	}	
     public function index(Request $request)
     {
-		$user_id = $request->get('user_id','0');
-		$client_id = $request->get('client_id', 0);
+		// $user_id = $request->get('user_id','0');
+		// $client_id = $request->get('client_id', 0);
 		
-		if($user_id > 0)
-			$property_list = CommonUser::getPropertyIdsByJobroleids($user_id);
-		else
-			$property_list = CommonUser::getProertyIdsByClient($client_id);	
+		// if($user_id > 0)
+		// 	$property_list = CommonUser::getPropertyIdsByJobroleids($user_id);
+		// else
+		// 	$property_list = CommonUser::getProertyIdsByClient($client_id);	
 
 		if ($request->ajax()) {
 			
@@ -93,8 +93,7 @@ class PropertyWizardController extends UploadController
 					->leftJoin('common_chain as cc', 'cp.client_id', '=', 'cc.id')
 					->select(['cp.*', 'cc.name as ccname']);
 
-				$datalist->whereIn('cp.id', $property_list);							
-						
+				// $datalist->whereIn('cp.id', $property_list);							
 			return Datatables::of($datalist)
 					->addColumn('modules', function ($data) {
 						$property_id = $data->id;
@@ -121,7 +120,8 @@ class PropertyWizardController extends UploadController
 						return '<p data-placement="top" data-toggle="tooltip" title="Delete"><button class="btn btn-danger btn-xs" data-title="Delete" data-toggle="modal" data-target="#deleteModal" ng-disabled="job_role!=\'SuperAdmin\'" ng-click="onDeleteRow('.$data->id.')">
 							<span class="glyphicon glyphicon-trash"></span>
 						</button></p>';
-					})				
+					})
+					->rawColumns(['action', 'modules', 'checkbox', 'edit', 'delete'])			
 					->make(true);
         }
 		else
