@@ -78,6 +78,7 @@ class TaxController extends Controller
 						<span class="glyphicon glyphicon-trash"></span>
 					</button></p>';
 				})				
+				->rawColumns(['checkbox', 'edit', 'delete'])
 				->make(true);
     }
 
@@ -91,7 +92,9 @@ class TaxController extends Controller
     public function store(Request $request)
     {
 		$input = $request->except('id');
-		
+		if($input['name'] === null) $input['name'] = '';
+		if($input['value'] === null) $input['value'] = '';
+
 		try {			
 			$model = Tax::create($input);
 		} catch(PDOException $e){

@@ -8,6 +8,8 @@ use App\Http\Controllers\DataController;
 use App\Http\Controllers\GuestController;
 use App\Http\Controllers\Intface\ProcessController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\UploadController;
+use App\Http\Controllers\Backoffice\Property\RoomWizardController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -28,37 +30,39 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('storelicense', [PropertyWizardController::class, 'storeLicense']);
 Route::post('licensekey', [PropertyWizardController::class, 'licenseKey']);
+Route::get('room/list', [RoomWizardController::class, 'getRoomList']);
+Route::any('uploadpicture', [UploadController::class, 'uploadpicture']);
 
 Route::post('checklicense', [LicenseWizardController::class, 'checkLicense']);
 
-Route::get('/getcurrency', [DataController::class, 'getCurrency']);
-Route::any('/build/list', [DataController::class, 'getBuildList']);
-Route::any('/floor/list', [DataController::class, 'getFloorList']);
+Route::get('getcurrency', [DataController::class, 'getCurrency']);
+Route::any('build/list', [DataController::class, 'getBuildList']);
+Route::any('floor/list', [DataController::class, 'getFloorList']);
 
-Route::post('/hotlync/checklicense', [LicenseWizardController::class, "checkLicense"]);
-Route::post('/auth/getcompareflag', [UserController::class, 'GetCompareFlag']);
-Route::post('/auth/login', [UserController::class, 'login']);
-Route::any('/guest/roomlist', [GuestController::class, 'getRoomList']);
+Route::post('hotlync/checklicense', [LicenseWizardController::class, "checkLicense"]);
+Route::post('auth/getcompareflag', [UserController::class, 'GetCompareFlag']);
+Route::post('auth/login', [UserController::class, 'login']);
+Route::any('guest/roomlist', [GuestController::class, 'getRoomList']);
 
-Route::any('/hskp/publicAreaGetTasksMain', [HSKPController::class, 'publicAreaGetTasksMain']);
-Route::any('/hskp/publicAreaAddTaskMain', [HSKPController::class, 'publicAreaAddTaskMain']);
-Route::any('/hskp/publicAreaEditTaskMain', [HSKPController::class, 'publicAreaEditTaskMain']);
-Route::any('/hskp/publicAreaGetTasksByMainId', [HSKPController::class, 'publicAreaGetTasksByMainId']);
-Route::any('/hskp/publicAreaGetLocationsWithIds', [HSKPController::class, 'publicAreaGetLocationsWithIds']);
-Route::any('/hskp/publicAreaEditTask', [HSKPController::class, 'publicAreaEditTask']);
-Route::any('/hskp/publicAreaEditTaskActive', [HSKPController::class, 'publicAreaEditTaskActive']);
-Route::any('/hskp/publicAreaAddTask', [HSKPController::class, 'publicAreaAddTask']);
+Route::any('hskp/publicAreaGetTasksMain', [HSKPController::class, 'publicAreaGetTasksMain']);
+Route::any('hskp/publicAreaAddTaskMain', [HSKPController::class, 'publicAreaAddTaskMain']);
+Route::any('hskp/publicAreaEditTaskMain', [HSKPController::class, 'publicAreaEditTaskMain']);
+Route::any('hskp/publicAreaGetTasksByMainId', [HSKPController::class, 'publicAreaGetTasksByMainId']);
+Route::any('hskp/publicAreaGetLocationsWithIds', [HSKPController::class, 'publicAreaGetLocationsWithIds']);
+Route::any('hskp/publicAreaEditTask', [HSKPController::class, 'publicAreaEditTask']);
+Route::any('hskp/publicAreaEditTaskActive', [HSKPController::class, 'publicAreaEditTaskActive']);
+Route::any('hskp/publicAreaAddTask', [HSKPController::class, 'publicAreaAddTask']);
 
 // Interface
 Route::group(['prefix' => 'interface/', 'middleware' => ['interface_auth_group']], function () {
-    Route::any('/process/{action}', [ProcessController::class, 'process']);
+    Route::any('process/{action}', [ProcessController::class, 'process']);
 });
 
 Route::controller(DataController::class)->group(function () {
     
-    Route::get('/list/{name}', 'getList');
+    Route::get('list/{name}', 'getList');
     
 });
 
-Route::get('backend_api/multipropertylist', [DataController::class, 'getMultiPropertyList']);//add
-Route::get('/backoffice/user/jobrole', [UserWizardController::class, 'getJobRoles']);//add
+Route::get('backend_api/multipropertylist', [DataController::class, 'getMultiPropertyList']);
+Route::get('backoffice/user/jobrole', [UserWizardController::class, 'getJobRoles']);

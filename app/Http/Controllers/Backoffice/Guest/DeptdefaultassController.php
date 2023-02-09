@@ -86,6 +86,7 @@ class DeptdefaultassController extends UploadController
 							<span class="glyphicon glyphicon-trash"></span>
 						</button></p>';
                 })
+                ->rawColumns(['location_list', 'location_type_list', 'checkbox', 'edit', 'delete'])
                 ->make(true);
         }
         else

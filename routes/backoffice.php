@@ -50,6 +50,14 @@ use App\Http\Controllers\Backoffice\Call\WhitelistController;
 use App\Http\Controllers\Backoffice\Call\TimeslabController;
 use App\Http\Controllers\Backoffice\Call\AdminrateController;
 use App\Http\Controllers\Backoffice\Call\GuestrateController;
+use App\Http\Controllers\Backoffice\Guest\TaskMainController;
+use App\Http\Controllers\Backoffice\Guest\HSKPController;
+use App\Http\Controllers\Backoffice\Guest\MinibarController;
+use App\Http\Controllers\Backoffice\Guest\MinibarItemController;
+use App\Http\Controllers\Backoffice\Guest\CompensationController;
+use App\Http\Controllers\Backoffice\Guest\CompapprouteController;
+use App\Http\Controllers\Backoffice\Guest\DeptdefaultassController;
+use App\Http\Controllers\Backoffice\Guest\ComplaintController;
 
 /*
 |--------------------------------------------------------------------------
@@ -78,77 +86,83 @@ Route::prefix('property/wizard')->group(function () {
 
     // Client
     Route::resource('client', ClientWizardController::class);
-    Route::get('/client/delete/{id?}', [ClientWizardController::class, 'destroy']);
+    Route::get('client/delete/{id?}', [ClientWizardController::class, 'destroy']);
     
     Route::controller(PropertyWizardController::class)->group(function () {
         // Property
         Route::post('storeproperty', 'storeProperty');
-        Route::get('/property/delete/{id?}', 'destroy');
+        Route::get('property/delete/{id?}', 'destroy');
         Route::post('propertycreate', 'createData');
         Route::post('propertyupdate/{id}', 'updateData');
-        Route::post('/property/uploadlogo', 'uploadlogo');
+        Route::post('property/uploadlogo', 'uploadlogo');
         Route::any('gethardsize', 'getHardDisk');
     });
     Route::resource('property', PropertyWizardController::class);
 
     // Module
-    Route::get('/module/delete/{id?}', [ModuleWizardController::class, 'destroy']);
+    Route::get('module/delete/{id?}', [ModuleWizardController::class, 'destroy']);
     Route::resource('module', ModuleWizardController::class);
 
     // Building
-    Route::get('/building/delete/{id?}', [BuildingWizardController::class, 'destroy']);
-    Route::get('/buildlist', [BuildingWizardController::class, 'getBuildingList']);
+    Route::get('building/delete/{id?}', [BuildingWizardController::class, 'destroy']);
+    Route::get('buildlist', [BuildingWizardController::class, 'getBuildingList']);
     Route::resource('building', BuildingWizardController::class);
 
     // License
-    Route::get('/license/delete/{id?}', [LicenseWizardController::class, 'destroy']);
-    Route::get('/licenselist', [LicenseWizardController::class, 'getLicenseList']);
-    Route::get('/license_deviceid', [LicenseWizardController::class, 'getDeviceId']);
-    Route::post('/uploadlicense', [LicenseWizardController::class, 'uploadLicense']);
+    Route::get('license/delete/{id?}', [LicenseWizardController::class, 'destroy']);
+    Route::get('licenselist', [LicenseWizardController::class, 'getLicenseList']);
+    Route::get('license_deviceid', [LicenseWizardController::class, 'getDeviceId']);
+    Route::post('uploadlicense', [LicenseWizardController::class, 'uploadLicense']);
     Route::resource('license', LicenseWizardController::class);
 
     // Floor
-    Route::get('/floor/delete/{id?}', [FloorWizardController::class, 'destroy']);
-    Route::post('/floor/upload', [FloorWizardController::class, 'upload']);
-    Route::get('/floorlist', [FloorWizardController::class, 'getList']);
-    Route::post('/floor/erasetables', [FloorWizardController::class, 'eraseTables']);
+    Route::get('floor/delete/{id?}', [FloorWizardController::class, 'destroy']);
+    Route::post('floor/upload', [FloorWizardController::class, 'upload']);
+    Route::get('floorlist', [FloorWizardController::class, 'getList']);
+    Route::post('floor/erasetables', [FloorWizardController::class, 'eraseTables']);
     Route::resource('floor', FloorWizardController::class);
 
     // Room Type
-    Route::get('/roomtype/delete/{id?}', [RoomtypeWizardController::class, 'destroy']);
-    Route::post('/roomtype/upload', [RoomtypeWizardController::class, 'upload']);
+    Route::get('roomtype/delete/{id?}', [RoomtypeWizardController::class, 'destroy']);
+    Route::post('roomtype/upload', [RoomtypeWizardController::class, 'upload']);
     Route::resource('roomtype', RoomtypeWizardController::class);
 
     // Room
-    Route::get('/roomlist/assist', [RoomWizardController::class, 'getRoomAssistList']);
-    Route::get('/room/delete/{id?}', [RoomWizardController::class, 'destroy']);
-    Route::post('/room/upload', [RoomWizardController::class, 'upload']);
+    Route::get('roomlist/assist', [RoomWizardController::class, 'getRoomAssistList']);
+    Route::get('room/delete/{id?}', [RoomWizardController::class, 'destroy']);
+    Route::post('room/upload', [RoomWizardController::class, 'upload']);
     Route::resource('room', RoomWizardController::class);
 
     // Location
-    Route::get('/location/delete/{id?}', [LocationWizardController::class, 'destroy']);
-    Route::get('/location_type', [LocationWizardController::class, 'getTypeList']);
-    Route::post('/location/createtype', [LocationWizardController::class, 'createLocationType']);
+    Route::get('location/delete/{id?}', [LocationWizardController::class, 'destroy']);
+    Route::get('location_type', [LocationWizardController::class, 'getTypeList']);
+    Route::post('location/createtype', [LocationWizardController::class, 'createLocationType']);
     Route::resource('location', LocationWizardController::class);
 
     // Location Type
     Route::resource('locationtype', LocationtypeWizardController::class);
-    Route::get('/locationtype/delete/{id?}', [LocationtypeWizardController::class, 'destroy']);
+    Route::get('locationtype/delete/{id?}', [LocationtypeWizardController::class, 'destroy']);
 
     Route::controller(BuildingWizardController::class)->group(function () {
         Route::get('buildlist', 'getBuildingList');
     });
     
-    // Route::resource('license', LicenseWizardController::class);
-    // Route::post('uploadlicense', [LicenseWizardController::class, 'uploadLicense']);
     Route::get('locationindex', [LocationWizardController::class, 'locationIndex']);
+
+    // Export
+    Route::controller(ReportController::class)->withoutMiddleware('api_auth_group')->group(function () {
+        Route::get('audittask_excelreport', 'downloadAuditExcelReportTask');
+        Route::get('auditdeptfunc_excelreport', 'downloadAuditExcelReportDeptFunc');
+        Route::get('auditdevice_excelreport', 'downloadAuditExcelReportDevice');
+        Route::get('audituser_excelreport', 'downloadAuditExcelReportUser');
+    });
 });
 
 Route::group(['prefix'=>'guestservice/wizard','as'=>'guestservice.wizard.'], function () {
 
-    Route::prefix('alarmgroup')->controller(AlarmController::class)->group(function () {
-        Route::get('userlist', 'getUserList');
-    });
+    // Route::prefix('alarmgroup')->controller(AlarmController::class)->group(function () {
+    //     Route::get('userlist', 'getUserList');
+    // });
 
     Route::resource('tasklist', TaskListController::class);
     Route::get('gettaskgrouplist', [TaskListController::class, 'getTaskGorupList']);
@@ -158,6 +172,8 @@ Route::group(['prefix'=>'guestservice/wizard','as'=>'guestservice.wizard.'], fun
 
     Route::resource('task', TaskController::class);
     Route::get('taskindex', [TaskController::class, 'taskIndex']);
+
+    Route::resource('taskmain', TaskMainController::class);
 
     Route::controller(EscalationController::class)->group(function () {
         Route::get('deptfunclist', 'deptFuncList');
@@ -173,6 +189,7 @@ Route::group(['prefix'=>'guestservice/wizard','as'=>'guestservice.wizard.'], fun
 
     Route::resource('shift', ShiftController::class);
     Route::resource('departfunc', DepartFuncController::class);
+    Route::get('departfunc/delete/{id?}', [DepartFuncController::class, 'destroy']);
     Route::get('deptfuncindex', [DepartFuncController::class, 'deptFuncIndex']);
 
     Route::resource('device', DeviceController::class);
@@ -187,6 +204,53 @@ Route::group(['prefix'=>'guestservice/wizard','as'=>'guestservice.wizard.'], fun
     Route::post('location/list', [LocationController::class, 'getLocationList']);
     Route::post('location/postlocation', [LocationController::class, 'postLocation']);
     Route::get('locationgroupindex', [LocationController::class, 'locationGroupIndex']);
+
+    // GS-Houskeeping function
+    Route::resource('hskp', HSKPController::class);
+    Route::post('hskp/storeng', [HSKPController::class, 'storeng']);
+
+    // Minibar function
+    Route::controller(MinibarController::class)->group(function () {
+        Route::post('minibar/creategroup', 'create');
+        Route::get('minibargroup/list', 'getGroupList');
+        Route::post('minibar/createlist', 'createRSIList');
+        Route::post('minibar/upload', 'upload');
+        Route::post('minibar/roomtypelist', 'getRoomTypeList');
+        Route::get('minibargroup/grouplist', 'getServiceGroupList');
+        Route::post('minibargroup/postgroup', 'postGroup');
+    });
+    Route::resource('minibar', MinibarController::class);
+
+    // Minibar function
+    Route::resource('minibaritem', MinibarItemController::class);
+    Route::post('minibaritem/upload', [MinibarItemController::class, 'upload']);
+    Route::get('minibaritem/gethistory/{id?}', [MinibarItemController::class, 'getHistory']);
+
+    // GS-alarm function
+    Route::controller(AlarmController::class)->group(function () {
+        Route::post('alarm/creategroup', 'create');
+        Route::get('alarmgroup/list', 'getGroupList');
+        Route::get('alarmgroup/userlist', 'getUserList');
+        Route::post('alarmgroup/postalarm', 'postAlarm');
+    });
+    Route::resource('alarm', AlarmController::class);
+
+    // compensation
+    Route::resource('compensation', CompensationController::class);
+    Route::post('compensation/delete/{id?}', [CompensationController::class, 'destroy']);
+
+    // compension approval route
+    Route::resource('compapproute', CompapprouteController::class);
+    Route::post('compapproute/delete/{id?}', [CompapprouteController::class, 'destroy']);
+
+    //department default assignee
+    Route::resource('deptdefaultass', DeptdefaultassController::class);
+    Route::post('deptdefaultass/delete/{id?}', [DeptdefaultassController::class, 'destroy']);
+
+    // GS-Complaint function
+    Route::resource('subcomplaint', ComplaintController::class);
+    Route::post('subcomplaint/delete/{id?}', [ComplaintController::class, 'destroy']);
+
 });
 
 Route::prefix('configuration/wizard')->group(function () {
@@ -206,40 +270,40 @@ Route::prefix('admin/wizard')->group(function () {
     Route::resource('department', DepartmentWizardController::class);
 
     // Division Area
-    Route::get('/division/delete/{id?}', [DivisionWizardController::class, 'destroy']);
+    Route::get('division/delete/{id?}', [DivisionWizardController::class, 'destroy']);
     Route::resource('division', DivisionWizardController::class);
 
     // Common Area
-    Route::get('/common/delete/{id?}', [CommonAreaController::class, 'destroy']);
-    Route::post('/common/upload', [CommonAreaController::class, 'upload']);
+    Route::get('common/delete/{id?}', [CommonAreaController::class, 'destroy']);
+    Route::post('common/upload', [CommonAreaController::class, 'upload']);
     Route::resource('common', CommonAreaController::class);
 
     // Admin Area
-    Route::get('/admin/delete/{id?}', [AdminAreaController::class, 'destroy']);
-    Route::post('/admin/upload', [AdminAreaController::class, 'upload']);
+    Route::get('admin/delete/{id?}', [AdminAreaController::class, 'destroy']);
+    Route::post('admin/upload', [AdminAreaController::class, 'upload']);
     Route::resource('admin', AdminAreaController::class);
 
     // Outdoor Area
-    Route::get('/outdoor/delete/{id?}', [OutdoorWizardController::class, 'destroy']);
-    Route::post('/outdoor/upload', [OutdoorWizardController::class, 'upload']);
+    Route::get('outdoor/delete/{id?}', [OutdoorWizardController::class, 'destroy']);
+    Route::post('outdoor/upload', [OutdoorWizardController::class, 'upload']);
     Route::resource('outdoor', OutdoorWizardController::class);
 
     // Data manager Area
-    Route::post('/datamng/upload', [DataManageController::class, 'upload']);
-    Route::post('/datamng/erasetables', [DataManageController::class, 'eraseTables']);
+    Route::post('datamng/upload', [DataManageController::class, 'upload']);
+    Route::post('datamng/erasetables', [DataManageController::class, 'eraseTables']);
 
     //faq
-    Route::get('/faq/delete/{id?}', [FaqWizardController::class, 'destroy']);
-    Route::post('/faq/upload', [FaqWizardController::class, 'upload']);
-    Route::post('/faq/addcategory', [FaqWizardController::class, 'addCategory']);
+    Route::get('faq/delete/{id?}', [FaqWizardController::class, 'destroy']);
+    Route::post('faq/upload', [FaqWizardController::class, 'upload']);
+    Route::post('faq/addcategory', [FaqWizardController::class, 'addCategory']);
     Route::resource('faq', FaqWizardController::class);
 });
 
 Route::group(['prefix'=>'user/wizard','as'=>'user.wizard.', 'middleware' => ['api_auth_group']], function () {
     Route::controller(UserWizardController::class)->group(function () {
-        Route::get('/user/getimage', 'getImage');
-        Route::get('/user/resetpassword/{id}', 'resetPassword');
-        Route::get('/user/gethistory/{id}', 'getHistory');
+        Route::get('user/getimage', 'getImage');
+        Route::get('user/resetpassword/{id}', 'resetPassword');
+        Route::get('user/gethistory/{id}', 'getHistory');
         Route::get('userindex', 'userIndex');
     });
 
@@ -369,7 +433,7 @@ Route::group(['prefix'=>'call/wizard','as'=>'call.wizard.'], function () {
         Route::post('tax/createdata', 'createData');
         Route::post('tax/updatedata', 'updateData');
     });
-    Route::resource('tax', 'Backoffice\Call\TaxController');
+    Route::resource('tax', TaxController::class);
 
     // allowance
     Route::controller(AllowanceController::class)->group(function () {

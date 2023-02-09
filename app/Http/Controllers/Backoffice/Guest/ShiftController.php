@@ -136,6 +136,7 @@ class ShiftController extends UploadController
 						<span class="glyphicon glyphicon-trash"></span>
 					</button></p>';
 				})
+				->rawColumns(['location_group_list', 'task_group_list', 'building_list', 'checkbox', 'edit', 'delete'])
 				->make(true);
 
 				

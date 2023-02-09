@@ -107,6 +107,7 @@ class TaskListController extends UploadController
 							<span class="glyphicon glyphicon-trash"></span>
 						</button></p>';
 					})
+					->rawColumns(['checkbox', 'edit', 'chkstatus', 'lang', 'delete'])
 					->make(true);
 
 

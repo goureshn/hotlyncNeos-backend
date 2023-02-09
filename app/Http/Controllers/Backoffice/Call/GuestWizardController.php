@@ -91,7 +91,8 @@ class GuestWizardController extends Controller
 					return '<p data-placement="top" data-toggle="tooltip" title="Delete"><button class="btn btn-danger btn-xs" data-title="Delete" data-toggle="modal" data-target="#deleteModal" ng-disabled="job_role!=\'SuperAdmin\'" ng-click="onDeleteRow('.$data->id.')">
 						<span class="glyphicon glyphicon-trash"></span>
 					</button></p>';
-				})				
+				})	
+				->rawColumns(['checkbox', 'genable', 'edit', 'delete'])			
 				->make(true);
     }
 	
@@ -110,8 +111,10 @@ class GuestWizardController extends Controller
     public function store(Request $request)
     {
 		  $input = $request->except(['id','sub_exten']);
-		  $extension = $request->get('extension','0');
-		  $enable = $request->get('enable','0');
+		  $extension = $request->extension ?? '0';
+		  $enable = $request->enable ?? '0';
+		  if($input['extension'] === null) $input['extension'] = '';
+		  if($input['description'] === null) $input['description'] = '';
 
 		  $query =  DB::table('call_staff_extn as cse')
 				->where('cse.extension', '=', $extension)

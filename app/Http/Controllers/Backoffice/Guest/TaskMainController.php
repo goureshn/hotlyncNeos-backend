@@ -47,7 +47,8 @@ class TaskMainController extends UploadController
 						return '<p data-placement="top" data-toggle="tooltip" title="Delete"><button class="btn btn-danger btn-xs" data-title="Delete" data-toggle="modal" data-target="#deleteModal" ng-click="onDeleteRow('.$data->id.')">
 							<span class="glyphicon glyphicon-trash"></span>
 						</button></p>';
-					})				
+					})
+					->rawColumns(['checkbox', 'edit', 'delete'])				
 					->make(true);
 	
 					
@@ -174,12 +175,15 @@ class TaskMainController extends UploadController
 			'task' => $input['task']
 		]);
 		$property_settings = DB::table('property_setting')->where('id', $tm->property_setting_id)->update([
-			'settings_key' => $input['settings_key'],
-			'comment' => $input['comment']
+			'settings_key' => $input['settings_key'] ?? "",
+			'comment' => $input['comment'] ?? ""
 		]);
-		$service_group_members = DB::table('services_task_group_members')->where('task_list_id', $id)->update([
-			'task_grp_id' => $input['taskgroup_id']
-		]);
+		
+		if(@$input['taskgroup_id']){
+			$service_group_members = DB::table('services_task_group_members')->where('task_list_id', $id)->update([
+				'task_grp_id' => $input['taskgroup_id']
+			]);
+		}
 		
 		return Response::json($model);		
         // $input = $request->all(); //comment, settings_key

@@ -63,6 +63,7 @@ class ComplaintController extends UploadController
 							<span class="glyphicon glyphicon-trash"></span>
 						</button></p>';
                 })
+                ->rawColumns(['checkbox', 'edit', 'delete'])
                 ->make(true);
         }
         else
@@ -88,6 +89,8 @@ class ComplaintController extends UploadController
         $step = '2';
 
         $input = $request->except(['id']);
+        if($input['complaint'] === null) $input['complaint'] = '';
+
         $model = Complaints::create($input);
 
         $message = 'SUCCESS';

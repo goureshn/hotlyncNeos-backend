@@ -40,6 +40,7 @@ class TaskController extends UploadController
 							<span class="glyphicon glyphicon-trash"></span>
 						</button></p>';
 					})
+					->rawColumns(['checkbox', 'edit', 'delete'])
 					->make(true);
         }
 		else
@@ -135,6 +136,9 @@ class TaskController extends UploadController
 	public function store(Request $request)
     {
 		$input = $request->except('id');
+		foreach ($input as $key => $value) {
+			if($value === null) $input[$key] = "";
+		}
 
 		$model = TaskGroup::create($input);
 

@@ -173,7 +173,8 @@ class GuestrateController extends Controller
 					return '<p data-placement="top" data-toggle="tooltip" title="Delete"><button class="btn btn-danger btn-xs" data-title="Delete" data-toggle="modal" data-target="#deleteModal" ng-disabled="job_role!=\'SuperAdmin\'" ng-click="onDeleteRow('.$data->id.')">
 						<span class="glyphicon glyphicon-trash"></span>
 					</button></p>';
-				})				
+				})
+				->rawColumns(['roomtype', 'vip', 'checkbox', 'edit', 'delete'])				
 				->make(true);
     }
 
@@ -185,8 +186,11 @@ class GuestrateController extends Controller
 	
 	public function store(Request $request)
     {
-		$input = $request->except('id');
-		
+		$input = $request->except(['id', 'vip']);
+		if($input['name'] === null) $input['name'] = '';
+		if($input['room_type_ids'] === null) $input['room_type_ids'] = '';
+		if($input['vip_ids'] === null) $input['vip_ids'] = '';
+
 		try {			
 			$model = GuestChargeMap::create($input);
 		} catch(PDOException $e){
