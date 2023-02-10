@@ -58,6 +58,19 @@ use App\Http\Controllers\Backoffice\Guest\CompensationController;
 use App\Http\Controllers\Backoffice\Guest\CompapprouteController;
 use App\Http\Controllers\Backoffice\Guest\DeptdefaultassController;
 use App\Http\Controllers\Backoffice\Guest\ComplaintController;
+use App\Http\Controllers\Backoffice\Guest\ComplaintTypeController;
+use App\Http\Controllers\Backoffice\Guest\FeedbackSourceController;
+use App\Http\Controllers\Backoffice\Guest\FeedbackTypeController;
+use App\Http\Controllers\Backoffice\Guest\ComplaintdeptpivotController;
+use App\Http\Controllers\Backoffice\Guest\ComplaintescalationController;
+use App\Http\Controllers\Backoffice\Guest\ComplaintDivisionEscalationController;
+use App\Http\Controllers\Backoffice\Guest\SubcomplaintLocEscalationController;
+use App\Http\Controllers\Backoffice\User\PmModuleController;
+use App\Http\Controllers\Backoffice\User\PmGroupController;
+use App\Http\Controllers\Backoffice\User\PermissionController;
+use App\Http\Controllers\Backoffice\User\UserGroupController;
+use App\Http\Controllers\Backoffice\User\ShiftController as UserShiftController;
+use App\Http\Controllers\Backoffice\User\EmployeeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -251,6 +264,39 @@ Route::group(['prefix'=>'guestservice/wizard','as'=>'guestservice.wizard.'], fun
     Route::resource('subcomplaint', ComplaintController::class);
     Route::post('subcomplaint/delete/{id?}', [ComplaintController::class, 'destroy']);
 
+    // complaint type
+    Route::post('complainttype/delete/{id?}', [ComplaintTypeController::class, 'destroy']);
+    Route::resource('complainttype', ComplaintTypeController::class);
+
+    // feedback source
+    Route::post('feedbacksource/delete/{id?}', [FeedbackSourceController::class, 'destroy']);
+    Route::resource('feedbacksource', FeedbackSourceController::class);
+
+    // feedback type
+    Route::resource('feedbacktype', FeedbackTypeController::class);
+    Route::post('feedbacktype/delete/{id?}', [FeedbackTypeController::class, 'destroy']);
+
+    // complaint department pivot
+    Route::resource('complaintdeptpivot', ComplaintdeptpivotController::class);
+    Route::post('complaintdeptpivot/delete/{id?}', [ComplaintdeptpivotController::class, 'destroy']);
+
+    // complaint escalation
+    Route::post('complaintescalation/selectitem', [ComplaintescalationController::class, 'selectItem']);
+    Route::post('complaintescalation/updateinfo', [ComplaintescalationController::class, 'updateEscalationInfo']);
+    Route::post('complaintescalation/deleteinfo', [ComplaintescalationController::class, 'deleteEscalationInfo']);
+    Route::resource('complaintescalation', ComplaintescalationController::class);
+
+    // complaint division escalation
+    Route::post('complaintdivisionescalation/selectitem', [ComplaintDivisionEscalationController::class, 'selectItem']);
+    Route::post('complaintdivisionescalation/updateinfo', [ComplaintDivisionEscalationController::class, 'updateEscalationInfo']);
+    Route::post('complaintdivisionescalation/deleteinfo', [ComplaintDivisionEscalationController::class, 'deleteEscalationInfo']);
+    Route::resource('complaintdivisionescalation', ComplaintDivisionEscalationController::class);
+
+    // sub complaint location escalation
+    Route::post('subcomplaintlocescalation/selectitem', [SubcomplaintLocEscalationController::class, 'selectItem']);
+    Route::post('subcomplaintlocescalation/updateinfo', [SubcomplaintLocEscalationController::class, 'updateEscalationInfo']);
+    Route::post('subcomplaintlocescalation/deleteinfo', [SubcomplaintLocEscalationController::class, 'deleteEscalationInfo']);
+    Route::resource('subcomplaintlocescalation', SubcomplaintLocEscalationController::class);
 });
 
 Route::prefix('configuration/wizard')->group(function () {
@@ -300,14 +346,21 @@ Route::prefix('admin/wizard')->group(function () {
 });
 
 Route::group(['prefix'=>'user/wizard','as'=>'user.wizard.', 'middleware' => ['api_auth_group']], function () {
+    // User
     Route::controller(UserWizardController::class)->group(function () {
         Route::get('user/getimage', 'getImage');
         Route::get('user/resetpassword/{id}', 'resetPassword');
         Route::get('user/gethistory/{id}', 'getHistory');
         Route::get('userindex', 'userIndex');
+        Route::get('user/delete/{id?}', 'destroy');
+        Route::get('usergrid/get', 'getGridData');
+        Route::post('user/sendCredential', 'sendCredential');
     });
-
     Route::resource('user', UserWizardController::class);
+
+    // User Group
+    Route::get('/usergroup/delete/{id?}', [UserGroupController::class, 'destroy']);
+    Route::resource('usergroup', UserGroupController::class);
 
     Route::get('department', [DepartmentWizardController::class, 'getDepartList']);
     Route::get('departmentlist', [DepartmentWizardController::class, 'getDeptLists']);
@@ -323,6 +376,29 @@ Route::group(['prefix'=>'user/wizard','as'=>'user.wizard.', 'middleware' => ['ap
         Route::post('jobrole/postdeptlist', 'postDeptList');
     });
     Route::resource('createjob', CreateJobController::class);
+
+    //pm Module
+    Route::resource('pmmodule', PmModuleController::class);
+
+    // Permission Group
+    Route::controller(PmGroupController::class)->group(function () {
+        Route::post('pmgroup/pagelist', 'getPageList');
+        Route::post('pmgroup/copy', 'copyPmgroupMembers');
+        Route::get('pmgroup/delete/{id?}', 'destroy');
+        Route::post('pmgroup/postpagelist', 'postPageList');
+    });
+    Route::resource('pmgroup', PmGroupController::class);
+
+    Route::resource('permission', PermissionController::class);
+    Route::resource('shift', UserShiftController::class);
+
+    // Employee
+    Route::post('/employee/upload', [EmployeeController::class, 'upload']);
+    Route::post('/employee/migrate', [EmployeeController::class, 'migrate']);
+    Route::post('/employee/getsyncsetting', [EmployeeController::class, 'getSyncSetting']);
+    Route::post('/employee/updatesyncsetting', [EmployeeController::class, 'updateSyncSetting']);
+    Route::resource('employee', EmployeeController::class);
+
 });
 
 Route::group(['prefix'=>'call/wizard','as'=>'call.wizard.'], function () {

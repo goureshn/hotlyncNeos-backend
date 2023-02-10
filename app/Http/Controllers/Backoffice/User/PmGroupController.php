@@ -70,6 +70,7 @@ class PmGroupController extends UploadController
 							<span class="glyphicon glyphicon-trash"></span>
 						</button></p>';
 					})
+					->rawColumns(['checkbox', 'edit', 'copy', 'delete'])
 					->make(true);
 		}
 		else
@@ -95,6 +96,9 @@ class PmGroupController extends UploadController
 		$step = '1';
 
 		$input = $request->except(['id', 'prname','prdescription']);
+		if($input['name'] === null) $input['name'] = '';
+		if($input['description'] === null) $input['description'] = '';
+
 		$model = PermissionGroup::create($input);
 
 		$message = 'SUCCESS';
@@ -152,10 +156,12 @@ class PmGroupController extends UploadController
 
 	public function copyPmgroupMembers(Request $request)
 	{
-		$pmgroup_id = $request->get('id', 0);
-		$property_id = $request->get('property_id', 0);
+		$pmgroup_id = $request->id ?? 0;
+		$property_id = $request->property_id ?? 0;
 	
 		$input = $request->except(['id', 'prname','tasks','prdescription']);
+		if($input['description'] === null) $input['description'] = '';
+
 		$model = PermissionGroup::create($input);
 
 		$message = 'SUCCESS';
@@ -181,8 +187,7 @@ class PmGroupController extends UploadController
 			->orderBy('name')
 			->get();
 
-		$selected = array_merge($selected_cond,$selected_all);
-	
+		$selected = array_merge($selected_cond->toArray(),$selected_all->toArray());
 
 		$query= DB::table('common_perm_group');
 		$max_query=clone $query;
@@ -229,7 +234,7 @@ class PmGroupController extends UploadController
 			->whereNotIn('id', $list_id)
 			->orderBy('name')
 			->get();
-		$unselected = array_merge($unselected_cond,$unselected_all);
+		$unselected = array_merge($unselected_cond->toArray(), $unselected_all->toArray());
 
 		$selected_cond = DB::table('common_page_route as cpr')
 				->leftJoin('common_module_property as cmp', 'cpr.module_id', '=', 'cmp.module_id')
@@ -242,7 +247,7 @@ class PmGroupController extends UploadController
 			->orderBy('name')
 			->get();
 
-		$selected = array_merge($selected_cond,$selected_all);
+		$selected = array_merge($selected_cond->toArray(), $selected_all->toArray());
 
 		$model = array();
 		$model[] = $unselected;

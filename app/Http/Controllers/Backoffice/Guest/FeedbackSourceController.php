@@ -37,6 +37,7 @@ class FeedbackSourceController extends UploadController
                         <span class="glyphicon glyphicon-trash"></span>
                     </button></p>';
             })
+            ->rawColumns(['checkbox', 'edit', 'delete'])
             ->make(true);   
     }
 
@@ -52,6 +53,8 @@ class FeedbackSourceController extends UploadController
     public function store(Request $request)
     {
         $input = $request->except(['id']);
+        if($input['name'] === null) $input['name'] = '';
+
         $model = FeedbackSource::create($input);
 
         $message = 'SUCCESS';

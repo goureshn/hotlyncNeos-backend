@@ -71,7 +71,8 @@ class EmployeeController extends UploadController
 						}else {
 							return '';
 						}
-					})					
+					})
+					->rawColumns(['checkbox', 'edit', 'delete', 'image'])					
 					->make(true);
         }
     }

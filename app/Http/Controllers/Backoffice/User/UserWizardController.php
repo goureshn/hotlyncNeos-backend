@@ -125,6 +125,7 @@ class UserWizardController extends UploadController
 //							return '';
 //						}
 					})
+					->rawColumns(['cbname', 'shiftgroup', 'disabled_label', 'online_label', 'edit', 'delete', 'image', 'reset'])
 					->make(true);
         }
 		else

@@ -20,9 +20,12 @@ class SubcomplaintLocEscalationController extends UploadController
    	
     public function index(Request $request)
     {
-		$datalist = DB::table('services_location_type as slt')							
+		$datalist = DB::table('services_location_type as slt')
+						// ->join('services_complaint_type as sct', "")
 						->join('services_complaint_type as sct', function($join) {
-							$join->on(DB::raw('sct.id > 0'),DB::raw(''),DB::raw(''));
+							$join->on(function ($q) {
+								$q->whereRaw('sct.id > 0');
+							});
 						})						
 					->select(DB::raw('slt.*, sct.id as severity_id, sct.type as severity'));
 					
@@ -83,6 +86,7 @@ class SubcomplaintLocEscalationController extends UploadController
 					
 					return $list->field;
 				})
+				->rawColumns(['levels', 'job_roles', 'maxtimes', 'notify_types'])
 				->make(true);
     }
 
