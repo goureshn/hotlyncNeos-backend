@@ -1,0 +1,231 @@
+
+<div class="modal-content">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">
+            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        </button>
+        <h3 class="modal-title" style="color:#2691d9" id="Heading">Preventive Maintanence</h3>
+    </div>
+    <br>
+    <div class="modal-body">
+        <div class="row">
+            <div class="col-sm-6">
+                <form class="form-horizontal form-validation">
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label text-muted">Type</label>
+                        <div class="col-sm-8">
+                            <select class='form-control' ng-model="preventive.type" ng-change="onChangeReportType()" ng-options="type for type in preventive_types">
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group" >
+                        <label class="col-sm-4 control-label text-muted">Name</label>
+                        <div class="col-sm-8">
+                            <input ng-model="preventive.name" class="form-control  input-sm" required/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label text-muted">
+                            Asset/Group
+                        </label>
+                        <div class="col-sm-8 scrollable-dropdown-menu">
+                            <input class="form-control input-sm col-sm-11" type="text" ng-model="preventive.equip_name"
+                                    popover-trigger="mouseenter" popover-placement="top"
+                                    uib-typeahead="equip.name for equip in equip_group_list  | filter:$viewValue | limitTo:10"
+                                    typeahead-min-length="0"
+                                    typeahead-editable="false"
+                                    typeahead-template-url="partTypeahead.html"
+                                    typeahead-on-select="onEquipmentOrGroupSelect(equipment, $item, $model, $label)"
+                                    required />
+                        </div>
+                    </div>
+
+                    <div class="form-group" ng-if="preventive.parts.length > 0">
+                        <div class="col-sm-12">
+                            <label ng-repeat="row in preventive.parts">
+                                <label>
+                                    {{row.name}}_{{row.quantity}}_
+                                        <i class="fa fa-window-close fa-2x " style="cursor: pointer" title="Remove Part" ng-click="removeParts(row)"></i>
+                                </label>
+                            </label>                            
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label text-muted">Consumables</label>
+                        <div class="col-sm-8">                                    
+                            <input class="form-control input-sm" style="width: 70px;float: left" type="text" ng-model="part_name"
+                                    popover-trigger="mouseenter" popover-placement="top"
+                                    uib-typeahead="part.name for part in part_group_list | filter:$viewValue | limitTo:10"
+                                    typeahead-min-length="0"
+                                    typeahead-editable="false"
+                                    typeahead-template-url="partTypeahead.html"
+                                    typeahead-on-select="onPartGroupSelect(equipment, $item, $model, $label)"
+                                    required />
+                            <label style="float:left;padding-top: 5px;padding-left: 5px; padding-right: 5px;">Stock: {{part_stock}} </label>
+                            <label style="float: left;padding-top: 5px;padding-left: 5px; padding-right: 5px;">Qty: </label>
+                            <input class ="form-control input-sm" type="number" style="width:70px;float: left;padding-top: 5px;padding-left: 5px; padding-right: 5px;" ng-model="part_quantity">
+                            <label style="float:left;padding-left: 5px;">
+                                <i class="fa fa-plus-circle fa-2x text-danger " style="cursor: pointer" title="Create Parts" ng-click="createParts()"></i>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label text-muted">Maintanence Start</label>                        
+                        <div class="col-sm-4">
+                            <select class='form-control input-sm' ng-model="preventive.start_mode"
+                                    ng-options="value for value in start_mode_list" >
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label text-muted">Frequency</label>
+                        <div class="col-sm-4">
+                            <input class="form-control input-sm" type="number" data-ng-model="preventive.frequency"
+                                    uib-popover="" popover-trigger="mouseenter" popover-placement="top" />
+                        </div>
+                        <div class="col-sm-4">
+                            <select class='form-control input-sm' ng-model="preventive.frequency_unit"
+                                    ng-options="value for value in preventive_frequency_units" >
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-4 text-right control-label text-muted" style="margin-bottom: 0px">Start Date</label>
+                        <div class="col-sm-8">
+                            <a class="dropdown-toggle" id="dropdown4" role="button" data-toggle="dropdown" data-target="#">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" ng-model="preventive.start_date" readonly  />
+                                    <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                                </div>
+                            </a>
+                            <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+                                <datetimepicker ng-model="datetime.start_date"
+                                                data-datetimepicker-config="{ dropdownSelector: '#dropdown4',startView:'day', minView:'day'  }"
+                                                data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div ng-if = "preventive.id > 0" class="form-group">
+                        <label class="col-sm-4 control-label text-muted">Status</label>
+                        <div class="col-sm-8">
+                            <select class='form-control' ng-model="preventive.preventive_status" ng-disabled = "1" 
+                                ng-options="value.id as value.status_name for (key, value) in preventive_status_list">
+                            </select>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+            <div class="col-sm-6" >
+                <form class="form-horizontal form-validation">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label text-muted">Checklist</label>
+                        <div class="col-sm-9">
+                            <input class="form-control input-sm col-sm-11" type="text" ng-model="preventive.checklist_name"
+                                    popover-trigger="mouseenter" popover-placement="top"
+                                    uib-typeahead="checklist.name for checklist in getCheckListFromPreventive($viewValue)"
+                                    typeahead-min-length="0"
+                                    typeahead-on-select="onChecklistFromPreventiveSelect(equipment, $item, $model, $label)"
+                                    required />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label text-muted">Description</label>
+                        <div class="col-sm-9">
+                            <textarea type="text" spellcheck="true" class="form-control input-sm" rows="3" ng-model="preventive.description"
+                                style="resize:none" required></textarea>    
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label text-muted">Notify</label>
+                        <div class="col-sm-9">
+                            <tags-input ng-model="preventive.user_group_tags" display-property="name" key-property="id" style="margin-top: -7px"
+                                        placeholder="Add User Group"
+                                        replace-spaces-with-dashes="false"  >
+                                <auto-complete source="usergroupTagFilter($query)"
+                                                min-length="0"
+                                                load-on-focus="true"
+                                                load-on-empty="true"
+                                                debounce-delay="0"
+                                                max-results="10"
+                                                >
+                                </auto-complete>
+                            </tags-input>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label text-muted">Assign</label>
+                        <div class="col-sm-9">
+                            <tags-input ng-model="preventive.staffs" display-property="name" key-property="id" style="margin-top: -7px"
+                                        placeholder="Add Staff/Group"
+                                        replace-spaces-with-dashes="false"  >
+                                <auto-complete source="staffTagFilter($query)"
+                                                min-length="0"
+                                                load-on-focus="true"
+                                                load-on-empty="true"
+                                                debounce-delay="0"
+                                                max-results="10"
+                                                template="staff-template">
+                                </auto-complete>
+                            </tags-input>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="col-sm-6">
+                <form class="form-horizontal form-validation">       
+                    <div class="form-group" hidden>
+                        <div class="col-sm-offset-3 col-sm-8" style="padding-top: 7px; padding-left: 30px">
+                            <label class="md-check text-muted">
+                                <input type="checkbox" ng-model="preventive.inspection">
+                                <i class="blue"></i>
+                                For Inspection
+                            </label>
+                        </div>    
+                    </div>           
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label text-muted">Notify By:</label>
+                        <div class="col-sm-9" style="padding-top: 7px; padding-left: 30px">
+                            <label class="md-check" style="margin-right: 20px">
+                                <input type="checkbox" ng-model="preventive.sms" ng-disabled="!preventive.inspection">
+                                <i class="green"></i>
+                                SMS
+                            </label>
+                            <label class="md-check" style="margin-right: 20px">
+                                <input type="checkbox" ng-model="preventive.email" ng-disabled="!preventive.inspection">
+                                <i class="green"></i>
+                                Email
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label text-muted">Reminder</label>
+                        <div class="col-sm-9">
+                            <input class="form-control input-sm" type="number" data-ng-model="preventive.reminder"
+                                    uib-popover="" popover-trigger="mouseenter" popover-placement="top" />
+                        </div>
+                </form>
+            </div>            
+        </div>
+    </div>
+
+    <div class="modal-footer ">
+        <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal" ng-click="ok()">
+            <span class="glyphicon glyphicon-ok"></span>
+            <b> Ok</b>
+        </button>
+        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal" ng-click="cancel()">
+            <span class="glyphicon glyphicon-remove"></span>
+            <b> Cancel</b>
+        </button>
+    </div>
+
+</div>
+

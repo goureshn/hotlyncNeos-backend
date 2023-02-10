@@ -1,0 +1,77 @@
+<div class="modal-content">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">
+            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        </button>
+        <h3 class="modal-title" style="color:#2691d9" id="Heading">Upload CSV</h3>
+    </div>
+    <br>
+    <div class="modal-body">
+        <form class="form-horizontal form-validation" >
+            <div class="form-group" >
+                <label class="col-sm-3 control-label">Upload File</label>
+            <div>
+                <img  alt="..." height="70" width="70" onError="this.onerror=null;this.src='/frontpage/img/default_photo.png';">
+                
+                <button class="btn btn-light btn-xs" ngf-select="uploadGuestImg($files)"  ngf-max-files="1" ngf-max-size="50MB" ngf-accept="'.csv'"
+                    ngf-pattern="'.csv'">
+                    <span class="text-success font-bold">
+                        Upload&nbsp;
+                        <i class="fa fa-upload" aria-hidden="true" title="Upload .csv files"></i>
+                    </span>
+                </button>
+                <div class="col-sm-8" align="right">
+                    <label class="col-sm-12 text-muted text-xs">
+                        <i class="fa fa-file" aria-hidden="true"></i>&nbsp;Progress</label>
+                    <br/>
+                    <ul style="list-style: none">
+                        <li ng-repeat="f in image" class="text-xs" style="margin-bottom: 5px">
+                            {{f.name}}&nbsp;&nbsp;&nbsp;
+                            <span class="glyphicon icon-close" style="margin-top:3px; color: red" ng-click="removeGuestImg($index)"></span>
+                        </li>
+                
+                    </ul>
+                    <span class="progress_img" ng-show="progress_img > 0">
+                        <div style="width:{{progress_img}}%" ng-bind="progress_img + '%'"></div>
+                    </span>
+                    {{errorMsg}}
+                
+                </div>
+            
+            </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 text-right control-label" >Month</label>
+                <div class="col-sm-6">
+                    <div class="input-group">
+                            <input type="text" class="form-control" uib-datepicker-popup="MMMM" ng-model="date" is-open="opened" 
+                                datepicker-options="{minMode: 'month'}" datepicker-mode="'month'" ng-required="true" close-text="Close" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-default btn-sm" ng-click="open($event)">
+                                    <i class="glyphicon glyphicon-calendar"></i>
+                                </button>
+                            </span>
+                        
+                    </div>
+                </div>
+              
+                    
+                
+            </div>            
+        </form>
+
+    </div>
+
+    <div class="modal-footer ">
+        <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal" ng-click="createEntry()">
+            <span class="glyphicon glyphicon-ok"></span>
+            <b> Create</b>
+        </button>
+        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal" ng-click="cancel()">
+            <span class="glyphicon glyphicon-remove"></span>
+            <b> Cancel</b>
+        </button>
+    </div>
+
+</div>
+

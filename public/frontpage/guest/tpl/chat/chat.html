@@ -1,0 +1,279 @@
+<style>
+  div.chat-container {
+      display: flex;
+      display: -webkit-flex;
+
+      flex-direction: column;
+      -webkit-flex-direction: column;
+
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      overflow: hidden;
+  }
+
+  div.chat-messages {
+    order: 1;
+    -webkit-order:1;
+
+    flex: 1;
+    -webkit-flex: 1; /* Safari 6.1+ */
+    -ms-flex: 1; /* IE 10 */
+
+    overflow: scroll;
+    overflow-x: hidden;
+    padding-bottom: 40px;
+
+    background: linear-gradient(
+        to bottom,
+        rgb(122,214,184) 0%,
+        rgb(122,214,184) 100%
+    );
+    background-size: 100% 10px;
+    background-repeat: no-repeat;
+  }
+
+  .chat-input {
+      order: 2;
+      -webkit-order:2;
+      height: 62px;
+  }
+
+  .textarea-disabled {
+    pointer-events: none !important;
+  }
+
+  .btn-chaticon {
+    position: fixed;
+    right: 30px;
+    bottom: 100px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    box-shadow: 0 0 10px;
+    cursor: pointer;
+  }
+  .btn-chaticon img{
+    width: 100%;
+    height: 100%;
+  }
+
+  .chatbot-container {
+    position: fixed;
+    right: 30px;
+    bottom: 180px;
+    border-radius: 20px;
+    width: 400px;
+    overflow: hidden;
+    box-shadow: 0 0 10px;
+    background-color: #fff;
+  }
+
+  .chatbot-wrapper {
+    z-index: 10000;
+  }
+  .chatbot-container .chatbot-header {
+    margin: 0;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    display: flex;
+    align-items: center;
+  }
+
+  .chatbot-container .chatbot-body {
+    margin: 0;
+    padding: 10px 0;
+    min-height: 400px;
+    height: 500px;
+    overflow: auto;
+    background-color: lightgrey;
+  }
+  .chatbot-container .chatbot-footer {
+    margin: 0;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+  }
+
+  .chatbot-container .chatbot-footer textarea {
+    min-height: 40px;
+    max-height: 126px;
+    padding: 12px 10px 12px 0;
+    font-family: 'Open Sans', sans-serif;
+    overflow: hidden;
+    overflow-wrap: break-word;
+    border: none;
+    font-size: 1.2em;
+    resize: none;
+    position: relative;
+  }
+
+  .chatbot-container .avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 26px;
+    text-align: center;
+    color: white;
+    font-weight: bolder;
+    background-color: dodgerblue;
+    border-radius: 50%;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 15%);
+  }
+
+  .chatbot-body .row {
+    margin: 0 0 10px 0;
+    display: flex;
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+  .chat-content {
+    position: relative;
+    min-width: 80px;
+  }
+
+  .chat-content pre {
+    background: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px !important;
+  }
+
+  .body-start span.arrow::after {
+    border-right-color: #82ccdd;
+  }
+  .body-end span.arrow::after {
+    border-left-color: #78e08f;
+  }
+
+  .body-start .chat-content {
+    background-color: #82ccdd;
+    margin-left: 12px;
+  }
+
+  .body-end{
+    justify-content: flex-end !important;
+  }
+
+  .body-end .chat-content {
+    background-color: #78e08f;
+    margin-right: 12px;
+  }
+
+  .body-end .time-content {
+    text-align: right;
+    padding-right: 12px;
+  }
+
+  .body-start .time-content {
+    padding-left: 12px;
+  }
+
+  .time-content span {
+    font-size: 0.8em;
+  }
+
+  .content-wrapper {
+    padding: 0;
+    max-width: 60%;
+  }
+
+  .chat-content {
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 15%);
+  }
+
+  .type-loading {
+    position: absolute;
+    z-index: 10;
+    margin-top: -50px;
+  }
+
+  .type-loading img {
+    height: 25px;
+  }
+
+</style>
+<div style="padding-left: 0px; padding-right: 0px; font-size: 15px" ng-controller="ChatController as ctrl" ng-init="init()">
+  <div class="panel panel-default chat-container" ng-style="chat_height_style" fill-height additional-padding="0">
+    <div class="chatbot-wrapper">
+        <div class="chatbot-container" ng-show="bShowChatbot">
+          <div class="chatbot-header row">
+            <div class="col-lg-2">
+              <div class="avatar" ng-if="userInfo.image == ''">
+                {{userInfo.name.charAt(0)}}
+              </div>
+              <img class="avatar" ng-show="userInfo.image != ''" src="/images/chatIcon.ico" alt=""/>
+            </div>
+            <div class="col-lg-10" style="padding-left: 0; font-size: 1.5em">
+              {{userInfo.name}}
+            </div>
+          </div>
+          <div class="chatbot-body" id="chatbot-body">
+            <div ng-repeat="chatInfo in chatlist">
+              <div ng-if="chatInfo.sender == 'me'" class="row body-end">
+                <div class="content-wrapper">
+                  <div class="chat-content">
+                    <span class="arrow right pull-up"></span>
+                    <pre>{{chatInfo.messageContent.trim()}}</pre>
+                  </div>
+                  <div class="time-content">
+                    <span>{{chatInfo.timeInfo}}</span>
+                  </div>
+                </div>
+                <div class="avater-wrapper">
+                  <div class="avatar" ng-if="userInfo.image == ''">
+                    {{userInfo.name.charAt(0)}}
+                  </div>
+                  <img class="avatar" ng-show="userInfo.image != ''" src="{{userInfo.image}}" alt=""/>
+                </div>
+              </div>
+              <div ng-if="chatInfo.sender == 'other'" class="row body-start">
+                <div class="avater-wrapper">
+                  <div class="avatar" ng-if="otherInfo.image == ''">
+                    {{otherInfo.name.charAt(0)}}
+                  </div>
+                  <img class="avatar" ng-show="otherInfo.image != ''" src="{{otherInfo.image}}" alt=""/>
+                </div>
+                <div class="content-wrapper">
+                  <div class="chat-content">
+                    <span class="arrow left pull-up"></span>
+                    <pre>{{chatInfo.messageContent}}</pre>
+                  </div>
+                  <div class="time-content">
+                    <span>{{chatInfo.timeInfo}}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <div class="chatbot-footer row">
+            <div class="type-loading" ng-show="isTyping">
+              <span>server is typing </span><img src="/images/type-loading.gif" alt=""/>
+            </div>
+            <textarea
+                    ng-model="messageContent"
+                    placeholder="Send a message..."
+                    class="form-control {{current_session.status == 'Waiting' ? 'disabled textarea-disabled' : ''}}" rows="1"
+                    style="overflow-wrap: break-word;"
+                    ng-change="onChangeChat()"
+                    ng-keypress="onTextareaKeypress($event.which)"
+            ></textarea>
+            <button title="Send" class="btn btn-circle btn-icon btn-primary" ng-click="onSendChatToServer()">
+              <i class="fa fa-send"></i>
+            </button>
+          </div>
+
+        </div>
+        <div class="btn-chaticon" ng-click="onToggleChatbot()">
+          <img src="/images/chatIcon.ico" alt=""/>
+        </div>
+    </div>
+  </div>
+</div>

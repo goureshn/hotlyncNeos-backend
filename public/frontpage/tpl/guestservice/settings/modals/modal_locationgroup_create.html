@@ -1,0 +1,98 @@
+<form class="form-horizontal" ng-submit="onSave(event)">
+    <div class="panel">
+
+        <div class="modal-header bg">
+            <button type="button" class="close" ng-click="onCancel()">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <h5 class="modal-title font-bold" style="color:#2691d9">
+                <i class="fa fa-plus"></i>&nbsp;Add Location Group
+            </h5>
+        </div>
+        <div class="modal-body">
+            <br/>
+            <div class="form-group">
+                <label class="control-label col-sm-4">Client Name:</label>
+                <div class="col-sm-7">
+                    <select class="form-control" ng-model="model_data.client_id" ng-options="value.id as value.name for (key, value) in groupclientlist"></select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-4">Group Name:</label>
+                <div class="col-sm-7">
+                    <input class="form-control" ng-model="model_data.name"
+                           required />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-4">Description:</label>
+                <div class="col-sm-7">
+                    <input class="form-control" ng-model="model_data.description"
+                           required />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-4">Group Type:</label>
+                <div class="col-sm-7">
+                    <input type="text" ng-model="selected_group_type" class="form-control input-sm" placeholder="Select Group Type"
+                           uib-typeahead="grouptype.type for grouptype in grouptypelist"
+                           typeahead-min-length="0"
+                           typeahead-editable="false"
+                           typeahead-on-select="onSelectGroupType($item, $model, $label)"
+                        required
+                    >
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-4">Locations:</label>
+                <div class="col-sm-7">
+                    <tags-input ng-model="model_data.locations[selected_grouptype_id].locations"
+                    placeholder="Add Location"
+                    replace-spaces-with-dashes="false"
+                    style="margin-top: -5px"
+                    display-property="name"
+                    key-property="id"
+                    min-length="1"
+                    ng-blur="onLocationAdded(selected_grouptype_id, true)"
+                    on-tag-added="onLocationAdded(selected_grouptype_id)"
+                    on-tag-removed="onLocationAdded(selected_grouptype_id)">
+                    <auto-complete source="onLocationFilter($query, selected_grouptype_id)"
+                                   min-length="0"
+                                   debounce-delay="0"
+                                   load-on-focus="true"
+                                   load-on-empty="true"
+                                   max-results-to-show="100">
+                    </auto-complete>
+                    </tags-input>
+                </div>
+            </div>
+            <br/>
+            <div class="table table-responsive" ng-show="grouptypelist.length > 0">
+                <table st-table="selected_row.detail_list" class="table ticket table-striped b-t b-light">
+                    <thead class="tblhead-sm" style="font-size: .8vw">
+                    <tr class="text-center">
+                        <th width="120px"><b>Type</b></th>
+                        <th><b>Locations</b></th>
+                    </tr>
+                    </thead>
+                    <tbody >
+                    <tr class="highlight2 no-radius m-b-none m-t-n-xxs" ng-repeat="grouptype in grouptypelist" ng-click="onSetCurrentGroupType(grouptype)">
+                        <td>{{grouptype.type}}</td>
+                        <td>{{model_data.locations[grouptype.type_id].str_locations}}</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="submit" class="btn btn-success btn-sm {{deviceInfo.isLoading ? 'disabled': ''}}">
+                <i class="fa fa-save"></i>&nbsp;Save
+            </button>
+            <button type="button" class="btn btn-danger btn-sm {{deviceInfo.isLoading ? 'disabled': ''}}" ng-click="onCancel()">
+                <i class="fa fa-times"></i>&nbsp;Cancel
+            </button>
+        </div>
+    </div>
+</form>
+
+

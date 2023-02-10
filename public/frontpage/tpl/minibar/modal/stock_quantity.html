@@ -1,0 +1,187 @@
+<!--<style>
+<!-- - - - - - - - HEADER - - - - - - - -->
+  <div>
+    <div class="navbar-inverse box-shadow" style="vertical-align:middle;height: 40px">
+      <div class="navbar-header" style="height: 40px;">
+        <a ui-sref="app.guestservice.dashboard" class="navbar-brand text-lt">
+          <img src="img/complaint_header_logo.png" alt="HotLync" style="margin-left: -7px; width:250px; height: 30px">
+        </a>
+      </div>
+    </div>
+  </div>
+  <!-- - - - - - - - /HEADER - - - - - - - -->
+  
+  
+  
+  <div class="modal-body wrapper-lg" style="padding-left: 0px; padding-right: 0px; font-size: 15px" ng-cloak>
+  
+  <md-content>
+  <md-tabs md-dynamic-height md-border-bottom>
+  <md-tab label="Add Quantity">
+  <md-content class="md-padding">          
+	<div class="wrapper-md">
+		<div class="panel panel-default" style="border-radius: 10px">
+		<div class="form-horizontal form-validation">
+			<hr/>
+			 <div class ="row">
+				<div class="form-group-mbl col-sm-6 label-group" style="padding: 5px 0px">
+							<label class="col-sm-3 control-label text-muted text-xs"><b>Item Name:</b></label>
+					<div class="col-sm-8 control-label" style="text-align: left">
+							<h5 class="text-muted">{{item.item_name}}</h5>
+							
+					</div>
+				</div>
+				<div class="form-group-mbl col-sm-6 label-group" style="padding: 5px 0px">
+							<label class="col-sm-3 control-label text-muted text-xs"><b>Remaining Quantity:</b></label>
+					<div class="col-sm-8 control-label" style="text-align: left">
+							<h5 class="text-muted">{{item.item_stock}}</h5>
+					</div>
+				</div>
+			 </div>
+			<div class ="row">
+				<div class="form-group-mbl col-sm-6 label-group" style="padding: 5px 0px">
+							<label class="col-sm-3 control-label text-muted text-xs"><b>Alarm At:</b></label>
+					<div class="col-sm-8 control-label" style="text-align: left">
+							<input type="number" input value= {{item.alarm_count}} class="form-control input-sm ng-pristine ng-valid ng-empty ng-valid-min ng-valid-maxlength ng-touched" ng-model="item.quantity_2" min="1" maxlength="2" style="width: 50px;" aria-invalid="false">
+					</div>
+				</div>
+				
+				<div class="form-group-mbl col-sm-6 label-group" style="padding: 5px 0px">
+							<label class="col-sm-3 control-label text-muted text-xs"><b>Add More Quantity:</b></label>
+	            <div class="col-sm-8 control-label" style="text-align: left">
+							<input type="number" class="form-control input-sm ng-pristine ng-valid ng-empty ng-valid-min ng-valid-maxlength ng-touched" ng-model="item.quantity_1" min="1" maxlength="2" style="width: 100px;" aria-invalid="false">
+				</div>
+				</div>
+			</div> <hr/>
+		</div></div>
+	</div>
+	
+	<!---history list--->
+	<hr/>
+	<div class="btn-group pull-left">
+                    <h5 class="m-n font-THIN" style="color: #273746;">ITEM HISTORY </h5>
+    </div>
+  <div class="table  table-responsive" additional-padding="40" style="margin-bottom: 10px;">
+    <table class="table table-striped ticket" st-pipe="getItemHist" st-table="datalist">
+      <thead class="tblhead-sm" style="background: #273746;">
+      <tr>
+        <th class="text-center" st-sort-default="ascend" style="width: 30%">&nbsp;&nbsp;Date Time</th>
+        <th class="text-center"  style="width: 30%">&nbsp;&nbsp;User Name</th>
+		<th class="text-center"  style="width: 30%">&nbsp;&nbsp;Action Taken</th>
+      </tr>
+      </thead>
+      <tbody ng-hide="isLoading">
+      <tr class="" ng-repeat="row in datalist">
+        <td class="text-center" >{{row.changed_at}}</td>
+        <td class="text-center" >{{row.user_name}}</td>
+		<td class="text-center" >{{row.action_taken}}</td>
+      </tr>
+      </tbody>
+	 <tbody ng-show="isLoading">
+                    <tr>
+                        <td colspan="9" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+                    </tr>
+      </tbody>
+	  <tfoot ng-hide="isLoading">
+                        <tr ng-show="paginationOptions.totalItems > paginationOptions.pageSize">
+                            <td colspan="9" class="text-center">
+                                <div st-pagination="" st-items-by-page="paginationOptions.pageSize" st-displayed-pages="7" class="no-margin"></div>
+                            </td>
+                        </tr>
+       </tfoot>
+    </table>
+	
+	</div><hr/>
+	<center>
+              <button type="button" class="btn btn-dark btn-sm" ng-click="addEntry()">
+              <span class="text-success font-bold"><i class="fa fa-check"></i>&nbsp;Add</span></button>
+              <button type="button" class="btn btn-dark btn-sm" ng-click="cancel()">
+              <span class="text-danger font-bold"><i class="fa fa-times"></i>&nbsp;Cancel</span></button>           
+    </center>
+	
+	
+	</md-content> </md-tab>
+	<md-tab label="Remove Quantity">
+	<md-content class="md-padding">
+		<div class="wrapper-md">
+		<div class="panel panel-default" style="border-radius: 10px">
+		<div class="form-horizontal form-validation">
+			<hr/>
+			 <div class ="row">
+				<div class="form-group-mbl col-sm-6 label-group" style="padding: 5px 0px">
+							<label class="col-sm-3 control-label text-muted text-xs"><b>Item Name:</b></label>
+					<div class="col-sm-8 control-label" style="text-align: left">
+							<h5 class="text-muted">{{item.item_name}}</h5>
+							
+					</div>
+				</div>
+				<div class="form-group-mbl col-sm-6 label-group" style="padding: 5px 0px">
+							<label class="col-sm-3 control-label text-muted text-xs"><b>Remaining Quantity:</b></label>
+					<div class="col-sm-8 control-label" style="text-align: left">
+							<h5 class="text-muted">{{item.item_stock}}</h5>
+					</div>
+				</div>
+			 </div>
+			  <div class ="row">
+				<div class="form-group-mbl col-sm-6 label-group" style="padding: 5px 0px">
+							<label class="col-sm-3 control-label text-muted text-xs"><b>Alarm At:</b></label>
+					<div class="col-sm-8 control-label" style="text-align: left">
+							<input type="number" input value= {{item.alarm_count}} class="form-control input-sm ng-pristine ng-valid ng-empty ng-valid-min ng-valid-maxlength ng-touched" ng-model="item.quantity_2" min="1" maxlength="2" style="width: 50px;" aria-invalid="false">
+					</div>
+				</div>
+				
+				<div class="form-group-mbl col-sm-6 label-group" style="padding: 5px 0px">
+							<label class="col-sm-3 control-label text-muted text-xs"><b>Remove Quantity:</b></label>
+	            <div class="col-sm-8 control-label" style="text-align: left">
+							<input type="number" class="form-control input-sm ng-pristine ng-valid ng-empty ng-valid-min ng-valid-maxlength ng-touched" ng-model="item.quantity_1" min="1" maxlength="2" style="width: 100px;" aria-invalid="false">
+				</div>
+				</div>
+			</div> </div><hr/>
+		</div>
+	</div>
+	
+	<!---history list--->
+	<hr/>
+	<div class="btn-group pull-left">
+                    <h5 class="m-n font-THIN" style="color: #273746;">ITEM HISTORY &nbsp;&nbsp;</h5>
+    </div>
+  <div class="table  table-responsive" additional-padding="40" style="margin-bottom: 10px;">
+    <table class="table table-striped ticket" st-pipe="getItemHist" st-table="datalist">
+      <thead class="tblhead-sm" style="background: #273746;">
+      <tr>
+        <th class="text-center" st-sort-default="descend" style="width: 30%">&nbsp;&nbsp;Date Time</th>
+        <th class="text-center"  style="width: 20%">&nbsp;&nbsp;User Name</th>
+        <th class="text-center"  style="width: 30%">&nbsp;&nbsp;Action Taken</th>
+      </tr>
+      </thead>
+      <tbody ng-hide="isLoading">
+      <tr class="" ng-repeat="row in datalist">
+        <td class="text-center" >{{row.changed_at}}</td>
+        <td class="text-center" >{{row.user_name}}</td>
+		<td class="text-center" >{{row.action_taken}}</td>
+      </tr>
+      </tbody>
+	 <tbody ng-show="isLoading">
+                    <tr>
+                        <td colspan="9" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+                    </tr>
+      </tbody>
+	  <tfoot ng-hide="isLoading">
+                        <tr ng-show="paginationOptions.totalItems > paginationOptions.pageSize">
+                            <td colspan="9" class="text-center">
+                                <div st-pagination="" st-items-by-page="paginationOptions.pageSize" st-displayed-pages="7" class="no-margin"></div>
+                            </td>
+                        </tr>
+      </tfoot>
+    </table>
+	
+  </div>
+	<hr/>
+	<center>
+              <button type="button" class="btn btn-dark btn-sm" ng-click="rmvEntry()">
+              <span class="text-success font-bold"><i class="fa fa-check"></i>&nbsp;Remove</span></button>
+              <button type="button" class="btn btn-dark btn-sm" ng-click="cancel()">
+              <span class="text-danger font-bold"><i class="fa fa-times"></i>&nbsp;Cancel</span></button>           
+    </center>
+	
+</div>

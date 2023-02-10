@@ -1,0 +1,206 @@
+<style>
+  tbody > tr > th, tfoot > tr > th, tbody > tr > td, tfoot > tr > td {
+      /*padding: 1px 1px;*/
+      text-align: center;
+      vertical-align: middle;
+  }
+
+  .jqplot-target {
+      color:#ffffff;
+      background-color: #2a2a2a;
+  }
+  .jqplot-table-legend {
+      /*background-color: #595959;*/
+      background-color: #2a2a2a;
+      font-size: 0.9em;
+      border: 1px solid #2a2a2a;
+      padding-top:1em;
+      padding-left:1em;
+  }
+  .jqplot-title {
+      padding-top: 0.6em;
+      font-size: 1.2em;
+  }
+
+  div.jqplot-table-legend-swatch-outline {
+      border: 1px solid #2a2a2a;
+  }
+
+  svg text {
+      fill: white;
+
+  }
+
+  .nvd3 .nv-legend text {
+      font: normal 10px Arial;
+  }
+
+  .nvd3.nv-pie .nv-slice text {
+      fill: white !important;
+  }
+
+  .nvd3 .nv-discretebar .nv-groups text, .nvd3 .nv-multibarHorizontal .nv-groups text {
+      fill: rgba(255,255,255,1);
+      stroke: rgba(255,255,255,0);
+  }
+
+  .tick line{
+      opacity: 0.2;
+  }
+  .status-view:hover{
+      color:#0b2ef4;
+  }
+  </style>
+
+<div ng-controller="HousekeepDashboardController" >
+  <div style="overflow-y: auto;background-color: #141414; height: 100vh;" id = "content">
+    <div class="wrapper-md1 bg-light lt"  style="background-color: #141414" >
+<!-- <div class="wrapper-md1 bg-light lt b-b"> 
+    <div class="col-sm-6 col-xs-12">
+	  <a class="btn btn-sm btn-info pull-right" ui-sref="app.housekeeping.logs">Logs</a>
+       <h1 class="m-n font-thin h3 text-black" style="color:#337ab7">Housekeeping</h1>
+    </div>
+  -->
+  <div class="col-sm-6 col-xs-12">
+      <a class="btn btn-sm btn-info pull-right" ui-sref="app.housekeeping.logs">Logs</a>
+    <h1 class="m-n font-thin h3 text-black" style="color:#337ab7">
+        <label style="font-size: 1.5vw"><i class= "glyphicon glyphicon-dashboard"></i>
+            &nbsp;&nbsp;Housekeeping
+        </label>
+    </h1>
+ </div>
+   <div class="col-sm-6 input-group text-right">
+      <a ui-fullscreen style="margin-right: 20px"></a>
+      <div class="btn-group">
+	        <a ng-click="onDownloadPDF()"><i class="fa fa-file-pdf-o" style="font-size: 30px; color:red" aria-hidden="true"></i></a>&nbsp;&nbsp;&nbsp;&nbsp;
+		   </div><!-- Dummy Need to add logic to export dash to pdf -->
+        <div class="btn-group">
+          <label class="btn btn-info btn-sm" ng-model="dateFilter" uib-btn-radio="'Today'">Today</label>
+     <!--     <label class="btn  btn-info btn-sm" ng-model="dateFilter" uib-btn-radio="'Weekly'">Weekly</label> -->
+     <!--     <label class="btn  btn-info btn-sm" ng-model="dateFilter" uib-btn-radio="'Monthly'">Monthly</label> -->
+     <!--     <label class="btn  btn-info btn-sm" ng-model="dateFilter" uib-btn-radio="'Yearly'">Yearly</label> -->
+      <!--    <label class="btn  btn-info btn-sm" ng-model="dateFilter" uib-btn-radio="'Custom Days'">Custom Days</label> -->
+        </div>
+        <input style="width: 200px; margin-left: 10px" ng-disabled="dateFilter != 'Custom Days'" ng-model="daterange" ui-jq="daterangepicker" ui-options="dateRangeOption" class="form-control pull-right input-sm">
+       </div>
+    </div>
+      <!-- / main header -->
+	<div style="margin-top: 8px">
+      <!-- stats -->
+      <div class="col-md-12">
+        <div class="row row-sm text-center">
+		<div class="col-xs-2">
+        <!--
+            <a href class="block panel padder-v item card">
+              <span class="text-danger font-thin h1 block">{{total.dnd}}</span>  
+              <span class="text-muted text-xs">DND</span>
+            </a>
+          --> 
+          <a href class="block padder-v bg-dark" style="border-radius: 6px">
+              <span class="font-thin h1 block" style="color: #d81b60">{{total.dnd}}</span>
+              <span class="text-muted text-xs">DND</span>
+            </a>
+          </div>  
+          <div class="col-xs-2">
+            <!--
+            <a href class="block panel padder-v item card">
+              <span class="text-success font-thin h1 block">{{total.complete}}</span> 
+              <span class="text-muted text-xs">Completed</span>
+            </a>
+          -->
+            <a href class="block padder-v bg-dark" style="border-radius: 6px">
+                <span class="font-thin h1 block" style="color: #099410">{{total.complete}}</span>
+                <span class="text-muted text-xs">Completed</span>
+              </a>
+          </div>
+		  
+		  <div class="col-xs-2">
+        <!--
+            <a href class="block panel padder-v item card">
+              <span class="text-warning font-thin h1 block">{{total.progress}}</span> 
+              <span class="text-muted text-xs">In Progress</span>
+            </a>
+          -->
+            <a href class="block padder-v bg-dark" style="border-radius: 6px">
+                <span class="font-thin h1 block" style="color: #ee6757">{{total.progress}}</span>
+                <span class="text-muted text-xs">In Progress</span>
+              </a>
+          </div>
+          <div class="col-xs-2">
+            <!--
+            <a href class="block panel padder-v item card">
+              <span class="text-danger font-thin h1 block">{{total.pending}}</span> 
+              <span class="text-muted text-xs">Pending</span>
+            </a>
+          -->
+            <a href class="block padder-v bg-dark" style="border-radius: 6px">
+                <span class="font-thin h1 block" style="color: rgb(11, 170, 190)">{{total.pending + total.unassigned + total.pause + total.decline + total.postpone}}</span>
+                <span class="text-muted text-xs">Pending</span>
+              </a>
+          </div>
+          <div class="col-xs-2">
+            <!--
+            <a href class="block panel padder-v item card">
+              <span class="text-info font-thin h1 block">{{total.inspected}}</span> 
+              <span class="text-muted text-xs">Inspected</span>
+            </a>
+          -->
+            <a href class="block padder-v bg-dark" style="border-radius: 6px">
+                <span class="font-thin h1 block" style="color: #e6e928">{{total.inspected}}</span>
+                <span class="text-muted text-xs">Inspected</span>
+              </a>
+          </div>
+          <div class="col-xs-2">
+            <!--
+            <div class="panel padder-v item card">
+              <div class="text-primary font-thin h1">{{total.total}}</div> 
+              <span class="text-muted text-xs">Total</span>
+            </div>
+          -->
+            <div class="panel padder-v bg-dark" style="border-radius: 6px"  >
+                <span class="font-thin h1 block" style="color: #118aec">{{total.total}}</span>
+                <span class="text-muted text-xs">Total</span>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-left: 0px; margin-right: 0px">
+      <div class="col-md-6">
+        <div class="panel panel-default">
+          <div class="panel-heading font-bold">By Status</div>
+          <div class="panel-body" ng-if="loading === false">
+            <div ui-jq="plot"  ng-style="table_body_style" ui-options="
+              {{by_status}},
+              {
+                series: { pie: { show: true, stroke: { width: 0 }, label: { show: true, threshold: 0.05 } } },
+                colors: ['{{app.color.primary}}','{{app.color.info}}','{{app.color.success}}','{{app.color.warning}}','{{app.color.danger}}'],
+                grid: { hoverable: true, clickable: true, borderWidth: 0, color: '#ccc' },
+                tooltip: true,
+                tooltipOpts: { defaultTheme: false, content: '%s count is %y.0', shifts: { x: 10, y: -25 } }
+              }
+            " ></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="panel panel-default">
+          <div class="panel-heading font-bold">By User</div>
+          <div class="panel-body"  ng-if="loading === false">
+            <div ui-jq="plot"  ng-style="table_body_style" ui-options="
+              {{by_user}},
+              {
+                series: { pie: { show: true, stroke: { width: 0 }, label: { show: true, threshold: 0.05 } } },
+                colors: ['{{app.color.primary}}','{{app.color.info}}','{{app.color.success}}','{{app.color.warning}}','{{app.color.danger}}'],
+                grid: { hoverable: true, clickable: true, borderWidth: 0, color: '#ccc' },
+                tooltip: true,
+                tooltipOpts: { defaultTheme: false, content: '%s count is %y.0', shifts: { x: 10, y: -25 } }
+              }
+            " ></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+</div>

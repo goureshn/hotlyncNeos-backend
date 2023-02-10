@@ -1,0 +1,214 @@
+<style>
+    table tr th, td {
+        text-align: center;
+    }
+
+    table tr {
+        height: 50px;
+    }
+
+    .pagination {
+        margin-bottom:0px;
+    }
+
+    .search-filter .checkbox {
+        margin: 0px;
+    }
+
+    .popover-container .popover-content {
+        padding-left: 6px;
+        padding-right: 6px;
+    }
+
+    .popover-container .popover {
+        max-width: 650px;
+    }
+    .refresh-icon {
+        line-height: 34px !important;
+    }
+
+    .btn-refresh {
+        width: 34px !important;
+        height: 34px !important;
+    }
+
+    .selected-row {
+        background-color: #0b94ea !important;
+    }
+
+    .selected-row td {
+        color: #fff;
+        background-color: unset !important;
+    }
+</style>
+<div class="hbox" style="table-layout: fixed;" ng-controller="LocationgroupController">
+    <div class="col b-r">
+        <div class="wrapper-md1 bg-light b-b row" style="margin: 0">
+            <div class="col-sm-4">
+                <h1 class="m-n font-thin h3">Locationgroup List</h1>
+            </div>
+            <div class="col-sm-8 search-filter">
+                <div class="pull-right" style="padding-left: 20px;">
+                    <button type="button" class="btn btn-success btn-sm" ng-click="onAddProfile()">
+                        <i class="fa fa-plus"></i> &nbsp;<b>Add New Group</b>
+                    </button>
+                </div>
+                <div class="input-group pull-right" style="width: 300px; border-radius: 20px; border: 2px solid; margin-left: 2px;padding-left:1px;">
+                    <input type="text" ng-model="locationGroupInfo.searchText" my-enter="getLocationgroupList()" class="form-control input-sm bg-light no-border rounded padder" placeholder="Search">
+                    <span class="input-group-btn">
+                    <button type="button" ng-click="getLocationgroupList()" class="btn btn-sm bg-light rounded"><i class="fa fa-search"></i></button>
+                </span>
+                </div>
+                <div class="btn-toolbar pull-right">
+                    <div class="btn-group  popover-container" style="maring-left:0px">
+                        <button type="button" class="btn btn-sm btn-icon btn-default btn-refresh" data-toggle="tooltip" title="Refresh" data-placement="bottom" ng-click="onRefreshLocationGroup()">
+                            <i class="fa fa-refresh refresh-icon"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="wrapper-md1 col-centered" style="width: 100%;">
+            <!---view list -->
+            <div class="table table-responsive" fill-height additional-padding="120">
+                <table st-table="locationgroupList" st-pipe="getLocationgroupList" class="table ticket table-striped b-t b-light">
+                    <thead class="tblhead-sm" style="font-size: .8vw">
+                    <tr class="text-center">
+                        <th width="80px" st-sort="lg.id"><b>&nbsp;&nbsp;ID</b></th>
+                        <th st-sort="cc.name"><b>Client</b></th>
+                        <th st-sort="lg.name"><b>Location Group Name</b></th>
+                        <th st-sort="lg.description"><b>Description</b></th>
+                        <th width="125px"><b>Action</b></th>
+                    </tr>
+                    </thead>
+                    <tbody >
+                    <tr class="highlight2 no-radius m-b-none m-t-n-xxs {{selected_row.id == row.id ? 'selected-row' : ''}}" ng-repeat="row in deviceProfileList">
+                        <td class="highlight" ng-click="onSelectGroupRow(row)" >
+                            <a>{{::row.id}}</a>
+                        </td>
+
+                        <td class="highlight" ng-click="onSelectGroupRow(row)" >
+                            <a> {{::row.ccname}}</a>
+                        </td>
+
+                        <td class="highlight" ng-click="onSelectGroupRow(row)" >
+                            <a> {{::row.name}}</a>
+                        </td>
+
+                        <td class="highlight" ng-click="onSelectGroupRow(row)" >
+                            <a> {{::row.description }}</a>
+                        </td>
+                        <td>
+                            <a class="btn default btn-xs green" title="Edit" ng-click="onEditGroupRow(row)">
+                                <i class="fa fa-edit"></i></a>
+                            <a class="btn default btn-xs red" title="Delete" ng-click="onLocationGroupRow(row)">
+                                <i class="fa fa-trash"></i></a>
+                        </td>
+                    </tr>
+                    </tbody>
+                    <tbody ng-show="locationGroupInfo.isLoading">
+                    <tr>
+                        <td colspan="9" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+                    </tr>
+                    </tbody>
+                    <tbody ng-show="locationGroupInfo.isLoading == false && deviceProfileList.length < 1">
+                    <tr>
+                        <td colspan="9" class="text-center">There is no data.</td>
+                    </tr>
+                    </tbody>
+                    <tfoot ng-hide="locationGroupInfo.isLoading">
+                    <tr ng-show="locationGroupInfo.paginationOptions.totalItems > locationGroupInfo.paginationOptions.pageSize">
+                        <td colspan="9" class="text-center">
+                            <div st-pagination="" st-items-by-page="locationGroupInfo.paginationOptions.pageSize" st-displayed-pages="7" class="no-margin"></div>
+                        </td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div>
+        <div class="row" style="margin: 0;" ng-if="selected_row == null">
+            <h4 class="text-center">Please select group item</h4>
+            <img style="opacity: 0.5; padding-top: 50px" class="img-full" src="img/hotlync_.png" alt="" aria-hidden="false">
+        </div>
+        <div class="wrapper-md1 bg-light b-b row" style="margin: 0" ng-if="selected_row != null">
+            <div class="col-sm-4">
+                <h1 class="m-n font-thin h3">{{selected_row.name}} Detail List</h1>
+            </div>
+<!--            <div class="col-sm-8 search-filter">-->
+<!--                <div class="pull-right" style="padding-left: 20px;">-->
+<!--                    <button type="button" class="btn btn-success btn-sm" ng-click="onAddNew()">-->
+<!--                        <i class="fa fa-plus"></i> &nbsp;<b>Add New</b>-->
+<!--                    </button>-->
+<!--                </div>-->
+<!--                <div class="input-group pull-right" style="width: 300px; border-radius: 20px; border: 2px solid; margin-left: 2px;padding-left:1px;">-->
+<!--                    <input type="text" ng-model="detailInfo.searchText" my-enter="getLocationgroupList()" class="form-control input-sm bg-light no-border rounded padder" placeholder="Search">-->
+<!--                    <span class="input-group-btn">-->
+<!--                        <button type="button" ng-click="getLocationgroupList()" class="btn btn-sm bg-light rounded"><i class="fa fa-search"></i></button>-->
+<!--                    </span>-->
+<!--                </div>-->
+<!--                <div class="btn-toolbar pull-right">-->
+<!--                    <div class="btn-group  popover-container" style="margin-left:0">-->
+<!--                        <button type="button" class="btn btn-sm btn-icon btn-default btn-refresh" data-toggle="tooltip" title="Refresh" data-placement="bottom" ng-click="onRefresh()">-->
+<!--                            <i class="fa fa-refresh refresh-icon"></i>-->
+<!--                        </button>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+        </div>
+        <div class="wrapper-md1 col-centered" style="width: 100%;" ng-if="selected_row != null">
+            <!---view list -->
+            <div class="table table-responsive" fill-height additional-padding="120">
+                <table st-table="selected_row.detail_list" class="table ticket table-striped b-t b-light">
+                    <thead class="tblhead-sm" style="font-size: .8vw">
+                    <tr class="text-center">
+                        <th width="80px" st-sort="lg.id"><b>&nbsp;&nbsp;ID</b></th>
+                        <th width="120px"><b>Type</b></th>
+                        <th><b>Locations</b></th>
+<!--                        <th width="125px"><b>Action</b></th>-->
+                    </tr>
+                    </thead>
+                    <tbody >
+                    <tr class="highlight2 no-radius m-b-none m-t-n-xxs {{selected_row.id == row.id ? 'selected-row' : ''}}" ng-repeat="row in selected_row.detail_list">
+                        <td class="highlight">
+                            <a>{{::row.type_id}}</a>
+                        </td>
+
+                        <td class="highlight">
+                            <a> {{::row.type}}</a>
+                        </td>
+
+                        <td class="highlight">
+                            <a> {{::row.locations.str_selected_member}}</a>
+                        </td>
+<!--                        <td>-->
+<!--                            <a class="btn default btn-xs green" title="Edit" ng-click="onEditRow(row)">-->
+<!--                                <i class="fa fa-edit"></i></a>-->
+<!--                            <a class="btn default btn-xs red" title="Delete" ng-click="onDeleteRow(row)">-->
+<!--                                <i class="fa fa-trash"></i></a>-->
+<!--                        </td>-->
+                    </tr>
+                    </tbody>
+                    <tbody ng-show="isLoading">
+                    <tr>
+                        <td colspan="9" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+                    </tr>
+                    </tbody>
+                    <tbody ng-show="isLoading == false && selected_row.detail_list != undefined && selected_row.detail_list.length < 1">
+                    <tr>
+                        <td colspan="9" class="text-center">There is no data.</td>
+                    </tr>
+                    </tbody>
+                    <tfoot ng-hide="isLoading">
+                    <tr ng-show="paginationOptions.totalItems > paginationOptions.pageSize">
+                        <td colspan="9" class="text-center">
+                            <div st-pagination="" st-items-by-page="paginationOptions.pageSize" st-displayed-pages="7" class="no-margin"></div>
+                        </td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

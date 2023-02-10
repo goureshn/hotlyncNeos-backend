@@ -1,0 +1,32 @@
+<div class="modal-body wrapper-lg">
+    <div class="row">
+        <div class="col-sm-12 b-r">
+            <h3 class="m-t-none m-b font-thin">{{::item.remark ? 'Update' : 'Add'}} Preference (Comment)</h3>
+            <form role="form">
+                
+                <div class="form-group">
+                    <textarea class="form-control input-sm" rows="4" ng-model="item.remark" ng-pattern = "item.regex" style="resize:none"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label style="resize:none"><i class="text-danger">*</i> Please enter a valid comment not more than 120
+                        characters. Also avoid special characters.</label>
+                </div>
+                <div ng-show = "item.occupancy == 'Occupied'" class="form-group" >
+                        <label class="col-sm-3 control-label">Repeat until Checkout</label>
+                        <div class="col-sm-9">
+                            <label class="i-switch m-t-xs m-r">
+                                <input type="checkbox" ng-model="item.repeat" checked>
+                                <i></i>
+                            </label>
+                        </div>
+                    </div>
+                <div class="checkbox m-t-lg pull-right ">
+                    <button type="submit" class="btn btn-sm btn-primary text-uc m-t-n-xs" ng-click="savePreference()"><strong>&nbsp;&nbsp;&nbsp;{{::item.remark ? 'Save' : 'Create'}}&nbsp;&nbsp;&nbsp;</strong></button>
+                    <button type="submit" ng-if="::item.remark" class="btn btn-sm btn-danger text-uc m-t-n-xs" ng-click="deletePreference()"><strong>&nbsp;&nbsp;&nbsp;Delete&nbsp;&nbsp;&nbsp;</strong></button>
+                    <button type="submit" class="btn btn-sm btn-default text-uc m-t-n-xs" ng-click="cancelPreference()"><strong>&nbsp;&nbsp;Cancel&nbsp;&nbsp;</strong></button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

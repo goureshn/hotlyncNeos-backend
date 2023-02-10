@@ -1,0 +1,196 @@
+<style>
+.yes::-moz-selection { /* Code for Firefox */
+    color: red;
+    background: yellow;
+}
+
+.yes::selection {
+    color: red;
+    background: yellow;
+}
+.text-xs {
+	    font-size: 11px;
+	    font-weight: bold;
+	    margin-bottom: 0px;
+	    margin-top: 5px;
+}
+</style>
+
+
+<script type="text/ng-template" id="locationTypeahead.html">
+   <a>
+        <span ng-bind="match.model.name"></span><br>
+        <span style="font-size: 10px" ng-bind="match.model.type"></span>-<span style="font-size: 10px" ng-bind="match.model.property"></span><br>
+   </a>
+</script>
+
+<script type="text/ng-template" id="userTypeahead.html">
+   <a>
+        <span ng-bind="match.model.wholename"></span><br>
+        <span style="font-size: 10px" ng-bind="match.model.job_role"></span><br>
+        <span style="font-size: 10px" ng-bind="match.model.department"></span><br>
+   </a>
+</script>
+
+<script type="text/ng-template" id="guestTypeahead.html">
+   <a>
+        <span>{{match.model.guest_name}}</span><br>  
+        <span style="font-size: 10px" ng-show="match.model.arrival && match.model.departure">{{match.model.arrival}} ~ {{match.model.departure}}</span><br ng-show="match.model.arrival && match.model.departure">
+        <span style="font-size: 10px" ng-hide="match.model.arrival && match.model.departure">Email: {{match.model.email}}</span><br ng-hide="match.model.arrival && match.model.departure">
+        <span style="font-size: 10px" ng-hide="match.model.arrival && match.model.departure">Mobile: {{match.model.mobile}}</span><br ng-hide="match.model.arrival && match.model.departure">
+   </a>
+</script>
+
+<div class="wrapper-md" style="margin: auto">
+  
+  	<!-- - - - - - - - GUEST DETAILS - - - - - - - -->
+  	<div>
+  		<center>
+			<button type="button" class="btn btn-sm m-b-xs w-sm btn-dark font-bold">
+			  	<span class="text-success">Feedback No:&nbsp;&nbsp;{{complaint_id}}</span>
+			</button>                            
+			<button type="button" class="btn btn-sm m-b-xs w-sm btn-dark font-bold">
+			  	<span class="text-success">Request Time:&nbsp;&nbsp;{{complaint.request_time}}</span>
+			</button>	
+		</center>
+	</div>
+  
+	<div class="panel panel-default" style="border-radius: 4px">
+	  	<div class="panel-heading">
+			<div class="pull-left">
+				<label class="font-bold text-sm"><i class="fa fa-user-circle-o text-default"></i>&nbsp;&nbsp;Guest Details</label>
+			</div>
+			<br>
+		</div>
+		  
+		  
+		<div class="panel-body" style="padding: 5px 0px">
+				<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">Category<i class="text-danger">*</i></label>
+						<div>
+					    <select class='form-control' ng-model="complaint.category" ng-change="onChangeCategoryType()" ng-options="type for type in category_list">
+						  </select>
+						</div>
+				</div>
+			<!--
+				<div class="col-sm-6" ng-if="complaint.category == 'Guest Interaction' || complaint.category == 'Courtesy Calls' || complaint.category == 'Room Inspection' ">
+					<label class="control-label text-xs text-muted">Sub-Category<i class="text-danger">*</i></label>
+					<div>
+					<select class='form-control' ng-model="complaint.sub_category" ng-options="type for type in subcategory_list">
+					  </select>
+					</div>
+				</div>
+			-->
+				<div class="col-sm-6" ng-show="complaint.category == 'In-House Special Attention '">
+						<label for="email" class="control-label text-xs text-muted">Occasion<i class="text-danger">*</i></label>
+						<div>
+							<input type="text" ng-model="complaint.occasion" class="form-control input-sm" placeholder="Enter Occasion"
+										uib-popover="Enter Occasion" popover-trigger="mouseenter"
+									  uib-typeahead="value.occasion for value in getOccasionList($viewValue)"
+									  typeahead-editable="false"
+									  typeahead-min-length="0"
+									  typeahead-on-select="onOccasionSelect($item, $model, $label)">
+						</div>
+				</div>
+			<div class="col-sm-6" >
+				<div class="col-sm-11" style="padding-left: 0px">
+					<label for="email" class="control-label text-xs text-muted">Room<i class="text-danger">*</i></label>
+					<div>
+				    <input type="text" ng-model="complaint.room" class="form-control input-sm" placeholder="Enter room number"
+								uib-popover="Enter room number" popover-trigger="mouseenter"
+							  uib-typeahead="room.room for room in getRoomList($viewValue)"
+							  typeahead-editable="false"
+							  typeahead-min-length="0"
+							  typeahead-on-select="onRoomSelect($item, $model, $label)">
+					</div>
+				</div>
+				
+			</div>
+			<div class="col-sm-6">
+				<label class="control-label text-xs text-muted">Location<i class="text-danger">*</i></label>
+				<div>
+				<input type="text" ng-model="location.name" class="form-control input-sm" placeholder="Enter location name"
+					   uib-popover="Enter location name" popover-trigger="mouseenter"
+					   uib-typeahead="room.room for room in location_list | filter:$viewValue | limitTo:10"
+					   typeahead-min-length="0"
+					   typeahead-editable="false"
+					   typeahead-template-url="locationTypeahead.html"
+					   typeahead-on-select="onLocationSelect($item, $model, $label)" required>
+				</div>
+			</div>
+			<div class="col-sm-6" ng-show="complaint.room_id > 0 && complaint.category != 'Room Inspection'">
+				<label for="email" class="control-label text-xs text-muted">
+					Guest Name
+				<i class="text-danger">*</i></label>
+				<div ng-show="complaint.room_id > 0">
+			    <input type="text" ng-model="complaint.guest_name" minlength="3" class="form-control input-sm" placeholder="Enter name, email or mobile"
+						  uib-typeahead="user.guest_name for user in getGuestList($viewValue)"
+						  typeahead-on-select="onGuestSelect($item, $model, $label)"
+						  typeahead-min-length="0"
+						  typeahead-template-url="guestTypeahead.html">
+						  
+						 <i></i>
+				</div>
+			</div>
+			<div class="col-sm-6" ng-show="complaint.room_id > 0 && complaint.category == 'Room Inspection'">
+					<label for="email" class="control-label text-xs text-muted">Guest Name<i class="text-danger">*</i></label>
+					<div>
+					<input type="text" ng-model="complaint.guest_name" class="form-control input-sm"  placeholder="Enter name">
+					</div>
+			</div>
+			
+			<div class="col-sm-6" ng-show="complaint.guest_name > '' && complaint.category != 'Room Inspection'">
+				<label for="email" class="control-label text-xs text-muted">Check in<i class="text-danger">*</i></label>
+				<div>
+			    <input type="text" ng-model="complaint.arrival" class="form-control input-sm" disabled>
+				</div>
+			</div>
+			<div class="col-sm-6" ng-show="complaint.guest_name > '' && complaint.category != 'Room Inspection'">
+				<label for="email" class="control-label text-xs text-muted">Check out<i class="text-danger">*</i></label>
+				<div>
+			    <input type="text" ng-model="complaint.departure" class="form-control input-sm" disabled>
+				</div>
+			</div>	
+		</div>
+	</div>
+	
+			
+
+  <!-- - - - - - - - /GUEST DETAILS - - - - - - - -->
+
+<!-- - - - - - - - GUEST DETAILS - - - - - - - -->
+		<div class="panel panel-default" style="border-radius: 4px">
+			<div class="panel-heading">
+				<div class="pull-left">
+					<label class="font-bold text-sm"><i class="fa fa-info-circle text-default"></i>&nbsp;&nbsp;Feedback Details</label>
+				</div>
+				<br>
+			</div>
+
+			<div class="panel-body" style="padding: 5px 0px">
+				<div class="form-horizontal form-validation">
+					
+					<div class="col-sm-12" ng-if="complaint.category == 'Guest Interaction' || complaint.category == 'Courtesy Calls'" >
+						<label class="control-label text-xs text-muted">Additional Feedback<i class="text-danger">*</i></label>
+						<div>
+					    <textarea type="text" spellcheck="true" class="form-control input-sm" rows="6" ng-model="complaint.comment" style="resize:none" required></textarea>
+						</div>
+					</div>
+					<div class="col-sm-12" ng-if="complaint.category == 'Room Inspection' || complaint.category == 'In-House Special Attention ' || complaint.category == 'Escorted to Room'" >
+						<label class="control-label text-xs text-muted">Comments<i class="text-danger">*</i></label>
+						<div>
+					    <textarea type="text" spellcheck="true" class="form-control input-sm" rows="6" ng-model="complaint.comment" style="resize:none" required></textarea>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<center>
+			<button type="button " class="btn btn-dark btn-sm" ng-click="createFeedback()" ng-disabled="disable_create">
+			<span class="text-success font-bold"><i class="fa fa-check"></i>&nbsp;Create</span></button>
+			<button type="button" class="btn btn-dark btn-sm" ng-click="cancelComplaint()">
+			<span class="text-danger font-bold"><i class="fa fa-times"></i>&nbsp;Cancel</span></button>
+		</center><br><br>
+	<br><br><br><br>
+
+</div>  <br><br><br><br><br><br>

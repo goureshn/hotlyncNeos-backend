@@ -1,0 +1,214 @@
+<style>
+    button {
+        pointer: cursor;
+    }
+
+    input[type=file] {
+        width: 150px;
+        height: 20px;
+    }
+</style>
+<script type="text/ng-template" id="equipment_email.html">
+    <div ng-include="'tpl/engineering/equipment/modal/equipment_email.html'"></div>
+</script>
+<script type="text/ng-template" id="locationTypeahead.html">
+    <a>
+        <span ng-bind="match.model.name"></span><br>
+        <span style="font-size: 10px" ng-bind="match.model.type"></span><br>
+    </a>
+</script>
+<div class="wrapper" style="margin-top: 7px" >
+    <div class="panel panel-default" style="border-radius: 4px">
+        <div class="panel-heading">
+            <label class="font-bold"><i class="fa fa-warning text-default"></i>&nbsp;&nbsp;Asset Detail</label>
+            <div class="pull-right" style="margin-top: -3px">
+                <button type="button" class="btn btn-dark btn-sm" ng-click="onChangeStatus('edit')">
+                    <span class="text-success font-bold"><i class="fa fa-pencil-square-o"></i>&nbsp;Edit</span>
+                </button>                
+            </div>
+        </div>
+        <div class="panel-body">
+            <form class="form-horizontal form-validation">
+                <div >
+                    <!--
+                    <label class="col-sm-3 text-right" style="margin-bottom: 0px">Equipment ID:</label>
+                    <div class="col-sm-3 ">
+                        {{equipment.equip_id}}
+                    </div>
+                -->
+                    <div class="col-sm-6">
+                        <label class="control-label text-xs text-muted">ID</label>
+                        <div>
+                            <label class="text-sm font-bold">{{equipment.equip_id}}</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="control-label text-xs text-muted">Name</label>
+                        <div>
+                            <label class="text-sm font-bold">{{equipment.name}}</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="control-label text-xs text-muted">Description</label>
+                        <div>
+                            <label class="text-sm font-bold">{{equipment.description}}</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="control-label text-xs text-muted">Serial/Barcode</label>
+                        <div>
+                            <label class="text-sm font-bold">{{equipment.barcode}}</label>
+                        </div>
+                    </div>
+                    <!--
+                    <div class="col-sm-6">
+                        <label class="control-label text-xs text-muted">Critical Flag</label>
+                        <div class="col-sm-6">
+                            <label class="i-switch m-t-xs m-r">
+                                <input type="checkbox" ng-model="equipment.critical_flag"  />
+                                <i></i>
+                            </label>
+                        </div>
+                    </div>
+                -->
+                    <div class="col-sm-6">
+                        <label class="control-label text-xs text-muted">Critical Flag</label>
+                        <div>
+                            <label  ng-if="equipment.critical_flag == 1" class="text-sm font-bold">Yes</label>
+                            <label  ng-if="equipment.critical_flag == 0" class="text-sm font-bold">No</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="control-label text-xs text-muted">External Maintenance</label>
+                        <div>
+                            <label  ng-if="equipment.external_maintenance == 1" class="text-sm font-bold">Yes</label>
+                            <label  ng-if="equipment.external_maintenance == 0" class="text-sm font-bold">No</label>
+                        </div>
+                    </div>
+                   
+                    <div class="col-sm-6">
+                        <label class="control-label text-xs text-muted">Department</label>
+                        <div>
+                            <label class="text-sm font-bold">{{equipment.department}}</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="control-label text-xs text-muted">Life</label>
+                        <div>
+                            <label class="text-sm font-bold">{{equipment.life}} {{equipment.life_unit}}</label>
+                        </div>
+                    </div>
+                  
+                    <div class="col-sm-6">
+                        <label class="control-label text-xs text-muted">Primary Location</label>
+                        <div>
+                            <label class="text-sm font-bold">{{equipment.location_name}} - {{equipment.location_type}}</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="control-label text-xs text-muted">Secondary Location</label>
+                        <div>
+                            <label class="text-sm font-bold">{{equipment.sec_location_name}} - {{equipment.sec_location_type}}</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="control-label text-xs text-muted">Model</label>
+                        <div>
+                            <label class="text-sm font-bold">{{equipment.model}}</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="control-label text-xs text-muted">Status</label>
+                        <div>
+                            <label class="text-sm font-bold">{{equipment.status}}</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="control-label text-xs text-muted">Purchase Cost</label>
+                        <div>
+                            <label class="text-sm font-bold">{{equipment.purchase_cost}}</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="control-label text-xs text-muted">Purchase Date</label>
+                        <div>
+                            <label class="text-sm font-bold">{{equipment.purchase_date}}</label>
+                        </div>
+                    </div>
+                  
+                    <div class="col-sm-6">
+                        <label class="control-label text-xs text-muted">Warranty Start</label>
+                        <div>
+                            <label class="text-sm font-bold">{{equipment.warranty_start}}</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="control-label text-xs text-muted">Warranty End</label>
+                        <div>
+                            <label class="text-sm font-bold">{{equipment.warranty_end}}</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="control-label text-xs text-muted">Manufacturer</label>
+                        <div>
+                            <label class="text-sm font-bold">{{equipment.manufacture}}</label>
+                        </div>
+                    </div>
+                   
+                    <div class="col-sm-6">
+                        <label class="control-label text-xs text-muted">Supplier</label>
+                        <div>
+                            <label class="text-sm font-bold">{{equipment.supplier}}</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="control-label text-xs text-muted">Maintenance Date</label>
+                        <div>
+                            <label class="text-sm font-bold">{{equipment.maintenance_date}}</label>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6">
+                        <label class="control-label text-xs text-muted">Asset Group</label>
+                        <div ng-repeat="row in equipment.equipment_group">
+                            <label class="text-sm font-bold">{{$index+1}}. {{row.name}}</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                       
+                        <label class="control-label text-xs text-muted">Part/Part Group </label>
+                        <div ng-repeat="row in equipment.part_group">
+                            <label class="text-sm font-bold">{{$index+1}}. {{row.name}}({{row.type}})</label>
+                        </div>
+                    </div>
+
+                    <div ng-if = "equipment.external_maintenance == 1" class="col-sm-6" >
+                        <label class="control-label text-xs text-muted">External Maintenance Company</label>
+                        <div >
+                            {{equipment.external_maintenance_company}}
+                            <i class="fa  fa-share text-danger " style="cursor: pointer" title="Send Email" ng-click="SendEmail()"></i>
+                        </div>
+                    </div>
+                    <br>
+                    <hr>
+                    <div class="col-sm-12" >
+                        <div align="center" ng-click="openModalImage(equipment.image_url, equipment.image_url);$event.stopPropagation();">
+                            <img src="{{equipment.image_url}}" style="width: 150px;height: 150px"  > &nbsp;
+                            
+                        </div>
+                        <div>
+                            <i class="fa fa-minus-circle fa-2x text-danger pull-right" style="cursor: pointer"  ng-show = "equipment.image_url" ng-click="delImageFile(equipment.id)"></i>
+                        </div>
+                       
+                    </div>
+
+                </div>
+              
+                <hr>
+            
+            </form>
+        </div>
+    </div>
+</div>
+
+

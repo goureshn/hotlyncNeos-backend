@@ -1,0 +1,154 @@
+<div ng-controller="GuestsurveySettingController as ctrl" style="{{full_height}}">
+  <div class="wrapper-md1 bg-light b-b">
+    <h1 class="m-n font-thin h3">Guest Survey Builder</h1>
+  </div>
+  <div class="wrapper-md1">
+    <div class="col-sm-4">
+      <div class="panel panel-default">
+        <div class="panel-heading"><i class="fa fa-plus" aria-hidden="true"></i>&nbsp;Add Survey</div>
+        <div class="panel-body">
+          <form class="form-horizontal form-validation">
+            <div class="form-group" >
+              <div class="col-sm-12">
+                <label class="field_title">Survey name</label><label class="field_title" style="color:#F44336">*</label>
+                <input ng-model="survey_list_name" class="form-control  input-sm" required/>
+              </div>
+            </div>
+            <div class="form-group" >
+              <div class="col-sm-12">
+                <label class="field_title" class="field_title">Guest Type</label>
+                <tags-input ng-model="guesttype_tags" display-property="guest_type" placeholder="Add a Type" style="margin-top: -7px"
+                            replace-spaces-with-dashes="false">
+                  <auto-complete source="loadGuestTypeFilters($query)"
+                                 min-length="0"
+                                 load-on-focus="true"
+                                 load-on-empty="true"
+                                 debounce-delay="0"
+                                 max-results="10">
+                  </auto-complete>
+                </tags-input>
+              </div>
+            </div>
+            <div class="form-group" >
+              <div class="col-sm-12">
+                <label class="field_title" class="field_title">Room Type</label>
+                <tags-input ng-model="type_tags" display-property="type" placeholder="Add a Type" style="margin-top: -7px"
+                            replace-spaces-with-dashes="false">
+                  <auto-complete source="loadRoomTypeFilters($query)"
+                                 min-length="0"
+                                 load-on-focus="true"
+                                 load-on-empty="true"
+                                 debounce-delay="0"
+                                 max-results="10">
+                  </auto-complete>
+                </tags-input>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <div class="col-sm-12">
+                <div class="pull-right">
+                  <button class="btn btn-sm btn-primary text-uc m-t-n-xs" ng-click="add()"><strong>&nbsp;&nbsp;&nbsp;{{action_button}}&nbsp;&nbsp;&nbsp;</strong></button>
+                  <button class="btn btn-sm btn-default text-uc m-t-n-xs" ng-click="cancel()"><strong>&nbsp;&nbsp;Clear&nbsp;&nbsp;</strong></button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-8">
+      <div class="panel panel-default">
+        <div class="panel-heading"><i class="fa fa-list-ul" aria-hidden="true"></i>&nbsp;Survey List</div>
+        <div class="panel-body">
+          <table  st-table="datalist"  st-pipe="getDataList" class="table ticket" >
+            <thead >
+            <tr>
+              <th><b>Name</b></th>
+              <th><b>Guest Type</b></th>
+              <th><b>Room Type</b></th>
+              <th style="width: 80px"><b>Action</b></th>
+            </tr>
+            </thead>
+            <tbody ng-hide="isLoading" ng-repeat="row in datalist">
+            <tr class="" ng-click="onClickRow(row, $index)" >
+              <td>
+                <i ng-if="row.collapse" class="fa fa-arrow-down" style="color:#66BB6A;"></i>
+                <i ng-if="!row.collapse" class="fa fa-arrow-right" style="color:#66BB6A;"></i>
+                &nbsp;{{row.name}}</td>
+              <td>{{getGuestType(row)}}</td>
+              <td>{{getRoomTypes(row)}}</td>
+              <td>
+                <a class="btn default btn-xs green" ng-click="edit(row)">
+                  <i class="fa fa-pencil"></i></a>
+                <a class="btn default btn-xs red" ng-click="delete(row)">
+                  <i class="fa fa-times"></i></a>
+              </td>
+            </tr>
+            <tr ng-if="row.collapse" class="checklist-bg">
+              <td colspan="4">
+                <uib-tabset active="active">
+                  <!--<uib-tab index="2" heading="Builder1111">-->
+                    <!--<div class="row">-->
+                      <!--<div class="col-md-offset-2 col-md-8">-->
+                        <!--<div class="form-inline">-->
+                          <!--<button type="button" style="margin-bottom: 15px" class="btn btn-default" ng-click="ctrl.resetBuilder()">Reset</button>-->
+                        <!--</div>-->
+                        <!--<mw-form-builder api="row.formBuilder" options="ctrl.optionsBuilder" form-data="ctrl.formData" form-status="ctrl.formStatus" read-only="ctrl.builderReadOnly" on-image-selection="ctrl.onImageSelection()"></mw-form-builder>-->
+                      <!--</div>-->
+                    <!--</div>-->
+                  <!--</uib-tab>-->
+                  <uib-tab index="0" heading="Builder">
+                    <div class="row">
+                      <div class="col-md-12">
+                        <div class="form-inline">
+                          <button type="button" style="margin-bottom: 15px" class="btn btn-default" ng-click="ctrl.resetBuilder(row)">Reset</button>
+                        </div>
+                        <mw-form-builder api="row.formBuilder" options="row.optionsBuilder" form-data="row.formData" form-status="row.formStatus" on-image-selection="ctrl.onImageSelection(row)"></mw-form-builder>
+                        <hr>
+                        <!--<pre>-->
+                          <!--{{row.formData|json}}-->
+                        <!--</pre>-->
+                      </div>
+                    </div>
+                  </uib-tab>
+                  <uib-tab select="ctrl.resetViewer(row)"  heading="Preview">
+                    <div class="form-inline">
+                      <button type="button" style="margin-bottom: 15px" class="btn btn-default" ng-click="ctrl.resetViewer(row)">Reset</button>
+                    </div>
+                    <mw-form-viewer form-data="row.formData" template-data="row.templateData"  form-status="row.formStatus" options="row.formOptions" api="row.formViewer" response-data="row.responseData" on-submit="ctrl.saveResponse(row)"></mw-form-viewer>
+                    <hr>
+                    <!--<pre>-->
+                      <!--{{row.responseData|json}}-->
+                    <!--</pre>-->
+                  </uib-tab>
+                </uib-tabset>
+                <div style="margin-top: 20px">
+                  <div class="pull-right">
+                    <button type="submit" class="btn btn-sm btn-primary text-uc m-t-n-xs" ng-click="saveSurvey(row)"><strong>&nbsp;&nbsp;&nbsp;Save&nbsp;&nbsp;&nbsp;</strong></button>
+                    <button class="btn btn-sm btn-default text-uc m-t-n-xs" ng-click="cancelSurvey(row)"><strong>&nbsp;&nbsp;Clear&nbsp;&nbsp;</strong></button>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            </tbody>
+            <tbody ng-show="isLoading">
+            <tr>
+              <td colspan="4" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+            </tr>
+            </tbody>
+            <tfoot ng-hide="isLoading">
+            <tr ng-show="paginationOptions.totalItems > paginationOptions.pageSize">
+              <td colspan="4" class="text-center">
+                <div st-pagination="" st-items-by-page="paginationOptions.pageSize" st-displayed-pages="7" class="no-margin"></div>
+              </td>
+            </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,202 @@
+<style>
+    button {
+        pointer: cursor;
+    }
+
+    input[type=file] {
+        width: 150px;
+        height: 20px;
+    }
+    .tbl-sm {
+        font-size: .8vw;
+        padding: 1px 15px !important;
+        color: #67686a;
+    }
+</style>
+
+<script type="text/ng-template" id="staffTypeahead.html">
+    <a>
+        <span ng-bind="match.model.name"></span><br>
+        <span style="font-size: 10px" ng-bind="match.model.type"></span><br>
+    </a>
+</script>
+
+<div class="wrapper">
+    <div class="panel panel-default" style="border-radius: 4px">
+        <div class="panel-heading">
+            <label class="font-bold"><i class="fa fa-warning text-default"></i>&nbsp;&nbsp;Valet Create</label>
+            <div class="pull-right" style="margin-top: -3px">
+                <button type="button" class="btn btn-dark btn-sm" ng-click="createValet()">
+                    <span class="text-success font-bold"><i class="fa fa-check"></i>&nbsp;Create</span></button>
+                <button type="button" class="btn btn-dark btn-sm" ng-click="cancelValet()">
+                    <span class="text-danger font-bold"><i class="fa fa-times"></i>&nbsp;Cancel</span></button>
+            </div>
+        </div>
+        <div class="panel-body">
+            <form class="form-horizontal form-validation">
+               
+              
+				<div class="form-group" style="margin-right: 0px">
+						<label class="col-sm-3 control-label text-muted text-xs">Guest Type<i class="text-danger">*</i></label>
+						<div class="col-sm-8">
+							<select class='form-control' ng-model="valet.guest_type" ng-change="onChangeGuestType()"
+	              ng-options="type for type in guest_types">
+              				</select>     
+			  			</div>
+				</div>
+				<div class="form-group" style="margin-right: 0px"
+						ng-show="valet.guest_type == 'Walk-in' || valet.guest_type == 'Arrival'">
+						<label class="col-sm-3 control-label text-muted text-xs">New Guest</label>
+						<div class="col-sm-8">
+							<label class="i-switch m-t-xs m-r">
+								<input type="checkbox" ng-model="valet.new_guest" ng-change="onChangeNewGuest()"
+              		ng-disabled="valet.guest_type != 'Walk-in' && valet.guest_type != 'Arrival'">
+			  			<i></i>
+			  			</label> 
+            			</div>
+            
+				</div>
+				<div class="form-group" style="margin-right: 0px"
+							ng-hide="valet.guest_type == 'Walk-in' || valet.guest_type == 'Arrival'" >
+						<label class="col-sm-3 control-label text-muted text-xs">Room <i class="text-danger">*</i></label>
+						<div class="col-sm-7">
+							<input type="text" ng-model="valet.room" class="form-control input-sm" placeholder="Enter room number"
+								uib-popover="Enter room number" popover-trigger="mouseenter" 
+								uib-typeahead="room.room for room in getRoomList($viewValue) | limitTo:10"
+								typeahead-editable="false"
+								typeahead-min-length="1"
+								typeahead-on-select="onRoomSelect($item, $model, $label)"
+								ng-disabled="valet.guest_type == 'Walk-in' || valet.guest_type == 'Arrival'">   
+            			</div>
+				</div>		
+
+                <div class="form-group" style="margin-right: 0px"
+							ng-show="valet.guest_type == 'Walk-in' || valet.guest_type == 'Arrival' || valet.room_id != 0">
+						<label class="col-sm-3 control-label text-muted text-xs" ng-hide="valet.new_guest == true"> 
+              {{valet.guest_type == 'Walk-in' || valet.guest_type == 'Arrival' ? 'Guest Search' : 'Guest Name'}}
+              				<i class="text-danger">*</i>
+			  			</label>
+			  			<div class="col-sm-8 scrollable-dropdown-menu" ng-show="valet.new_guest == false || valet.room_id > 0">
+			  				<input type="text" ng-model="valet.guest_name" minlength="3" class="form-control input-sm" placeholder="Enter name, email or mobile" 
+			  					uib-typeahead="user.guest_name for user in getGuestList($viewValue)"
+			  					typeahead-editable="valet.guest_type == 'Walk-in' || valet.guest_type == 'Arrival' || !(valet.room_id > 0) ? true : false"
+			  					typeahead-on-select="onGuestSelect($item, $model, $label)"
+			  					typeahead-min-length="valet.guest_type == 'Walk-in' || valet.guest_type == 'Arrival' || !(valet.room_id > 0) ? 1 : 0" 
+			  					ng-disabled="valet.guest_type == 'In-House CI'"> 
+            			</div>
+						<label class="col-sm-3 control-label text-muted text-xs" ng-show="valet.new_guest == true"> 
+						Guest Name
+						<i class="text-danger">*</i>
+						</label>
+						<div class="col-sm-8 scrollable-dropdown-menu" ng-show="valet.new_guest == true">
+							<input type="text" ng-model="valet.guest_name" minlength="3" class="form-control input-sm" placeholder="Enter guest name" 
+								uib-typeahead="user.guest_name for user in getGuestList($viewValue)"
+								typeahead-editable="valet.guest_type == 'Walk-in' || valet.guest_type == 'Arrival' || !(valet.room_id > 0) ? true : false"
+								typeahead-on-select="onGuestSelect($item, $model, $label)"
+								typeahead-min-length="valet.guest_type == 'Walk-in' || valet.guest_type == 'Arrival' || !(valet.room_id > 0) ? 1 : 0" 
+								typeahead-template-url="guestTypeahead.html"
+								ng-disabled="valet.guest_type == 'In-House CI'"> 
+            			</div>
+				</div>
+				<div class="form-group" style="margin-right: 0px"
+							ng-show="(valet.new_guest == true && valet.guest_id > 0) ||
+								(valet.guest_id > 0 && valet.guest_type == 'Arrival') ||
+								(valet.guest_id > 0 && valet.guest_type == 'Walk-in')
+									|| valet.new_guest == true">
+						<label class="col-sm-3 control-label text-muted text-xs">Mobile</label>
+							<div class="col-sm-8">
+								<input type="text" ng-model="valet.mobile" class="form-control input-sm" ng-disabled="valet.new_guest == false">
+            				</div>
+				</div>
+				<div class="form-group" style="margin-right: 0px"
+							ng-show="(valet.new_guest == true && valet.guest_id > 0) ||
+								(valet.guest_id > 0 && valet.guest_type == 'Arrival') ||
+								(valet.guest_id > 0 && valet.guest_type == 'Walk-in')
+									|| valet.new_guest == true">
+						<label class="col-sm-3 control-label text-muted text-xs">Email</label>
+							<div class="col-sm-8">
+								<input type="email" ng-model="valet.email" class="form-control input-sm" ng-disabled="valet.new_guest == false">
+            				</div>
+				</div>
+				<div class="form-group" style="margin-right: 0px"
+							ng-show="valet.guest_type != 'Walk-in' && valet.guest_type != 'Arrival' && valet.guest_id > 0">
+							<label class="col-sm-3 control-label text-muted text-xs">Check in</label>
+								<div class="col-sm-8">
+									<input type="text" ng-model="valet.arrival" class="form-control input-sm" disabled>
+            					</div>
+				</div>
+				<div class="form-group" style="margin-right: 0px"
+							ng-show="valet.guest_type != 'Walk-in' && valet.guest_type != 'Arrival' && valet.guest_id > 0">
+							<label class="col-sm-3 control-label text-muted text-xs">Check out</label>
+								<div class="col-sm-8">
+									<input type="email" ng-model="valet.departure" class="form-control input-sm" disabled>
+            					</div>
+				</div>
+			
+          
+			
+
+               
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-3 text-right control-label text-muted" style="margin-bottom: 0px">Priority</label>
+                    <div class="col-sm-9 scrollable-dropdown-menu">
+                        <select class='form-control input-sm' ng-model="valet.priority"
+                                ng-options="value for value in prioritys" />
+                    </div>
+                </div>
+                 <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-3 text-right control-label text-muted" style="margin-bottom: 0px">Status</label>
+                    <div class="col-sm-9 scrollable-dropdown-menu">
+                        <select class='form-control input-sm' ng-model="valet.status"
+                                ng-options="value for value in statuses" />
+                    </div>
+                </div>
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-3 text-right control-label text-muted" style="margin-bottom: 0px">Description</label>
+                    <div class="col-sm-9">
+                        <textarea class="form-control input-sm" rows="3" ng-model="valet.description"
+                                  style="resize:none"  popover-trigger="mouseenter" ></textarea>
+                    </div>
+                </div>
+               <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-3 text-right control-label text-muted" style="margin-bottom: 0px">Valet</label>
+                    <div class="col-sm-9 scrollable-dropdown-menu" >
+                       <input type="text" minlength="3" ng-model="valet.staff_name" class="form-control input-sm"
+			        	placeholder="Search Employee ID, Firstname or Lastname"
+			          typeahead-editable="false"
+			          uib-typeahead="user.wholename for user in getStaffList($viewValue)"
+			          typeahead-on-select="onStaffSelect($item, $model, $label)"
+			          typeahead-min-length="0" 
+			          typeahead-no-results="noResults">
+
+                    </div>
+                  
+                </div>
+                
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-3 text-right control-label text-muted" style="margin-bottom: 0px">Plate No.</label>
+                    <div class="col-sm-9 scrollable-dropdown-menu">
+                        <input class="form-control input-sm"  ng-model="valet.plate"  required
+                               popover-trigger="mouseenter" ng-readonly="view_property"  />
+                    </div>
+                </div>
+                 <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-3 text-right control-label text-muted" style="margin-bottom: 0px">Parking Spot</label>
+                    <div class="col-sm-9 scrollable-dropdown-menu" >
+                       <input type="text" minlength="3" ng-model="valet.park_spot" class="form-control input-sm"
+			        	placeholder="Search for Parking Spot"
+			          typeahead-editable="false"
+			          uib-typeahead="loc.location for loc in getSpotList($viewValue)"
+			          typeahead-on-select="onSpotSelect($item, $model, $label)"
+			          typeahead-min-length="0" 
+			          typeahead-no-results="noResults">
+
+                    </div>
+                  
+                </div>
+                                
+                
+            </form>
+        </div>
+    </div>
+</div>

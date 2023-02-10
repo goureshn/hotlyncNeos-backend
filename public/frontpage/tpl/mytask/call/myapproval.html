@@ -1,0 +1,131 @@
+<style>
+ .img_size {
+     height:20px;
+     width:20px;
+ }
+</style>
+<script type="text/ng-template" id="returnReasonModal.html">
+    <div ng-include="'tpl/mytask/call/return_reason.html'"></div>
+</script>
+<div class="hbox stretch " style="{{table_container_height}}">
+    <div class="col b-r bg-auto" style="width: 300px;" >
+        <div>
+            <button type="button" class="btn btn-success pull-left" ng-click="onApproveReject('agent','Approved')" >Approve</button>
+            <button type="button" class="btn btn-danger pull-right" ng-click="onApproveReject('agent','Rejected')" >Reject</button>
+        </div>
+        <div class="table table-responsive" style="height:100%">
+            <table  st-table="datalist" st-pipe="getDataList" class="table ticket" >
+                <thead class="color-header">
+                    <tr style="height:47px;" >
+                        <th class="col-md-2"><input type="checkbox" ng-model="filter.depart_selected" ng-click="onChangeDepartTotalSelected()" /> </th>
+                        <th class="col-md-3"style="text-align:center;"><b>Name</b></th>
+                        <th class="col-md-3" style="text-align:center;"><b>Job Title</b></th>
+                        <!-- <th><b>Cost</b></th> -->
+                        <th class="col-md-4" style="text-align:center;"><b>Status</b></th>
+                    </tr>
+                </thead>
+                <tbody ng-hide="isLoading">
+                <tr class="" ng-repeat="row in datalist">
+                    <td class="col-md-2" style="white-space: nowrap;">
+                        <input type="checkbox"  ng-model="row.depart_selected"   />
+                    </td>
+                    <td class="col-md-3" style="white-space: nowrap;"><a ng-click="showUserCallList(row)">{{row.wholename}}</a></td>
+                    <td class="col-md-3" style="text-align:center;">{{row.job_role}}</td>
+                    <!-- <td>AED {{row.cost}}</td> -->
+                    <td class="col-md-4" style="text-align:center;">
+						<span style="white-space: nowrap;">{{row.cnt > 0 ? 'Pending for Approval' : 'OK'}}</span><br/>
+						AED {{row.cost | number:2}}
+					</td>
+                </tr>
+                </tbody>
+                <tbody ng-show="isLoading">
+                <tr>
+                    <td colspan="4" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col">
+    <!--<div style="background-color: green; height: auto">
+            <div class="btn-group pull-right" style="margin-right: 20px" uib-dropdown>
+                <button type="button" class="btn btn-info" ng-click="approveCalls()">Approve Calls</button>
+            </div>
+        </div>-->
+        <div style="margin-right: 20px;">
+            <button type="button" class="btn btn-success pull-right" style="margin-right: 10px;" ng-click="onApproveReject('date','Approved')" >Approve</button>
+            <button type="button" class="btn btn-danger pull-right " style="margin-right: 10px;" ng-click="onApproveReject('date','Rejected')" >Reject</button>
+        </div>
+        <div class="table table-responsive" style="height:100%">
+            <table  st-table="datalist"  st-pipe="getDetailCallList" style="width: 97%" class="table ticket table-striped b-t b-light" >
+                <thead class="color-header">
+                <!--    <tr>
+                        <th colspan="1">
+                            <select class='input-sm' ng-model="filter.approval_temp" ng-change="onChangeTotalApproval()" ng-show="selected_count > 0"
+                                    ng-options="type for type in approve_types">
+                            </select>
+                        </th>
+                    </tr> -->
+                    <tr style="height:47px; text-align:middle;">
+                        <th style="text-align:center;"><input type="checkbox" ng-model="filter.total_selected" ng-click="onChangeTotalSelected()"></th>
+                        <th style="text-align:center;"><b>Date</b></th>
+                        <th style="text-align:center;"><b>Extention</b></th>
+                        <th style="text-align:center; white-space: nowrap;"><b>Phone #</b></th>
+                        <th style="text-align:center; white-space: nowrap"><b>Call Type</b></th>
+                        <th style="text-align:center;"><b>Cost</b></th>
+                        <th style="text-align:center; min-width:300px"><b>Reason</b></th>
+                        <th style="text-align:center;"><b>Status</b></th>
+                        <th style="text-align:center;"><b ng-hide="selected_count > 1">Action</b>
+                             <!--<select style="color:#212121" class='input-sm' ng-model="filter.approval_temp" ng-change="onChangeTotalApproval()" ng-show="selected_count >= 2"
+                                    ng-options="type for type in approve_types">
+                            </select>-->
+                        </th>
+                    </tr>
+                    <tr>
+                    </tr>
+                </thead>
+                <tbody ng-hide="isChildLoading">
+                <tr class="" ng-repeat="row in detaillist">
+                    <th style="width:10px"><input type="checkbox"  ng-model="row.selected" ng-click="onChangeSelected()"></th>
+                    <td style="white-space: nowrap" valign="middle">{{row.call_date | mydate}}</td>
+                    <td>{{row.extension}}</td>
+                    <td>{{row.called_no}}</td>
+                    <td>{{row.call_type}}</td>
+                    <td>{{row.carrier_charges | number :2}}</td>
+                    <td style="min-width:300px">{{row.comment}}</td>
+                    <td style="white-space: nowrap">{{row.approval}}</td>
+                    <td style="white-space: nowrap" ng-if="row.approval != 'Waiting For Approval'">
+                        {{row.approval}}
+                    </td>
+                    <td  style="text-align:center;" ng-if="row.approval == 'Waiting For Approval'">
+                        <!--<select class='input-sm' ng-model="row.approval_temp" ng-change="onChangeApproval(row)" ng-disabled="selected_count > 1"
+                           ng-options="type for type in approve_types">-->
+                        </select>
+                        <img src="/images/big-finger-up.png" width="14" height="14" style="cursor: pointer" ng-click="onApproveReject('date','Approved')" title="Approved" />
+                        <img src="/images/big-finger-down.png" width="14" height="14" style="cursor: pointer" ng-click="onApproveReject('date','Rejected')" title="Rejected" />
+                        <img src="/images/question.png" width="14" height="14" style="cursor: pointer" ng-click="onApproveReject('date','Returned')" title="Returned" />
+                    </td>
+                </tr>
+                </tbody>
+                <tbody ng-show="isChildLoading">
+                <tr>
+                    <td colspan="10" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+                </tr>
+                </tbody>
+                <tfoot ng-hide="isChildLoading">
+                <tr ng-show="paginationOptions.totalItems > paginationOptions.pageSize">
+                    <td colspan="4" class="text-center">
+                        <div st-pagination="" st-items-by-page="paginationOptions.pageSize" st-displayed-pages="7" class="no-margin"></div>
+                    </td>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div style="background-color: green; height: auto;margin-right: 30px;">
+    <div class="btn-group pull-right" style="margin-right: 20px" uib-dropdown>
+        <button type="button" class="btn btn-info" ng-click="approveCalls()">Approve Calls</button>
+    </div>
+</div>

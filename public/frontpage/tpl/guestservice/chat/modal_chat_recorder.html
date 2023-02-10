@@ -1,0 +1,64 @@
+<style>
+    .blink-recording {
+        animation: blink-recording 1s linear infinite;
+    }
+
+    @keyframes blink-recording {
+        0% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.6;
+        }
+        100% {
+            opacity: 1;
+        }
+    }
+    .recording-icon {
+        transition: 0.5s;
+    }
+</style>
+
+<div class="modal-body">
+    <div class="row" style="padding-top: 30px; padding-bottom: 20px">
+        <div class="col-12 text-center">
+            <i class="fa fa-microphone {{status === 'Recording' ? 'blink-recording' : 'recording-icon'}}" style="font-size: 10em; color: #0b94ea"></i>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12 text-center">
+            <h3 style="margin: 0; color: deepskyblue">{{time}}</h3>
+            <h4 style="margin: 0">({{status}})</h4>
+        </div>
+    </div>
+    <div class="row" style="padding-top: 20px; padding-bottom: 20px">
+        <div class="col-lg-12 text-center">
+            <button type="button" class="btn btn-danger btn-sm" style="width: 100px" ng-click="onStartOrResume()">
+                <i class="fa {{button_label == 'Pause' ? 'fa-pause' : 'fa-play'}}"></i> &nbsp; {{button_label}}
+            </button>
+            &nbsp;
+            &nbsp;
+            <button type="button" class="btn btn-success btn-sm" style="width: 100px" ng-click="onStop()" ng-disabled="status == 'Ready' || status == 'Ended'">
+                <i class="fa fa-stop"></i> &nbsp; Stop
+            </button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 text-center" id="audio-test">
+            <audio controls src="{{url | trustUrl}}" type="audio/mpeg">
+            </audio>
+        </div>
+    </div>
+    <div class="row" style="padding-bottom: 30px; padding-top: 30px">
+        <div class="col-12 text-center">
+            <button type="button" class="btn btn-sm btn-danger" style="width: 120px" ng-disabled="status != 'Ended'">
+                Send
+            </button>
+            &nbsp;
+            <button type="button" class="btn btn-sm btn-default" style="width: 120px" ng-disabled="status != 'Ready' && status != 'Ended'" ng-click="onCancel()">
+                Cancel
+            </button>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,343 @@
+<style>
+		#scrollable-dropdown-menu .dropdown-menu {
+			max-height: 250px;
+			overflow-y: auto;
+		}
+	</style>
+	<input type="hidden" id="id" value="-1" ng-model="model_data.id"/>
+	<div class="panel panel-default">
+		<div class="panel-heading wrapper">
+			<button type="button" class="btn btn-success btn-sm" style="float:right; margin-top: -5px" data-toggle="modal" data-target="#addModal" ng-disabled="viewclass" ng-click="onShowEditRow(-1)">
+				<span class="glyphicon glyphicon-plus"></span>
+				<b> Add New </b>
+			</button>  
+			<button  type="button" class="btn btn-success btn-sm" style="float:right; margin-top: -5px; margin-right: 10px" data-target="#exportModal" data-toggle="modal" ng-disabled="job_role!='SuperAdmin'&&edit_flag==0" >
+				<b><i class="fa fa-download"></i> Export File </b>
+			</button>                            
+			<i class="fa fa-user-circle-o"></i>                           
+			<span class="font-bold">User Management</span>
+			<button type="button" class="btn btn-info btn-sm" style="float:right; margin-top: -5px;margin-right: 20px;"   ng-click="onSendCredential()" ng-show="is_super_admin">
+				<span class="glyphicon glyphicon-envelope"></span>
+				<b> Send message of credential </b>
+			</button>
+
+			<select id='status_id' class='input-sm' style="float:right; margin-left: 5px; margin-right: 20px;" ng-model="active_status" ng-change="onChangeStatus()"
+				ng-options="value for value in status_list">>		
+			</select>		
+
+		</div>                         
+		<div class=""> 
+			<table id="table_grid" class="table table-hover table-bordered" style="text-align: center;width:100%" ng-model = "table_grid">
+				<thead> 
+					<tr> 
+						<tr>							
+							<th style="text-align: center" ng-repeat = "field in fields">
+								<b>{{field}}</b>
+							</th>															
+							<th class="no-sort" style="text-align: center">Edit</th>
+							<!--<th class="no-sort" style="text-align: center">Delete</th>-->
+						</tr>
+					</tr>                                     
+				</thead>                    
+			</table>                             
+		</div> 
+		
+		<div class="modal fade" id="exportModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"> 
+			<div class="modal-dialog" role="document"> 
+				<div class="panel"> 
+					<div class="modal-header bg"> 
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"> 
+							<span aria-hidden="true">&times;</span> 
+						</button>  
+						<h5 class="modal-title font-bold" style="color:#2691d9">
+								<i class="fa fa-download"></i>&nbsp;Export Report</h5>
+					</div>
+					<div class="modal-body"> 
+						<br>
+						<form class="form-horizontal form-validation">
+								<label class="control-label text-xs font-bold" style="margin-left: 15px;font-size: 10px">&nbsp;&nbsp;&nbsp;&nbsp;Do you want to export this table?</label><br><br>
+						</form>
+						<form class="form-horizontal form-validation">
+								<center>
+										<button type="button" class="btn btn-success btn-sm" ng-click="onDownloadExcel('excel')" data-dismiss="modal">
+										<span class="font-bold"><i class="fa fa-check"></i>&nbsp;Ok</span></button>
+										<button type="button" class="btn btn-danger btn-sm" class="close" data-dismiss="modal">
+										<span class="font-bold"><i class="fa fa-times"></i>&nbsp;Cancel</span></button>           
+							</center>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="panel" style="width: 800px">
+					<div class="modal-header bg"> 
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"> 
+							<span aria-hidden="true">&times;</span> 
+						</button>                             
+						<h5 class="modal-title font-bold" style="color:#2691d9" ng-if="model_data.id<0">
+						<i class="fa fa-plus"></i>&nbsp;Add User</h5>
+						<h5 class="modal-title font-bold" style="color:#2691d9" ng-if="model_data.id>=0">
+						<i class="fa fa-pencil"></i>&nbsp;Edit User</h5>				
+					</div>   
+
+					<!-- - - - - - MODAL BODY - - - - - -->
+					<div class="modal-body" style="width: 800px">
+						<br>
+						<form class="form-horizontal">
+							<div class="form-group">
+								<!-- - - - - - LEFT - - - - - -->
+								<div class="col-sm-6" >
+									<div class="form-group">
+										<label class="control-label col-sm-4" for="Property">Property :<i class="text-danger">*</i></label>
+										<div class="col-sm-8">
+											<select id='prpty_id' class='form-control' ng-model="property_id" ng-change="changeProperty()"
+												ng-options="value.id as value.name for (key, value) in properties">		
+											</select>							
+										</div>
+									</div>
+									
+									<div class="form-group">
+										<label class="control-label col-sm-4" for="Property">Building :<i class="text-danger">*</i></label>
+										<div id="usergroup-dropdown-menu" class="col-sm-8">		
+											<tags-input ng-model="building_name_list" placeholder="Add Building" replace-spaces-with-dashes="false" style="margin-top: -5px">
+												<auto-complete source="loadFiltersValue('Building',$query)" min-length="0" debounce-delay="0" load-on-focus="true" load-on-empty="true"
+												max-results-to-show="100">
+												</auto-complete>
+											</tags-input>	   
+										</div>
+									</div>			
+
+										<!--<text-item formlabel="First Name" modelname="model_data.first_name" viewclass="viewclass" ></text-item>-->
+										<div class="form-group">
+											<label class="control-label col-sm-4" >First Name :<i class="text-danger">*</i></label>
+											<div class="col-sm-8">
+												<input type="text" class="form-control" ng-model="model_data.first_name" ng-pattern="/^[a-zA-Z0-9.\s]*$/" required />
+											</div>
+										</div>
+										<!--<text-item formlabel="Last Name" modelname="model_data.last_name" ></text-item>-->
+										<div class="form-group">
+											<label class="control-label col-sm-4">Last Name :<i class="text-danger">*</i></label>
+											<div class="col-sm-8">
+												<input type="text" class="form-control" ng-model="model_data.last_name" ng-pattern="/^[a-zA-Z0-9.\s]*$/" required />
+											</div>
+										</div>
+										<!--<text-item formlabel="User Name" modelname="model_data.username"></text-item>-->
+										<div class="form-group">
+											<label class="control-label col-sm-4">User Name :<i class="text-danger">*</i></label>
+											<div class="col-sm-8">
+												<input type="text" class="form-control" ng-model="model_data.username" ng-disabled="model_data.id>=0"  ng-pattern="/^[a-zA-Z0-9.]*$/" required />
+											</div>
+										</div>
+										<div class="form-group">						
+											<label class="control-label col-sm-4">Department :<i class="text-danger">*</i></label>
+											<div id="scrollable-dropdown-menu" class="col-sm-8">
+												<input class="form-control input-sm col-sm-5" type="text" ng-model="dept_name"
+													uib-typeahead="department.department for department in getdepartment($viewValue)"
+													typeahead-min-length="0"
+													typeahead-editable="false"
+													typeahead-on-select="ondepartment(department, $item, $model, $label)"
+													required />
+											</div>						
+										</div>
+										<div class="form-group">
+											<label class="control-label col-sm-4">Job Role :<i class="text-danger">*</i></label>
+											<div class="col-sm-8">
+												<input class="form-control input-sm col-sm-5" type="text" ng-model="job_role"
+													uib-typeahead="items.job_role for items in getjob_roles($viewValue)"	
+													typeahead-min-length="0"
+													typeahead-editable="false"
+													typeahead-on-select="onJobRoleSelect(items, $item, $model, $label)"
+													required />
+											</div>
+										</div>
+										<div class="form-group">
+											<label class="control-label col-sm-4">Shift Group :<i class="text-danger">*</i></label>
+											<div id="scrollable-dropdown-menu" class="col-sm-8">
+												<input class="form-control input-sm col-sm-5" type="text" ng-model="shift_name" uib-typeahead="shift.name for shift in getshift($viewValue)"
+												typeahead-min-length="0" typeahead-editable="false" typeahead-on-select="onshift(shift, $item, $model, $label)"
+												required />
+											</div>
+										</div>
+										
+										<!--<text-item formlabel="Password" modelname="model_data.password"  ></text-item>-->
+										<!--<div class="form-group">
+											<label class="control-label col-sm-4" for="Property">Password :</label>
+											<div class="col-sm-8">
+												<input type="password" class="form-control" ng-model="model_data.password" ng-disabled="true" />
+											</div>
+										</div>-->
+										
+										<div class="form-group">
+											<label class="control-label col-sm-4" >Email :</label>
+											<div class="col-sm-8">
+												<input type="email" class="form-control" ng-model="model_data.email"/>
+												<!--<input type="email" class="form-control" ng-model="model_data.email"  />-->
+											</div>
+										</div>
+										<div class="form-group">
+											<label class="control-label col-sm-4" >Mobile :</label>
+											<div class="col-sm-8">
+												<input type="text" class="form-control" ng-model="model_data.mobile"/>
+												<!--<text-item formlabel="Mobile" modelname="model_data.mobile"></text-item>-->
+											</div>
+										</div>
+										<link href="/lib/angular/angular-toggle-switch-bootstrap-3.css" media="all" rel="stylesheet" type="text/css">
+										<div class="form-group" ng-if="model_data.id > 0">
+											<label class="control-label col-sm-4" for="Property">Lock :</label>
+											<div class="col-sm-8">
+												<div toggle-switch class="switch-primary" ng-model="model_data.lock"></div>
+											</div>
+										</div>
+										<link href="/lib/angular/angular-toggle-switch-bootstrap-3.css" media="all" rel="stylesheet" type="text/css">
+										<div class="form-group" ng-if="model_data.id > 0">
+											<label class="control-label col-sm-4" for="Property">Disable :</label>
+											<div class="col-sm-8">
+												<div toggle-switch class="switch-primary" ng-model="model_data.deleted"></div>
+											</div>
+										</div>
+
+										<div class="form-group" ng-if="model_data.id > 0">
+											<label class="control-label col-sm-4" for="Property">Online :</label>
+											<div class="col-sm-8">
+												<div toggle-switch class="switch-primary" ng-model="model_data.active_status"></div>
+											</div>
+										</div>
+										
+										<div class="form-group" ng-if="model_data.deleted == 1">
+											<label class="control-label col-sm-4" for="description">Comment : </label>
+											<div class="col-sm-8">
+												<textarea class="form-control" rows="3" ng-model = "model_data.deleted_comment" ng-disabled="model_data.already_deleted == true"></textarea>
+											</div>
+										</div>
+								</div>
+								<!-- - - - - - /LEFT - - - - - -->
+								<!-- - - - - - RIGHT - - - - - -->
+								<div class="col-sm-6">
+									<!--<text-item formlabel="Email" modelname="model_data.email"></text-item>-->
+									<!--<text-item formlabel="Mobile" modelname="model_data.mobile"></text-item>-->
+									<!--<text-item formlabel="IVR Password" modelname="model_data.ivr_password"></text-item>-->
+									<div class="form-group">
+										<label class="control-label col-sm-4" >IVR Code :</label>
+										<div class="col-sm-8">
+											<input type="text" class="form-control" ng-model="model_data.ivr_password" ng-pattern="/^[a-zA-Z0-9.]*$/" required />
+										</div>
+									</div>
+									<!--<text-item formlabel="Employee ID" modelname="model_data.employee_id"></text-item>-->
+									<div class="form-group">
+										<label class="control-label col-sm-4" >Employee ID :</label>
+										<div class="col-sm-8">
+										<input type="number" class="form-control" ng-model="model_data.employee_id"  />
+										</div>
+									</div>	
+									<div class="form-group">
+											<label class="control-label col-sm-4" >Language :</label>
+											
+											<div  id="scrollable-dropdown-menu" class="col-md-8">
+													<select class='form-control' ng-model="model_data.lang_id"
+												ng-options="value.id as value.label for (key, value) in langs">		
+											</select>
+										</div>	
+									</div>			
+									<div ng-if="0" class="form-group">
+										<label class="control-label col-sm-4">Access Code :</label>
+										<div class="col-sm-8">
+											<input type="number" class="form-control" ng-model="model_data.access_code" />
+										</div>
+									</div>
+									<div class="form-group">
+										<label class="control-label col-sm-4"> Login PIN :</label>
+										<div class="col-sm-8">
+											<input type="text" class="form-control" ng-model="model_data.login_pin"  />
+										</div>
+									</div>
+									<link href="/lib/angular/angular-toggle-switch-bootstrap-3.css" media="all" rel="stylesheet" type="text/css">
+									<div class="form-group">
+										<label class="col-sm-4 control-label" style="white-space: nowrap;">User Group : </label>
+										<div  id="scrollable-dropdown-menu" class="col-md-8">
+											<div ng-dropdown-multiselect="" options="usergroups" selected-model="group_type" checkboxes="true" extra-settings="usergroups_hint_setting" translation-texts="usergroups_hint"></div>
+										</div>
+									</div>
+									<div class="form-group">
+										<label class="control-label col-sm-4">Business Hours :</label>
+										<div class="col-sm-8">
+											<select class='form-control' ng-model="model_data.contact_pref_bus"
+												ng-options="value for value in contact_mode_list">		
+											</select>							
+										</div>
+									</div>
+				
+									<div class="form-group">
+										<label class="control-label col-sm-4">After Work :</label>
+										<div class="col-sm-8">
+											<select class='form-control' ng-model="model_data.contact_pref_nbus"
+												ng-options="value for value in contact_mode_list">		
+											</select>							
+										</div>
+									</div>
+									<div class="form-group">
+										<label class="control-label col-sm-4" for="Property">Casual Staff :</label>
+										<div class="col-sm-8">
+											<div toggle-switch class="switch-primary" on-label="Yes" off-label="No" ng-model="casual_staff"></div>
+										</div>
+									</div>
+				
+									<div>
+										<label class="col-sm-4 control-label">Image :</label>
+										<div class="col-sm-8">
+											<button class="btn btn-icon btn-info" style="cursor: pointer"><i class="fa fa-paperclip"></i></button>
+											<div class="dropzone" file-dropzone="[image/png, image/jpeg, image/gif]"
+													file="image"  file-name="imageFileName"  data-max-file-size="3" >
+											</div>
+											<div class="image-container">
+												<img ng-src={{image}}/>
+												<span class="file-name">{{imageFileName}}</span>
+											</div>
+											<form action style="border:0px;">
+												<input type="file" fileread="uploadme.src" imagename="uploadme.imagename" imagetype="uploadme.imagetype"
+													style="opacity:0.001;width:35px;margin-top:-45px;max-height: 50px;" />
+												<img ng-src="{{ uploadme.src }}" style="margin-left:50px;margin-top:-25px; width: 80px;height: 80px;">
+											</form>
+										</div>
+									</div>
+								</div>
+								<!-- - - - - - /RIGHT - - - - - -->
+							</div>
+						</form>
+						<div class="col-sm-12" ng-if="model_data.id > 0">
+							<div>
+								<i class="fa fa-refresh"></i> History
+							</div>
+							<div style="height:200px; overflow-y:auto;">
+								<table style="width:100%;" class="table ticket table-striped b-t b-light">
+									<thead>
+										<tr class="tblhead-sm">
+											<th class="text-center" style="width:30%"><b>Date&Time</b></th>
+											<th class="text-center" style="width:10%"><b>Action</b></th>
+											<th class="text-center" style="width:40%"><b>Comment</b></th>
+											<th class="text-center" style="width:20%"><b>User</b></th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr class="" ng-repeat="row in historylist">
+											<td class="text-center" >{{row.created_at }}</td>
+											<td class="text-center" >{{row.action | capitalize}}</td>
+											<td class="text-center" >{{row.detail}}</td>
+											<td class="text-center" >{{row.agentname}}</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+					<!-- - - - - - /MODAL BODY - - - - - -->
+					<!-- BUTTON -->
+					<submit-form-no-dismiss id="model_data.id" updatedata="onUpdateRow()"></submit-form-no-dismiss>
+				</div>
+			</div>
+		</div>
+	</div>
+	<dialog-delete title="User" modelname="model_data.username" deletedata="deleteRow()"></dialog-delete>
+	

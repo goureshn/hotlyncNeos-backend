@@ -1,0 +1,79 @@
+<style>
+    #preset_table td {
+        padding: 10px;
+        text-align: center;
+        vertical-align: center;
+    }
+
+</style>
+
+<div class="modal-content">
+    <div class="modal-body" style="padding-top: 20px; padding-bottom: 30px;">
+        <h3 style="text-align: center">Preset Messages</h3>
+        <div class="row" style="margin: 0; padding-bottom: 10px">
+            <div class="col-12 text-right">
+                <button type="button" class="btn btn-danger btn-sm" ng-disabled="msgInfoList.length >= 20"
+                        ng-click="onAddMessage()"><i class="fa fa-plus"></i>&nbsp;Add Message
+                </button>
+            </div>
+        </div>
+        <div class="row" style="margin: 0;">
+            <div class="col-12" style="max-height: 500px; overflow: auto" id="preset-table-wrapper">
+                <table class="table ticket table-striped b-t b-light" id="preset_table">
+                    <thead class="tblhead-sm" style="font-size: .8vw">
+                    <tr class="text-center">
+                        <th width="80px" class="text-center"><b>&nbsp;&nbsp;No</b></th>
+                        <th class="text-center"><b>Message</b></th>
+                        <th width="125px" class="text-center"><b>Action</b></th>
+                    </tr>
+                    </thead>
+                    <tbody ng-if="msgInfoList.length > 0">
+                    <tr class="highlight2 no-radius m-b-none m-t-n-xxs" ng-repeat="(index, msgInfo) in msgInfoList">
+                        <td>
+                            {{index + 1}}
+                        </td>
+                        <td>
+                            <div ng-if="!msgInfo.bEdit">
+                                {{msgInfo.message}}
+                            </div>
+                            <div ng-if="msgInfo.bEdit">
+                                <textarea class="form-control" style="width: 100%; resize: none"
+                                          ng-model="msgInfo.message"></textarea>
+                            </div>
+                        </td>
+                        <td>
+                            <button type="button" ng-click="onSaveOrEditRow(msgInfo, index)"
+                                    class="btn btn-sm {{msgInfo.bEdit ? 'btn-danger' : 'btn-primary'}}"
+                                    title="{{msgInfo.bEdit ? 'Save' : 'Edit'}}"><i
+                                    class="fa {{msgInfo.bEdit ? 'fa-save': 'fa-edit'}}"></i></button>
+                            <button type="button" ng-click="onDeleteOrCancel(msgInfo, index)"
+                                    class="btn btn-sm {{msgInfo.bEdit ? 'btn-primary' : 'btn-danger'}}"
+                                    title="{{msgInfo.bEdit ? 'Cancel' : 'Remove'}}"><i
+                                    class="fa {{msgInfo.bEdit ? 'fa-times' : 'fa-trash'}}"></i></button>
+                        </td>
+                    </tr>
+                    </tbody>
+                    <tbody ng-if="msgInfoList.length == 0">
+                    <tr>
+                        <td colspan="9" class="text-center">There is no data</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer ">
+
+        <div class="form-group" style="padding-left: 0; margin: 0;text-align: center">
+            <button type="button" ng-disabled="isLoading == true" class="btn btn-info btn-sm"
+                    style="width: 80px" ng-click="onSave()">
+                {{isLoading == false ? 'Save' : 'Saving'}}
+            </button>
+            <button type="button" ng-disabled="isLoading == true"
+                    class="btn btn-danger btn-sm" style="width: 80px" ng-click="onCancel()">
+                Cancel
+            </button>
+        </div>
+    </div>
+</div>

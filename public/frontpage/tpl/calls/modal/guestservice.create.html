@@ -1,0 +1,114 @@
+<style>
+     #scrollable-room-dropdown-menu .dropdown-menu {
+          max-height: 300px;
+          overflow-y: auto;
+     }
+     #scrollable-task-dropdown-menu .dropdown-menu {
+          max-height: 300px;
+          overflow-y: auto;
+     }
+     #muti-task-dropdown-menu .dropdown-menu {
+          max-height: 300px;
+          overflow-y: auto;
+     }
+</style>
+<div>
+	<!-- - - - - - Create Task - - - - - -->
+	<div class="line-sm" style="width:99%; z-index:3">
+		<div class="panel panel-default" style="margin-left: 10px;">
+			<div class="panel-heading">
+				<label class="font-bold"><i class="fa fa-tasks" aria-hidden="true"></i>&nbsp;&nbsp;Create Task&nbsp;</label>
+				<a class="dropdown pos-stc" ng-show="guest.room_id > 0 && guest.guest_id > 0">
+					<label ng-click="showGuestHisotry(guest.guest_name)" class="text-danger font-bold text-xs"
+						style="cursor: pointer"><i class="fa fa-history text-danger"></i>&nbsp; {{historylist.length}} Previous Request
+					</label>
+				</a>
+				<div class="pull-right">
+					<div class="btn-group" uib-dropdown is-open="status.isopen">
+						<button type="button" class="btn btn-dark btn-sm" ng-click="createTasks(0)"  ng-disabled="disable_create">
+							<span class="font-bold text-success">Create</span>
+						</button>
+					</div>
+					<button type="button" class="btn btn-dark btn-sm" ng-click="removeNewSelectTicket(tab)" >
+						<span class="font-bold text-danger">Cancel</span>
+					</button>
+				</div>
+			</div>
+			<div class="panel-body">
+				<form class="form-horizontal"  my-enter="createTasks(0)" my-esc="removeNewSelectTicket(tab)"  >
+					<div class="form-group label-group">
+						<div class="col-sm-2 control-label text-muted">Request ID</div>
+						<div class="col-sm-4 control-label" style="text-align: left"><strong>{{ticket_id}}</strong></div>
+						<div class="col-sm-2 control-label text-muted">Request Time</div>
+						<div class="col-sm-4 control-label" style="text-align: left"><strong>{{guest.request_time}}</strong></div>
+					</div>
+					<div class="form-group label-group">
+						<div class="col-sm-2 control-label text-muted">Room</div>
+						<div class="col-sm-4 control-label" style="text-align: left">
+							<div id="scrollable-room-dropdown-menu">
+								<input type="text" ng-model="selected_room.room" class="form-control input-sm" placeholder="Enter room number"
+								typeahead-editable="false"
+								uib-typeahead="room.room for room in room_list | filter:$viewValue | limitTo:200"
+								typeahead-min-length="0"
+								typeahead-on-select="onRoomSelect($item, $model, $label)" required autofocus="selected_room.room">
+							</div>
+						</div>
+						<div class="col-sm-2 control-label text-muted">Guest Name</div>
+						<div class="col-sm-3 control-label" style="text-align: left"><strong>{{guest.guest_name}}</strong></div>
+					</div>
+					<div class="form-group label-group">
+						<div class="col-sm-2 control-label text-muted">Feedback</div>
+						<div class="col-sm-4 control-label" style="text-align: left">
+							<label class="i-switch m-t-xs m-r">
+								<input type="checkbox" ng-model="feedback_flag" ng-change="feedbackFlag()">
+								<i></i>
+							</label>
+						</div>
+					</div>
+					<div class="line line-dashed b-b" ng-show="guest.room_id > 0 && guest.guest_id > 0"></div>
+					<div class=" " ng-show="guest.room_id > 0 && guest.guest_id > 0">
+						<div ng-repeat="item in system_task_list" class="col-lg-2-4 btn-group btn-group-justified m-t-xs m-b-xs"
+							style="display: table; padding-left: 2px; padding-right: 2px" ng-dblclick="addSystemTask(item)" sglguestclick="addSystemTaskq(item)">
+							<div class="btn w-ms btn-primary text-center text-xs font-bold">
+								<a><span class="text-warning" ng-init="limit = 20; moreShown = false" title="{{item.task}}">
+									{{item.task | limitTo: limit}}{{item.task.length > limit ? '..' : ''}}
+									</span>
+								</a>
+							</div>
+						</div>
+					</div>
+
+					<div class="line line-dashed b-b wrapper-xs line-md"
+							ng-show="guest.room_id > 0 && guest.guest_id > 0 && maintasks.length > 0">
+					</div>
+					<div ng-show="guest.room_id > 0 && guest.guest_id > 0">
+						<div ng-repeat="item in maintasks" class="col-lg-2-4 btn-group btn-group-justified m-t-xs m-b-xs"
+							style="display: table; padding-left: 2px; padding-right: 2px" ng-dblclick="addMainTaskGroup(item)" sgldclick="addMainTaskq(item)">
+							<div class="btn w-ms btn-dark text-center text-xs font-bold">
+								<a>
+									<span class="text-warning" ng-init="limit = 20; moreShown = false" title="{{item.alias}}">
+										{{item.alias | limitTo: limit}}{{item.alias.length > limit ? '..' : ''}}
+									</span>
+								</a>
+							</div>
+						</div>
+					</div>
+
+					<div class="line line-dashed b-b" ng-show="guest.room_id > 0 && guest.guest_id > 0"></div>
+					<div class=" " ng-show="guest.room_id > 0 && guest.guest_id > 0">
+						<div ng-repeat="item in quicktasks" class="col-lg-2-4 btn-group btn-group-justified m-t-xs m-b-xs"
+							style="display: table; padding-left: 2px; padding-right: 2px" ng-dblclick="addQuickTask(item)" sglguestclick="addQuickTasksq(item)">
+							<div class="btn w-ms btn-dark text-center text-xs font-bold">
+								<a><span class="text-warning" ng-init="limit = 20; moreShown = false" title="{{item.task}}">
+									{{item.task | limitTo: limit}}{{item.task.length > limit ? '..' : ''}}
+									</span>
+								</a>
+							</div>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<!-- - - - - - Create Task - - - - - -->
+</div>

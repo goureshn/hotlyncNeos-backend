@@ -1,0 +1,108 @@
+<div class="modal-body" style="overflow: auto;">
+  <div class="form-horizontal col-md-12 wrapper" style="display: table; background-color: #141414">
+      <div class="row" style="padding: 10px 0 10px 0">
+        <div class="col-sm-12 col-md-6" style="">
+              <h3 class="m-n font-thin" style="white-space: nowrap; color: #337ab7"> <i class="icon-user"></i> Guest Log Information</h3>
+            </div>
+
+        <div class="col-sm-12 col-md-3 " style="display: flex; float:right;align-items: center; justify-content: space-between;">
+              
+        <div>
+          <button class="btn btn-sm bg-complaint-ack" data-toggle="dropdown" aria-expanded="false">
+            <label style="margin-bottom: 1px">Filter&nbsp;&nbsp;&nbsp;</label>  
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu w1" aria-labelledby="single-button" data-toggle="dropdown" aria-expanded="false">
+            <li ng-click="onFilterLog('Total')">
+              <a href="javascript:void(0)"><label>All</label></a>
+            </li>
+            <li ng-click="onFilterLog(1)">
+              <a href="javascript:void(0)"><label>Check IN</label></a>
+            </li>
+            <li ng-click="onFilterLog(2)">
+              <a href="javascript:void(0)"><label>Check Out</label></a>
+            </li>
+          </ul>
+        </div>
+        <div class="input-group pull-right">
+          <input type="text" ng-keyup="($event.which === 13) ? onSearchLog() : 0" ng-model="search_text" id="log_search_text" class="form-control input-sm bg-light no-border  padder" placeholder="Search"/>
+          <span class="input-group-btn">
+            <button type="button" ng-click="onSearchLog()" class="btn btn-sm bg-light "><i class="fa fa-search"></i></button>
+          </span>
+        </div>
+      </div>
+      
+</div>
+<div class="table  table-responsive" additional-padding="40" ng-show="!mobile_flag">
+            <table st-table="guest_logs"  st-pipe="getGuestLogs" class="table table-striped ticket">
+                <thead class="tblhead-sm">
+          <tr>
+                        <th class="text-center" st-sort="id" st-sort-default="reverse" width="6%">&nbsp;&nbsp;ID</th>
+                        <th class="text-center" st-sort="guest_id" width="5%">&nbsp;&nbsp;Guest ID</th>
+                        <th class="text-center" st-sort="profile_id" width="5%">&nbsp;&nbsp;Profile ID</th>
+                        <th class="text-center" st-sort="guest_group" width="5%">&nbsp;&nbsp;Guest Group</th>
+                        <th class="text-center" st-sort="guest_name" width="7%">&nbsp;&nbsp;Guest Name</th>
+                        <th class="text-center" st-sort="first_name" width="7%">&nbsp;&nbsp;First Name</th>
+                        <th class="text-center" st-sort="title" width="6%">&nbsp;&nbsp;Title</th>
+                        <th class="text-center" st-sort="arrival" width="6%">&nbsp;&nbsp;Arrival</th>
+                        <th class="text-center" st-sort="departure" width="6%">&nbsp;&nbsp;Departure</th>
+                        <th class="text-center" st-sort="share" width="6%">&nbsp;&nbsp;Share</th>
+                        <th class="text-center" st-sort="vip" width="6%">&nbsp;&nbsp;VIP</th>
+                        <th class="text-center" st-sort="language" width="6%">&nbsp;&nbsp;Language</th>
+                        <th class="text-center" st-sort="dnd" width="5%">&nbsp;&nbsp;DND</th>
+                        <th class="text-center" st-sort="cos"  width="5%">&nbsp;&nbsp;COS</th>
+                        <th class="text-center" st-sort="ml"  width="5%">&nbsp;&nbsp;Ml</th>
+                        <th class="text-center" st-sort="created_at" width="6%">&nbsp;&nbsp;Created at</th>
+                        <th class="text-center" st-sort="no_post" width="5%">&nbsp;&nbsp;No Post</th>
+                        <th class="text-center" st-sort="checkout_flag" colspan="3"  width="8%">&nbsp;&nbsp;Status</th>
+                    </tr>
+        </thead>
+                <tbody ng-hide="isLoading" style="{{box_height}}; display:block;">
+                    <tr class="" ng-repeat="row in guest_logs">
+                        <td class="text-center" width="6%">{{row.id}}</td>
+                        <td class="text-center" width="5%">{{row.guest_id}}</td>
+                        <td class="text-center" width="5%">{{row.profile_id}}</td>
+                        <td class="text-center" width="5%">{{row.guest_group}}</td>
+                        <td class="text-center" width="7%">{{row.guest_name}}</td>
+                        <td class="text-center" width="7%">{{row.first_name}}</td>
+                        <td class="text-center" width="6%">{{row.title}}</td>
+                        <td class="text-center" width="6%">{{row.arrival | mydate}}</td>
+                        <td class="text-center" width="6%">{{row.departure | mydate}}</td>
+                        <td class="text-center" width="6%">{{row.share == 1 ? 'Shared' : 'Single'}}</td>
+                        <td class="text-center" width="6%">{{row.vip}}</td>
+                        <td class="text-center" width="6%">{{row.language}}</td>
+                        <td class="text-center" width="5%">{{row.dnd}}</td>
+                        <td class="text-center" width="5%">{{row.cos}}</td>
+                        <td class="text-center" width="5%">{{row.ml}}</td>
+                        <td class="text-center" width="6%">{{row.created_at | mydate}}</td>
+                        <td class="text-center" width="5%">{{row.no_post}}</td>
+                        <td class="text-center"  width="8%">{{row.checkout_flag}}</td>
+                    </tr>
+                    <tr class="" ng-show="!isLoading && guest_logs.length < 1">
+                        <td colspan="18" class="text-center">There is no data.</td>
+                    </tr>
+                </tbody>
+                <tbody ng-show="isLoading">
+                    <tr>
+                        <td colspan="18" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+                    </tr>
+                </tbody>
+                <tfoot ng-hide="isLoading">
+                    <tr ng-show="paginationOptions.totalItems > paginationOptions.pageSize">
+                        <td colspan="10" class="text-center">
+                            <div st-pagination="" st-items-by-page="paginationOptions.pageSize" st-displayed-pages="7" class="no-margin"></div>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        <div class="row" style="padding-top: 18px; padding-bottom: 10px">
+          <div class="col-sm-12 text-center">
+            <button type="button" class="btn btn-lg btn-danger" style="min-width: 200px;" ng-click="ok()">OK</button>
+          </div>
+        </div>
+    
+  </div>
+
+
+</div>

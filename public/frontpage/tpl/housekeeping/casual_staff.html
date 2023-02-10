@@ -1,0 +1,61 @@
+<div class="modal-content">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">
+            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        </button>
+        <h3 class="modal-title" style="color:#2691d9" id="Heading">Add New Casual Staff</h3>
+    </div>
+    <br>
+    <div class="modal-body">
+        <form class="form-horizontal form-validation" ng-show="staff.id">
+            <div class="form-group" >
+                <label class="col-sm-3 control-label">Generic Staff</label>
+                <div class="col-sm-9">
+                
+                    <label class="control-label">{{staff.wholename}}</label>
+                
+                </div>
+
+                <label class="col-sm-3 text-right control-label text-muted" >Staff Name</label>
+                <div class="col-sm-9  scrollable-dropdown-menu">
+                    <input class="form-control input-sm"  ng-model="staff.new_staff_name"  required
+                           uib-popover="Enter Staff name!" popover-trigger="mouseenter">
+                </div>
+              
+                    
+                
+            </div>            
+        </form>
+
+        <div class="table table-responsive" ng-show="casual_staff_list.length > 0">
+            <label class="font-bold"><i class="fa fa-history" aria-hidden="true"></i>&nbsp;&nbsp;Casual Staff</label>
+            <table  st-table="ticketlist" class="table ticket table-striped b-t b-light">
+              <thead class="tblhead-sm" style="font-size: .7vw">
+                <tr>
+                  <th class="text-center"><b>Generic Staff</b></th>
+                  <th class="text-center"><b>Function</b></th>                 
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="row in casual_staff_list" ng-click="selectStaff(row)">
+                  <td class="text-center"><span >{{row.wholename}}</span></td>
+                  <td class="text-center"><span>{{row.function}}</span></td>                
+                </tr>
+              </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal-footer ">
+        <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal" ng-click="createStaff()">
+            <span class="glyphicon glyphicon-ok"></span>
+            <b> Create</b>
+        </button>
+        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal" ng-click="cancel()">
+            <span class="glyphicon glyphicon-remove"></span>
+            <b> Cancel</b>
+        </button>
+    </div>
+
+</div>
+

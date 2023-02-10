@@ -1,0 +1,242 @@
+<style>
+    .search-form {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0 !important;
+    }
+
+    .selected-row td {
+        background-color: #0b94ea !important;
+        color: white !important;
+    }
+
+    tr td {
+        line-height: 2.4 !important;
+    }
+
+    .template-area {
+        height: 400px;
+        width: 100%;
+        overflow: auto;
+        resize: none;
+        font-size: 1.3em;
+        color: black !important;
+    }
+
+    .disabled-area {
+        pointer-events: none !important;
+        background-color: #efefef;
+    }
+</style>
+<div class="hbox" style="table-layout: fixed;" ng-controller="ChatTemplateListController">
+    <script type="text/ng-template" id="modalImage.html">
+        <div ng-include="'tpl/lnf/modalImage.html'"></div>
+    </script>
+
+    <div class="col b-r" style="width: 60%">
+        <div class="wrapper bg-light lter b-b">
+            <div class="btn-toolbar row">
+                <div class="col-lg-9">
+                    <div class="row" style="padding-top: 10px; padding-bottom: 10px">
+                        <div class="col-sm-3">
+                            <div class="search-form">
+                                <label for="chat_name">Name:</label> &nbsp;&nbsp;
+                                <input id="chat_name" type="text" class="form-control" ng-model="filterInfo.chatName"
+                                       ng-blur="onSearchResult()"/>
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="search-form">
+                                <label for="room_type">Type:</label>&nbsp;&nbsp;
+                                <input id="room_type" type="text" ng-model="filterInfo.typeName" class="form-control input-sm" placeholder="Select room type"
+                                       uib-typeahead="roomType.type for roomType in roomTypeList"
+                                       typeahead-min-length="0"
+                                       typeahead-editable="false"
+                                       typeahead-on-select="onSelectRoomType($item)"
+                                       ng-blur="onSearchByItems('type')"
+                                       >
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="search-form">
+                                <label for="vip_level">Vip:</label>&nbsp;&nbsp;
+                                <input id="vip_level"
+                                        type="text" ng-model="filterInfo.vipName" class="form-control input-sm" placeholder="Select vip Level"
+                                       uib-typeahead="vipLevel.name for vipLevel in vipLevelList"
+                                       typeahead-min-length="0"
+                                       typeahead-editable="false"
+                                       typeahead-on-select="onSelectVipLevel($item)"
+                                        ng-blur="onSearchByItems('vip')"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="col-sm-3">
+                            <div class="input-group">
+                                <input type="text" ng-model="filterInfo.searchValue" ng-keyup="$event.keyCode == 13 && onSearchResult()"
+                                       class="form-control input-sm bg-light no-border rounded padder"
+                                       placeholder="Search">
+                                <span class="input-group-btn">
+                            <button type="button" class="btn btn-sm bg-light rounded" ng-click="onSearchResult()"><i class="fa fa-search"></i></button>
+                        </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3">
+                    <div class="row" style="padding-top: 10px; padding-bottom: 10px">
+                        <div class="col-sm-2">
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-bg btn-default" data-toggle="tooltip" data-placement="bottom" data-title="Refresh" data-original-title="" title="" ng-click="onSearchResult()">
+                                    <i class="fa fa-refresh"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-sm-10">
+                            <div class="btn-group pull-right">
+                                <button type="button" class="btn btn-sm btn-bg btn-default">
+                                    {{paginationOptions.numberOfPages}}/{{paginationOptions.countOfPages}} - {{paginationOptions.totalItems}} Items
+                                </button>
+                                <button type="button" class="btn btn-sm btn-bg btn-default" ng-click="onPrevPage()" ng-disabled="paginationOptions.numberOfPages <= 1">
+                                    <i class="fa fa-chevron-left"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-bg btn-default" ng-click="onNextPage()" ng-disabled="paginationOptions.numberOfPages >= paginationOptions.countOfPages">
+                                    <i class="fa fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+        <!-- / header -->
+
+        <!-- Grid Table -->
+        <div class="portlet" ng-style="{'height': templatelist_height, 'overflow-y': 'auto'}">
+            <div class="portlet-body">
+                <div class="table table-responsive">
+                    <table  st-table="templatelist"  st-pipe="onSearchTemplates" class="table ticket table-striped b-t b-light">
+                        <thead class="tblhead-sm" style="font-size: .8vw">
+                        <tr class="text-center">
+                            <th st-sort="id" class="text-center" st-sort-default="reverse" style="width: 5%;"><b>&nbsp;&nbsp;ID</b></th>
+                            <!--<th><b>Time</b></th>-->
+                            <th class="text-center" st-sort="name" style="width: 15%;"><b>Name</b></th>
+                            <th class="text-center" style="width: 36%"><b>Room Type</b></th>
+                            <th class="text-center" style="width: 36%"><b>Vip Level</b></th>
+                            <th class="text-center" style="width: 8%"><b>Action</b></th>
+                        </tr>
+                        </thead>
+
+                        <tbody >
+                        <tr class="{{::row.status_css}} {{selectedRow.id == row.id ? 'selected-row' : ''}} highlight2 no-radius m-b-none m-t-n-xxs" ng-repeat="row in templatelist">
+                            <td class="highlight text-center" ng-click="onSelectRow(row)">
+                                {{row.id}}
+                            </td>
+                            <td class="highlight" ng-click="onSelectRow(row)">
+                                {{row.name}}
+                            </td>
+                            <td class="highlight text-center" ng-click="onSelectRow(row)">
+                                {{row.room_type_info}}
+                            </td>
+                            <td class="highlight text-center" ng-click="onSelectRow(row)">
+                                {{row.vip_info}}
+                            </td>
+                            <td class="highlight text-center">
+                                <button class="btn btn-danger btn-sm" title="Delete Row" ng-click="onDeleteSelectedRow(row)">
+                                    <i class="fa fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr ng-if="templatelist.length < 1" class="{{::row.status_css}} highlight2 no-radius m-b-none m-t-n-xxs">
+                            <td class="highlight text-center" colspan="4">
+                                There is no data
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <div class="btn-toolbar">
+            <button ng-click="onAddChatTemplate()" class="btn btn-danger" style="position: absolute; margin-left: 20px; margin-top: 6px">
+                <i class="fa fa-plus"></i>&nbsp;Add
+            </button>
+            <h3 class="text-center font-bold">{{selectedRow.id !== editRowId ? 'View Details' : 'Please update'}}</h3>
+        </div>
+        <div class="template-part">
+            <div class="row" style="margin: 0;" ng-if="selectedRow == null">
+                <h4 class="text-center">Please select Item</h4>
+                <img style="opacity: 0.5; padding-top: 50px" class="img-full" src="img/hotlync_.png" alt="" aria-hidden="false">
+            </div>
+            <div class="row" style="margin: 0;" ng-if="selectedRow != null">
+                <div class="col-sm-12">
+                    <textarea ng-model="selectedRow.template" class="template-area {{selectedRow.id !== editRowId ? 'disabled-area' : ''}}"></textarea>
+                </div>
+                <div class="col-sm-12">
+                    <label class="control-label text-xs text-muted">Chat Name</label>
+                    <input type="text" ng-model="selectedRow.name" class="form-control input-sm {{selectedRow.id !== editRowId ? 'disabled-area' : ''}}" placeholder="Select chat name or create new"
+                           uib-typeahead="name for name in chatNameList"
+                           typeahead-min-length="0"
+                           typeahead-editable="true"
+                           required >
+                </div>
+                <div class="col-sm-12">
+                    <label class="control-label text-xs text-muted">Room Type</label>
+                    <tags-input ng-model="selectedRow.room_types"
+                                placeholder="Select room type"
+                                replace-spaces-with-dashes="false"
+                                style="margin-top: -5px"
+                                class="{{selectedRow.id !== editRowId ? 'disabled-area' : ''}}"
+                                display-property="type"
+                                key-property="id"
+                                min-length="1"
+                                on-tag-added="onRoomTypeChanged('add')" on-tag-removed="onRoomTypeChanged()">
+                        <auto-complete source="onRoomTypeFilter($query)"
+                                       min-length="0"
+                                       debounce-delay="0"
+                                       load-on-focus="true"
+                                       load-on-empty="true"
+                                       max-results-to-show="100">
+                        </auto-complete>
+                    </tags-input>
+                </div>
+                <div class="col-sm-12">
+                    <label class="control-label text-xs text-muted">Vip Level</label>
+                    <tags-input ng-model="selectedRow.vips"
+                                placeholder="Select vip level"
+                                replace-spaces-with-dashes="false"
+                                style="margin-top: -5px"
+                                display-property="name"
+                                key-property="id"
+                                min-length="1"
+                                class="{{selectedRow.id !== editRowId ? 'disabled-area' : ''}}"
+                                on-tag-added="onVipLevelChanged('add')" on-tag-removed="onVipLevelChanged()"
+                    >
+                        <auto-complete source="onVipLevelFilter($query)" min-length="0"
+                                       debounce-delay="0" load-on-focus="true"
+                                       load-on-empty="true"
+                                       max-results-to-show="30">
+                        </auto-complete>
+                    </tags-input>
+                </div>
+            </div>
+            <div class="row" style="margin: 0; padding-top: 20px" ng-if="selectedRow != null">
+                <div class="col-lg-12 text-center">
+                    <button ng-click="onEditOrSave(selectedRow)" style="width: 140px;" class="btn {{selectedRow.id !== editRowId ? 'btn-info' : 'btn-danger'}}">
+                        <i class="fa {{selectedRow.id !== editRowId ? 'fa-edit' : 'fa-save'}}"></i>&nbsp;{{selectedRow.id
+                        !== editRowId ? 'Edit' : 'Save'}}
+                    </button>
+                    &nbsp;&nbsp;&nbsp;
+                    <button ng-click="onDeleteOrCancel(selectedRow)" style="width: 140px;" class="btn  {{selectedRow.id !== editRowId ? 'btn-danger' : 'btn-info'}}">
+                        <i class="fa {{selectedRow.id !== editRowId ? 'fa-trash' : 'fa-times'}}"></i>&nbsp;{{selectedRow.id
+                        !== editRowId ? 'Delete' : 'Cancel'}}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,115 @@
+<style>
+    button {
+        pointer: cursor;
+    }
+
+    input[type=file] {
+        width: 150px;
+        height: 20px;
+    }
+</style>
+<script type="text/ng-template" id="equipment_email.html">
+    <div ng-include="'tpl/engineering/equipment/modal/equipment_email.html'"></div>
+</script>
+<script type="text/ng-template" id="locationTypeahead.html">
+    <a>
+        <span ng-bind="match.model.name"></span><br>
+        <span style="font-size: 10px" ng-bind="match.model.type"></span><br>
+    </a>
+</script>
+<div class="wrapper" style="margin-top: 7px">
+    <div class="panel panel-default" style="border-radius: 4px">
+        <!--<div class="panel-heading">-->
+            <!--<label class="font-bold"><i class="fa fa-warning text-default"></i>&nbsp;&nbsp;Equipment Detail</label>-->
+        <!--</div>-->
+        <div class="panel-body">
+            <form class="form-horizontal form-validation">
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-2 text-right" style="margin-bottom: 0px">Part ID</label>
+                    <div class="col-sm-4 ">
+                        {{part.part_id}}
+                    </div>
+                    <label class="col-sm-2 text-right" style="margin-bottom: 0px">Part Name</label>
+                    <div class="col-sm-4 ">
+                        {{part.name}}
+                    </div>
+                </div>
+                <div class="form-group" style="margin-top: 5px"  ng-repeat="row in part.part_group" >
+                    <label  class="col-sm-2 text-right">Part Group</label>
+                    <label class="col-sm-4">{{$index+1}}, {{row.name}} </label>
+                </div>
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-2 text-right" style="margin-bottom: 0px">Description</label>
+                    <div class="col-sm-4">
+                        {{part.description}}
+                    </div>
+                    <label class="col-sm-2 text-right" style="margin-bottom: 0px">Serial/Barcode</label>
+                    <div class="col-sm-4">
+                        {{part.barcode}}
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-2 text-right" style="margin-bottom: 0px">Quantity</label>
+                    <div class="col-sm-4 ">
+                        {{part.quantity}}
+                    </div>
+                    <label class="col-sm-2 text-right" style="margin-bottom: 0px">Minimum Quantity</label>
+                    <div class="col-sm-4">
+                        {{part.minquantity}}
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-2 text-right" style="margin-bottom: 0px">Model</label>
+                    <div class="col-sm-4">
+                        {{part.model}}
+                    </div>
+                    <label class="col-sm-2 text-right" style="margin-bottom: 0px">Manufacture</label>
+                    <div class="col-sm-4">
+                        {{part.manufacture}}
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-2 text-right" style="margin-bottom: 0px">Purchase Cost</label>
+                    <div class="col-sm-4">
+                       {{part.purchase_cost}}
+                    </div>
+                    <label class="col-sm-2 text-right" style="margin-bottom: 0px">Purchase Date</label>
+                    <div class="col-sm-4">
+                        {{part.purchase_date}}
+                    </div>
+
+                </div>
+
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-2 text-right" style="margin-bottom: 0px">Warranty Start</label>
+                    <div class="col-sm-4">
+                        {{part.warranty_start}}
+                    </div>
+
+                    <label class="col-sm-2 text-right" style="margin-bottom: 0px">Warranty End</label>
+                    <div class="col-sm-4">
+                       {{part.warranty_end}}
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-2 text-right" style="margin-bottom: 0px">Supplier</label>
+                    <div class="col-sm-4 scrollable-dropdown-menu">
+                       {{part.supplier}}
+                    </div>
+                </div>
+                <hr>
+                <div class="form-group" style="margin-right:0px">
+                    <div align="center">
+                        <img src="{{part.image_url}}" style="width: 200px;height: 200px"  >
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+

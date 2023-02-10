@@ -1,0 +1,185 @@
+<style>
+  	.total_count {
+      	background-color: #2c3e50;
+      	margin-bottom: 0px;
+      	border-radius: 6px;
+  	}
+
+	.create_menu a {
+		height: 0px;
+		margin-top: -2px;
+	}
+</style>
+
+<link rel="stylesheet" href="css/multi.css">
+
+<script type="text/ng-template" id="complaint_reminder_dialog.html">
+    <div ng-include="'tpl/complaint/complaint_reminder_dialog.html'"></div>
+</script>
+
+<div  ng-controller="CampaignManagerController" style="overflow-x: hidden">
+
+	<!-- - - - - - - - - - - - - - - - - - - - - - - - HEADER - - - - - - - - - - - - - - - - - - - - - - - -->
+	
+	<div class="row bg-light lt" style="padding: 5px; margin-left: -10px">
+    	<div class="col-sm-6">
+    		<h1 class="m-n font-thin h5 text-black" style="color:#337ab7">
+				<label style="font-size: 1.5vw; margin-bottom: 0px"><i class="fa fa-user-circle-o"></i>
+		    		Campaign Manager
+		    	</label>
+		    </h1>
+		</div>
+		<div class="input-group col-md-2 pull-right" style="padding-right: 15px">
+	        <input type="text" ng-model="filter_value" class="form-control input-sm no-border rounded padder" ng-keyup="$event.keyCode == 13 && searchComplaint(filter_value)" placeholder="Guest/ID">
+            <span class="input-group-btn">
+                <button type="submit" class="btn btn-sm  rounded" ng-click="searchComplaint(filter_value)"><i class="fa fa-search"></i></button>
+            </span>	          	
+	    </div>    	
+	</div>
+	
+	<div class="hbox" ng-style="{'height': full_height, 'overflow-y': 'auto', 'overflow-x': 'hidden'}">
+		<div class="col b-r" style="width: 45%; position: fixed">
+			<!-- header -->
+			<div class="wrapper bg-light lter b-b">
+				<div class="btn-group pull-right">
+					<button type="button" class="btn btn-sm btn-bg btn-default">
+					  {{paginationOptions.numberOfPages}}/{{paginationOptions.countOfPages}} - {{paginationOptions.totalItems}} Items
+					</button>
+					<button type="button" class="btn btn-sm btn-bg btn-default" ng-click="onPrevPage()" ng-disabled="paginationOptions.numberOfPages <= 1">
+						<i class="fa fa-chevron-left"></i>
+					</button>
+					<button type="button" class="btn btn-sm btn-bg btn-default" ng-click="onNextPage()"
+						ng-disabled="paginationOptions.numberOfPages >= paginationOptions.countOfPages">
+						<i class="fa fa-chevron-right"></i>
+					</button>
+			    </div>
+
+			    <div class="btn-toolbar" style="padding-left: 2px">
+			    	<div class="btn-group">
+				    	<button class="btn btn-sm btn-icon btn-default" data-toggle="tooltip" title="Filter" data-placement="bottom" data-ng-click="openFilterPanel('left', true)">
+							<i class="fa fa-filter"></i>
+						</button>
+					</div>	
+					<div class="btn-group">
+					  <button id="dateranger" class="btn btn-sm btn-icon btn-default" data-toggle="tooltip" title="Filter" data-placement="bottom" ui-jq="daterangepicker" ui-options="dateRangeOption"	 data-title="Refresh" ng-click="onClickDateFilter()">
+						<i class="fa fa-calendar"></i>
+					  </button>							
+					</div>
+					<div class="btn-group">
+					  <button class="btn btn-sm btn-icon btn-default" data-toggle="tooltip" title="Refresh" data-placement="bottom" ng-click="refreshLogs()">
+						<i class="fa fa-refresh"></i>
+					  </button>
+					</div>
+					
+					<div class="btn-group pull-right" style="margin-right: 20px;margin-top: 5px;">
+						<a ng-click="onDownloadPDF()">
+							<i class="fa fa-file-pdf-o" style="font-size: 20px; color:red" aria-hidden="true" title="Summary PDF download"></i>
+						</a>
+					</div>
+			  	</div>
+			</div>
+			<!-- / header -->
+			<!-- Grid Table -->
+			<div class="bg-light lter multiDemo" style="width:100%; padding: 0px; margin: 0px"
+				ng-style="{'height': tab_height, 'overflow-y': 'auto'}">				
+
+				<ul id="list_ticket" class="list-group list-group-lg no-radius table-striped m-b-none m-t-n-xxs" >
+					<li ng-repeat="row in datalist" 
+							class="list-group-item clearfix b-l-5x"
+							ng-class="{'selected': row.selected}"
+							style="padding-bottom: 0px">						
+						<div class="clear" ng-click="onSelectTicket(row, $index)" style="padding: 0px">				      
+							<div class="clear">  
+					    		<label class="font-bold"><a><i class="fa fa-id-badge" style="font-size: 17px; color: #1565C0"></i>&nbsp;{{getTicketNumber(row)}}</a></label>&nbsp;|
+					    		<label><i class="fa fa-map-marker text-danger"></i> {{row.property_name}}</label>
+
+					    		<label class="pull-right font-bold">
+									<i class="fa fa-calendar text-primary"></i>&nbsp;{{row.created_at | mydatetime : 'D MMM YYYY hh:mm a'}}</a>
+								</label>
+							</div>
+							
+							<div class="text-ellipsis text-sm clear" style=" width: 100%; margin: 0px"> 
+							    <i class="fa fa-user-circle-o" style="color: #00796B"></i>
+						    	<label>&nbsp;{{row.name}}&nbsp;|&nbsp;</label>
+							    <i class="fa fa-bank text-warning-dker"></i>
+					    		&nbsp;{{row.type}} {{row.type =='Holiday' ? row.holiday : ''}}&nbsp;&nbsp;|
+					    		&nbsp;<i class="fa fa-exclamation-circle text-danger"></i>
+					    		&nbsp;{{row.send_to}}&nbsp;&nbsp;|
+					    		&nbsp;<i class="fa fa-clock-o text-warning-dker"></i>
+					    		&nbsp;{{row.periodic}}
+					    		
+							    <div class="pull-right" style="margin-right: 6px; margin-top: -1px">
+							      	<span ng-class="{'label' : true, 'm-l-sm': true,
+								    							'bg-wakeup-success': row.active,
+								    							'bg-wakeup-canceled': !row.active,
+								    						}">{{row.active ? 'Active' : 'Inactive'}}
+									</span>
+								</div>
+							</div>
+							
+							<div class="text-ellipsis text-sm" style="width: 100%; margin-top: 0px">
+							    <label  style="width: 63%;
+													  white-space: nowrap;
+													  text-overflow: ellipsis;
+													  overflow: hidden;
+													  text-overflow: ellipsis;
+														-o-text-overflow: ellipsis;">
+									<a class="text-sm">
+										<i class="fa fa-calendar text-primary"></i>
+										&nbsp;{{row.start_date | mydate}} ~ {{row.end_date | mydate}}
+									</a>
+
+									&nbsp;&nbsp;&nbsp;
+									<i class="fa fa-mobile" style="font-size: 20px" ng-class="{'text-danger':row.sms_flag, 'text-default':!row.sms_flag}"></i>									
+									&nbsp;
+									<i class="fa fa-envelope" ng-class="{'text-danger':row.email_flag, 'text-default':!row.email_flag}"></i>
+									
+
+							  	</label>
+
+
+							</div>
+						</div>
+					</li>
+				</ul>
+			</div>
+		</div>
+		<div class="col" style="width: 53.5%">
+			<uib-tabset active="active">
+				<div class="tabs tabs-style-tzoid" style="height: 44px">
+					<nav ui-nav class="call_menu navi clearfix">
+						<ul class="tabs-style-tzoid nav" style="margin-left: -7px; height:40px;">
+							<li style="margin:8px -5px 0px;" class="{{active == 1 ? 'tab-current' : ''}}">
+								<uib-tab index="1">
+									<uib-tab-heading>
+										<div class="form-group" style="color:#fff; font-size:12px; margin-left: 0px">
+											<label class="font-bold tabs-style-tzoid">
+												<i class="fa fa-plus-square"></i>&nbsp;&nbsp;Create New
+											</label>
+										</div>
+									</uib-tab-heading>
+									<div fill-height additional-padding="50" debounce-wait="500" ng-controller="CampaignCreateController" ng-include="'tpl/marketing/campaign/campaign_create.html'" ng-init="init()">
+									</div>
+								</uib-tab>
+							</li>
+							<li ng-repeat="tab in selectedTickets" style="margin:8px -5px 0px;" class="{{active == tab.id + 6 ? 'tab-current' : ''}}">
+								<uib-tab index="tab.id + 6">
+									<uib-tab-heading>
+										<div class="form-group" style="color:#fff; font-size:12px">
+											<label class="tabs-style-tzoid">&nbsp;{{getTicketNumber(tab)}}
+												<i class="fa fa-times" style="margin-left: 5px; color:#FF0000" ng-click="onSelectTicket(tab)"></i>
+											</label>
+										</div>
+									</uib-tab-heading>
+									<div fill-height additional-padding="50" debounce-wait="1000" ng-controller="CampaignEditController" ng-include="'tpl/marketing/campaign/campaign_edit.html'" ng-init="init(tab)">
+									</div>
+									
+								</uib-tab>
+							</li>
+						</ul>
+					</nav>
+				</div>
+			</uib-tabset>
+		</div>
+	</div>
+</div>

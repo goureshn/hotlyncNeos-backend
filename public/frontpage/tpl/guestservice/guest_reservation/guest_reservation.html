@@ -1,0 +1,93 @@
+<style>
+	thead, tbody tr {
+		display:table;
+		width:100%;
+		table-layout:fixed;
+	}
+    .app-modal-window .modal-dialog {
+        width: 850px;
+    }
+</style>
+<div ng-controller="GuestReservationController" style="overflow-x: hidden">
+    <div class="form-horizontal col-md-12 wrapper" style="display: table; background-color: #141414">	    
+		<div class="row col-md-3" style="">
+			<h3 class="m-n font-thin" style="white-space: nowrap; color: #337ab7"> <i class="fa fa-book"></i> Guest Reservation</h3>
+		</div>
+		
+		<div class="input-group col-md-2 pull-right">
+			<input type="text" ng-model="searchtext" ng-keyup="onSearch()" class="form-control input-sm bg-light no-border  padder" placeholder="Search">
+			<span class="input-group-btn">
+				<button type="submit" class="btn btn-sm bg-light "><i class="fa fa-search"></i></button>
+			</span>
+		</div>
+	
+ 
+		<div class="row col-sm-4" style="margin: auto">		
+			<button class="btn btn-sm btn-primary pull-right" data-ng-click="onEditData()" ng-if="auth_svc.isValidModule('app.guestservice.manualposting')" style="margin-right: 10px">
+				<i class="fa fa-paper-plane" style="margin: auto;"></i>&nbsp;&nbsp;Posting&nbsp;
+			</button>
+    	</div>
+    
+	</div>
+								
+    
+	<div class="table  table-responsive" fill-height additional-padding="40">
+		<table st-table="guestlist"  st-pipe="getGuestList" class="table table-striped ticket">
+			<thead class="tblhead-sm">
+				<tr>					
+					<th st-sort="res_id" style="width: 5%; text-align:center">Res ID</th>
+					<th class="text-center" st-sort="guest_name" style="width: 10%; text-align:center">Name</th>
+					<!--<th class="text-center" st-sort="first_name">&nbsp;&nbsp;First Name</th>-->
+					<th class="text-center" style="width: 3%; text-align:center" st-sort="room">Room</th>
+					<th class="text-center" style="width: 10%; text-align:center" st-sort="start_date">Stay Period</th>
+					<th class="text-center" style="width: 6%; text-align:center" st-sort="adult">Occupancy</th>
+					<th class="text-center" style="width: 6%; text-align:center" st-sort="booking_rate">Rate</th>
+					<th class="text-center" style="width: 10%; text-align:center" st-sort="email">Email</th>
+					<th class="text-center" st-sort="mobile">Mobile</th>
+					<th class="text-center" st-sort="company">Company</th>
+					<th class="text-center" st-sort="nationality">Nationality</th>
+					<th class="text-center" st-sort="booking_src">Booking Source</th>
+					<th class="text-center" st-sort="status">Booking Status</th>
+					<th class="text-center">Action</th>
+				</tr>
+			</thead>
+			<tbody ng-hide="isLoading" style="display:block;">
+				<tr class="" ng-repeat="row in list">
+					<td class="text-center" style="width: 5%" >
+						<a>{{row.res_id}}</a>
+					</td>
+					<td style="width: 10%; text-align:left">{{row.guest_name}}&nbsp;{{row.first_name}}</td>
+					<td class="text-center" style="width: 3%; text-align:center">{{row.room}}</td>
+					<td class="text-center" style="width: 10%; text-align:center">{{row.start_date}} to {{row.end_date}}</td>
+					<td class="text-center" style="width: 6%; text-align:center"><i class="fa fa-user" aria-hidden="true"></i>&nbsp;{{row.adult}}&nbsp;<i class="fa fa-child" aria-hidden="true"></i>&nbsp;{{row.chld}}</td>
+					<td class="text-center" style="width: 6%; text-align:center">{{row.booking_rate}}</td>
+					<td class="text-center" style="width: 10%; text-align:left">{{row.email}}</td>
+					<td class="text-center">{{row.mobile}}</td>
+					<td class="text-center">{{row.company}}</td>
+					<td class="text-center">{{row.nationality}}</td>
+					<td class="text-center">{{row.booking_src}}</td>
+					<td class="text-center">{{row.status}} </td>
+					
+					<td class="text-center" >
+						<a href="url"><i class="fa fa-whatsapp" aria-hidden="true"></i></a>
+						<a class="btn default btn-xs green" ng-click="onEditData(row)" ng-if="auth_svc.isValidModule('app.eng.preventive.edit')">
+							<i class="fa fa-pencil"></i>
+						</a>
+					</td>					
+				</tr>
+			</tbody>
+			<tbody ng-show="isLoading">
+				<tr>
+					<td colspan="14" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+				</tr>
+			</tbody>
+			<tfoot ng-hide="isLoading">
+				<tr ng-show="paginationOptions.totalItems > paginationOptions.pageSize">
+					<td colspan="14" class="text-center">
+						<div st-pagination="" st-items-by-page="paginationOptions.pageSize" st-displayed-pages="7" class="no-margin"></div>
+					</td>
+				</tr>
+			</tfoot>
+		</table>
+	</div>
+</div>

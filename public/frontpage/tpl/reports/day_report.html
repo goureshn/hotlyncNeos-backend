@@ -1,0 +1,47 @@
+<div ng-controller="DayReportController" class=" " style="margin: 0px; overflow-y: hidden">
+    
+         
+            <div class="table table-responsive" style="" >
+                <table  st-table="guestlist" st-pipe="getDataList" class="table ticket table-striped b-t b-light">
+                    <thead class="tblhead-sm">
+                    <tr>
+                        <th class="text-center" st-sort="created_at">Date</th>
+                        <th st-sort="type">Type</th>
+                        <th st-sort="filename">Filename</th>
+                        <th>Download</th>
+                    </tr>
+                    </thead>
+                    <tbody ng-hide="isLoading">
+                    <tr class="" ng-repeat="row in datalist ">
+                    <td class="text-center" class="col-md-3">
+                        {{row.created_at}}
+                    </td>
+                    <td class="col-md-3">
+                        {{row.type}}
+                    </td>
+                    <td class="col-md-4" >
+                        {{row.filename}}
+                    </td>
+                    <td class="col-md-2" class="text-center">
+                        <a target="_self" href="{{row.folder_path}}{{row.filename}}" download="{{row.filename}}">
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i class="fa fa-file-pdf-o" ></i>
+                        </a>
+                    </td>
+                    </tr>
+                    </tbody>
+                    <tbody ng-show="isLoading">
+                    <tr>
+                        <td colspan="5" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+                    </tr>
+                    </tbody>
+                    <tfoot ng-hide="isLoading">
+                    <tr ng-show="paginationOptions.totalItems > paginationOptions.pageSize">
+                        <td colspan="5" class="text-center">
+                            <div st-pagination="" st-items-by-page="paginationOptions.pageSize" st-displayed-pages="7" class="no-margin"></div>
+                        </td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+            
+</div>

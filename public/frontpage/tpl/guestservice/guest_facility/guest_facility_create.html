@@ -1,0 +1,192 @@
+<style>
+    button {
+        pointer: cursor;
+    }
+
+    input[type=file] {
+        width: 150px;
+        height: 20px;
+    }
+    .tbl-sm {
+        font-size: .8vw;
+        padding: 1px 15px !important;
+        color: #67686a;
+    }
+
+    .dropdown-menu.ng-isolate-scope {
+        max-height: 300px;
+        overflow-y: auto;
+        max-width: 270px;
+    }
+</style>
+
+<script type="text/ng-template" id="staffTypeahead.html">
+    <a>
+        <span ng-bind="match.model.name"></span><br>
+        <span style="font-size: 10px" ng-bind="match.model.type"></span><br>
+    </a>
+</script>
+<script type="text/ng-template" id="userTypeahead.html">
+    <a>
+        <span ng-bind="match.model.wholename"></span><br>
+        <span style="font-size: 10px" ng-bind="match.model.job_role_name"></span><br>
+        <span style="font-size: 10px" ng-bind="match.model.department"></span><br>
+    </a>
+</script>
+
+<script type="text/ng-template" id="leasorTypeahead.html">
+    <a>
+        <span ng-bind="match.model.leasor"></span><br>
+        <span style="font-size: 10px" ng-bind="match.model.leasor_email"></span><br>
+        <span style="font-size: 10px" ng-bind="match.model.leasor_contact"></span><br>
+    </a>
+</script>
+<script type="text/ng-template" id="equipmentTypeahead.html">
+    <a>
+        <span style="font-size: 12px" ng-bind="match.model.name"></span><br>
+        <span style="font-size: 10px" ng-bind="match.model.equip_id"></span><br>
+        <span style="font-size: 10px" ng-bind="match.model.location_name"></span>- <span style="font-size: 10px" ng-bind="match.model.location_type"></span><br>
+    </a>
+</script>
+
+
+<form class="form-horizontal form-validation" ng-submit="createFacility()">
+    <div class="modal-content">        
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">
+                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+            </button>
+            <h3 class="modal-title" style="color:#2691d9" id="Heading">Guest Facility Create</h3>
+        </div>        
+        <div class="modal-body">        
+            <div class="form-group">
+                <div class="col-sm-6">
+                    <label class="control-label text-xs text-muted">Guest Type<i class="text-danger">*</i></label>
+                    <div class = "row">
+                        <div class="col-sm-12"> 
+                            <input type="radio"  style="margin-left: 50px" ng-model="facility.guest_type" value="In-House">&nbsp;&nbsp;&nbsp;&nbsp; In-House
+                            <input type="radio" style="margin-left: 50px" ng-change = 'onSelectGuestType()' ng-model="facility.guest_type" value="Walkin">&nbsp;&nbsp;&nbsp;&nbsp; Walkin
+                        </div>     
+                    </div>
+                </div>  
+                <div class="col-sm-6" ng-show = 'facility.guest_type != "Walkin"'>
+					<label for="email" class="control-label text-xs text-muted">Room<i class="text-danger">*</i></label>
+					<div>
+				    	<input type="text" ng-model="facility.room" class="form-control input-sm" placeholder="Enter room number"
+								uib-popover="Enter room number" popover-trigger="mouseenter"
+							  uib-typeahead="room.room for room in roomlist | filter:$viewValue | limitTo:10"
+							  typeahead-editable="false"
+							  typeahead-min-length="0"
+							  typeahead-on-select="onRoomSelect($item, $model, $label)"
+							  ng-disabled="facility.guest_type == 'Walkin'">
+					</div>
+				</div>    
+                
+            </div>    
+            
+            <div class="form-group" >
+                            
+                <div class="col-sm-6">
+                    <label class="control-label text-xs text-muted">Guest Name</label>
+                    <div>
+                        <input type="text" ng-model="facility.guest_name" class="form-control input-sm" ng-disabled = 'facility.guest_type != "Walkin"'>
+                    </div>
+                </div>   
+                <div class="col-sm-6" ng-show = 'facility.guest_type != "Walkin"'>
+                    <label class="control-label text-xs text-muted">VIP</label>
+                    <div>
+                        <input type="text" ng-model="facility.vip" class="form-control input-sm" ng-disabled = 'facility.guest_type != "Walkin"'>
+                    </div>
+                </div> 
+                <!--
+                <div class="col-sm-6">
+                    <label class="control-label text-xs text-muted">First Name</label>
+                    <div>
+                        <input type="text" ng-model="facility.first_name" class="form-control input-sm" ng-disabled = 'facility.guest_type != "Walkin"'>
+                    </div>
+                </div>  
+                -->
+                
+                <div class="col-sm-6" ng-show = 'facility.guest_type != "Walkin"'>
+                    <label class="control-label text-xs text-muted">Arrival</label>
+                    <div >
+                        <input type="text" ng-model="facility.arrival" class="form-control input-sm" ng-disabled = 'facility.guest_type != "Walkin"'>
+                    </div>
+                </div>   
+                <div class="col-sm-6" ng-show = 'facility.guest_type != "Walkin"'>
+                    <label class="control-label text-xs text-muted">Departure</label>
+                    <div>
+                        <input type="text" ng-model="facility.departure" class="form-control input-sm" ng-disabled = 'facility.guest_type != "Walkin"'>
+                    </div>
+                </div>    
+                <!--
+                <div class="col-sm-6" ng-show = 'facility.guest_type == "Walkin"'>
+                    <label class="control-label text-xs text-muted">Mobile</label>
+                    <div>
+                        <input type="text" ng-model="facility.mobile" class="form-control input-sm" ng-disabled = 'facility.guest_type != "Walkin"'>
+                    </div>
+                </div> 
+                <div class="col-sm-6">
+                    <label class="control-label text-xs text-muted">Email</label>
+                    <div>
+                        <input type="text" ng-model="facility.email" class="form-control input-sm" ng-disabled = 'facility.guest_type != "Walkin"'>
+                    </div>
+                </div>    
+                -->  
+                
+                <div class="col-sm-3">
+                    <label class="control-label text-xs text-muted">Adult</label>
+                    <div>
+                        <input type="text" ng-model="facility.adult" class="form-control input-sm">
+                    </div>
+                </div>  
+                <div class="col-sm-3">
+                    <label class="control-label text-xs text-muted">Kids</label>
+                    <div>
+                        <input type="text" ng-model="facility.child" class="form-control input-sm">
+                    </div>
+                </div>   
+                <div class="col-sm-6" ng-show = 'facility.guest_type == "In-House"'>
+                    <label class="control-label text-xs text-muted">Breakfast Included</label>
+                    <select class='form-control input-sm' ng-model="facility.bmeal"
+                            ng-options="value for value in breakfast" />
+                </div>                 
+            </div>
+
+            <div class="form-group">
+               
+                <div class="col-sm-6">
+                    <label class="control-label text-xs text-muted">Table No<i class="text-danger">*</i></label>
+                    <div>
+                        <input type="text" ng-model="facility.table" class="form-control input-sm">
+                    </div>
+                </div>  
+                
+               
+                <div class="col-sm-6">
+                    <label class="control-label text-xs text-muted">Remarks</i></label>
+                    <div>
+                        <textarea class="form-control input-sm" rows="2" ng-model="facility.remarks" style="resize:none"></textarea>
+                    </div>
+                </div>  
+            </div>    
+
+          
+           
+
+        </div>
+
+        <div class="modal-footer ">
+            
+            <button type="submit" class="btn btn-info btn-sm w-xs " data-dismiss="modal">
+                <span class="glyphicon glyphicon-ok"></span>
+                <b> Create</b>
+            </button>
+            <button type="button" class="btn btn-default btn-sm w-xs {{isLoadingCreate == true ? 'disabled' : ''}}" data-dismiss="modal" ng-click="cancel()">
+                <span class="glyphicon glyphicon-remove"></span>
+                <b> Cancel</b>
+            </button>
+        </div>
+
+    </div>
+</form>

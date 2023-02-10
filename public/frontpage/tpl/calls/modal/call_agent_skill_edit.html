@@ -1,0 +1,87 @@
+<style>
+    button {
+        pointer: cursor;
+    }
+
+</style>
+
+
+<form class="form-horizontal form-validation">
+    <div class="modal-content">        
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">
+                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+            </button>
+            <h3 class="modal-title" style="color:#2691d9" id="Heading">Agent Skill {{skill.id > 0 ? 'Edit' : 'Create'}}</h3>
+        </div>        
+        <div class="modal-body">        
+            <div class="form-group" style="margin-right: 0px">
+                <label class="col-sm-3 text-right control-label text-muted" style="margin-bottom: 0px">Skill Name</label>
+                <div class="col-sm-4 scrollable-dropdown-menu">
+                    <input ng-model="skill_level.name" class="form-control  input-sm"											
+											uib-typeahead="item.name for item in skill_candidate_list | filter:$viewValue | limitTo:10"
+											typeahead-min-length="0"
+											typeahead-on-select="onSkillSelect($item, $model, $label)"
+											required/>
+                </div>
+                <div class="col-sm-2">
+                    <input ng-model="skill_level.level" type="number" class="form-control  input-sm"																						
+											required/>
+                </div>
+                <div class="col-sm-2">
+                    <button type="button" class="btn btn-sm btn-bg btn-default" ng-click="addRow()" ng-hide="skill_level.id > 0">
+						<i class="fa fa-plus-circle"></i>&nbsp;Add
+					</button>
+
+                    <button type="button" class="btn btn-sm btn-bg btn-default" ng-click="editRow()" ng-show="skill_level.id > 0">
+						<i class="fa fa-pencil"></i>&nbsp;Save
+					</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <table  st-table="skill_group_list"  st-pipe="getSkillLevelList" class="table ticket table-striped b-t b-light">
+					<thead class="tblhead-sm" style="font-size: .8vw">
+						<tr class="text-center">
+							<th width="50px"><b>&nbsp;&nbsp;ID</b></th>
+							<th><b>Skill Name</b></th>
+							<th><b>Skill Level</b></th>
+							<th width="50px"><b>Action</b></th>
+						</tr>
+					</thead>
+
+					<tbody >
+						<tr class="highlight2 no-radius m-b-none m-t-n-xxs" ng-repeat="row in agent_skill_level_list">
+							<td align="center">
+								<a>{{row.id}}</a>
+							</td>
+							<td>
+								<a>{{row.name}}</a>
+							</td>
+							<td>
+								<a>{{row.level}}</a>
+							</td>
+							<td align="center">
+                                <a class="btn default btn-xs green" ng-click="onEditRow(row)">
+                                    <i class="fa fa-pencil"></i></a>   
+                                <a class="btn default btn-xs red" ng-click="onDeleteRow(row)">
+                                    <i class="fa fa-times"></i></a>                             
+                            </td>
+						</tr>
+					</tbody>
+				</table>
+            </div>
+        </div>
+
+        <div class="modal-footer ">
+            <button type="submit" class="btn btn-info btn-sm w-xs" data-dismiss="modal" ng-click="ok()">
+                <span class="glyphicon glyphicon-ok"></span>
+                <b> OK</b>
+            </button>
+            <button type="button" class="btn btn-default btn-sm w-xs" data-dismiss="modal" ng-click="cancel()">
+                <span class="glyphicon glyphicon-remove"></span>
+                <b> Cancel</b>
+            </button>
+        </div>
+
+    </div>
+</form>

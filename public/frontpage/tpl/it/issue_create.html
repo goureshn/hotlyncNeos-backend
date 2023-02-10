@@ -1,0 +1,202 @@
+<style>
+    @media only screen and (max-width: 480px) {
+
+        .mobile-only {
+            display: block;
+            margin-top: 10px;
+        }
+    }
+</style>
+
+
+<div style="padding-left: 0px; padding-right: 0px; font-size: 15px"  ng-init="init()">
+    <script type="text/ng-template" id="locationTypeahead.html">
+		<a>
+			<span ng-bind="match.model.name"></span><br>
+			<span style="font-size: 10px" ng-bind="match.model.type"></span><br>
+		</a>
+	</script>
+
+    <script type="text/ng-template" id="userTypeahead.html">
+		<a>
+			<span ng-bind="match.model.wholename"></span><br>
+			<span style="font-size: 10px" ng-bind="match.model.job_role"></span><br>
+            <span style="font-size: 10px" ng-bind="match.model.department"></span><br>
+            <span style="font-size: 10px" ng-bind="match.model.email"></span><br>
+		</a>
+	</script>
+
+    
+    <!-- - - - - - - - HEADER - - - - - - - -->
+    <div class="wrapper-md">
+        <!-- - - - - - - - EMPLOYEE DETAILS - - - - - - - -->
+        <div>
+            <center>
+                <button type="button" class="btn btn-sm m-b-xs w-sm btn-dark font-bold">
+                    <span class="text-success">Issue No:&nbsp;&nbsp;{{issue_id}}</span>
+                </button>
+                <button type="button" class="btn btn-sm m-b-xs w-sm btn-dark font-bold">
+                    <span class="text-success">Request Time:&nbsp;&nbsp;{{it.request_time}}</span>
+                </button>
+            </center>
+        </div>
+
+        <div class="panel panel-default" style="border-radius: 4px">
+            <div class="panel-heading">
+                <div class="pull-left">
+                    <label class="font-bold text-sm">
+                        <i class="glyphicon glyphicon-user text-default"></i>&nbsp;&nbsp;Employee Details
+					</label>
+                </div>
+                <br>
+            </div>
+
+            <div class="panel-body" style="padding: 5px 0px">
+                <div class="form-horizontal form-validation" style="padding: 0px">                 
+                    <div class="col-sm-6" style="padding: 5px 20px">
+                        <label class="control-label text-xs text-muted">Employee Search : </label>
+                        <div class="scrollable-dropdown-menu">
+                           
+                            <input type="text" minlength="3" ng-model="requester.wholename" class="form-control input-sm" placeholder="Search Email ID, Firstname or Lastname"
+                                typeahead-editable="false" uib-typeahead="user.username for user in getStaffList($viewValue)"
+                                typeahead-on-select="onRequesterSelect($item, $model, $label)" typeahead-min-length="0" typeahead-template-url="userTypeahead.html"
+                                typeahead-no-results="noResults">
+                           <!--
+                            <div class="col-sm-2" ng-if="auth_svc.isValidModule('app.mytask.it_category_add')" >
+                                    <i class="fa fa-pencil-square fa-2x text-success" style="cursor: pointer" title="Edit Requestor Details" ng-click="editRequestor()"  role="button" tabindex="0" aria-hidden="false"></i>
+                            </div>
+                        -->
+                        </div>
+                    </div>
+                    <div class="col-sm-6" style="padding: 5px 20px" ng-hide="requester.firstname == null">
+                        <label class="control-label text-xs text-muted">Property : </label>
+                        <input type="text" class="form-control input-sm" ng-model="requester.property_name" disabled>
+                    </div>
+                    <div class="col-sm-6" style="padding: 5px 20px" ng-hide="requester.firstname == null">
+                        <label class="control-label text-xs text-muted">Employee Name : </label>
+                        <input type="text" class="form-control input-sm" ng-model="[requester.firstname] + [' '] + [requester.lastname]" disabled>
+                    </div>
+                    <div class="col-sm-6" style="padding: 5px 20px" ng-hide="requester.firstname == null">
+                        <label class="control-label text-xs text-muted">Department : </label>
+                        <input type="text" class="form-control input-sm" ng-model="requester.department" disabled>
+                    </div>
+                    <div class="col-sm-6" style="padding: 5px 20px" ng-hide="requester.firstname == null">
+                        <label class="control-label text-xs text-muted">Job Role : </label>
+                        <input type="text" class="form-control input-sm" ng-model="requester.job_role" disabled>
+                    </div>
+                    <div class="col-sm-6" style="padding: 5px 20px" ng-hide="requester.firstname == null">
+                        <label class="control-label text-xs text-muted">E-mail Address : </label>
+                        <input type="text" class="form-control input-sm" ng-model="requester.email" disabled>
+                    </div>                    
+                </div>
+            </div>
+        </div>
+        <!-- - - - - - - - /EMPLOYEE DETAILS - - - - - - - -->
+
+        <!-- - - - - - - - ISSUE DETAILS - - - - - - - -->
+        <div class="panel panel-default" style="border-radius: 4px">
+            <div class="panel-heading">
+                <div class="pull-left">
+                    <label class="font-bold text-sm">
+                        <i class="fa fa-info-circle text-default"></i>&nbsp;&nbsp;Issue Details</label>
+                </div>
+                <br>
+            </div>
+
+            <div class="panel-body" style="padding: 5px 0px">
+                <div class="form-horizontal form-validation">                    
+                    <div class="col-sm-6" ng-hide="true" style="padding: 5px 20px">
+                        <label class="control-label text-xs text-muted">Status : </label>
+                        <select class='form-control' ng-model="it.status" ng-options="type for type in status_list">
+                        </select>
+                    </div>
+                    <div class="col-sm-6" style="padding: 5px 20px">
+                        <label class="control-label text-xs text-muted">Severity : </label>
+                        <select class='form-control input-sm' ng-model="it.severity" ng-options="value.id as value.severity for (key, value) in severity_list"
+                        />
+                    </div>
+                    <div class="col-sm-6" style="padding: 5px 20px">
+                        <label class="control-label text-xs text-muted">Type : </label>
+                        <select class='form-control input-sm' ng-model="it.type" ng-options="value.id as value.type for (key, value) in type_list"
+                        />
+                    </div>
+                    <div class="col-sm-6" style="padding: 5px 20px">
+                        <label class="control-label text-xs text-muted">Category : </label>
+                        <div class="scrollable-dropdown-menu row">
+                            <div class="col-sm-10">
+                                <input type="text" ng-model="it.categorylist" class="form-control input-sm" placeholder="Category" popover-trigger="mouseenter"
+                                    popover-placement="top" uib-typeahead="cat.category for cat in getCategoryList($viewValue)" typeahead-min-length="0"
+                                    typeahead-on-select="onCategorySelect($item, $model, $label)">
+                            </div>
+                            <div class="col-sm-2" ng-if="auth_svc.isValidModule('app.mytask.it_category_add')" >
+                                    <i class="fa fa-plus-circle fa-2x text-info" style="cursor: pointer" title="Create Category" ng-click="createCategory()"  role="button" tabindex="0" aria-hidden="false"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6" style="padding: 5px 20px">
+                        <label class="control-label text-xs text-muted">Sub-Category : </label>
+                        <div class="scrollable-dropdown-menu row">
+                            <div class="col-sm-10">
+                                <input type="text" ng-model="it.subcategorylist" class="form-control input-sm" placeholder="Sub Category" popover-trigger="mouseenter"
+                                    popover-placement="top" uib-typeahead="sub.sub_cat for sub in getSubCategoryList($viewValue)"
+                                    typeahead-min-length="0" typeahead-on-select="onSubCategorySelect($item, $model, $label)">
+                            </div>
+                            <div class="col-sm-2" ng-if="auth_svc.isValidModule('app.mytask.it_subcategory_add')" >
+                                    <i class="fa fa-plus-circle fa-2x text-danger" style="cursor: pointer" title="Create Sub Category" ng-click="createSubCategory()"  role="button" tabindex="0" aria-hidden="false"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6" style="padding: 5px 20px">
+                        <label class="control-label text-xs text-muted">Subject : </label>
+                        <div class="scrollable-dropdown-menu">
+                            <textarea type="text" spellcheck="true" class="form-control input-sm" rows="1" style="resize:none; overflow: hidden" ng-model="it.initial_response"></textarea>
+                        </div>
+                    </div>
+                    <div class="col-sm-6" style="padding: 5px 20px">
+                        <label class="control-label text-xs text-muted">Description : </label>
+                        <div class="scrollable-dropdown-menu">
+                            <textarea type="text" spellcheck="true" class="form-control input-sm" rows="6" ng-model="it.comment" style="resize:none; overflow: hidden"
+                                required></textarea>
+                        </div>
+                    </div>
+                    <div class="col-sm-6" style="padding: 5px 20px">
+                        <label class="control-label text-xs text-muted">Upload file : </label>
+                        <br>
+                        <button class="btn btn-dark btn-sm" ngf-select="uploadFiles($files)" multiple ngf-max-files="5" ngf-max-size="10MB" ngf-accept="'image/*,application/pdf'"
+                            ngf-pattern="'image/*,application/pdf'">
+                            <span class="text-success font-bold">
+                                <i class="fa fa-folder-open"></i>&nbsp;Add file</span>
+                        </button>
+                        <small class="text-muted">(Max 5 files)</small>
+                        <br>
+                        <small class="text-muted">Upload .jpg, .jpeg, .png and .pdf file with maximum size of 10MB is allowed.</small>
+                    </div>
+                    <div class="col-sm-6" style="padding: 5px 20px">
+                        <label class="control-label text-xs text-muted">
+                            <i class="fa fa-file" aria-hidden="true"></i>&nbsp;Files</label>
+                        <ul style="list-style: none">
+                            <li ng-repeat="f in files" class="text-xs" style="margin-bottom: 5px">
+                                {{f.name}}&nbsp;&nbsp;&nbsp;
+                                <span class="glyphicon icon-close" style="margin-top:3px; color: red" ng-click="removeFile($index)"></span>
+                            </li>
+                        </ul>
+                        <span class="progress" ng-show="progress > 0">
+                            <div style="width:{{progress}}%" ng-bind="progress + '%'"></div>
+                        </span>
+                        {{errorMsg}}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <center>
+            <button type="button " class="btn btn-dark btn-sm" ng-click="createIssue()" ng-disabled="disable_create">
+                <span class="text-success font-bold">
+                    <i class="fa fa-check"></i>&nbsp;Create</span>
+            </button>
+            <button type="button" class="btn btn-dark btn-sm" ng-click="cancelIssue()">
+                <span class="text-danger font-bold">
+                    <i class="fa fa-times"></i>&nbsp;Cancel</span>
+            </button>
+        </center>
+    </div>
+</div>

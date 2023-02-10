@@ -1,0 +1,127 @@
+<style>
+    button {
+        pointer: cursor;
+    }
+
+    input[type=file] {
+        width: 150px;
+        height: 20px;
+    }
+
+    .btn-circle-sm {
+        width: 35px;
+        height: 35px;
+        text-align: center;
+        padding: 2px 0;
+        font-size: 20px;
+        line-height: 1.65;
+        border-radius: 30px;
+    }
+    .btn-grey {
+      background-color: #d1d1d2;
+    }
+    .btn-progres {
+        background-color: #71b9fb;
+    }
+    .btn-hold {
+        background-color: #eec639;
+    }
+
+
+</style>
+<div style="margin-top: 20px;" >
+    <div class="col-sm-3" >
+        <button class="btn btn-circle-sm  {{pendingcolor}}" style="margin-left: 8px;" ng-click="changeStatusValet('Pending')"  >
+            <span class="fa fa-lock"></span>
+        </button>
+        <label>Pending</label>
+    </div>
+    <div class="col-sm-3" >
+        <button  class="btn btn-circle-sm {{progresscolor}}"  style="margin-left:8px;" ng-click="changeStatusValet('In Progress')" >
+            <span class="fa fa-gear"></span>
+        </button>
+        <label>Progress</label>
+    </div>
+    <div class="col-sm-3">
+        <button  class="btn btn-circle-sm {{holdcolor}}" style="margin-left: 8px;" ng-click="changeStatusValet('On Hold')">
+            <span class="fa fa-refresh"></span>
+        </button>
+        <label>On Hold</label>
+    </div >
+    <div class="col-sm-3">
+        <button  class="btn btn-circle-sm {{completcolor}}" style="margin-left: 8px;" ng-click="changeStatusValet('Completed')" >
+            <span class="fa fa-life-saver"></span>
+        </button>
+        <label>Completed</label>
+     </div>
+</div>
+<div class="wrapper" style="margin-top: 90px" >
+    <div class="panel panel-default" style="border-radius: 4px">
+        <div class="panel-body">
+            <form class="form-horizontal form-validation">
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-4 text-right " style="margin-bottom: 0px">Guest Name</label>
+                    <div class="col-sm-8 ">
+                        {{valet.name}}
+                    </div>
+                </div>
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-4 text-right " style="margin-bottom: 0px">Guest Type</label>
+                    <div class="col-sm-8 ">
+                        {{valet.equipment_name}}
+                    </div>
+                </div>
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-4 text-right " style="margin-bottom: 0px">Location</label>
+                    <div class="col-sm-8 ">
+                        {{valet.equipment_location.name}}\
+                    </div>
+                </div>
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-4 text-right " style="margin-bottom: 0px">Type</label>
+                    <div class="col-sm-8 ">
+                        {{valet.work_order_type}}
+                    </div>
+                </div>
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-4 text-right " style="margin-bottom: 0px">Priority</label>
+                    <div class="col-sm-8 ">
+                        {{valet.priority}}
+                    </div>
+                </div>
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-4 text-right " style="margin-bottom: 0px">Description</label>
+                    <div class="col-sm-8 ">
+                        {{valet.description}}
+                    </div>
+                </div>
+                
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-4 text-right " style="margin-bottom: 0px">Created Date</label>
+                    <div class="col-sm-8">
+                        {{valet.created_date}}
+                    </div>
+                </div>
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-4 text-right " style="margin-bottom: 0px">Start Date</label>
+                    <div class="col-sm-8">
+                        {{valet.purpose_start_date}}
+                    </div>
+                </div>
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-4 text-right " style="margin-bottom: 0px">End Date</label>
+                    <div class="col-sm-8">
+                        {{valet.purpose_end_date}}
+                    </div>
+                </div>
+                <!--<div class="form-group" style="margin-right: 0px">-->
+                    <!--<label class="col-sm-4 text-right " style="margin-bottom: 0px">Staff/Group</label>-->
+                    <!--<div class="col-sm-8">-->
+                        <!--{{valet.staff_name}}  Cost:{{valet.staff_cost}}/hr-->
+                    <!--</div>-->
+                <!--</div>-->
+                
+            </form>
+        </div>
+    </div>
+</div>

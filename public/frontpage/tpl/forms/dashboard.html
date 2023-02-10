@@ -1,0 +1,139 @@
+<style>
+
+	nav {
+		position: relative;
+		z-index: 1;
+		white-space: nowrap;
+		font-size: 12px;;
+	}
+
+	nav a {
+		position: relative;
+		display: inline-block;
+		padding: 1.5em 1.5em 1em;
+		text-decoration: none;
+		margin: 0 -7px;
+		color: #fff;
+	}
+
+	nav a:hover {
+		color: #ef6905;
+	}
+
+	nav a::before,
+	main {
+		border: .1em solid #aaa;
+	}
+
+	nav a::before {
+		content: ''; /* To generate the box */
+		position: absolute;
+		top: 0; right: 0; bottom: .5em; left: 0;
+		z-index: -1;
+		border-bottom: none;
+		border-radius: 10px 10px 0 0;
+		background: #2e3344;
+		box-shadow: 0 2px hsla(0,0%,100%,.5) inset;
+		transform: perspective(5px) rotateX(2deg);
+		transform-origin: bottom;
+	}
+
+	nav.left a {
+		padding: 1.5em 2em 1em 1em;
+	}
+
+	nav.left a::before {
+		transform-origin: bottom left;
+	}
+
+	nav.right a {
+		padding: 1.5em 1em 1em 2em;
+	}
+
+	nav.right a::before {
+		transform-origin: bottom right;
+	}
+
+	nav a.selected {
+		z-index: 2;
+	}
+
+	nav a.selected::before {
+		margin-bottom: -1px;
+		border-top-width: 1px;
+	}
+
+	nav a.selected::before
+	 {
+		background: #0e08b6;
+	}
+
+	main {
+		display: block;
+		margin: -8px 0 30px -15px;
+		padding: 1em;
+		border-radius: 3px;
+		background:#fff;
+	}
+	.tabsdemoDynamicHeight md-content {
+  background-color: transparent !important; }
+  .tabsdemoDynamicHeight md-content md-tabs {
+    background: #f6f6f6;
+    border: 1px solid #e1e1e1; }
+    .tabsdemoDynamicHeight md-content md-tabs md-tabs-wrapper {
+      background: white; }
+  .tabsdemoDynamicHeight md-content h1:first-child {
+    margin-top: 0; }
+</style>
+
+
+<div ng-controller="FormsController" class="stretch" >
+	
+	
+	<div ng-show="flags==0" ng-cloak>
+		<md-content>
+		<md-tabs md-dynamic-height md-border-bottom>
+			<md-tab ng-if="auth_svc.isValidModule('app.forms.hotwork_permit')"  label="Hotwork Permit">
+				<md-content ng-include="'tpl/forms/hotworkpermit_form.html'"><b>Hotwork Permit</b>
+				</md-content>
+			</md-tab>
+			<md-tab ng-if="auth_svc.isValidModule('app.forms.liftusage_form')" label="Lift Usage Form">
+				<md-content ng-include="'tpl/forms/liftusage_form.html'"><b>Lift Usage Form</b> 
+				</md-content>
+			</md-tab>
+			<md-tab ng-if="auth_svc.isValidModule('app.forms.permit_work')" label="Permit to Work Form">
+				<md-content ng-include="'tpl/forms/permittowork_form.html'"><b>Permit to Work Form</b>
+			    </md-content>
+			</md-tab>
+			
+		</md-tabs>
+		
+
+		</md-content>
+	</div>
+	<div ng-show="flags==1">
+		<nav>
+			<a ng-if="auth_svc.isValidModule('app.forms.hotwork_permit')"  class="{{indexname == 'hotworkpermit' ? 'selected' : ''}}"
+			   		ng-click="loadContent('hotworkpermit')"><b>Hotwork Permit</b> </a>
+			<a ng-if="auth_svc.isValidModule('app.forms.liftusage_form')"  class="{{indexname == 'liftusage' ? 'selected' : ''}}"
+			   		ng-click="loadContent('liftusage')"><b>Lift Usage Form</b> </a>
+			<a ng-if="auth_svc.isValidModule('app.forms.permit_work')" class="{{indexname == 'permittowork' ? 'selected' : ''}}"
+			   		ng-click="loadContent('permittowork')"><b>Permit to Work Form</b> </a>
+			
+
+		</nav>
+		<main>
+			<div class="stretch" ng-if="indexname == 'hotworkpermit' " style="{{tab_full_height}}; overflow-y: hidden"
+				 ng-include="'tpl/forms/hotworkpermit_form.html'"></div>
+			<div class="stretch" ng-if="indexname == 'liftusage' " style="{{tab_full_height}}; overflow-y: hidden"
+				 ng-include="'tpl/forms/liftusage_form.html'"></div>
+			<div class="stretch" ng-if="indexname == 'permittowork' " style="{{tab_full_height}}; overflow-y: hidden"
+				 ng-include="'tpl/forms/permittowork_form.html'"></div>
+			
+		</main>
+
+	</div>
+
+
+	
+</div>

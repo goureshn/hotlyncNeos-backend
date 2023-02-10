@@ -42,6 +42,10 @@ use App\Modules\Functions;
 use DateInterval;
 use DateTime;
 use Illuminate\Support\Facades\Config;
+use App\Exports\CommonExport;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use Excel;
 use Illuminate\Http\Request;
 use DB;
 use Response;
@@ -9994,4 +9998,175 @@ class GuestserviceController extends Controller
 
 		return Response::json($user_list);
 	}
+
+	public function exportGuestFacilityList(Request $request)
+    {
+		$property_id = $request->get('property_id', '0');
+        $searchtext = $request->get('searchtext','');
+        $start_date = $request->get('start_date', '') ?? "";
+        $end_date = $request->get('end_date', '') ?? "";
+		$orderby = $request->get('field', 'id');
+        $sort = $request->get('sort', 'asc');
+
+        $guest_type = $request->get('guest_type', 'All');
+        $room_ids = $request->get('room_ids', []);
+
+
+
+
+        $ret = array();
+        $query = DB::table('services_guest_facility as gf')
+				->leftJoin('common_room as cr', 'gf.room_id', '=', 'cr.id')
+				->leftJoin('common_guest as gp', 'gf.guest_id', '=', 'gp.guest_id')
+				->leftJoin('common_guest_facility as cgf', 'gf.guest_id', '=', 'cgf.id');
+
+
+
+		$query->whereRaw(sprintf("DATE(gf.created_at) >= '%s' and DATE(gf.created_at) <= '%s'", $start_date, $end_date));
+
+
+        if($searchtext != '')
+        {
+            $query->where(function ($query) use ($searchtext) {
+                $value = '%' . $searchtext . '%';
+                $query->where('gf.id', 'like', $value)
+                    ->orWhere('gf.guest_id', 'like', $value)
+					->orWhere('gf.guest_type', 'like', $value)
+					->orWhere('gf.table_no', 'like', $value)
+					->orWhere('cr.room', 'like', $value)
+                    ->orWhere('gp.guest_name', 'like', $value)
+                    ->orWhere('gp.first_name', 'like', $value)
+                    ->orWhere('gp.email', 'like', $value)
+					->orWhere('gp.mobile', 'like', $value)
+                    ->orWhere('gp.vip', 'like', $value)
+					->orWhere('cgf.guest_name', 'like', $value)
+                    ->orWhere('cgf.first_name', 'like', $value)
+                    ->orWhere('cgf.email', 'like', $value)
+                    ->orWhere('cgf.mobile', 'like', $value);
+
+            });
+        }
+
+		if( $guest_type != 'All' )
+            $query->where('gf.guest_type', $guest_type);
+
+		 // room filter
+        if( !empty($room_ids) )
+        {
+            $room_id_list = explode(',', $room_ids);
+            $query->whereIn('gf.room_id', $room_id_list);
+        }
+
+        $data_query = clone $query;
+        $data_list = $data_query
+            ->orderBy($orderby, $sort)
+            ->orderBy('gf.created_at', 'desc')
+            ->select(DB::raw('gf.*, cr.room'))
+            ->groupBy('gf.id')
+            ->get();
+
+
+        foreach($data_list as $row)
+        {
+            if ($row->guest_type == 'In-House'){
+				$guest = DB::table('common_guest as cg')
+						->where('cg.guest_id', $row->guest_id)
+						->first();
+
+			$row->guest_name = $guest->guest_name;
+			$row->vip = $guest->vip;
+			$row->stay = $guest->arrival . ' to ' . $guest->departure;
+			$row->email = $guest->email;
+			$row->mobile = $guest->mobile;
+
+
+			}else{
+
+				$guest = DB::table('common_guest_facility as cg')
+						->where('cg.id', $row->guest_id)
+						->first();
+				$row->guest_name = $guest->guest_name;
+				$row->vip = 'NA';
+				$row->stay = 'NA';
+				$row->email = $guest->email;
+				$row->mobile = $guest->mobile;
+				$row->room = 'NA';
+
+			}
+
+        }
+
+        $count_query = clone $query;
+        $totalcount = $count_query->count();
+
+        $ret['code'] = 200;
+        $ret['message'] = '';
+        $ret['datalist'] = $data_list;
+        $ret['totalcount'] = $totalcount;
+
+        // excel report
+
+        $filename = 'Guest_Facility_Log_Report_' . $start_date . '_' . $end_date;
+        $excel_type = $request->get('excel_type', 'excel');
+
+        $excel_file_type = 'csv';
+		if($excel_type == 'excel')
+			$excel_file_type = config('app.report_file_type');
+
+        $property = DB::table('common_property')->where('id', $property_id)->first();
+		if (empty($property)) {
+			echo "Property does not exist";
+			return;
+        }
+
+        $data = $ret;
+        $data['start_date'] = $start_date;
+        $data['end_date'] = $end_date;
+
+		$logo_path = $property->logo_path;
+
+		$export_data = [];
+        $datalist = [];
+        $style = [
+            1    => [
+                'font' => ['bold' => true],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
+            ],
+            2    => [
+                'font' => ['bold' => true],
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID, 
+                    'startColor' => ['argb' => 'ECEFF1']
+                ],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
+            ],
+        ];
+
+		foreach($data['datalist'] as $row)
+		{
+			$arr = [];
+
+			$arr['ID'] = sprintf('R%05d', $row->id);
+			$arr['Date & Time'] = $row->created_at;
+			$arr['Guest Type'] = $row->guest_type;
+			$arr['Guest Name'] = $row->guest_name;
+			$arr['Room'] = $row->guest_type == 'In-House' ? $row->room  : 'NA';
+			$arr['VIP'] = $row->guest_type == 'In-House' ? $row->vip : 'NA';
+			$arr['Stay'] = $row->guest_type == 'In-House' ? $row->stay : 'NA';
+			$arr['Adult'] = $row->adult;
+			$arr['Kids'] = $row->child;
+			$arr['BMeal'] = $row->guest_type == 'In-House' ? ($row->bmeal == 1 ? 'Paid' : 'Not Paid') : 'NA';
+			$arr['Table No'] = $row->table_no;
+			$arr['Remarks'] = $row->remark;
+			$arr['Exit'] = $row->exit_flag == 1 ? 'Yes' : 'No';
+			$arr['Exit Time'] = $row->exit_time;
+
+			array_push($datalist, $arr);
+		}
+
+		$export_data['datalist'] = $datalist;
+        $export_data['sub_title'] = "Guest Facility Log List";
+		
+		return Excel::download(new CommonExport('excel.common_export', $export_data, 'Guest Facility Report', $style), $filename . '.xlsx');
+    }
 }

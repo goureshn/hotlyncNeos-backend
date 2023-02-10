@@ -1,0 +1,203 @@
+<div class="row bg-light lt" style="padding: 5px; margin-left: -10px;background-color: #141414">
+    <div class="col-sm-6"><h1 class="m-n font-thin h5 text-black" style="color:#337ab7">
+                <label style="font-size: 25px; margin-bottom: 0px"><i class="fa fa-list-alt"></i>
+        Check List</label></h1>
+    </div>
+</div>
+
+<div ng-controller="ChecklistCreateModController">
+ <!--   <div class="wrapper-md1 bg-light b-b">
+        <h1 class="m-n font-thin h3">Create CheckList</h1>
+    </div>
+-->
+    <div class="wrapper-md1" fill-height >
+        <div>
+        <div class="col-sm-12">
+            <div class="panel panel-default" >
+                <div class="panel-heading"><i class="fa fa-plus" aria-hidden="true"></i>&nbsp;Add Check List</div>
+                <div class="panel-body">
+                    <form class="form-horizontal form-validation">
+                        <div class="form-group" >
+                            <div class="col-sm-6">
+                                <label class="text-muted">Check List Name</label><label class="field_title" style="color:#F44336">*</label>
+                                <input ng-model="check_list_name" placeholder="Enter Name" class="form-control  input-sm" required/>
+                            </div>
+                        </div>
+                        <!--
+                        <div class="form-group">
+                            <div class="col-sm-12">
+                                <label>Category</label>
+                                <label class="field_title" style="color:#F44336">*</label>
+                                <input class="form-control input-sm col-sm-11" type="text" ng-model="category" placeholder="Enter Category"
+                                           popover-trigger="mouseenter" popover-placement="top" 
+                                           uib-typeahead="value.category for value in getcategoryList($viewValue)"
+									        typeahead-editable="false"
+									        typeahead-min-length="0"
+                                            typeahead-on-select="onCategorySelect($item, $model, $label)"
+                                            required >
+
+                            </div>
+                        </div>
+                    -->
+                        <div ng-show = "action_button == 'Create'"class="line line-dashed b-b"></div>
+                        <div class="col-centered" class="line-sm" style="width:99%; z-index:3" ng-show = "action_button == 'Create'">
+                            <div class="panel panel-default" style="margin-left: 10px;">
+                                <div class="panel-heading">
+                                    <label class="font-bold"><i style="text-align: center" aria-hidden="true"></i>&nbsp;&nbsp;List of Tasks</label>
+                                    <i class="fa fa-plus-circle fa-2x text-success ng-click-active pull-right" style="cursor: pointer" title="Add Task"
+                                                  ng-click="addTask()"></i>
+                                </div>
+                                <div class="panel-body">
+                                    <form class="form-horizontal">
+                                        <div class="form-group label-group">
+                                            
+                                            <div class="col-sm-1 control-label">Category<i class="text-danger">*</i></div>
+                                            <div class="col-sm-3 control-label" style="text-align: left">
+                                            <input class="form-control input-sm" style="text-align: left" type="text" ng-model="task.category" placeholder="Enter Category"
+                                                     popover-trigger="mouseenter" popover-placement="top" 
+                                                     uib-typeahead="value.category for value in getcategoryList($viewValue)"
+									                 typeahead-editable="false"
+									                 typeahead-min-length="0"
+                                                     typeahead-on-select="onCategorySelect($item, $model, $label)"
+                                                    required >
+                                            </div>   
+                                            <div class="col-sm-1 control-label">Task<i class="text-danger">*</i></div>
+                                            <div class="col-sm-6 control-label" style="text-align: left">
+                                                <input type="text" ng-model="task.task" class="form-control input-sm"  placeholder="Enter Task">
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <! - - - - - - - - - - - - - - - - - - - - ADD MORE TASK - - - - - - - - - - - - - - - ->
+                        <div class="col-centered"  class="line-sm" style="width:99%; z-index:3" ng-show="category">
+                                <div class="panel panel-default" style="margin-left: 10px;">
+                                    <div class="panel-heading">
+                                        <label class="font-bold">Task Added</label>
+                                    </div>
+                                    <div class="panel-body">	
+                                        <form class="form-horizontal form-validation">
+                                            <div class="form-group label-group" style="width:98%; margin:auto" ng-repeat="task in tasks">
+                                                <div class="form-group col-md-10">
+                                                    <div class="col-md-4">
+                                                        <span class="pull-left" style="margin-left: 3px" >{{task.category}}</span>
+                                                     </div>
+                                                     <div class="col-md-4">
+                                                            <span class="pull-left" style="margin-left: 3px" >{{task.task}}</span>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="form-group col w-xs col-md-1">
+                                                      <span class="glyphicon icon-close pull-right" style="margin-top:3px;margin-right: 10px; color: red" ng-click="removeTask()"></span>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                        </div>	
+                    
+                        <div class="form-group">
+                            <div class="col-sm-12">
+                                <div class="pull-right">
+                                    <button type="submit" class="btn btn-sm btn-dark text-uc m-t-n-xs" ng-click="add()"><strong>
+                                        <span class="text-success">&nbsp;&nbsp;&nbsp;{{action_button}}&nbsp;&nbsp;&nbsp;</span></strong></button>
+                                    <button type="submit" class="btn btn-sm btn-dark text-uc m-t-n-xs" ng-click="cancel()"><strong>
+                                        <span class="text-danger">&nbsp;&nbsp;Clear&nbsp;&nbsp;</span></strong></button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <div class="col-sm-12">
+            <div class="panel panel-default">
+                <div class="panel-heading" style="height: 45px;"><i class="fa fa-list-ul" aria-hidden="true" ></i>&nbsp;Check List
+                    <div class="input-group col-xs-2 pull-right" style="padding-right: 15px">
+                            <span ng-show="filter_value" class="input-group-btn">
+                                <button type="submit" class="btn btn-sm " ng-click="clearLog()"><i class="fa fa-close"></i></button>
+                            </span>	
+                            <input type="text" ng-model="filter_value" class="form-control input-sm no-border  padder" ng-keyup="$event.keyCode == 13 && searchLog(filter_value)" placeholder="Search">
+                            <span class="input-group-btn">
+                                <button type="submit" class="btn btn-sm " ng-click="searchLog(filter_value)"><i class="fa fa-search"></i></button>
+                            </span>	          	
+                        </div> 
+                </div>
+                <div class="panel-body">
+                    <table  st-table="datalist"  st-pipe="getDataList" class="table ticket" >
+                        <thead class="tblhead-sm">
+                        <tr>
+                            <th class="text-center" style="width: 15%"><b>ID</b></th>
+                            <th class="text-center" style="width: 15%"><b>Date & Time</b></th>
+                            <th class="text-center" style="width: 15%"><b>Name</b></th>
+                            
+                            <th class="text-center" style="width: 15%"><b>Created By</b></th>
+                            <th class="text-center" style="width: 15%"><b>Role</b></th>
+                            <th class="text-center" style="width: 15%"><b>Action</b></th>
+                        </tr>
+                        </thead>
+                        <tbody ng-hide="isLoading" >
+                        <tr class="" ng-repeat="row in datalist">
+                        <td colspan="6">
+                        <table style="width: 100%">
+                        <tr class="" ng-click="onClickRow(row, $index)" >
+                            <td class="text-center" style="width: 15%">{{row.id}}</td>
+                            <td class="text-center" style="width: 15%">{{row.created_at}}</td>
+                            <td class="text-center" style="width: 15%">{{row.name}}</td>
+                            <td class="text-center" style="width: 15%">{{row.wholename}}</td>
+                            <td class="text-center" style="width: 15%">{{row.job_role}}</td>
+                            <td class="text-center" style="width: 15%">
+                                <a class="btn default btn-xs green" ng-click="edit(row)">
+                                    <i class="fa fa-pencil"></i></a>
+                                <a class="btn default btn-xs red" ng-click="delete(row)">
+                                    <i class="fa fa-times"></i></a>
+                            </td>
+                        </tr>
+                        </table>
+                        <table ng-show="row.view" style="width:80%" align="center"  class="table table-striped ticket">
+                            <tr>
+                               <td>
+                                 <div style="background: #ececec;padding-top: 20px; padding-bottom: 20px;">
+                                    <div style="background:#e0dede" >
+                                        <label class="text-center"style="width: 30%" ><b>&nbsp;Category</b></label>
+                                        <label class="text-center" style="width: 30%"><b>Task</b></label>
+                                        <label class="text-center" style="width: 20%"><b>Action</b></label>
+                                       
+                                    </div>
+                                    <div style="border: solid 1px; border-color: #d6d8d8" ng-repeat="row1 in detaillist">
+                                        <label class="text-center" style="width: 30%">{{row1.category}}</label>
+                                        <label class="text-center" style="width: 30%">{{row1.task}}</label>
+                                        <label class="text-center" style="width: 20%">
+                                                <span class="glyphicon glyphicon-minus-sign" style="color: red" ng-click="deleteTask(row1)"></span>
+                                        </label>
+                                       
+                                    </div>
+                                 </div>
+                                 </td>
+                            </tr>
+                        </table>
+                       </td>
+                       </tr>
+                        </tbody>
+                        <tbody ng-show="isLoading">
+                        <tr>
+                            <td colspan="6" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+                        </tr>
+                        </tbody>
+                        <tfoot ng-hide="isLoading">
+                        <tr ng-show="paginationOptions.totalItems > paginationOptions.pageSize">
+                            <td colspan="6" class="text-center">
+                                <div st-pagination="" st-items-by-page="paginationOptions.pageSize" st-displayed-pages="7" class="no-margin"></div>
+                            </td>
+                        </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>  
+    </div>
+</div><br><br>
+</div>

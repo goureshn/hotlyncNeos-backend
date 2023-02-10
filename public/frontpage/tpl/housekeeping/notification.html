@@ -1,0 +1,193 @@
+<div ng-controller="WorkflowNotificationController" style="{{full_height}}">
+    <script type="text/ng-template" id="customTemplate.html">
+        <a>
+            <span ng-bind-html="match.label | uibTypeaheadHighlight:query"></span>
+        </a>
+    </script>
+
+    <div class="wrapper-md1 col-centered" style="width: 100%;">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+				<label class="i-switch m-t-xs m-r">
+                <input type="checkbox" ng-model="active_flag" ng-change="onTotalActiveChange()">
+                <i class="bg-danger"></i>
+                </label> Enable trigger Task
+			</div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <form class="form-horizontal form-validation">
+                            <div class="form-group">
+                                
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label text-muted">Room Status</label>
+                                <div class="col-sm-10">
+                                    <tags-input ng-model="status_tags" display-property="status" placeholder="Add a Status" style="margin-top: -7px"
+                                                replace-spaces-with-dashes="false">
+                                        <auto-complete source="loadHskpStatusFilters($query)"
+                                                       min-length="0"
+                                                       load-on-focus="true"
+                                                       load-on-empty="true"
+                                                       debounce-delay="0"
+                                                       max-results="10">
+                                        </auto-complete>
+                                    </tags-input>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label text-muted">Room Type</label>
+                                <div class="col-sm-10">
+                                    <tags-input ng-model="type_tags" display-property="type" placeholder="Add a Type" style="margin-top: -7px"
+                                                replace-spaces-with-dashes="false" >
+                                        <auto-complete source="loadRoomTypeFilters($query)"
+                                                       min-length="0"
+                                                       load-on-focus="true"
+                                                       load-on-empty="true"
+                                                       debounce-delay="0"
+                                                       max-results="10">
+                                        </auto-complete>
+                                    </tags-input>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label text-muted">Guest Type</label>
+                                <div class="col-sm-10">
+                                    <tags-input ng-model="guesttype_tags" display-property="guest_type" placeholder="Add a Type" style="margin-top: -7px" replace-spaces-with-dashes="false" >
+                                        <auto-complete source="loadGuestTypeFilters($query)"
+                                                       min-length="0"
+                                                       load-on-focus="true"
+                                                       load-on-empty="true"
+                                                       debounce-delay="0"
+                                                       max-results="10">
+                                        </auto-complete>
+                                    </tags-input>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label text-muted">Task</label>
+                                <div class="col-sm-10">
+                                    <input type="text" ng-model="task" class="form-control  input-sm"
+                                           uib-typeahead="item as item.task for item in getTaskList($viewValue)"
+                                           typeahead-min-length="0"
+                                           typeahead-template-url="customTemplate.html"
+                                           required/>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-sm-6" style="padding-left: 40px">
+                        <form class="form-horizontal form-validation">
+                            <div class="form-group">
+                                <label class="md-check text-muted" style="margin-right: 20px">
+                                    <input type="checkbox" ng-model="inspection">
+                                    <i class="blue"></i>
+                                    For Inspection
+                                </label>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label text-muted">Notify By:</label>
+                                <div class="col-sm-10" style="padding-top: 7px; padding-left: 30px">
+                                    <label class="md-check" style="margin-right: 20px">
+                                        <input type="checkbox" ng-model="sms" ng-disabled="!inspection">
+                                        <i class="green"></i>
+                                        SMS
+                                    </label>
+                                    <label class="md-check" style="margin-right: 20px">
+                                        <input type="checkbox" ng-model="email" ng-disabled="!inspection">
+                                        <i class="green"></i>
+                                        Email
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="md-check text-muted" style="margin-top:10px;margin-right: 10px">
+                                    <input type="checkbox" ng-model="notifygroup_flag">
+                                    <i class="green"></i>
+                                    Notify Group
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-12" style="padding-top: 10px; padding-left: 0px" >
+                                    <tags-input ng-model="notifytype_tags" display-property="name" placeholder="Add a Group" style="margin-top: -7px"
+                                                replace-spaces-with-dashes="false" ng-disabled="!notifygroup_flag">
+                                        <auto-complete source="loadNotifyGroupFilters($query)"
+                                                       min-length="0"
+                                                       load-on-focus="true"
+                                                       load-on-empty="true"
+                                                       debounce-delay="0"
+                                                       max-results="10">
+                                        </auto-complete>
+                                    </tags-input>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="row" style="margin-top: 20px; margin-right: 20px">
+                    <div class="pull-right">
+                        <button type="submit" class="btn btn-sm btn-dark text-uc m-t-n-xs" ng-click="add()"><strong>
+                        	<span class="text-success">&nbsp;&nbsp;&nbsp;{{action_button}}&nbsp;&nbsp;&nbsp;</span></strong></button>
+                        <button type="submit" class="btn btn-sm btn-dark text-uc m-t-n-xs" ng-click="cancel()"><strong>
+                        	<span class="text-danger">&nbsp;&nbsp;Clear&nbsp;&nbsp;</span></strong></button>
+                    </div>
+                </div>
+                <br>
+                <div class="table table-responsive" style="height:100%">
+                    <table  st-table="datalist"  st-pipe="getDataList" class="table ticket">
+                        <thead class="tblhead-sm">
+                            <tr>
+                                <th><b>Active</b></th>
+                                <th><b>Room Status</b></th>
+                                <th><b>Room Type</b></th>
+                                <th><b>Guest Type</b></th>
+                                <th><b>Task</b></th>
+                                <th><b>Notify By</b></th>
+                                <th><b>Notify Group</b></th>
+                                <th><b>Action</b></th>
+                            </tr>
+                        </thead>
+                        <tbody ng-hide="isLoading">
+                            <tr class="" ng-repeat="row in datalist">
+                                <td>
+                                    <label class="i-switch m-t-xs m-r">
+                                        <input type="checkbox" ng-model="row.active_flag" ng-change="onActiveChange(row)">
+                                        <i class="bg-danger"></i>
+                                    </label>
+                                </td>
+                                <td>{{getRoomStatus(row)}}</td>
+                                <td>{{getRoomTypes(row)}}</td>
+                                <td>{{getGuestType(row)}}</td>
+                                <td>{{row.task_name}}</td>
+                                <td>{{row.notifygroup_flag ? 'Yes' : 'No'}}</td>
+                                <td>{{getNotifyGroup(row)}}</td>
+                                <td>
+                                    <a class="btn default btn-xs green" ng-click="edit(row)">
+                                        <i class="fa fa-pencil"></i></a>
+                                    <a class="btn default btn-xs red" ng-click="delete(row)">
+                                        <i class="fa fa-times"></i></a>
+                                </td>
+                            </tr>
+                            </tbody>
+                            <tbody ng-show="isLoading">
+                            <tr>
+                                <td colspan="8" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+                            </tr>
+                        </tbody>
+                        <tfoot ng-hide="isLoading">
+                            <tr ng-show="paginationOptions.totalItems > paginationOptions.pageSize">
+                                <td colspan="8" class="text-center">
+                                    <div st-pagination="" st-items-by-page="paginationOptions.pageSize" st-displayed-pages="7" class="no-margin"></div>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

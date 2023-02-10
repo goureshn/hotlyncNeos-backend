@@ -1,0 +1,50 @@
+<div class="modal-content">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">
+            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        </button>
+        <h3 class="modal-title" style="color:#2691d9" id="Heading">Send Email to {{equipment.external_maintenance_company}}</h3>
+    </div>
+    <br>
+    <div class="modal-body">
+        <form class="form-horizontal form-validation">
+            <div align="center" style="height: 25px;">
+                {{email.error}}
+            </div>
+            <div class="form-group" >
+                <label class="col-sm-4 text-right control-label text-muted" >To</label>
+                <div class="col-sm-5  scrollable-dropdown-menu">
+                    <input class="form-control input-sm"  ng-model="email.to" readonly
+                           popover-trigger="mouseenter">
+                </div>
+            </div>
+            <div class="form-group" >
+                <label class="col-sm-4 text-right control-label text-muted" >Title</label>
+                <div class="col-sm-5  scrollable-dropdown-menu">
+                    <input class="form-control input-sm"  ng-model="email.title"  required
+                            popover-trigger="mouseenter">
+                </div>
+            </div>
+            <div class="form-group" style="margin-right: 0px">
+                <label class="col-sm-4 text-right control-label text-muted" >Content</label>
+                <div class="col-sm-5">
+                        <textarea class="form-control input-sm" rows="3" ng-model="email.content"
+                                  style="resize:none"  popover-trigger="mouseenter" ></textarea>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="modal-footer ">
+        <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal" ng-click="sendEmail()">
+            <span class="glyphicon glyphicon-ok"></span>
+            <b> Send</b>
+        </button>
+        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal" ng-click="cancel()">
+            <span class="glyphicon glyphicon-remove"></span>
+            <b> Cancel</b>
+        </button>
+    </div>
+
+</div>
+

@@ -1,0 +1,133 @@
+<div ng-controller="SettingTaskController" fill-padding>
+    <style>
+        table tr th, td {
+            text-align: center;
+        }
+
+        table tr {
+            height: 50px;
+        }
+
+        .pagination {
+            margin-bottom:0px;
+        }
+
+        .search-filter .checkbox {
+            margin: 0px;
+        }
+
+        .popover-container .popover-content {
+            padding-left: 6px;
+            padding-right: 6px;
+        }
+
+        .popover-container .popover {
+            max-width: 650px;
+        }
+        .refresh-icon {
+            line-height: 34px !important;
+        }
+
+        .btn-refresh {
+            width: 34px !important;
+            height: 34px !important;
+        }
+    </style>
+    <div class="wrapper-md1 bg-light b-b row">
+        <div class="col-sm-4">
+            <h1 class="m-n font-thin h3">Task List</h1>
+        </div>
+        <div class="col-sm-8 search-filter">
+            <div class="pull-right" style="padding-left: 20px;">
+                <button type="button" class="btn btn-success btn-sm" ng-click="onAddNew()">
+                    <i class="fa fa-plus"></i> &nbsp;<b>Add New</b>
+                </button>
+            </div>
+            <div class="pull-right" style="padding-left: 20px;">
+                <button type="button" class="btn btn-danger btn-sm" ng-click="onExportFile()">
+                    <i class="fa fa-download"></i> &nbsp;<b>Export File</b>
+                </button>
+            </div>
+            <div class="input-group pull-right" style="width: 300px; border-radius: 20px; border: 2px solid; margin-left: 2px;padding-left:1px;">
+                <input type="text" ng-model="searchText" my-enter="getTaskList()" class="form-control input-sm bg-light no-border rounded padder" placeholder="Search">
+                <span class="input-group-btn">
+                            <button type="button" ng-click="getTaskList()" class="btn btn-sm bg-light rounded"><i class="fa fa-search"></i></button>
+                        </span>
+            </div>
+            <div class="btn-toolbar pull-right">
+                <div class="btn-group  popover-container" style="maring-left:0px">
+                    <button type="button" class="btn btn-sm btn-icon btn-default btn-refresh" data-toggle="tooltip" title="Refresh" data-placement="bottom" ng-click="onRefresh()">
+                        <i class="fa fa-refresh refresh-icon"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="wrapper-md1 col-centered" style="width: 100%;">
+
+        <!---view list -->
+        <div class="table table-responsive" fill-height additional-padding="120">
+            <table  st-table="taskList"  st-pipe="getTaskList" class="table ticket table-striped b-t b-light">
+                <thead class="tblhead-sm" style="font-size: .8vw">
+                <tr class="text-center">
+                    <th width="80px" st-sort="tl.id"><b>&nbsp;&nbsp;ID</b></th>
+                    <th st-sort="tg.name"><b>Task Group Name</b></th>
+                    <th st-sort="tl.task"><b>Task Name</b></th>
+                    <th st-sort="tl.chkstatus"><b>Status</b></th>
+                    <th width="280px"><b>Languages</b></th>
+                    <th width="125px"><b>Action</b></th>
+                </tr>
+                </thead>
+                <tbody >
+                <tr class="highlight2 no-radius m-b-none m-t-n-xxs" ng-repeat="row in taskList">
+                    <td class="highlight">
+                        <a>{{::row.id}}</a>
+                    </td>
+
+                    <td class="highlight">
+                        <a> {{::row.tgname}}</a>
+                    </td>
+
+                    <td class="highlight">
+                        <a> {{::row.task}}</a>
+                    </td>
+
+                    <td class="highlight">
+                        <a> {{::row.status == 1 ? 'Active' : 'Deactive' }}</a>
+                    </td>
+
+                    <td class="highlight">
+                        <a> {{::row.lang}}</a>
+                    </td>
+                    <td>
+                        <a class="btn default btn-xs green" title="Edit" ng-click="onEditRow(row)">
+                            <i class="fa fa-edit"></i></a>
+                        <a class="btn default btn-xs red" title="Delete" ng-click="onDeleteRow(row)">
+                            <i class="fa fa-trash"></i></a>
+                    </td>
+                </tr>
+                </tbody>
+                <tbody ng-show="isLoading">
+                <tr>
+                    <td colspan="9" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+                </tr>
+                </tbody>
+                <tbody ng-show="isLoading == false && taskList.length < 1">
+                <tr>
+                    <td colspan="9" class="text-center">There is no data.</td>
+                </tr>
+                </tbody>
+                <tfoot ng-hide="isLoading">
+                <tr ng-show="paginationOptions.totalItems > paginationOptions.pageSize">
+                    <td colspan="9" class="text-center">
+                        <div st-pagination="" st-items-by-page="paginationOptions.pageSize" st-displayed-pages="7" class="no-margin"></div>
+                    </td>
+                </tr>
+                </tfoot>
+
+            </table>
+
+        </div>
+    </div>
+</div>

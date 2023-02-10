@@ -1,0 +1,348 @@
+<style>
+    button {
+        pointer: cursor;
+    }
+
+    input[type=file] {
+        width: 150px;
+        height: 20px;
+    }
+    .tbl-sm {
+        font-size: .8vw;
+        padding: 1px 15px !important;
+        color: #67686a;
+    }
+</style>
+
+<script type="text/ng-template" id="equipmentTypeahead.html">
+    <a>
+        <span style="font-size: 12px" ng-bind="match.model.name"></span><br>
+        <span style="font-size: 10px" ng-bind="match.model.equip_id"></span><br>
+        <span style="font-size: 10px" ng-bind="match.model.location_name"></span>- <span style="font-size: 10px" ng-bind="match.model.location_type"></span><br>
+    </a>
+</script>
+
+
+<form class="form-horizontal form-validation" ng-submit="updateRepairRequest()">
+    <div class="modal-content">        
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">
+                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+            </button>
+            <div>
+            <h3 class="modal-title" style="color:#2691d9" id="Heading"><i class="fa fa-pencil-square-o"></i>&nbsp;{{getTicketNumber(repair_request)}}
+                <button type="button" style = "background:  transparent;border: none; color: red;" title="Delete Work Request" data-dismiss="modal" aria-hidden="true"  ng-click="delete(repair_request)">
+                        <i class="fa fa-trash" aria-hidden="true"></i>
+                    </button>
+            </h3>
+            <h5 class="modal-title pull-right" style="color:#2691d9" id="Heading"> Created Date : {{::repair_request.created_at | mydate}}</h5></br>
+            </div>
+        </div>        
+        <div class="modal-body">        
+            <div class="form-group">
+                <div class="col-sm-6">
+                    <label class="control-label text-xs text-muted">Requestor</label>
+                    <div requestorclass="scrollable-dropdown-menu">
+                        <input type="text" minlength="3" ng-model="repair_request.wholename" class="form-control input-sm" placeholder="Search Email ID, Firstname or Lastname"
+                            typeahead-editable="false" uib-typeahead="user.wholename for user in staff_list | filter:$viewValue | limitTo:10"
+                            typeahead-on-select="onRequesterSelect($item, $model, $label)" typeahead-min-length="0" typeahead-template-url="userTypeahead.html"
+                            typeahead-no-results="noResults"
+                            disabled
+                            >
+                    </div>
+                </div>    
+                <div class="col-sm-6">
+                    <label class="control-label text-xs text-muted">Priority</label>
+                    <div>
+                        <select class='form-control input-sm' ng-model="repair_request.priority"
+                            ng-options="value for value in prioritys" />
+                    </div>
+                </div>  
+
+                <div class="col-sm-12">
+                    <label class="control-label text-xs text-muted">                    
+                        Summary
+                        &nbsp;
+                        <a class="btn default btn-xs" ng-click="repair_flag_edit = !repair_flag_edit">
+                            <i class="fa fa-pencil"></i> 
+                        </a>
+                        <label class="control-label text-xs text-muted " style = "font-style: italic;">(Max Character is 160)</label>
+                    </label>
+                    <div>
+                        <textarea class="form-control input-sm" rows="1" ng-model="repair_request.repair"
+                                style="resize:none" maxlength="160" ng-disabled="repair_flag_edit == false"></textarea>
+                    </div>
+                </div>                 
+                <div class="col-sm-12">
+                    <label class="control-label text-xs text-muted">
+                        Description
+                        &nbsp;
+                        <a class="btn default btn-xs" ng-click="onEditDesc()" ng-show="desc_flag_edit == false">
+                            <i class="fa fa-pencil"></i>
+                        </a>
+                        <a class="btn default btn-xs" ng-click="onSaveDesc()" ng-show="desc_flag_edit == true">
+                            <i class="fa fa-check"></i>
+                        </a>
+                        <a class="btn default btn-xs" ng-click="onCancelDesc()" ng-show="desc_flag_edit == true">
+                            <i class="fa fa-times"></i>
+                        </a>
+                    </label>
+                    <label class="control-label text-xs text-muted " style = "font-style: italic;">(More Details about Work Request)</label>
+                    <div>
+                        <textarea class="form-control input-sm" rows="3" ng-model="repair_request.description"
+                                style="resize:none" ng-disabled="desc_flag_edit == false"></textarea>
+                    </div>
+                </div>    
+                <div class="col-sm-6">
+                    <label class="control-label text-xs text-muted">Asset<i class="text-danger">*</i></label>
+                    <div class="scrollable-dropdown-menu">
+                        <input class="form-control input-sm col-sm-11" type="text" ng-model="repair_request.equipment_name"
+                                popover-trigger="mouseenter" placeholder="Enter Asset Name, ID or Location"
+                                uib-typeahead="group.name for group in equipment_list | filter:$viewValue | limitTo:10"
+                                typeahead-min-length="0"
+                                typeahead-on-select="onEquipmentSelect(repair_request, $item, $model, $label)"
+                                typeahead-template-url="equipmentTypeahead.html">
+
+                    </div>
+                </div>  
+                <div class="col-sm-6">
+                    <label class="control-label text-xs text-muted">Asset ID</label>
+                    <div>
+                        <input type="text" ng-model="repair_request.equip_id" class="form-control input-sm" disabled>
+                    </div>
+                </div>                 
+            
+                <div class="col-sm-6">
+                    <label class="control-label text-xs text-muted">Location</label>
+                    <div class="scrollable-dropdown-menu">
+                        <input type="text" ng-model="repair_request.location_name" class="form-control input-sm" placeholder="Enter location name"
+                            uib-popover="Enter location name" popover-trigger="mouseenter"
+                            uib-typeahead="item.name for item in location_list | filter:$viewValue | limitTo:10"
+                            typeahead-min-length="0"
+                            typeahead-editable="false"
+                            typeahead-template-url="locationTypeahead.html"
+                            typeahead-on-select="onLocationSelect($item, $model, $label)">
+                    </div>
+                </div>    
+                <div class="col-sm-6">
+                    <label class="control-label text-xs text-muted">Location Type</label>
+                    <div>
+                        <input type="text" ng-model="repair_request.location_type" class="form-control input-sm" disabled>
+                    </div>
+                </div>  
+            </div>    
+
+            <div class="form-group">
+                <div class="col-sm-6">
+                    <label class="control-label text-xs text-muted">Category</label>
+                    <div class="row">
+                        <div class="col-sm-10">
+                            <select  class='form-control' ng-change = "selectMainCategory()" ng-model="repair_request.category"
+                                        ng-options="type.id as type.category_name for type in category_list">
+                            </select>
+                        </div>
+
+                        <div class="col-sm-2">
+                            <i class="fa fa-plus-circle fa-2x text-info" style="cursor: pointer" title="Create Category" ng-click="createCategory()"  role="button" tabindex="0" aria-hidden="false"></i>
+                        </div>
+                    </div>
+                </div>    
+
+                <div class="col-sm-6" ng-show="repair_request.category != undefined">
+                    <label class="control-label text-xs text-muted">Sub Category</label>
+                    <div class="row">
+                        <div class="col-sm-10">
+                            <select  class='form-control' ng-model="repair_request.sub_category"
+                                ng-options="type.id as type.subcategory_name for type in subcategory_list">
+                            </select>
+                        </div>
+
+                        <div class="col-sm-2">
+                             <i class="fa fa-plus-circle fa-2x text-danger" style="cursor: pointer" title="Create Sub Category" ng-click="createSubCategory()"  role="button" tabindex="0" aria-hidden="false"></i>
+                        </div>
+                    </div>
+                </div>    
+            </div>
+
+            <div class="form-group">
+                   
+
+                <div class="col-sm-6">
+                    <label class="control-label text-xs text-muted">Schedule Date</label>
+                    <div>
+                        <a class="dropdown-toggle" id="dropdown4" role="button" data-toggle="dropdown" data-target="#">
+                            <div class="input-group">
+                                <input type="text" class="form-control" ng-model="repair_request.schedule_date"/>
+                                <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                            </div>
+                        </a>
+                        <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+                            <datetimepicker ng-model="datetime.schedule_date"
+                                            data-datetimepicker-config="{ dropdownSelector: '#dropdown2' }"
+                                            data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+                        </ul>
+                    </div>
+                </div>    
+                <div class="col-sm-6">
+                    <label class="control-label text-xs text-muted">Status</label>
+                    <div>         
+                        <select class="form-control input-sm" ng-model="repair_request.status_name" ng-change="onStatusChanged()"
+                            ng-options="value for value in repair_request_status" ng-disabled="view_property">		
+                        </select>
+                    </div>
+                </div>    
+
+                <div class="col-sm-6">
+                    <label class="control-label text-xs text-muted">{{repair_request.supplier_flag ? 'Supplier' : 'Assignee'}} </label>
+                    <div class="scrollable-dropdown-menu" ng-hide="repair_request.supplier_flag">                        
+                        <tags-input ng-model="repair_request.staff_groups" display-property="name" key-property="id" style="margin-top: -7px"
+                                    placeholder="Add Staff/Group"
+                                    on-tag-added="onStaffChanged()" on-tag-removed="onStaffChanged()"
+                                    replace-spaces-with-dashes="false"  >
+                            <auto-complete source="staffGroupTagFilter($query)"
+                                            min-length="0"
+                                            load-on-focus="true"
+                                            load-on-empty="true"
+                                            debounce-delay="0"
+                                            max-results="10"
+                                            template="staff-group-template">
+                            </auto-complete>
+                        </tags-input>    
+                    </div>
+                    <div class="scrollable-dropdown-menu" ng-show="repair_request.supplier_flag">
+                        <input class="form-control" type="text" ng-model="repair_request.supplier"
+                            uib-typeahead="item.supplier for item in supplier_list | filter:$viewValue | limitTo:10"
+                            typeahead-min-length="0"
+                            typeahead-editable="false"
+                            typeahead-on-select="onSelectSupplier(item, $item, $model, $label)"
+                            ng-required="repair_request.supplier_flag && repair_request.status_name != 'Rejected'"
+                            />
+                    </div>
+                    <label class="md-check" style="margin-top: 5px">
+                        <input type="checkbox"
+                            ng-model="repair_request.supplier_flag ">
+                        <i class="blue" style="margin-right: 20px"></i>
+                        External Supplier
+                    </label>
+                </div>  
+                <div class="col-sm-6">
+                        <label class="control-label text-xs text-muted" >Estimated Time</label>
+                        <div >
+                            <input type="text" ng-model="repair_request.estimated_duration" class="form-control input-sm">
+                        </div>
+                </div>
+
+                <div class="col-sm-12" ng-show="repair_request.status_name == 'Rejected'">
+                    <label class="control-label text-xs text-muted">Reason</label>
+                    <div>
+                        <textarea class="form-control input-sm" rows="3" ng-model="repair_request.reject_reason"
+                                style="resize:none" maxlength="160"
+                                ng-required="repair_request.status_name == 'Rejected'"
+                                >
+                        </textarea>
+                    </div>
+                </div>     
+                <div class="col-sm-12" ng-show="repair_request.status_name == 'Completed'">
+                    <label class="control-label text-xs text-muted">Comment</label>
+                    <div>
+                        <textarea class="form-control input-sm" rows="3" ng-model="repair_request.complete_comment"
+                                style="resize:none" maxlength="160"
+                                ng-required="repair_request.status_name == 'Completed'"
+                                >
+                        </textarea>
+                    </div>
+                </div>               
+            </div>
+         
+            <div class="form-group">
+                <div class="col-sm-2">
+                    <label class="control-label text-xs text-muted">Attach</label>
+                    <button class="btn btn-dark btn-xs" ng-show="1" ng-if="repair_request.old_files.length + repair_request.files.length < 5" ngf-select="uploadFiles($files)" multiple ngf-max-files="{{5 - repair_request.old_files.length - repair_request.files.length}}" ngf-max-size="10MB"
+                            ngf-accept="'image/*,application/pdf,application/docx'" ngf-pattern="'image/*,application/pdf,application/docx'">
+                        <span class="text-success font-bold"><i class="fa fa-folder-open"></i>&nbsp;Add file</span>
+                    </button>
+                    <small class="text-muted">(png,jpg,docx,pdf : < 10MB)</small>
+                </div>
+
+                <div class="col-sm-2 text-xs text-center" ng-repeat="row in repair_request.old_files track by $index">
+                    <a href="/{{row}}">
+                        <img style = "max-width:85%; width: auto; height: 50px;object-fit: cover;" ng-src="/{{row}}" alt="/{{row}}"> 
+                    </a>
+                    <span class="glyphicon icon-close" style="margin-top:3px; color: red"
+                            ng-click="removeOldFile($index)"></span>   
+                </div>
+            
+                <div class = "col-sm-2 text-xs text-center" ng-repeat=" (key,f) in repair_request.files" style="margin-bottom: 5px">
+                    <img style = "max-width:85%; width: auto; height: 50px;object-fit: cover;"  ng-src = "{{repair_request.thumbnails[key]}}" alt = "{{f.name}}" >
+                    <span class="glyphicon icon-close" style="margin-top:3px; color: red"
+                            ng-click="removeFile($index)"></span>
+                </div>
+            </div>
+
+            <div class="form-group" ng-hide="repair_request.status_name == 'Closed'">
+                <div class="col-sm-12"> 
+                    <div class="input-group">
+                        <input type="text"  ng-model="repair_request.comment" 
+                            class="form-control input-sm" placeholder="Input your comment here">
+                        <span class="input-group-btn">
+                            <button class="btn btn-sm m-b-xs w-xs btn-dark font-bold" type="button" ng-click="commitComment(repair_request.comment)">
+                                <span	class="text-info"><i class="fa fa-send-o" aria-hidden="true"></i>&nbsp;Post</span>
+                            </button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- - - - - - COMMENTS - - - - - -->
+            <uib-accordion close-others="false" ng-hide="repair_request.status_name == 'Closed'">
+                <div uib-accordion-group class="panel-default" ng-show="comment_list.length > 0" is-open="complaint_comment_is_open" style="margin-bottom: 10px">
+                    <uib-accordion-heading>
+                        <i class="fa fa-comment"></i>&nbsp;&nbsp;Comments
+                        <i class="pull-right glyphicon"
+                            ng-class="{'glyphicon-chevron-down': complaint_comment_is_open, 'glyphicon-chevron-right': !complaint_comment_is_open}"></i>
+                    </uib-accordion-heading>
+                            
+                    <div class="m-b b-l m-l-md streamline" disable-all="disable_all">
+                        <div ng-repeat="row in comment_list" style="margin-bottom: 15px">
+                            <object class="pull-left thumb-sm avatar m-l-n-md" data="/frontpage/img/default_photo.png" style="padding-left: 0px" type="image/png">
+                                <img src="{{::row.picture}}" width="30" height="30">
+                            </object>          
+                            <div class="m-l-lg panel b-a">
+                                <div class="panel-heading pos-rlt b-b b-light" style="background-color: #fff; border-bottom: 1px solid #dee5e7">
+                                    <span class="arrow left"></span>
+                                    <a href="">{{::row.wholename}}</a>
+                                    <label class="label bg-primary m-l-xs">{{::row.job_role}}</label> 
+                                    <span class="text-muted text-sm m-l-sm pull-right">
+                                        <i class="fa fa-clock-o"></i>
+                                        {{::row.time}}
+                                    </span>
+                                </div>
+                                <div class="panel-body">
+                                    <div ng-bind-html="row.comment"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </uib-accordion>
+                
+        </div>
+
+         <div class="modal-footer ">
+            <label ng-hide = "repair_request.status_name == 'Pre-Approved' || repair_request.workorder_id > 0" class="md-check" style="margin-right: 20px">
+                <input type="checkbox"
+                    ng-model="create_work_order ">
+                <i class="blue" style="margin-right: 20px"></i>
+                Create Work Order
+            </label>
+            <button type="submit" class="btn btn-info btn-sm w-xs {{isLoadingUpdate == true ? 'disabled' : ''}}" data-dismiss="modal">
+                <span class="glyphicon glyphicon-ok"></span>
+                <b> {{isLoadingUpdate == true ? 'Loading' : 'Save'}}</b>
+            </button>
+            <button type="button" class="btn btn-default btn-sm w-xs {{isLoadingUpdate == true ? 'disabled' : ''}}" data-dismiss="modal" ng-click="cancel()">
+                <span class="glyphicon glyphicon-remove"></span>
+                <b> Cancel</b>
+            </button>
+        </div>
+    </div>
+</form>

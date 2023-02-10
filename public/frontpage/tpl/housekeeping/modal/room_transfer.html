@@ -1,0 +1,163 @@
+<div class="modal-content">
+    <style>
+       
+    </style>
+
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">
+            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        </button>
+        <h3 class="modal-title" style="color:#2691d9" id="Heading">Room Transfer</h3>
+    </div>
+    <br>
+    <div class="modal-body">
+        <div class="row">        
+            <form class="col-sm-6">
+                <div class="row">
+                    <label class="col-sm-3 text-right control-label text-muted" >Old Device:</label>
+                    <div class="col-sm-6">
+                        <input ng-model="old_device.name" class="form-control  input-sm"
+                                ng-focus="onFocus($event)" empty-typeahead
+                                uib-typeahead="item.name for item in device_list | filter:$viewValue:stateComparator"
+                                typeahead-min-length="0"
+                                typeahead-on-select="onOldDeviceSelect($item, $model, $label)"
+                                required/>
+
+                    </div>
+                    <div class="col-sm-3">
+                        <button type="button" class="btn btn-info btn-sm" data-dismiss="modal" ng-click="onMove()">                            
+                            <b>&nbsp;&nbsp;&nbsp;Move&nbsp;&nbsp;&nbsp;</b>
+                            <span class="fa fa-angle-right"></span>
+                        </button>
+                    </div>
+                </div>
+
+                <div fill-height additional-padding="360"  debounce-wait="300" style="margin-top: 10px">                                    
+                    <table st-table="assigned_list" st-pipe="creditTotal" class="table-condensed ticket table-striped b-t b-light" style="width:100%; margin:auto">
+                        <thead class="tblhead-sm" style="font-size: .7vw">
+                            <tr>
+                                <th class="text-center" width="10%">
+                                    <input type="checkbox" ng-model="total_selected" ng-change="onSelectTotalRoom()"/>
+                                </th>
+                                <th class="text-center" width="10%">
+                                    <b>Room</b>
+                                </th>
+                                <th class="text-center" width="10%">
+                                    <b>Floor</b>
+                                </th>
+                                <th class="text-center" width="10%">
+                                    <b>Type</b>
+                                </th>
+                                <th class="text-center" width="10%">
+                                    <b>Status</b>
+                                </th>
+                                <th class="text-center" width="10%">
+                                    <b>Occupancy</b>
+                                </th>                                    
+                            </tr>
+                        </thead>
+            
+                        <tbody>
+                            <tr ng-repeat="item in old_room_list"  class="drag_table table ticket table-striped b-t b-light" style="width:100%;" 
+                                    ng-class="{'selected': item.selected}" ng-click="item.selected = !item.selected">
+                                <td class="text-center" width="10%">
+                                    <input type="checkbox" ng-model="item.selected"/>
+                                </td>
+                                <td class="text-center" width="10%">
+                                    <span class="text-sm">{{::item.room}}</span>
+                                </td>
+                                <td class="text-center" width="5%">
+                                    <span class="text-sm">{{::item.floor}}</span>
+                                </td>
+                                <td class="text-center" width="20%">
+                                    <span class="text-sm">{{::item.room_type}}</span>
+                                </td>
+                                <td class="text-center" width="20%">
+                                    <span class="text-sm">{{::item.room_status}}</span>
+                                </td>
+                                <td class="text-center" width="20%">
+                                    <span class="text-sm">{{::item.occupancy}}</span>
+                                </td>                                    
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                
+            </form>
+            <form class="col-sm-6">
+                <div class="row">
+                    <label class="col-sm-3 text-right control-label text-muted" >New Device:</label>
+                    <div class="col-sm-9">
+                        <input ng-model="new_device.name" class="form-control  input-sm"
+                                ng-focus="onFocus($event)" empty-typeahead
+                                uib-typeahead="item.name for item in newdevice_list | filter:$viewValue:stateComparator"
+                                typeahead-min-length="0"
+                                typeahead-on-select="onNewDeviceSelect($item, $model, $label)"
+                                required/>
+                    </div>
+                </div>    
+
+                <div fill-height additional-padding="360"  debounce-wait="300" style="margin-top: 10px">                                                            
+                    <table st-table="assigned_list" st-pipe="creditTotal" class="table-condensed ticket table-striped b-t b-light" style="width:100%; margin:auto">
+                        <thead class="tblhead-sm" style="font-size: .7vw">
+                            <tr>
+                                <th class="text-center" width="10%">
+                                    <b>Room</b>
+                                </th>
+                                <th class="text-center" width="10%">
+                                    <b>Floor</b>
+                                </th>
+                                <th class="text-center" width="10%">
+                                    <b>Type</b>
+                                </th>
+                                <th class="text-center" width="10%">
+                                    <b>Status</b>
+                                </th>
+                                <th class="text-center" width="10%">
+                                    <b>Occupancy</b>
+                                </th>                                    
+                            </tr>
+                        </thead>
+            
+                        <tbody>
+                            <tr ng-repeat="item in new_room_list"  class="drag_table table ticket table-striped b-t b-light" style="width:100%;" 
+                                    ng-class="{'selected': item.selected}">
+                                <td class="text-center" width="10%">
+                                    <span class="text-sm">{{::item.room}}</span>
+                                </td>
+                                <td class="text-center" width="5%">
+                                    <span class="text-sm">{{::item.floor}}</span>
+                                </td>
+                                <td class="text-center" width="20%">
+                                    <span class="text-sm">{{::item.room_type}}</span>
+                                </td>
+                                <td class="text-center" width="20%">
+                                    <span class="text-sm">{{::item.room_status}}</span>
+                                </td>
+                                <td class="text-center" width="20%">
+                                    <span class="text-sm">{{::item.occupancy}}</span>
+                                </td>                                    
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+            </form>
+        </div>    
+    </div>
+
+    <div class="modal-footer ">
+         <button type="button" class="btn btn-success btn-sm" data-dismiss="modal" ng-click="onTransferRoom()">
+            <span class="fa fa-check"></span>
+            <b>Confirm</b>
+        </button>
+
+        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal" ng-click="cancel()">
+            <span class="glyphicon glyphicon-remove"></span>
+            <b> Cancel</b>
+        </button>
+    </div>
+
+</div>
+

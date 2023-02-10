@@ -1,0 +1,563 @@
+
+	<!--
+	 <script type="text/ng-template" id="datetime_ranger.html">
+	   <div style="width: 700px">
+		 <div rg-range-picker="myDatetimeRange" labels="myDatetimeLabels">
+		   </div>
+	   </div>
+	 </script>
+   -->
+   <div class="wrapper-md" >
+   <div>
+	 
+	   <div>
+		   <center>                          
+			   <span class="m-b-xs font-bold" style="text-align: center"><font size="+1">HOTWORK PERMIT FORM</font></span>	
+		   </center>
+	   </div>
+   
+	   <!- - - - - - - - - - - - - - REQUESTING PARTY DETAILS - - - - - - - - - - - - - - - - - - >
+   
+	   <div class="panel panel-default" style="border-radius: 5px">
+
+	
+			<div class="panel-heading" style="color: white; background-color:#3c6f9c">
+				<div class="pull-left">
+					<label class="font-bold text-sm"><i class="fa fa-user-circle-o text-default"></i>&nbsp;&nbsp;REQUESTING PARTY DETAILS</label>
+				</div><br>
+			</div>
+			<div class="panel-body" style="padding: 5px 0px">
+				<div class="col-sm-6">
+					<label class="control-label text-xs">Company/Tenant Company<i class="text-danger">*</i></label>
+					<div>
+						<input class='form-control input-sm' ng-model = "request_company" type="text">
+					</div>
+				</div>
+				<div class="col-sm-3">
+					<label class="control-label text-xs">Permit Number<i class="text-danger">*</i></label>
+					<div>
+						<input class='form-control input-sm' ng-model = "request_permit" type="text">
+					</div>
+				</div>
+				<div class="col-sm-3">
+					<label class="control-label text-xs">Location<i class="text-danger">*</i></label>
+					<div>
+						<input class='form-control input-sm' ng-model = "request_location" type="text">
+					</div>
+				</div>
+			</div>
+		</div>
+	
+		<!- - - - - - - - - - - - RISK ASSESSMENT AND AUTHORIZATION - - - - - - - - - - - ->
+	
+		<div class="panel panel-default col-sm-12" style="border-radius: 4px; padding:0px;">
+			<div class="panel-heading" style="color: white; background-color:#3c6f9c">
+				<div class="pull-left">
+					<label class="font-bold text-sm"><i class="fa fa-user-circle-o text-default"></i>&nbsp;&nbsp;RISK ASSESSMENT AND AUTHORIZATION</label>
+				</div><br>
+			</div>
+			<div class="panel-body" style="padding: 5px 0px">
+				<form class="form-horizontal form-validation">
+					<label class="control-label text-xs font-bold" style="margin-left: 15px">Work Method Assessment(If yes,please tick):</label><br><br>
+						<div class="col-sm-12">
+							<label class="md-check" style="margin-left: 5px">Have less hazardous methods been considered?&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+								<input type="checkbox"  ng-model = "less_hazard"> <i class="blue"></i>
+							</label><br>
+							<div class = "col-sm-12" ng-show = "!less_hazard">
+								<label class="control-label text-xs">Why are less hazardous methods not being applied?<i class="text-danger">*</i></label>
+								<div>
+									<input class='form-control input-sm' ng-model="hzrd_desc" type="text">
+								</div>
+							</div><br>
+							<br>
+						</div><br>
+					<br>
+					<div class="line line-dashed b-b"></div>
+					<label class="control-label text-xs font-bold" style="margin-left: 15px">Project specific work method statement:</label><br><br>
+						<div class="col-sm-12">
+							<label class="md-check">Will a project specific method statement be used and copy attached?&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+								<input type="checkbox"  ng-model = "project"> <i class="blue"></i>
+							</label><br>
+						</div><br>
+					<br>
+					<div class="line line-dashed b-b"></div> 
+					<label class="control-label text-xs font-bold" style="margin-left: 15px">Work By:</label><br><br>
+						
+						<div class="col-sm-6">
+							<label class="md-check " style="margin-top:10px;margin-right: 30px">
+								<input type="checkbox" ng-model = "in_house"><i class="blue"></i>In-House Staff
+							</label>
+							<label class="md-check" style="margin-top:10px;margin-right: 30px">
+								<input type="checkbox"  ng-model = "contractor"><i class="blue"></i>Contractor  
+							</label><br>
+						</div>
+						<div class = "col-sm-6" ng-show = "contractor">
+							<label class="control-label text-xs"  style="margin-left: 15px">Name<i class="text-danger">*</i></label>
+								<div class="col-sm-12">
+									<input class='form-control input-sm' ng-model = "cont_name" type="text">
+								</div>
+						</div><br><br>
+						<br><br>
+						 <div class="col-sm-12">   
+							<label class="md-check">Supervisor and Workers qualification verified?&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+								<input type="checkbox" ng-model = "verify" > <i class="blue"></i>
+							</label><br>
+						</div><br> 
+					<br><br>
+					<div class="line line-dashed b-b"></div> 
+					<label class="control-label text-xs font-bold" style="margin-left: 15px">Work area risk assessment (If Yes,please tick):</label><br><br>
+					<div class="col-sm-6">
+						<label class="control-label text-xs">Completed By<i class="text-danger">*</i></label>
+						<div>
+							<input class='form-control input-sm' ng-model = "completed_by" type="text">
+						</div>
+					</div>
+					<div class="col-sm-6">
+						<label class="control-label text-xs">Position<i class="text-danger">*</i></label>
+						<div>
+							<input class='form-control input-sm' ng-model = "position" type="text">
+						</div>
+					</div><br>
+					<br><br><br><br>
+					
+					<label class="md-check"><b>a.</b>&nbsp;&nbsp;Work area is not a "hot work permitted" area?&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						<input type="checkbox" ng-model = "permit_area"> <i class="blue"></i>
+					</label><br><br>
+					<label class="md-check"><b>b.</b>&nbsp;&nbsp;Automatic sprinkler fully operational?&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						<input type="checkbox" ng-model = "sprinkler"> <i class="blue"></i>
+					</label><br><br>
+					<label class="md-check"><b>c.</b>&nbsp;&nbsp;Hot work equipment is functional,secure and in good repair?&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						<input type="checkbox" ng-model = "equipment" > <i class="blue"></i>
+					</label><br><br>
+					<label class="md-check"><b>d.</b>&nbsp;&nbsp;Within 10m (35ft) of the work area:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					</label><br><br>
+					<label class="md-check" style="margin-left: 15px"><b>1)</b>&nbsp;&nbsp;Flammable liquids removed?&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						<input type="checkbox" ng-model = "flammable"> <i class="blue"></i>
+					</label><br><br>
+					<label class="md-check" style="margin-left: 15px"><b>2)</b>&nbsp;&nbsp;Combustible materials removed or covered with fire resisting materials?&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						<input type="checkbox" ng-model = "combustible"> <i class="blue"></i>
+					</label><br><br>
+					<label class="md-check" style="margin-left: 15px"><b>3)</b>&nbsp;&nbsp;Floors swept and overhead structure clean from dust,lint and debris?&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						<input type="checkbox"ng-model = "cleaning" > <i class="blue"></i>
+					</label><br><br>
+					<label class="md-check" style="margin-left: 15px"><b>4)</b>&nbsp;&nbsp;Floor and wall openings protected against spread of sparks and embers?&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						<input type="checkbox" ng-model = "floor_protect" > <i class="blue"></i>
+					</label><br><br>
+					<label class="md-check"><b>e.</b>&nbsp;&nbsp;Does work involve enclosed equipment?&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						<input type="checkbox" ng-model = "enclose" > <i class="blue"></i>
+					</label><br><br>
+					<label class="md-check" style="margin-left: 15px"><b>1)</b>&nbsp;&nbsp;Adequate ventilation provided?&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						<input type="checkbox" ng-model = "ventilation" > <i class="blue"></i>
+					</label><br><br>
+					<label class="md-check" style="margin-left: 15px"><b>2)</b>&nbsp;&nbsp;Thoroughly cleaned to remove all flammables and combustibles?&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						<input type="checkbox" ng-model = "clean_flame"> <i class="blue"></i>
+					</label><br><br>
+					<label class="md-check" style="margin-left: 15px"><b>3)</b>&nbsp;&nbsp;Flammable vapours purged?&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						<input type="checkbox" ng-model = "vapours" > <i class="blue"></i>
+					</label><br><br>
+					<label class="md-check" style="margin-left: 15px"><b>4)</b>&nbsp;&nbsp;Purging and ventilation verified with gas detector?&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						<input type="checkbox" ng-model = "detector"> <i class="blue"></i>
+					</label><br><br>
+					<label class="md-check"><b>f.</b>&nbsp;&nbsp;Fire watch (provided during and after hot work):&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					</label><br><br>
+					<div class="col-sm-6">
+						<label class="control-label text-xs" style="margin-left: 15px"><b>1)</b>&nbsp;&nbsp;Number of personnel required?<i class="text-danger">*</i></label>
+						<div class = "col-sm-12">
+							<input class='form-control input-sm' style="margin-left: 15px" ng-model = "personnel" type="number">
+						</div>
+					</div>
+					<div class="col-sm-6">
+						<label class="control-label text-xs" style="margin-left: 15px"><b>2)</b>&nbsp;&nbsp;Location of fire watch personnel:<i class="text-danger">*</i></label>
+						<div class = "col-sm-12">
+							<input class='form-control input-sm' style="margin-left: 15px" ng-model = "loc_watch" type="text">
+						</div>
+					</div><br>
+					<div class="col-sm-12">
+						<label class="control-label text-xs" style="margin-left: 15px"><b>3)</b>&nbsp;&nbsp;First aid fire fighting equipment to be provided:<i class="text-danger">*</i></label>
+						<div class = "col-sm-12">
+							<input class='form-control input-sm' style="margin-left: 15px" ng-model = "first_aid" type="text">
+						</div>
+					</div><br><br>
+					
+					<label class="control-label text-xs" style="margin-left: 30px" ><b>4)</b>&nbsp;&nbsp;Fire watch duration(minutes) after work complete:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					</label><br><br>
+					<div class="col-sm-6" style="margin-left: 30px">
+						<label class="md-check " style="margin-top:10px;margin-right: 30px">
+							<input type="checkbox"  ng-model = "thirty_min"><i class="blue"></i>30
+						</label>
+						<label class="md-check" style="margin-top:10px;margin-right: 30px">
+							<input type="checkbox" ng-model = "sixty_min"><i class="blue"></i>60 
+						</label>
+						<label class="md-check" style="margin-top:10px;margin-right: 30px">
+							<input type="checkbox" ng-model = "exceed"><i class="blue"></i>> 60 minutes
+						</label><br>
+					</div><br><br>
+					<div class="col-sm-12">
+						<label class="control-label text-xs"><b>g.</b>&nbsp;&nbsp;Additional precaution required for this job:<i class="text-danger">*</i></label>
+						<div class = "col-sm-12">
+							<input class='form-control input-sm' ng-model = "precaution" type="text">
+						</div>
+					</div><br><br>
+					<br><br>
+					<!--
+					<div class="line line-dashed b-b"></div>
+					<label class="control-label text-xs font-bold" style="margin-left: 15px">Authorization:</label><br><br>
+					<div class="col-sm-12">
+						<label class="md-check " style="margin-top:10px;margin-right: 30px">
+							<input type="checkbox" ><i class="blue"></i>Work method assessment approved
+						</label>
+						<label class="md-check" style="margin-top:10px;margin-right: 30px">
+							<input type="checkbox" ><i class="blue"></i>Work area risk assessment approved 
+						</label><br>
+					</div><br>
+					<div class="col-sm-12">
+						<label class="control-label text-xs">Work Location<i class="text-danger">*</i></label>
+						<div>
+							<input class='form-control input-sm'  type="text">
+						</div>
+					</div>
+					<div class="col-sm-12">
+						<label class="control-label text-xs">Work Description<i class="text-danger">*</i></label>
+						<div>
+							<input class='form-control input-sm'  type="text">
+						</div>
+					</div><br>
+					<label class="control-label text-xs" style="margin-left: 15px">Permit valid for work on:</label><br>
+					<div class="col-sm-6">
+						<label class="control-label text-xs">Date<i class="text-danger">*</i></label>
+						<div class = "dropdown">
+							<a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+								<div class="input-group">
+									<input type="text" class="form-control" ng-model="request_date">
+									  <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+								</div>
+							</a>
+							<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel" >
+								 <datetimepicker ng-model="requestdatepicker" data-datetimepicker-config="{ dropdownSelector: '#dropdown2'}"
+									data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+							</ul>
+						</div>
+					</div>
+					<div class="col-sm-3">
+						<label class="control-label text-xs ">Start Time<i class="text-danger">*</i></label>
+						<div class = "dropdown">
+							<a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+								<div class="input-group">
+									<input type="text" class="form-control" ng-model="start_time">
+									  <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+								</div>
+							</a>
+							<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel" >
+								 <datetimepicker ng-model="starttimepicker" data-datetimepicker-config="{ dropdownSelector: '#dropdown2'}"
+									data-before-render="beforeRender1($view, $dates, $leftDate, $upDate, $rightDate)"/>
+							</ul>
+						</div>
+					</div>
+					<div class="col-sm-3">
+						<label class="control-label text-xs ">End Time<i class="text-danger">*</i></label>
+						<div class = "dropdown">
+							<a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+								<div class="input-group">
+									<input type="text" class="form-control" ng-model="end_time">
+									  <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+								</div>
+							</a>
+							<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel" >
+								 <datetimepicker ng-model="endtimepicker" data-datetimepicker-config="{ dropdownSelector: '#dropdown2'}"
+									data-before-render="beforeRender1($view, $dates, $leftDate, $upDate, $rightDate)"/>
+							</ul>
+						</div>
+					</div><br><br>
+					<label class="control-label text-xs" style="margin-left: 15px">Specify frequency of inspections made by the Supervisor during the hot work and the fire watch:</label><br>
+					<label class="control-label text-xs" style="margin-left: 15px">Frequency: Continous</label><br><br>
+				   
+					<div class="col-sm-12" style="margin-left: 30px">
+						<label class="md-check " style="margin-top:10px;margin-right: 30px">
+							<input type="checkbox" ><i class="blue"></i>15 minutes
+						</label>
+						<label class="md-check" style="margin-top:10px;margin-right: 30px">
+							<input type="checkbox" ><i class="blue"></i>30 minutes
+						</label>
+						<label class="md-check" style="margin-top:10px;margin-right: 30px">
+							<input type="checkbox" ><i class="blue"></i>> 60 minutes
+						</label><br>
+					</div><br>                
+					<div class = "col-sm-12" style="margin-left: 30px">
+						<label class="md-check" style="margin-top:10px;margin-right: 30px">
+							<input type="checkbox" ng-model="other"> <i class="blue"></i>Other  
+						</label><br><br>
+						<div class = "col-sm-11">
+							<input  ng-show="other" class='form-control input-sm' type="text">
+						</div>
+					</div><br><br>
+					
+					<div class="col-sm-6"> 
+						<label class="control-label text-xs">Authorizer Name<i class="text-danger">*</i></label>
+						<div>
+							<input class='form-control input-sm' type="text" ng-model = "authorize_name">
+						</div>
+					</div>
+					<div class="col-sm-6"> 
+						<label class="control-label text-xs">Authorizer Signature<i class="text-danger">*</i></label>
+						<div>
+							<input class='form-control input-sm' type="text" ng-model = "authorize_name">
+						</div>
+					</div>
+					<div class="col-sm-6"> 
+						<label class="control-label text-xs">Position<i class="text-danger">*</i></label>
+						<div>
+							<input class='form-control input-sm' type="text" ng-model = "authorize_name">
+						</div>
+					</div>
+					<div class="col-sm-6">
+						<label class="control-label text-xs">Date<i class="text-danger">*</i></label>
+						<div class = "dropdown">
+							<a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+								<div class="input-group">
+									<input type="text" class="form-control" ng-model="request_date">
+									  <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+								</div>
+							</a>
+							<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel" >
+								 <datetimepicker ng-model="requestdatepicker" data-datetimepicker-config="{ dropdownSelector: '#dropdown2'}"
+									data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+							</ul>
+						</div>
+					</div>
+				-->
+				</form>
+			</div>
+		</div>
+	
+		<!- - - - - - - - - - - - WORKER ACKNOWLEDGEMENT - - - - - - - - - - - ->
+	
+		<div class="panel panel-default col-sm-12" style="border-radius: 4px; padding:0px;">
+			<div class="panel-heading" style="color: white; background-color:#3c6f9c">
+				<div class="pull-left">
+					<label class="font-bold text-sm"><i class="fa fa-user-circle-o text-default"></i>&nbsp;&nbsp;WORKER ACKNOWLEDGEMENT(completed by worker before work begins)</label>
+				</div><br>
+			</div>
+			<div class="panel-body" style="padding: 5px 0px">
+				<form class="form-horizontal form-validation">
+					<div class="col-sm-12">
+						<label class="md-check">Worker and Fire Watch been briefed on precautions and emergency procedures?&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+							<input type="checkbox" ng-model = "briefed"> <i class="blue"></i>
+						</label><br>
+					</div><br>
+					<br>
+					<div class="line line-dashed b-b"></div> 
+					<div class="col-sm-6"> 
+							<label class="control-label text-xs">Worker Name<i class="text-danger">*</i></label>
+							<div>
+								<input class='form-control input-sm' type="text" ng-model = "worker_name">
+							</div>
+						</div>
+						<!--
+						<div class="col-sm-6"> 
+							<label class="control-label text-xs">Worker Signature<i class="text-danger">*</i></label>
+							<div>
+								<input class='form-control input-sm' type="text" ng-model = "authorize_name">
+							</div>
+						</div> -->
+						<div class="col-sm-6"> 
+							<label class="control-label text-xs">Position<i class="text-danger">*</i></label>
+							<div>
+								<input class='form-control input-sm' type="text" ng-model = "worker_pos">
+							</div>
+						</div>
+						<div class="col-sm-6">
+							<label class="control-label text-xs">Date<i class="text-danger">*</i></label>
+							<div class = "dropdown">
+								<a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+									<div class="input-group">
+										<input type="text" class="form-control" ng-model="request_date">
+										  <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+									</div>
+								</a>
+								<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel" >
+									 <datetimepicker ng-model="requestdatepicker" data-datetimepicker-config="{ dropdownSelector: '#dropdown2'}"
+										data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+								</ul>
+							</div>
+						</div>
+				</form>
+			</div>
+		</div>
+	<!--
+		<!- - - - - - - - - - - - FINAL WORK AREA INSPECTION - - - - - - - - - - - ->
+	
+		<div class="panel panel-default col-sm-6" style="border-radius: 4px; padding:0px;">
+			<div class="panel-heading" style="color: white; background-color:#3c6f9c">
+				<div class="pull-left">
+					<label class="font-bold text-sm"><i class="fa fa-user-circle-o text-default"></i>&nbsp;&nbsp;FINAL WORK AREA INSPECTION (completed by supervisor at the end of fire watch)</label>
+				</div><br>
+			</div>
+			<div class="panel-body" style="padding: 5px 0px">
+				<form class="form-horizontal form-validation">
+						<div class="col-sm-6">
+								<label class="control-label text-xs">Time hot work ended<i class="text-danger">*</i></label>
+								<div class = "dropdown">
+									<a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+										<div class="input-group">
+											<input type="text" class="form-control" ng-model="request_date">
+											  <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+										</div>
+									</a>
+									<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel" >
+										 <datetimepicker ng-model="requestdatepicker" data-datetimepicker-config="{ dropdownSelector: '#dropdown2'}"
+											data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+									</ul>
+								</div>
+						</div><br>
+					<br><br>
+					<div class="line line-dashed b-b"></div> 
+					<div class="col-sm-12" style="margin-left: 30px">
+							<label class="md-check " style="margin-top:10px;margin-right: 30px">
+								<input type="checkbox" ><i class="blue"></i>All areas where sparks or heat might have spread have been inspected with no sign of fire
+							</label>
+							<label class="md-check" style="margin-top:10px;margin-right: 30px">
+								<input type="checkbox" ><i class="blue"></i>All fire alarm detectors isolated during the work have been reinstated
+							</label>
+							<label class="md-check" style="margin-top:10px;margin-right: 30px">
+								<input type="checkbox" ><i class="blue"></i>Work completed in accordance with this permit
+							</label><br>
+					</div><br><br> 
+					<br><br><br>  
+					<div class="line line-dashed b-b"></div> 
+						<div class="col-sm-6"> 
+							<label class="control-label text-xs">Supervisor Name<i class="text-danger">*</i></label>
+							<div>
+								<input class='form-control input-sm' type="text" ng-model = "authorize_name">
+							</div>
+						</div>
+						<div class="col-sm-6"> 
+							<label class="control-label text-xs">Supervisor Signature<i class="text-danger">*</i></label>
+							<div>
+								<input class='form-control input-sm' type="text" ng-model = "authorize_name">
+							</div>
+						</div>
+						<div class="col-sm-12"> 
+							<label class="control-label text-xs">Position<i class="text-danger">*</i></label>
+							<div>
+								<input class='form-control input-sm' type="text" ng-model = "authorize_name">
+							</div>
+						</div>
+						<div class="col-sm-6">
+							<label class="control-label text-xs">Date<i class="text-danger">*</i></label>
+							<div class = "dropdown">
+								<a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+									<div class="input-group">
+										<input type="text" class="form-control" ng-model="request_date">
+										  <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+									</div>
+								</a>
+								<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel" >
+									 <datetimepicker ng-model="requestdatepicker" data-datetimepicker-config="{ dropdownSelector: '#dropdown2'}"
+										data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+								</ul>
+							</div>
+						</div>
+						<div class="col-sm-6">
+								<label class="control-label text-xs">Time<i class="text-danger">*</i></label>
+								<div class = "dropdown">
+									<a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+										<div class="input-group">
+											<input type="text" class="form-control" ng-model="request_date">
+											  <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+										</div>
+									</a>
+									<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel" >
+										 <datetimepicker ng-model="requestdatepicker" data-datetimepicker-config="{ dropdownSelector: '#dropdown2'}"
+											data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+									</ul>
+								</div>
+						</div>
+				</form>
+			</div>
+		</div>
+	
+		<!- - - - - - - - - - - - PERMIT CLOSE OUT - - - - - - - - - - - ->
+	
+		<div class="panel panel-default col-sm-6" style="border-radius: 4px; padding:0px;">
+			<div class="panel-heading" style="color: white; background-color:#3c6f9c">
+				<div class="pull-left">
+					<label class="font-bold text-sm"><i class="fa fa-user-circle-o text-default"></i>&nbsp;&nbsp;PERMIT CLOSE OUT (completed by authorizer at the end of fire watch)</label>
+				</div><br>
+			</div>
+			<div class="panel-body" style="padding: 5px 0px">
+				<form class="form-horizontal form-validation">
+					<label class="control-label text-xs font-bold" style="margin-left: 15px">Permit closed based upon (please tick one):</label><br><br>
+						<div class="col-sm-12" style="margin-left: 30px">
+							<label class="md-check " style="margin-top:10px;margin-right: 30px">
+								<input type="checkbox" ><i class="blue"></i>Permit and Work completed in satisfactory manner
+							</label>
+						</div>
+						<div class="col-sm-12" style="margin-left: 30px">
+							<label class="md-check " style="margin-top:10px;margin-right: 30px">
+								<input type="checkbox" ng-model = "reason"><i class="blue"></i>Permit withdrawn due to
+							</label><br><br>
+							<div class = "col-sm-11">
+								<input  ng-show="reason" class='form-control input-sm' type="text">
+							</div><br><br>   
+						</div><br>
+					<br><br><br>
+					<div class="line line-dashed b-b"></div> 
+					<div class="col-sm-6"> 
+							<label class="control-label text-xs">Authorizer Name<i class="text-danger">*</i></label>
+							<div>
+								<input class='form-control input-sm' type="text" ng-model = "authorize_name">
+							</div>
+						</div>
+						<div class="col-sm-6"> 
+							<label class="control-label text-xs">Authorizer Signature<i class="text-danger">*</i></label>
+							<div>
+								<input class='form-control input-sm' type="text" ng-model = "authorize_name">
+							</div>
+						</div>
+						<div class="col-sm-12"> 
+							<label class="control-label text-xs">Position<i class="text-danger">*</i></label>
+							<div>
+								<input class='form-control input-sm' type="text" ng-model = "authorize_name">
+							</div>
+						</div>
+						<div class="col-sm-6">
+								<label class="control-label text-xs">Date<i class="text-danger">*</i></label>
+								<div class = "dropdown">
+									<a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+										<div class="input-group">
+											<input type="text" class="form-control" ng-model="request_date">
+											  <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+										</div>
+									</a>
+									<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel" >
+										 <datetimepicker ng-model="requestdatepicker" data-datetimepicker-config="{ dropdownSelector: '#dropdown2'}"
+											data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+									</ul>
+								</div>
+						</div>
+						<div class="col-sm-6">
+								<label class="control-label text-xs">Time<i class="text-danger">*</i></label>
+								<div class = "dropdown">
+									<a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+										<div class="input-group">
+											<input type="text" class="form-control" ng-model="request_date">
+											  <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+										</div>
+									</a>
+									<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel" >
+										 <datetimepicker ng-model="requestdatepicker" data-datetimepicker-config="{ dropdownSelector: '#dropdown2'}"
+											data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+									</ul>
+								</div>
+						</div>
+				</form>
+			</div><br><br>
+		</div><br><br><br> <br><br><br><br>-->
+   <center>
+		   <button  type="button " class="btn btn-sm btn-default" style="background-color:#3c6f9c" ng-click="submit()">
+		   <span class="text-success font-bold"><i class="fa fa-check"></i>&nbsp;Submit</span></button>
+		   <button type="button" class="btn btn-sm btn-default" style="background-color:#3c6f9c" ng-click="cancel()">
+		   <span class="text-danger font-bold"><i class="fa fa-times"></i>&nbsp;Cancel</span></button>
+   </center><br><br>
+   <br><br><br><br>
+</div>

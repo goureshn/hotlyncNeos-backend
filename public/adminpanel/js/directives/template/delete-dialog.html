@@ -1,0 +1,32 @@
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+					<span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+				</button>
+				<h3 class="modal-title" style="color:#2691d9" id="Heading">Delete {{title}}</h3>
+			</div>
+			<br>
+			<div class="modal-body">
+				<div class="alert alert-danger">
+					<span class="glyphicon glyphicon-warning-sign"></span> Are you sure you want to delete {{modelname}}?                   
+				</div>
+			</div>
+			<div class="modal-footer ">
+				<div class="modal-footer ">
+					<button type="button" class="btn btn-danger btn-sm" data-dismiss="modal" data-ng-click="deletedata()">
+						<span class="glyphicon glyphicon-ok"></span>
+						<b> Yes</b>
+					</button>
+					<button type="button" class="btn btn-default btn-sm" data-dismiss="modal">
+						<span class="glyphicon glyphicon-remove"></span>
+						<b> No</b>
+					</button>
+				</div>
+			</div>
+			<!-- /.modal-content -->                     
+		</div>
+		<!-- /.modal-dialog -->                 
+	</div>
+</div>	

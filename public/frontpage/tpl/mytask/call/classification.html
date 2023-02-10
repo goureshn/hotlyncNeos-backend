@@ -1,0 +1,244 @@
+<style>
+    .datetime .popover {
+        max-width: 650px;
+    }
+    .total_count {
+         background-color: #2c3e50;
+         margin-bottom: 0px;
+         border-radius: 6px;
+    }
+</style>
+
+<style>
+    .headfilterlist {
+    font-family: "Titillium Web";
+    font-size: 12px;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.42857143;
+    color: #212121;
+    }
+</style>
+
+<script type="text/ng-template" id="datetime_ranger.html">
+    <div style="width: 700px">
+        <div rg-range-picker="myDatetimeRange" labels="myDatetimeLabels"></div>
+    </div>
+</script>
+
+<!-- CALL TYPE -->
+
+<script type="text/ng-template" id="call_type.html">
+    <div class="btn-group" uib-dropdown is-open="status.isopen" auto-close="disabled" ng-controller="CallTypeController">
+        <ul class="headfilter" role="menu" style="list-style: none; margin-left:-50px;">
+            <li ng-repeat="type in calltypes">
+                <label class="md-check" style="margin-left: 20px">
+                <input type="checkbox" ng-model="call_filter[type]" ng-click="onChangeCallType(type)">
+                <i class="green"></i>
+                {{type}}
+                </label>
+            </li>
+        </ul>
+    </div>
+</script>
+
+<!-- CALL CLASSIFICATION -->
+<script type="text/ng-template" id="call_classify.html">
+    <div class="btn-group" uib-dropdown is-open="status.isopen" auto-close="disabled" ng-controller="ClassifyController">
+        <ul class="headfilter" role="menu" style="list-style: none; margin-left:-50px;">
+            <li ng-repeat="type in classify_filter_types">
+                <label class="md-check" style="margin-left: 20px">
+                <input type="checkbox" ng-model="classify_filter[type]" ng-click="onChangeClassify(type)">
+                <i class="green"></i>
+                {{type}}
+                </label>
+            </li>
+        </ul>
+    </div>
+</script>
+
+<!-- CALL STATUS -->
+<script type="text/ng-template" id="call_status.html">
+    <div class="btn-group" uib-dropdown is-open="status.isopen" auto-close="disabled" ng-controller="ApprovalController">
+        <ul class="headfilter" role="menu" style="list-style: none; margin-left:-50px;">
+            <li ng-repeat="state in approve_states">
+                <label class="md-check" style="margin-left: 20px">
+                <input type="checkbox" ng-model="approve_filter[state]" ng-click="onChangeApproval(state)">
+                <i class="green"></i>
+                {{state}}
+                </label>
+            </li>
+        </ul>
+    </div>
+</script>
+
+
+<script type="text/ng-template" id="classifyReasonModal.html">
+    <div ng-include="'tpl/mytask/call/classify_reason.html'"></div>
+</script>
+
+<script type="text/ng-template" id="returnReplyModal.html">
+    <div ng-include="'tpl/mytask/call/return_reply.html'"></div>
+</script>
+
+<div class="chart table-responsive"  style="{{table_container_height}}">
+    <div style="margin-left: -20px;margin-right: 40px;margin-top: -5px;">
+        <!--
+        <div>
+            <p class="pull-right">
+                <label class="md-check" style="margin-right: 20px" ng-repeat="ext in filter.extensions">
+                    <input type="checkbox" ng-model="ext.selected" ng-click="onChangeExtension(ext)">
+                    <i class="green"></i>
+                    {{ext.extension}}
+                </label>
+            </p>
+        </div>-->
+        <div class="wrapper lt" >
+            <div class="col-sm-7 col-xs-12">
+                <h1 class="m-n font-thin h3 text-black" style="color:#337ab7">
+                    <label style="font-size: 1.5vw"><i class="glyphicon glyphicon-list-alt"></i>
+                        &nbsp;&nbsp;Call Calssification
+                    </label>
+                </h1>
+            </div>
+            <div class="col-sm-5 input-group text-right">
+                <div class="btn-group">
+                    <label class="btn btn-info btn-sm" ng-model="vm.dateFilter" uib-btn-radio="'Today'">Today</label>
+                    <label class="btn  btn-info btn-sm" ng-model="vm.dateFilter" uib-btn-radio="'Weekly'">Weekly</label>
+                    <label class="btn  btn-info btn-sm" ng-model="vm.dateFilter" uib-btn-radio="'Monthly'">Monthly</label>
+                    <label class="btn  btn-info btn-sm" ng-model="vm.dateFilter" uib-btn-radio="'Yearly'">Yearly</label>
+                    <label class="btn  btn-info btn-sm" ng-model="vm.dateFilter" uib-btn-radio="'Custom Days'">Custom Days</label>
+                </div>
+                <input style="width: 200px; margin-left: 10px" ng-disabled="vm.dateFilter != 'Custom Days'"
+                       ng-model="daterange" ui-jq="daterangepicker" ui-options="dateRangeOption" class="form-control pull-right input-sm">
+            </div>
+        </div>
+        <!----------------------------------------------------------------------->
+        <div class="row col-md-12 text-center wrapper" style="overflow-y: hidden; padding-left: 25px">
+            <div class="col-md-2">
+                <a href class="block panel padder-v item card bg-dark total_count"  ng-click="onFilter('Unmarked')">
+                    <span class="text-success font-thin h3 block ">{{subcount.unmarked}}</span>  <!-- Dummy Need to have Actual count -->
+                    <span class="text-muted text-xs">Unmarked</span>
+                </a>
+            </div>
+            <div class="col-md-2">
+                <a href class="block panel padder-v item card bg-dark total_count"  ng-click="onFilter('Rejected')">
+                    <span class="text-danger font-thin h3 block">{{subcount.rejected}}</span> <!-- Dummy Need to have Actual count -->
+                    <span class="text-muted text-xs">Rejected</span>
+                </a>
+            </div>
+            <div class="col-md-2">
+                <a href class="block panel padder-v item card bg-dark total_count"  ng-click="onFilter('Awaiting')">
+                    <span class="font-thin h3 block" style="color: #FF9800">{{subcount.awaiting}}</span> <!-- Dummy Need to have Actual count -->
+                    <span class="text-muted text-xs">Awaiting</span>
+                </a>
+            </div>
+            <div class="col-md-2">
+                <a href class="block panel padder-v item card bg-dark total_count"   ng-click="onFilter('Approved')" >
+                    <span class="text-warning font-thin h3 block">{{subcount.approved}}</span> <!-- Dummy Need to have Actual count -->
+                    <span class="text-muted text-xs">Approved</span>
+                </a>
+            </div>
+            <div class="col-md-2">
+                <a href class="block panel padder-v item card bg-dark total_count"  ng-click="onFilter('Personal')" >
+                    <span class="font-thin h3 block" style="color: #FFA726">{{subcount.personal}}</span> <!-- Dummy Need to have Actual count -->
+                    <span class="text-muted text-xs">Personal</span>
+                </a>
+            </div>
+            <div class="col-md-2">
+                <a href class="block panel padder-v item card bg-dark total_count"  ng-click="onFilter('Business')">
+                    <span class="text-info font-thin h3 block">{{subcount.business}}</span> <!-- Dummy Need to have Actual count -->
+                    <span class="text-muted text-xs">Business</span>
+                </a>
+            </div>
+        </div>
+        <!------------------------------------------------------------------------>
+        <div class="btn-group pull-right" style="margin-right: 80px" uib-dropdown>
+            <button type="button" class="btn" style="background-color: #FF9800; color: #fff;" ng-click="sendApproval()">Classify</button>
+        <!--<button type="button" class="btn btn-info dropdown-toggle" uib-dropdown-toggle>
+                <span class="caret"></span>
+            </button> 
+            <ul class="dropdown-menu" role="menu">
+                <li ng-click="sendFinance()"><a href>Send to Finance</a></li>
+            </ul> -->
+        </div>
+    </div>
+
+    <table  st-table="datalist"  st-pipe="getDataList" style="width:96%" class="table ticket table-striped b-t b-light" >
+        <thead style="text-align:center;">
+            
+            <tr class="color-header" >
+                <th style="width:10px"><input type="checkbox" ng-model="filter.total_selected" ng-click="onChangeTotalSelected()"></th>
+                <th style="text-align:center">
+                    <a st-sort="call_date" st-sort-default="reverse" >&nbsp;&nbsp;Date&nbsp;</a>&nbsp;<b class="fa fa-fw fa-filter" uib-popover-template="'datetime_ranger.html'" popover-trigger="outsideClick"
+                            popover-placement="bottom"></b>
+                </th>
+                <th><b>Time&nbsp;</b></th>
+                <th><b>Phone #&nbsp;</b></th>
+                <th><b>Duration&nbsp;</b></th>
+                <th>
+                    <a st-sort="call_type">&nbsp;&nbsp;Call Type&nbsp;</a>&nbsp;<b class="fa fa-fw fa-filter" uib-popover-template="'call_type.html'" popover-trigger="outsideClick"
+                            popover-placement="bottom"></b>
+                </th>
+                <th><b>Cost&nbsp;</b></th>
+                <th>
+                    <a st-sort="call_date">&nbsp;&nbsp;Classification&nbsp;</a>&nbsp;<b class="fa fa-fw fa-filter" uib-popover-template="'call_classify.html'" popover-trigger="outsideClick"
+                            popover-placement="bottom"></b>
+                </th>
+                <th>
+                    <a st-sort="call_date">&nbsp;&nbsp;Status&nbsp;</a>&nbsp;<b class="fa fa-fw fa-filter" uib-popover-template="'call_status.html'" popover-trigger="outsideClick"
+                            popover-placement="bottom"></b>
+                </th>
+                <th><b>Extension</b></th>
+                <th style="text-align:center; width:300px"><b>Comment</b></th>
+            </tr>
+            <tr>
+            </tr>
+        </thead>
+        <tbody ng-hide="isLoading">
+        <tr class="" ng-repeat="row in datalist">
+            <th><input type="checkbox"  ng-model="row.selected" ng-click="onChangeSelected()"></th>
+            <td style="text-align:center; white-space: nowrap;">{{row.call_date | mydate}}</td>
+            <td>{{row.start_time}}</td>
+            <td>{{row.called_no}}</td>
+            <td>{{getDurationInMinute(row.duration)}}</td>
+            <td>{{row.call_type}}</td>
+            <td>{{row.carrier_charges | number:2}}</td>
+            <td ng-show="row.classify != 'Unclassified'">
+                {{row.classify}}
+            </td>
+            <td ng-show="row.classify == 'Unclassified'">
+                <select class='input-sm' ng-model="row.classify_temp" ng-change="onChangeClassify(row)"
+                        ng-options="type for type in classify_types">
+                </select>
+            </td>
+            <td ng-click="onClickApproval(row)">{{row.approval_temp}}</td>
+            <td>{{row.extension}}</td>
+            <td style="width:300px">{{row.comment}}</td>
+        </tr>
+        </tbody>
+        <tbody ng-show="isLoading">
+        <tr>
+            <td colspan="10" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+        </tr>
+        </tbody>
+        <tfoot ng-hide="isLoading">
+        <tr ng-show="paginationOptions.totalItems > paginationOptions.pageSize">
+            <td colspan="10" class="text-center">
+                <div st-pagination="" st-items-by-page="paginationOptions.pageSize" st-displayed-pages="7" class="no-margin"></div>
+            </td>
+        </tr>
+        </tfoot>
+    </table>
+
+</div>
+<!--<div style="background-color: green; height: auto">
+    <div class="btn-group pull-right" style="margin-right: 20px" uib-dropdown>
+        <button type="button" class="btn btn-info" ng-click="sendApproval()">Send For Approval</button>
+        <button type="button" class="btn btn-info dropdown-toggle" uib-dropdown-toggle>
+            <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" role="menu">
+            <li ng-click="sendFinance()"><a href>Send to Finance</a></li>
+        </ul>
+    </div>
+</div> -->

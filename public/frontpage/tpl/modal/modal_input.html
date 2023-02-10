@@ -1,0 +1,16 @@
+<div class="modal-body wrapper-lg">
+    <div class="row">
+        <div class="col-sm-12 b-r">
+            <h3 class="m-t-none m-b font-thin">{{title}}</h3>
+            <form role="form" ng-submit="save()">
+                <div class="form-group">
+                    <textarea class="form-control input-sm" rows="4" ng-model="data.comment" minlength="{{min_length}}" required style="resize:none"></textarea>
+                </div>
+                <div class="checkbox m-t-lg pull-right ">
+                    <button type="submit" class="btn btn-sm btn-primary text-uc m-t-n-xs"><strong>&nbsp;&nbsp;&nbsp;Save&nbsp;&nbsp;&nbsp;</strong></button>
+                    <button type="button" class="btn btn-sm btn-default text-uc m-t-n-xs" ng-click="cancel()"><strong>&nbsp;&nbsp;Cancel&nbsp;&nbsp;</strong></button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

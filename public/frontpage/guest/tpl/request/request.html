@@ -1,0 +1,225 @@
+<style>
+    .pro_discnt span {
+        position:    relative;
+        top:         50px;
+        bottom:      20px;
+        font-family: 'Titillium Web';
+        font-weight: bold;
+        font-size:   150%;
+        color:       #fff;
+        padding:     0px 20px;
+        width:       40%;
+        line-height: 100%;
+        background:  rgb(255, 145, 25);
+        background:  rgba(255, 145, 25, 0.7);
+    }
+    .pro_price span {
+        position: relative;
+        font-family: 'Titillium Web';
+        font-weight: bold;
+        font-size:   150%;
+        color:       #fff;
+        padding:     0px  70px;
+        width:       40%;
+        line-height: 150%;
+        background:  rgb(255, 145, 25);
+        background:  rgba(255, 145, 25, 0.9);
+    }
+    .first_foot {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 1005;
+        background:#2e3344;
+    }
+
+</style>
+
+<div  ng-controller="RequestController" >
+    <div class="col-sm-12"  style="background:#f2f2f2;margin: auto">
+        <ul class="nav navbar-nav navbar-right" >
+            <li>
+                <a href   popover-trigger="outsideClick" popover-is-open="header.isopen" popover-placement="bottom-right" ng-click="onShowBasketList()">
+                    <i class="fa fa-shopping-basket"></i>
+                    <span  class="badge badge-sm up bg-danger pull-right-xs" >{{basket_count}}</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+    <div class="col-sm-12 col-md-4 col-md-offset-4" ng-if="condition=='first'">
+        <div>
+            <div class="panel" style="margin-top:100px; " >
+                <button type="button" class="btn btn-success btn-lg" style="width: 100%;margin-bottom:30px;"  data-dismiss="modal" ng-click="request('new')">
+                    <span>NEW REQUEST</span>
+                </button>
+
+                <button type="button" class="btn btn-success btn-lg" style="width: 100%;"  data-dismiss="modal" ng-click="request('track')">
+                    <span>TRACK REQUEST</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!--new request UI-->
+    <div class="col-sm-12 col-md-4 col-md-offset-4" ng-if="condition=='new'">
+        <div style="margin-top:30px;">
+            <div class="panel" style="margin-top:70px; " >
+
+                <div class="form-group">
+                    <label >Item:</label>
+                    <!--<input type="text" class="form-control input-lg" ng-model="requet.item"  >-->
+                    <div class="scrollable-dropdown-menu">
+                        <input ng-model="main_task.tasklist.task" class="form-control input-md"
+                               uib-typeahead="item.task for item in getTaskList($viewValue)"
+                               typeahead-on-select="onMainTaskSelect(main_task, $item, $model, $label)"
+                               typeahead-min-length="0"
+                               typeahead-no-results="noResults" required/>
+				            <!--<span ng-if="noResults" uib-dropdown uib-dropdown-toggle auto-close="disabled" is-open="true">-->
+					            <!--<ul class="dropdown-menu" >-->
+                                    <!--<li><a href ng-click="onAddTask()">{{main_task.tasklist.task}} (New Task Item))</a></li>-->
+                                <!--</ul>-->
+				            <!--</span>-->
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label >Qty:</label>
+                    <input type="number" class="form-control input-md"  ng-keyup="isNumberKey()" ng-model="main_task.quantity" />
+                </div>
+                <button type="button" class="form-group btn btn-success btn-lg" style="width: 100%;margin-top: 20px;"  data-dismiss="modal" ng-click="addBasket()">
+                    <span>Add Request</span>
+                </button>
+                <!--<button type="button" class="form-group btn btn-success btn-lg" style="width: 100%;margin-top: 20px;"  data-dismiss="modal" ng-click="createRequest()">-->
+                    <!--<span>Add Request</span>-->
+                <!--</button>-->
+            </div>
+        </div>
+    </div>
+
+    <!--basket UI-->
+    <div class="col-sm-12 col-md-4 col-md-offset-4" ng-if="condition=='basket'">
+        <div style="margin-top:15px;">
+            <div class="panel" style="margin-top:10px;" >
+                <div  ng-repeat="row in basketlist" >
+                   <label style="margin-top: 10px;">{{row.task_list_name}}:</label>
+                   <div class="row">
+                       <div class="input-group" style="margin-left: 15px;margin-right: 15px;">
+                            <input type="number" ng-model="row.quantity" class="form-control"  ng-change="changeQuantity($index, row.quantity)"  />
+                           <span class="input-group-addon" ng-click="deleteBasket(row)"><i class="fa fa-trash-o fa-lg"></i></span>
+                       </div>
+                   </div>
+                </div>
+                <div style="margin-top: 10px;">
+                    <label >When would you like your request delivered?</label>
+                </div>
+                <div style="margin-top: 10px;">
+                    <select  class='form-control' ng-model="basket.schedule"
+                            ng-options="value.id as value.name for (key, value) in schedule_options">
+                    </select>
+                </div>
+                <div style="margin-top: 10px;" ng-if="basket.schedule == 1">
+                    <div class="dropdown">
+                        <a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+                            <div class="input-group">
+                                <input type="text" class="form-control" ng-model="datetime.start_time">
+                                <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                            </div>
+                        </a>
+                        <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+                            <datetimepicker ng-model="datetime.start_date"
+                                            data-datetimepicker-config="{ dropdownSelector: '#dropdown2' }"
+                                            data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+                        </ul>
+                    </div>
+                </div>
+                <div style="margin-top: 10px;">
+                    <label >Comment</label>
+                </div>
+                <div>
+                    <textarea class="form-control" rows="5" ng-model = "basket.comment" ></textarea>
+                </div>
+                <button type="button" class="btn btn-success btn-lg" style="width: 100%;margin-top: 10px;"  data-dismiss="modal" ng-click="createRequest()">
+                    <span>Send Request</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!--track UI-->
+    <div class="col-sm-12 col-md-6 col-md-offset-3" ng-if="condition=='track'">
+        <div style="margin-top:30px;">
+            <div class="panel" style="margin-top:10px; " >
+                <table class="table">
+                    <thead>
+                    <tr class="tblhead" style="background:#19324b;color:#ffffff" >
+                        <th class="text-center">Date</th>
+                        <th class="text-center">Item</th>
+                        <th class="text-center">Status</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr class="text-xs" ng-repeat="row in historylist" >
+                        <td class="text-center" ng-click="historyView(row)" style="padding: 8px;cursor: pointer;">{{row.start_date_time}}</td>
+                        <!--<td class="text-center" style="padding: 8px"> {{gs.getTicketNameForList(row)}}</td>-->
+                        <td class="text-center" ng-click="historyView(row)" style="padding: 8px;cursor: pointer;"> {{row.task_name}}</td>
+                        <td class="text-center" ng-click="historyView(row)" style="padding: 8px;cursor: pointer;">
+						<span class="label {{gs.getStatusCssInEdit(row)}}">
+                            {{gs.getStatus(row)}}
+						</span>
+                        </td>
+                    </tr>
+                    </tbody>
+                    <tfoot ng-show="history.limit < historylist.length">
+                    <td colspan="3" class="text-center"	style="cursor: pointer;" ng-click="loadMoreHistory()">
+                        <span href="#">Load More</span>
+                    </td>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!--track detail;-->
+    <!--basket UI-->
+    <div class="col-sm-12 col-md-4 col-md-offset-4" ng-if="condition=='track_detail'">
+        <div style="margin-top:15px;">
+            <div class="panel" style="margin-top:10px;" >
+                <div>
+                    <label style="margin-top: 10px;">Date Requsted:</label>
+                    <label style="margin-top: 10px;">{{history_detail.start_date_time}}</label>
+                </div>
+                <div>
+                    <label style="margin-top: 10px;">Item:</label>
+                    <label style="margin-top: 10px;">{{history_detail.task_name}}</label>
+                </div>
+                <div>
+                    <label style="margin-top: 10px;">Quantity:</label>
+                    <label style="margin-top: 10px;">{{history_detail.quantity}}</label>
+                </div>
+                <div>
+                    <label style="margin-top: 10px;">Status:</label>
+                    <label style="margin-top: 10px;">{{history_detail.status}}</label>
+                </div>
+                <div>
+                    <label style="margin-top: 10px;">Schedule date:</label>
+                    <label style="margin-top: 10px;">{{history_detail.start_date_time}}</label>
+                </div>
+                <div style="margin-top: 10px;">
+                    <label >Comment</label>
+                </div>
+                <div>
+                    <textarea class="form-control" rows="4" readonly  ng-model = "history_detail.custom_message" ></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-12 col-md-6 col-md-offset-3" style="height: 70px;">
+
+    </div>
+    <footer id="footer" class="first_foot" role="footer" style="position: fixed">
+        <div class="wrapper b-t bg-light font-bold text-center">
+            Powered by Ennovatech Solutions
+        </div>
+    </footer>
+</div>

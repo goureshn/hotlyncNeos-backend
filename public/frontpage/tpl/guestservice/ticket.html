@@ -1,0 +1,135 @@
+<div class="hbox" style="table-layout: fixed;" ng-controller="GuestServiceController">
+	<script type="text/ng-template" id="modalImage.html">
+        <div ng-include="'tpl/lnf/modalImage.html'"></div>
+    </script>
+
+	<div class="col b-r" ng-show="viewmode==1" ng-include="'tpl/guestservice/ticket_list.html'">
+	</div>
+	<div>
+		<uib-tabset class="tab-container" active="active">
+			<uib-tab class="pull-right wrapper-xs">
+				<uib-tab-heading>
+					<div style="margin: -5px; padding: 0px;" >
+						<div class="btn-group dropdown">
+				        	<button class="btn btn-default">&nbsp;<i class="fa fa-plus-circle" aria-hidden="true"></i>&nbsp;Create New&nbsp;</button>
+				        	<button class="btn btn-default" data-toggle="dropdown" aria-expanded="false"><span class="caret"></span></button>
+				        	<ul class="dropdown-menu w1" aria-labelledby="single-button" style="margin-left:-47px">
+				        		<li ng-click="showRequest(1)">
+				        			<a href=""><label>Guest Request</label><span class="badge tag-ets pull-right">&nbsp;G&nbsp;</span></a>
+				        		</li>
+				        		<li ng-click="showRequest(2)">
+				        			<a href=""><label>Department Request</label><span class="badge tag-ets pull-right">&nbsp;D&nbsp;</span></a>
+					    		</li>
+					    		<li ng-click="showRequest(3)">
+				        			<a href=""><label>Complaint Request</label><span class="badge tag-ets pull-right">&nbsp;C&nbsp;</span></a>
+					    		</li>
+					    		<li ng-click="showRequest(4)">
+				        			<a href=""><label>Managed Task</label><span class="badge tag-ets pull-right">&nbsp;M&nbsp;</span></a>
+					    		</li>
+				        	  <!--<li class="divider"></li>-->
+				        	</ul>
+				        </div>
+				     </div>
+				</uib-tab-heading>
+				<div ng-show="viewmode==1" class="chat_container">
+					<img style="opacity: 0.5; padding-top: 50px" class="img-full" src="img/hotlync_.png" ng-hide="chat_room_list.length > 0" alt=""/>
+				</div>
+		        <div ng-show="viewmode!=1" ng-include="'tpl/guestservice/ticket_list.html'" style="bottom: 0;">
+		        </div>
+		    </uib-tab>
+			<div class="tabs tabs-style-tzoid pull-left">
+				<nav ui-nav class="call_menu navi clearfix">
+					<ul class="nav" style="margin-left: -7px; height:45px;">
+						<uib-tab ng-repeat="tab in newTickets" class="{{active == tab.Number ? 'tab-current' : ''}}" index="tab.Number" disabled="tab.disabled" style="margin-top:16px">
+						  	<uib-tab-heading>
+								<li class="tab-current" style="margin-top: -10px">
+									<label class="tabs-style-tzoid text-center" style="color:#fff; font-size: .7vw; ">
+										<i class="fa fa-cutlery" ng-show="tab.Number == 1"></i>
+										<i class="fa fa-bank" ng-show="tab.Number == 2"></i>
+										<i class="fa fa-warning" ng-show="tab.Number == 3"></i>
+										<i class="fa fa-file-text" ng-show="tab.Number == 4"></i>
+										{{tab.groupName}}&nbsp;
+									</label>
+									<span ng-click="removeNewSelectTicket(tab)"><i class="fa fa-times" style="color:#FF0000"></i></span>
+								</li>
+							</uib-tab-heading>
+
+					        <div ng-if="tab.Number == 1" fill-height additional-padding="40" ng-include="'tpl/guestservice/ticket/guest_request.html'" ng-controller="GuestrequestController">
+					        </div>
+					        <div ng-if="tab.Number == 2" fill-height additional-padding="40"  ng-include="'tpl/guestservice/ticket/department_request.html'" ng-controller="DepartmentrequestController">
+					        </div>
+					        <div ng-if="tab.Number == 3" fill-height additional-padding="40"  ng-include="'tpl/complaint/complaint_duty_create.html'" ng-controller="ComplaintDutyCreateController" ng-init="init('Pending')">
+					        </div>
+					        <div ng-if="tab.Number == 4" fill-height additional-padding="40" ng-include="'tpl/guestservice/ticket/managed_task_new.html'" ng-controller="MangedtaskNewController">
+					        </div>
+					  	</uib-tab>
+
+						<uib-tab ng-repeat="tab in selectedTickets" class="{{active == tab.id + 6 ? 'tab-current' : ''}}" index="tab.id + 6" disabled="tab.disabled" style="margin-top:16px">
+						    <uib-tab-heading>
+							  <li class="tab-current" style="margin-top: -10px">
+							    <label class="tabs-style-tzoid text-center" style="color:#fff; font-size: .7vw; ">
+							    	<i class="fa fa-ticket" aria-hidden="true"></i>&nbsp;{{gs.getTicketNumber(tab)}}&nbsp;</label>
+					          <span ng-click="removeSelectTicket(tab, $index)"><i class="fa fa-times" style="color:#FF0000"></i></span>
+							</li>
+							</uib-tab-heading>
+					        <div ng-if="tab.type == 1" ng-include="'tpl/guestservice/ticket/guest_request_edit.html'" ng-controller="GuestrequestEditController" ng-init="init(tab)">
+					        </div>
+							<div ng-if="tab.type == 2" ng-include="'tpl/guestservice/ticket/department_request_edit.html'" ng-controller="DepartmentrequestEditController" ng-init="init(tab)">
+					        </div>
+
+					        <div ng-if="tab.type == 3" ng-controller="ComplaintDutyCreateController" ng-include="'tpl/complaint/complaint_duty_create.html'" ng-init="init('Acknowledge')">
+					        </div>
+					        <div ng-if="tab.type == 4" ng-include="'tpl/guestservice/ticket/managed_task_edit.html'" ng-controller="ManagedtaskEditController" ng-init="init(tab)">
+					        </div>
+					        <div ng-if="tab.type == 5" ng-include="'tpl/guestservice/ticket/reservation_task_edit.html'" ng-controller="ReservationEditController" ng-init="init(tab)">
+					        </div>
+						</uib-tab>
+					</ul>
+				</nav>
+			</div>
+	    </uib-tabset>
+  	</div>
+  	<div class="bottom_right" style="z-index: 15">
+  		<div class="row">
+  			<div style="display: inline-block; margin-right: 10px" ng-style="{'height': tab.height}"
+  				resizable
+  			    r-directions="['left', 'top']"
+	            r-centered-x="false"
+	            r-centered-y="false"
+	            r-width="tab.width"
+	            r-height="tab.height"
+	            r-index="$index"
+	            r-max-width="900"
+	            r-max-height="500"
+	            r-no-throttle="true"
+	            ng-repeat="tab in chat_room_list">
+  				<div class="panel panel-default" style="margin-bottom: 5px;">
+                    <div class="panel-heading">
+                    	<label class="text-sm font-bold"><i class="fa fa-comment text-default"></i>&nbsp;&nbsp;Room {{tab.room}}</label>
+                	    <span class="" ng-class="{'label' : true, 'm-l-sm': true,
+				            'bg-wakeup-success': tab.status == 'Active',
+				            'bg-wakeup-waiting': tab.status == 'Waiting',
+				            'bg-wakeup-canceled': tab.status=='Ended',
+				            }">{{tab.status}}
+				        </span>
+						&nbsp;&nbsp;
+				        {{tab.typing_flag == 1 ? 'Typing...' : ''}}
+
+				        <div class="pull-right">
+				        	<i class="fa fa-window-minimize" ng-click="onMinimize($index)" ng-show="!tab.minimized"></i>
+				        	<i class="fa fa-window-maximize" ng-click="onMaximize($index)" ng-show="tab.minimized"></i>
+				        	&nbsp;
+				        	<i class="fa fa-window-close" ng-click="onClosed($index)"></i>
+				        </div>
+                    </div>
+                    <div class="panel-body" style="padding: 5px" ng-hide="tab.minimized">
+                        <div style="margin-bottom: 5px">
+                            <div style="" ng-controller="ChatSessionController" ng-include="'tpl/guestservice/chat/chat_popup_window.html'" ng-init="init(tab)">
+							</div>
+                        </div>
+                    </div>
+                </div>
+  			</div>
+  		</div>
+	</div>
+</div>

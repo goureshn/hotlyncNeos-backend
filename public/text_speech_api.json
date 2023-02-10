@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "hotlync-alarms",
+  "private_key_id": "811697ef882994bf358fb00983c48489a13d2860",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDmRE+Q3kct/cz0\nL629spKFMIKuSZdZNybZSFqvOITwWw+1uQgqcO//hTkLKRn+0mqiwG2h7sc4amx4\nTi6OeExIcxfeWnb0yq4ernp7WZzkUpIrPZBKpvdgubDgcV1ANpnOYjgQO0o6vTJH\nVDSNyiAOJ2mLn3sRWQyITcIFvUmIzkX89vsPZ6d3/TB8Ohbbq/t6OxYgbObqCEdX\nkxpYX+XSQNZvUi81ddRd/sxEMSsAW3OEUvIGPgyzt12kjFJCYfHFTakpM/K6sN7N\n6Cv+EaxqtXtEMg/IzSkbNVEDoO1R5eEY/i/l5iGGM014fgbm0rY6Yb/fVs0m7BG9\ncjvsjQC9AgMBAAECggEAY9/GKP4YHn0iS9lwQMK25XkUfVbjA+m1enH1D2Hy2zOL\n/VR7k7j3h7s3cj1KDqoiYWQYSS/Bjhku4gF7FQVdhOESvbk8NlHAswMXke/c6nVb\n+9BQiOihjH0OGFNjUGo+TPNyAKxOtmqAZ8rAnq1IOQtkLpCmNvCKTIZ5fLbMsb5/\njK+CnCaFgnoV3sNRm44N+qpbeKfpJBWnLRuAZih5MyozeSXMjtr2kmQOkEbUoUFP\nVNILt6ABhc5NjHzcCkR/811buxrq4qnyxCYCGjzddA2F5QJY/cl+NfnLOEYYJMUu\n/uA36KwZq0Abi1CHYS2xePWX2YWhVlpT6JvH6P76qwKBgQD6AM4iAAjrYpOPgxSh\nLH0/DwcAEQdWOXor5vitW9n7QA1rFT5iJQF7OzoO6wBPiudCX2LXMnP9HgUrRu8J\nkm+TZFSL1GvRL7s5Lc3hkFEeuv5ECuXe4T5q0khEBw7KIn4+Jysj/+As3Mb9VTyF\nC25ueY17Moq7qsxkxceAovnvNwKBgQDryk+SLm9gWBQi4IpNEFsXGkk5/UzdEvcr\nN00Lz209uzJyCSIsOYonAVdyoIvb9TaoX59B8qRPl5Imc9+gWbyJsJsZoCNbfJZl\nSklc4mFQNSqyEwiQoxbyDl5yr6zAO6VB9WAWO+Ca0b619KrNuwzvKzrdxqKyLdVG\nVe5Vvy0BqwKBgQCEZHzFAKO4k4F1VINOPxMsm7anUF1ESjfqm+xBUg0Dww3YEW3x\n54r7SYgbclO9y99gBMeBEtTdzFIMcwoPVZ8EvPMRAbL/GnnZc+o9c4Gh9oDEY8kL\n2NiHFUjzzZEFdnLIU1HDRLPgziIK8mKUSlN26aQFA+T4MSEAlMRr2OLmzQKBgDaW\n90cr0wNmQPs2Ky7eW4iEwHFZkKMaUflCa2cRlgQVw/8c2DmO9MpFCD70poy9P/NJ\neDCngZ0fxWl7qEmSnRDvv2j2Z1k2BgfbZBLKIqeUN5dUysXZzGUsKHe67m7vIDqe\nGansIPsXFmVACQ9qf/sbchyIcYB5FgibuntFsKDTAoGAGYhSor2enBkPbxcMJL6B\nNGcdH+HroBocOZ7CPwNdKQ8BxW/9uMwhmYfpbH6zaHK+Cl6AZO6aCMbl1/FA0KXh\nw5+tVmZSYU/kN+ZzX3/p54iCSJn7VOExhmfiu0iwZi9Usj/HMLZhnkCqWhA+KaA2\no9C/SpKnTvyZNylXyKXZ094=\n-----END PRIVATE KEY-----\n",
+  "client_email": "text-sound@hotlync-alarms.iam.gserviceaccount.com",
+  "client_id": "100470825230507305059",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/text-sound%40hotlync-alarms.iam.gserviceaccount.com"
+}

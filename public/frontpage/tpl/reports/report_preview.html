@@ -1,0 +1,98 @@
+<div  class="wrapper" style="background-color: #ECEFF1; height: 40px; margin: 0px -15px 0px -15px">
+    <div class="col-md-4">
+        <i class="icon-screen-desktop"></i>&nbsp;&nbsp;Preview
+    </div>
+
+    <div class="col-md-4 text-center" ng-click="onGetFrameHeight()">
+        <span class="glyphicon" ng-class="data.isHidden ? 'glyphicon-chevron-down' : 'glyphicon-chevron-up'" ></span>
+            <label style="cursor: pointer" ng-show="data.isHidden" ng-click="data.isHidden = !data.isHidden;" > Show Filters </label>
+            <label style="cursor: pointer" ng-show="!data.isHidden" ng-click="data.isHidden = !data.isHidden;" > Hide Filters </label>
+        <span class="glyphicon" ng-class="data.isHidden ? 'glyphicon-chevron-down' : 'glyphicon-chevron-up'" ></span>
+    </div>
+
+    <div class="col-md-4" style="text-align: right">
+        <i class="fa fa-download" style="padding-bottom:10px;"></i>&nbsp;&nbsp;Download : &nbsp;&nbsp;
+        <a ng-click="onDownloadPDF()">
+            <i class="fa fa-file-pdf-o" style="font-size: 18px; color:red; margin-right: 20px" aria-hidden="true"
+                data-toggle="tooltip" title="Download in PDF format"></i>
+        </a>
+        <a ng-click="onDownloadExcel('excel')">
+            <i class="fa fa-file-excel-o" style="font-size: 18px; color:green; margin-right: 20px" aria-hidden="true"
+                data-toggle="tooltip" title="Download in Excel format"></i>
+        </a>
+        <a ng-click="onDownloadExcel('csv')" ng-hide="data.csv_report_hide">
+            <i class="fa fa-file-text" style="font-size: 18px; color:green; margin-right: 20px" aria-hidden="true"
+                data-toggle="tooltip" title="Download in CSV Format"></i>
+        </a>
+    </div>
+
+</div>
+
+<div class="form-horizontal" style="width:100%; margin: auto; height:1000px;">
+    <div class="row" style="height:1000px;" >
+        <div ng-style="data.iframe_style" id="preview-iframe" style="margin:0px;padding:0px;overflow:hidden; height:1000px;">
+            
+            <div ng-if="param!=''">
+                
+                
+                <iframe id="tempiframe" onload="checkIframeLoaded();"  src="{{param}}" frameborder="0" style="overflow:hidden; height:1000px;" height="94%" width="100%">
+                
+                    <p>Your browser does not support iframes.</p>
+                </iframe>
+            </div>
+            
+            <script>
+                // var iframeelement =  document.getElementById('tempiframe');
+                // if (typeof(iframeelement) != 'undefined' && iframeelement != null)
+                // {
+                // // Exists.
+                // }
+                function loadBlockingUi(){
+                    
+                    var iframeelement =  document.querySelector('.block-ui-container');
+                    if (typeof(iframeelement) != 'undefined' && iframeelement != null)
+                    {
+                        var buc = document.querySelector('.block-ui-container');
+						buc.style.display = 'block';
+						var buo = document.querySelector('.block-ui-overlay');
+						buo.style.display = 'block';
+                    }
+                    
+                }
+                function checkIframeLoaded() {
+                    //loadBlockingUi();
+                    //console.log("STARTED");
+                    // Get a handle to the iframe element
+                    
+                    var iframe = document.getElementById('tempiframe');
+                    var iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                
+                    console.log("IFRAME:::"+ iframeDoc.readyState);
+                    // Check if loading is complete
+                    if (  iframeDoc.readyState  == 'complete' ) {
+                        //iframe.contentWindow.alert("Hello");
+                        iframe.contentWindow.onload = function(){
+                            //alert("I am loaded");
+
+                        };
+                        // The loading is complete, call the function we want executed once the iframe is loaded
+                        afterLoading();
+                        return;
+                    } 
+                
+                    // If we are here, it is not loaded. Set things up so we check   the status again in 100 milliseconds
+                    window.setTimeout(checkIframeLoaded, 100);
+                }
+                
+                function afterLoading(){
+                    //alert("I am here after loading");
+                    angular.element(document.querySelector('.block-ui-container')).scope().$_blockUiState.blocking = false;
+                    var bui = document.querySelector('.block-ui-container');
+                    bui.style.display = 'none';
+                    var bui = document.querySelector('.block-ui-overlay');
+                    bui.style.display = 'none';
+                }
+            </script>
+        </div>
+    </div>
+</div>

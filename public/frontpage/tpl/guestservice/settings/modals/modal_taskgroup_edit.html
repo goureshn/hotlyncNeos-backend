@@ -1,0 +1,182 @@
+<form class="form-horizontal" ng-submit="onSave(event)">
+    <div class="panel">
+
+        <div class="modal-header bg">
+            <button type="button" class="close" ng-click="onCancel()">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <h5 class="modal-title font-bold" style="color:#2691d9">
+                <i class="fa fa-edit"></i>&nbsp;Edit Task Group
+            </h5>
+        </div>
+        <div class="modal-body">
+            <br/>
+            <div class="form-group">
+                <label class="control-label col-sm-4">Department Function:</label>
+                <div class="col-sm-7">
+                    <input type="text" ng-model="deptFunc" class="form-control input-sm" placeholder="Select Department"
+                           uib-typeahead="dptFunc.function for dptFunc in deptfunclist"
+                           typeahead-min-length="0"
+                           typeahead-editable="false"
+                           typeahead-on-select="onSelectDeptFunc($item, $model, $label)"
+                        required
+                    >
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-4">Task Group:</label>
+                <div class="col-sm-7">
+                    <input class="form-control" ng-model="model_data.name"
+                           required />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-4">Escalation</label>
+                <div class="col-sm-7">
+                    <label class="i-switch m-t-xs m-r"  >
+                        <input type="checkbox" ng-model="model_data.escalation">
+                        <i></i>
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-4">Selected by Guest:</label>
+                <div class="col-sm-7">
+                    <label class="i-switch m-t-xs m-r"  >
+                        <input type="checkbox" ng-model="model_data.by_guest_flag">
+                        <i></i>
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-4">User Group:</label>
+                <div class="col-sm-7">
+                    <input type="text" ng-model="usergroup" class="form-control input-sm" placeholder="Select Usergroup"
+                           uib-typeahead="group.name for group in usergrouplist"
+                           typeahead-min-length="0"
+                           typeahead-editable="false"
+                           typeahead-on-select="onSelectUserGroup($item)"
+                    >
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-4">Duration:</label>
+                <div class="col-sm-7">
+                    <input type="number" class="form-control" ng-model="model_data.max_time" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-4">Frequency notification:</label>
+                <div class="col-sm-7">
+                    <label class="i-switch m-t-xs m-r"  >
+                        <input type="checkbox" ng-model="model_data.frequency_notification_flag">
+                        <i></i>
+                    </label>
+                </div>
+            </div>
+            <div class="form-group" ng-show="model_data.frequency_notification_flag">
+                <label class="control-label col-sm-4">Frequency Notify User:</label>
+                <div class="col-sm-7">
+                    <tags-input ng-model="model_data.freq_job_role_name_list"
+                    placeholder="Add Job Role"
+                    replace-spaces-with-dashes="false"
+                    style="margin-top: -5px"
+                    display-property="job_role"
+                    key-property="id"
+                    min-length="1"
+                    on-tag-added="onFreqJobRoleChanged()">
+                    <auto-complete source="onJobRoleFilter($query)"
+                                   min-length="0"
+                                   debounce-delay="0"
+                                   load-on-focus="true"
+                                   load-on-empty="true"
+                                   max-results-to-show="100">
+                    </auto-complete>
+                    </tags-input>
+                </div>
+            </div>
+            <div class="form-group" ng-show="model_data.frequency_notification_flag">
+                <label class="control-label col-sm-4">Frequency:</label>
+                <div class="col-sm-7">
+                    <input type="number" class="form-control" ng-model="model_data.frequency" required>
+                </div>
+            </div>
+            <div class="form-group" ng-show="model_data.frequency_notification_flag">
+                <label class="control-label col-sm-4">Period:</label>
+                <div class="col-sm-7">
+                    <input type="number" class="form-control" ng-model="model_data.period" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-4">Hold Notification:</label>
+                <div class="col-sm-7">
+                    <label class="i-switch m-t-xs m-r"  >
+                        <input type="checkbox" ng-model="model_data.hold_notification_flag">
+                        <i></i>
+                    </label>
+                </div>
+            </div>
+            <div class="form-group" ng-show="model_data.hold_notification_flag">
+                <label class="control-label col-sm-4">Hold Notify User:</label>
+                <div class="col-sm-7">
+                    <tags-input ng-model="model_data.hold_job_role_name_list"
+                                placeholder="Add Job Role"
+                                replace-spaces-with-dashes="false"
+                                style="margin-top: -5px"
+                                display-property="job_role"
+                                key-property="id"
+                                min-length="1"
+                                on-tag-added="onHoldJobRoleChanged()">
+                        <auto-complete source="onJobRoleFilter($query)"
+                                       min-length="0"
+                                       debounce-delay="0"
+                                       load-on-focus="true"
+                                       load-on-empty="true"
+                                       max-results-to-show="100">
+                        </auto-complete>
+                    </tags-input>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-4">Hold Timeout(minutes):</label>
+                <div class="col-sm-7">
+                    <input class="form-control" ng-model="model_data.hold_timeout"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-4">Unassign:</label>
+                <div class="col-sm-7">
+                    <label class="i-switch m-t-xs m-r"  >
+                        <input type="checkbox" ng-model="model_data.unassigne_flag">
+                        <i></i>
+                    </label>
+                </div>
+            </div>
+            <div class="form-group" ng-show="model_data.unassigne_flag">
+                <label class="control-label col-sm-4">Start Duration:</label>
+                <div class="col-sm-7">
+                    <input type="number" class="form-control" ng-model="model_data.start_duration" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-4">Max Time:</label>
+                <div class="col-sm-7">
+                    <input type="number" class="form-control" ng-model="model_data.max_time" required>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="modal-footer">
+            <button type="submit" class="btn btn-success btn-sm {{isLoading ? 'disabled': ''}}">
+                <i class="fa fa-save"></i>&nbsp;Save
+            </button>
+            <button type="button" class="btn btn-danger btn-sm {{isLoading ? 'disabled': ''}}" ng-click="onCancel()">
+                <i class="fa fa-times"></i>&nbsp;Cancel
+            </button>
+        </div>
+    </div>
+</form>
+
+

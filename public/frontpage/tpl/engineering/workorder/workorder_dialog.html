@@ -1,0 +1,50 @@
+
+<div class="modal-content">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">
+            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        </button>
+        <h3 class="modal-title" style="color:#2691d9" id="Heading">{{workorder.ticket_id}} Detail</h3>
+    </div>
+    <div class="modal-body nopadding">
+        <div class="nopadding">
+            <div style="{{modal_view_height}}">
+                <div  ng-cloak>
+                    <md-content>
+                        <md-tabs md-dynamic-height md-border-bottom>
+                            <md-tab>
+                                <md-tab-label >
+                                    Details
+                                </md-tab-label>
+                                <md-tab-body>
+                                    <div style="{{tab_full_height}};" ng-include="'tpl/engineering/workorder/workorder_detail.html'" 
+                                        >
+                                    </div>
+                                </md-tab-body>
+                            </md-tab>
+                            <md-tab>
+                                <md-tab-label >
+                                    Update
+                                </md-tab-label>
+                                <md-tab-body>
+                                    <div style="{{tab_full_height}}" ng-include="'tpl/engineering/workorder/workorder_comment.html'">
+                                    </div>
+                                </md-tab-body>
+                            </md-tab>
+                            <md-tab>
+                                <md-tab-label>
+                                    Staff
+                                </md-tab-label>
+                                <md-tab-body>
+                                    <div style="{{tab_full_height}}" ng-include="'tpl/engineering/workorder/workorder_staff.html'">
+                                    </div>
+                                </md-tab-body>
+                            </md-tab>
+                        </md-tabs>
+                    </md-content>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

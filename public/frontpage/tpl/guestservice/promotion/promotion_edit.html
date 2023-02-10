@@ -1,0 +1,342 @@
+<style>
+	.text-xs {
+	    font-size: 11px;
+	    font-weight: bold;
+	    margin-bottom: 0px;
+	    margin-top: 5px;
+  }
+</style>
+<div calss="wrapper" ng-click="updatePromotion();"  >
+    <!--promotion information-->
+    <div class="panel panel-default" style="border-radius: 4px" >
+            <div class="panel-heading wrapper">
+                <div class="pull-left">
+                    <label class="font-bold text-sm"><i class="fa fa-info-circle text-default"></i>&nbsp;&nbsp;Promotion Information</label>                    
+                </div>
+                <div class="pull-right" style="margin-top: -5px; margin: auto">
+                    <button type="button"  class="btn btn-dark btn-xs" ng-click="previewPromotion();$event.stopPropagation();" >
+                        <span class="text-white font-bold text-xs"><i class="fa fa-eye"></i>&nbsp;Preview</span></button>
+                    <button type="button"  class="btn btn-dark btn-xs" ng-click="editPromotion();$event.stopPropagation();" >
+                      <span class="text-white font-bold text-xs"><i class="fa fa-edit"></i>&nbsp;Edit</span></button>                
+                </div>
+                <br>                
+            </div>
+            <!--preview promotion-->
+            <div class=" panel panel-body" ng-if="preview == true" style="padding: 5px 0px">
+                <div class="col-md-10 col-md-offset-1" >
+                    <div style="margin-top:20px;">
+                            <div>
+                                <ng-fader images="pre_promotion.images" ></ng-fader>
+                                <div> <ng-bind-html  ng-bind-html="pre_promotion.highlight | textToHtml"></ng-bind-html></div>
+                                <div> <ng-bind-html  ng-bind-html="pre_promotion.cond | textToHtml "></ng-bind-html></div>
+                            </div>
+                    </div>
+                </div>
+            </div>
+
+            <!--end preview promotion-->
+            <div class="panel-body" style="padding: 5px 0px">
+	            	<div class="col-sm-6">
+		                <label for="email" class="control-label text-xs text-muted">Outlet Name</label>
+		                <div>
+                      <input type="text" class="form-control input-sm" ng-readonly="readstatus.outlet_name" maxlength="20" 
+                      				ng-model="edit_promotion.outlet_name" ng-click = "$event.stopPropagation();"
+                      				ng-dblclick="editPromotion('outlet_name'); $event.stopPropagation();"   >
+                    </div>
+		            </div>
+		            <div class="col-sm-6">
+		                <label for="email" class="control-label text-xs text-muted">Status</label>
+		                <div>
+                      <select class='form-control' ng-model="edit_promotion.status" ng-options="type for type in status_list" ng-readonly="readstatus.status"
+	                      			ng-click = "$event.stopPropagation();" ng-dblclick="editPromotion('status');$event.stopPropagation();" >
+                      </select> 
+                    </div>
+		            </div>
+		            <div class="col-sm-12">
+		                <label for="email" class="control-label text-xs text-muted">Title</label>
+		                <div>
+                      <input type="text" class="form-control input-sm" maxlength="100" placeholder="Title" ng-model="edit_promotion.title"
+                      			ng-click = "$event.stopPropagation();" ng-readonly="readstatus.title" ng-dblclick="editPromotion('title'); $event.stopPropagation();" >
+                    </div>
+		            </div>
+		            <div class="col-sm-6">
+		                <label for="email" class="control-label text-xs text-muted">Price</label>
+		                <div>
+                      <input  type="number" class="form-control input-sm" maxlength="4" placeholder="Price" ng-model="edit_promotion.price"
+                      			ng-readonly="readstatus.price" ng-dblclick="editPromotion('price');$event.stopPropagation();" ng-click = "$event.stopPropagation();" >
+                    </div>
+		            </div>
+		            <div class="col-sm-6">
+		                <label for="email" class="control-label text-xs text-muted">Discount</label>
+		                <div>
+                      <input  type="number" class="form-control input-sm" maxlength="2" placeholder="Discount" ng-model="edit_promotion.discnt"
+                      			ng-readonly="readstatus.discount" ng-dblclick="editPromotion('discount');$event.stopPropagation();" ng-click = "$event.stopPropagation();" >
+                    </div>
+		            </div>
+		            <div class="col-sm-6">
+		                <label for="email" class="control-label text-xs text-muted">Start Date</label>
+		                <div class="scrollable-dropdown-menu">
+                      <a class="dropdown-toggle" id="dropdown2"  role="button" data-toggle="dropdown" data-target="#">
+                        <div class="input-group">
+                          <input type="text" class="form-control" ng-model="datetime.start_time" ng-readonly="readstatus.start_date"
+                          			ng-dblclick="editPromotion('start_date');$event.stopPropagation();" ng-click = "$event.stopPropagation();" >
+                          <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                        </div>
+                      </a>
+                      <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel" >
+                        <datetimepicker ng-model="datetime.start_date"  
+                          data-datetimepicker-config="{ dropdownSelector: '#dropdown2' }"
+                          data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+                      </ul>
+                    </div>
+		            </div>
+		            <div class="col-sm-6">
+		                <label for="email" class="control-label text-xs text-muted">End Date</label>
+		                <div class="scrollable-dropdown-menu">
+                      <div class="dropdown">
+                        <a class="dropdown-toggle" id="dropdown1" role="button" data-toggle="dropdown" data-target="#">
+                          <div class="input-group">
+                            <input type="text" class="form-control" ng-model="datetime.end_time" ng-readonly="readstatus.end_date"
+                            				ng-dblclick="editPromotion('end_date');$event.stopPropagation();" ng-click = "$event.stopPropagation();" >
+                            <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                          </div>
+                        </a>
+                        <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel"  style="left: auto !important;right: 0px;" >
+                          <datetimepicker ng-model="datetime.end_date" 
+                            data-datetimepicker-config="{ dropdownSelector: '#dropdown1' }"
+                            data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+                        </ul>
+                      </div>
+                    </div>
+		            </div>
+		            <div class="col-sm-12">
+		                <label for="email" class="control-label text-xs text-muted">Disclaimer</label>
+		                <div>
+                      <input type="text" class="form-control input-sm" maxlength="150"  placeholder="Disclaimer" ng-model="edit_promotion.disclaimer"
+                      	ng-readonly="readstatus.disclaimer" ng-dblclick="editPromotion('disclaimer');$event.stopPropagation();" ng-click = "$event.stopPropagation();" >
+                    </div>
+		            </div>
+		            <div class="col-sm-12">
+		                <label for="email" class="control-label text-xs text-muted">Send enquiry to</label>
+		                <div>
+                      <textarea class="form-control input-sm" rows="2" ng-model="edit_promotion.enquiry_to" style="resize:none" ng-readonly="readstatus.send_enquiry_to" ng-dblclick="editPromotion('send_enquiry_to');$event.stopPropagation();" ng-click = "$event.stopPropagation();" ></textarea>
+                    </div>
+		            </div>
+		            <div class="col-sm-12">
+		                <label for="email" class="control-label text-xs text-muted">Description</label>
+		                <div>
+                      <textarea class="form-control input-sm" rows="2" ng-model="edit_promotion.description" style="resize:none" ng-readonly="readstatus.description" ng-dblclick="editPromotion('description');$event.stopPropagation();" ng-click = "$event.stopPropagation();" ></textarea>
+                    </div>
+		            </div>
+	            	<!--
+                <div class="form-horizontal form-validation">
+                    <div class="form-group-mbl col-sm-6 label-group" style="padding: 5px 0px">
+                        <label class="col-sm-4 control-label text-muted text-xs">Outlet Name<i class="text-danger">*</i></label>
+                        <div class="col-sm-8 scrollable-dropdown-menu">
+                            <input type="text" class="form-control input-sm"  ng-readonly="readstatus.outlet_name"  maxlength="20" ng-model="edit_promotion.outlet_name" ng-click = "$event.stopPropagation();" ng-dblclick="editPromotion('outlet_name'); $event.stopPropagation();"   >
+                            
+                        </div>
+                    </div>
+                    <div class="form-group-mbl col-sm-6 label-group" style="padding: 5px 0px">
+                        <label  class="col-sm-4 control-label text-muted text-xs">Status</label>
+                        <div class="col-sm-8">                            
+                            <select class='form-control' ng-model="edit_promotion.status" ng-options="type for type in status_list" ng-readonly="readstatus.status" ng-click = "$event.stopPropagation();" ng-dblclick="editPromotion('status');$event.stopPropagation();" >
+                            </select>                               
+                        </div>
+                    </div>
+
+                     <div class="form-group-mbl col-sm-12 label-group" style="padding: 5px 0px">
+                        <label  class="col-sm-2 control-label text-muted text-xs">Title</label>
+                        <div class="col-sm-10">                            
+                            <input type="text" class="form-control input-sm" maxlength="100" placeholder="Title" ng-model="edit_promotion.title" ng-click = "$event.stopPropagation();" ng-readonly="readstatus.title" ng-dblclick="editPromotion('title'); $event.stopPropagation();" >
+                        </div>
+                    </div>
+
+                    <div class="form-group-mbl col-sm-6 label-group" style="padding: 5px 0px">
+                        <label class="col-sm-4 control-label text-muted text-xs">Price</label>
+                        <div class="col-sm-8">
+                            <input  type="number" class="form-control input-sm" maxlength="4" placeholder="Price" ng-model="edit_promotion.price" ng-readonly="readstatus.price" ng-dblclick="editPromotion('price');$event.stopPropagation();" ng-click = "$event.stopPropagation();" >
+                        </div>
+                    </div>
+                    <div class="form-group-mbl col-sm-6 label-group" style="padding: 5px 0px">
+                        <label class="col-sm-4 control-label text-muted text-xs">Discount</label>
+                        <div class="col-sm-8">
+                            <input  type="number" class="form-control input-sm" maxlength="2" placeholder="Discount" ng-model="edit_promotion.discnt" ng-readonly="readstatus.discount" ng-dblclick="editPromotion('discount');$event.stopPropagation();" ng-click = "$event.stopPropagation();" >
+                        </div>
+                    </div>
+                    <div class="form-group-mbl col-sm-6 label-group" style="padding: 5px 0px">
+                        <label class="col-sm-4 control-label text-muted text-xs">Start Date</label>
+                        <div class="dropdown col-sm-8">
+                            <a class="dropdown-toggle" id="dropdown2"  role="button" data-toggle="dropdown" data-target="#">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" ng-model="datetime.start_time" ng-readonly="readstatus.start_date" ng-dblclick="editPromotion('start_date');$event.stopPropagation();" ng-click = "$event.stopPropagation();" >
+                                    <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                                </div>
+                            </a>
+                            <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel" >
+                                <datetimepicker ng-model="datetime.start_date"  
+                                                data-datetimepicker-config="{ dropdownSelector: '#dropdown2' }"
+                                                data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="form-group-mbl col-sm-6 label-group" style="padding: 5px 0px">
+                        <label class="col-sm-4 control-label text-muted text-xs">End Date</label>
+                        <div class="dropdown col-sm-8">
+                            <a class="dropdown-toggle" id="dropdown1" role="button" data-toggle="dropdown" data-target="#">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" ng-model="datetime.end_time" ng-readonly="readstatus.end_date" ng-dblclick="editPromotion('end_date');$event.stopPropagation();" ng-click = "$event.stopPropagation();" >
+                                    <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                                </div>
+                            </a>
+                            <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel"  style="left: auto !important;right: 0px;" >
+                                <datetimepicker ng-model="datetime.end_date" 
+                                                data-datetimepicker-config="{ dropdownSelector: '#dropdown1' }"
+                                                data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="form-group-mbl col-sm-12 label-group" style="padding: 5px 0px">
+                        <label  class="col-sm-2 control-label text-muted text-xs">Disclaimer</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control input-sm" maxlength="150"  placeholder="Disclaimer" ng-model="edit_promotion.disclaimer" ng-readonly="readstatus.disclaimer" ng-dblclick="editPromotion('disclaimer');$event.stopPropagation();" ng-click = "$event.stopPropagation();" >
+                        </div>
+                    </div>
+
+                    <div class="form-group-mbl col-sm-12 label-group" style="padding: 5px 0px">
+                        <label  class="col-sm-2 control-label text-muted text-xs">Send Enquiry to</label>
+                        <div class="col-sm-10">
+                            <textarea class="form-control input-sm" rows="2" ng-model="edit_promotion.enquiry_to" style="resize:none" ng-readonly="readstatus.send_enquiry_to" ng-dblclick="editPromotion('send_enquiry_to');$event.stopPropagation();" ng-click = "$event.stopPropagation();" ></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-group-mbl col-sm-12 label-group" style="padding: 5px 0px">
+                        <label  class="col-sm-2 control-label text-muted text-xs">Description</label>
+                        <div class="col-sm-10">
+                            <textarea class="form-control input-sm" rows="2" ng-model="edit_promotion.description" style="resize:none" ng-readonly="readstatus.description" ng-dblclick="editPromotion('description');$event.stopPropagation();" ng-click = "$event.stopPropagation();" ></textarea>
+                        </div>
+                    </div>-->
+                </div>
+            </div>
+    </div>
+
+    <!--Iamge-->
+    <div class="panel panel-default" style="border-radius: 4px"   >
+        <div class="panel-heading">
+            <div class="pull-left">
+                <label class="font-bold text-sm"><i class="fa fa-picture-o text-default"></i>&nbsp;&nbsp;Image</label>
+            </div>
+            <br>
+        </div>
+
+        <div class="panel-body" style="padding: 5px 0px">
+            <div class="form-horizontal form-validation">                                                            
+                <div ng-if="readstatus.image==false " class="form-group-mbl col-sm-12 label-group" style="padding: 5px 0px">
+                    <label class="col-sm-2 control-label text-muted text-xs">Upload File</label>                        
+                    <div class="col-sm-10">
+                        <button class="btn btn-dark btn-sm" ngf-select="uploadFiles($files)" multiple ngf-max-files="10" ngf-max-size="20MB"  ngf-accept="'image/*,video/*,!.jog'" ngf-pattern="'image/*,video/*,!.jog'">
+                            <span class="text-success font-bold"><i class="fa fa-folder-open"></i>&nbsp;Add file</span>
+                        </button>                           
+                    </div>
+                </div>                    
+                <div class="form-group-mbl col-sm-12 label-group" style="padding: 15px 0px" ng-dblclick="editPromotion('image');$event.stopPropagation();" ng-click = "$event.stopPropagation();" >
+                        <li ng-repeat="f in files" class="text-xs" style="margin-left:15px; float:left;list-style: none" >
+                            <div class="preview">
+                                <img ngf-src="!f.$error && f" height="60" >
+                                <video controls="" ngf-src="!f.$error && f" height="60"></video>
+                             </div>
+                            <!--{{f.name}}--> &nbsp;&nbsp;&nbsp;
+                            <span class="glyphicon icon-close" ng-if="readstatus.image==false" style="margin-top:3px; color: red" ng-click="removeFile($index)" ></span>
+                        </li>
+                <span class="progress" ng-show="progress > 0">
+                    <div style="width:{{progress}}%" ng-bind="progress + '%'"></div>
+                </span>
+                    {{errorMsg}}
+                </div>
+            </div>
+        </div>
+    </div>
+
+     <!--Highlight-->
+    <div class="panel panel-default" style="border-radius: 4px"  >
+        <div class="panel-heading">
+            <div class="pull-left">
+                <label class="font-bold text-sm"><i class="fa fa-pencil text-default"></i>&nbsp;&nbsp;Highlight</label>
+            </div>
+            <br>
+        </div>
+        
+        <div class="panel-body" style="padding: 5px 0px" ng-if="readstatus.highlight==false">
+            <div class="form-horizontal form-validation">                                        
+                <div class="form-group-mbl col-sm-12 label-group" style="padding: 5px 0px">
+                    <div class="row" style="margin: 10px 0px 0px 0px;">
+                        <ng-quill-editor  ng-click="$event.stopPropagation();" ng-model="edit_promotion.highlight" placeholder="override default placeholder" on-editor-created="editorCreated(editor)"  on-content-changed="contentChanged(editor, html, text)" on-selection-changed="selectionChanged(editor, range, oldRange, source)"></ng-quill-editor>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel-body" style="padding: 5px 0px" ng-if="readstatus.highlight==true">
+            <div class="form-horizontal form-validation">                                        
+                <div class="form-group-mbl col-sm-12 label-group" style="padding: 5px 5px">
+                   <ng-bind-html  ng-bind-html="edit_promotion.highlight | textToHtml " ng-dblclick="editPromotion('highlight');$event.stopPropagation();" ng-click = "$event.stopPropagation();" ></ng-bind-html>
+                </div>
+            </div>
+        </div>
+    </div>   
+
+    <!--terms and condition-->
+    <div class="panel panel-default" style="border-radius: 4px" >
+        <div class="panel-heading">
+            <div class="pull-left">
+                <label class="font-bold text-sm"><i class="fa fa-file-text-o text-default"></i>&nbsp;&nbsp;Terms and Condition</label>
+            </div>
+            <br>
+        </div>
+
+        <div class="panel-body" style="padding: 5px 0px" ng-if="readstatus.condition==false">
+            <div class="form-horizontal form-validation">                                                            
+                <div class="form-group-mbl col-sm-12 label-group" style="padding: 5px 0px">
+                    <div class="row" style="margin: 10px 0px 0px 0px;">
+                        <ng-quill-editor ng-click="$event.stopPropagation();" ng-model="edit_promotion.cond" placeholder="override default placeholder" on-editor-created="editorCreated(editor)"  on-content-changed="contentChanged(editor, html, text)" on-selection-changed="selectionChanged(editor, range, oldRange, source)"></ng-quill-editor>
+                    </div>
+                </div>
+            </div>
+        </div>   
+        <div class="panel-body" style="padding: 5px 0px" ng-if="readstatus.condition==true">
+            <div class="form-horizontal form-validation">                                        
+                <div class="form-group-mbl col-sm-12 label-group" style="padding: 5px 5px">
+                   <ng-bind-html  ng-bind-html="edit_promotion.cond | textToHtml " ng-dblclick="editPromotion('condition');$event.stopPropagation();" ng-click = "$event.stopPropagation();" ></ng-bind-html>
+                </div>
+            </div>
+        </div>         
+    </div>
+   
+   <!--log history-->
+    <div class="panel panel-default" style="border-radius: 4px">
+        <div class="panel-heading">
+            <div class="pull-left">
+                <label class="font-bold text-sm"><i class="fa fa-history text-default"></i>&nbsp;&nbsp;Log History</label>
+            </div>
+            <br>
+        </div>
+        
+        <div class="panel-body" style="padding: 5px 0px">
+            <div class="form-horizontal form-validation">                                                            
+                <div class="form-group-mbl col-sm-12 label-group" style="padding: 5px 0px">
+                    <div class="grid" style="width:97%; max-height:300px; margin:auto" ui-grid="gridOptions" ui-grid-auto-resize ui-grid-pagination ui-grid-resize-columns></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--end log history-->        
+    <!--<center>        
+        <button type="button" ng-if="disable == true" class="btn btn-dark btn-sm" ng-click="editPromotion();$event.stopPropagation();"  >
+          <span class="text-white font-bold"><i class="fa fa-check"></i>&nbsp;Edit</span></button>                
+        <!--<button type="button " ng-if="disable == false" class="btn btn-success btn-sm" ng-click="updatePromotion()">-->
+            <!--<span class="text-white font-bold"><i class="fa fa-check"></i>&nbsp;Update</span></button>-->
+        <!--<button type="button" ng-if="disable == false" class="btn btn-dark btn-sm" ng-click="cancelPromotion()">-->
+            <!--<span class="text-white font-bold"><i class="fa fa-times"></i>&nbsp;Cancel</span></button>-->
+    <!--</center>-->
+</div>

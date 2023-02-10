@@ -1,0 +1,133 @@
+<style>
+   svg text {
+    fill: white !important;
+  }
+
+
+</style>
+<div ng-controller="MinibarDashboardController" style="overflow-y: auto;background-color: #141414; height: 100vh;">
+
+        <script type="text/ng-template" id="filter_template.html">        
+            <div style="width: 200px">
+                <form class="form-horizontal form-validation">        
+                    <div class="form-group">
+                        <!-- Skill Filter -->
+                        <div class="col-sm-12">
+                            <label class="control-label text-xs text-muted">Building : </label>
+                            <div class="scrollable-dropdown-menu">
+                                <tags-input ng-model="filter.building_tags" display-property="name" key-property="id"
+                                        style="margin-top: -5px"
+                                        placeholder="Add Building"
+                                        on-tag-added="getMinibarStatistics()" on-tag-removed="getMinibarStatistics()"
+                                        replace-spaces-with-dashes="false"  >
+                                        <auto-complete source="buildingTagFilter($query)"
+                                                        min-length="0"
+                                                        load-on-focus="true"
+                                                        load-on-empty="true"
+                                                        debounce-delay="0"
+                                                        max-results="10"
+                                                        >
+                                        </auto-complete>
+                                </tags-input>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="control-label text-xs text-muted">Applied Filter: </label>
+                            
+                            <div>
+                                <label class="text-sm font-bold">{{building_name}}</label>
+                            </div>
+                            
+                        </div>
+                        <div class="col-sm-12" align="center">
+                        <button  ng-click="openFilterPanel()"class="btn btn-sm btn-success"   data-toggle="dropdown" aria-expanded="false">
+                            <label >
+                                <i class="fa fa-check"></i>&nbsp;&nbsp;Save&nbsp;
+                            </label>
+                        </button>
+                        </div> 
+                    </div>
+                </form>       
+            </div>    
+        </script>
+
+  <div class="wrapper-md bg-light lt" style="background-color: #141414">
+      <div class="col-sm-6 col-xs-12">
+        <h1 class="m-n font-thin h3 text-black" style="color:#337ab7">
+          <label style="font-size: 1.5vw"><i class="glyphicon glyphicon-dashboard"></i>
+            &nbsp;&nbsp;Minibar
+          </label>        
+        </h1>
+      </div>
+    <div class="col-sm-6 input-group text-right">
+      <!--<a class="btn btn-sm btn-info pull-right" style="margin-left: 10px" ui-sref="app.minibar.logs">Logs</a>-->
+      <a ui-fullscreen style="margin-right: 20px"></a>
+        <div class="btn-group popover-container">
+
+                <a data-toggle="tooltip" title="Filter" data-placement="bottom" 
+                            uib-popover-template="'filter_template.html'" popover-placement="bottom-left" > 
+                            <i class="fa fa-filter" style="font-size: 30px;" ng-style="{'color': filter_apply ? '#23b7e5' : '#58666e'}" aria-hidden="true"></i>
+                </a>&nbsp;&nbsp;&nbsp;&nbsp;
+            <!--<a ng-click="onDownloadPDF()">-->
+            <!--<i class="fa fa-file-pdf-o" style="font-size: 30px; color:red" aria-hidden="true"></i></a>&nbsp;&nbsp;&nbsp;&nbsp;-->
+        </div>
+        <div class="btn-group">
+            <label class="btn btn-info btn-sm" ng-model="dateFilter" uib-btn-radio="'Today'">Today</label>
+            <label class="btn  btn-info btn-sm" ng-model="dateFilter" uib-btn-radio="'Weekly'">Weekly</label>
+            <label class="btn  btn-info btn-sm" ng-model="dateFilter" uib-btn-radio="'Monthly'">Monthly</label>
+            <label class="btn  btn-info btn-sm" ng-model="dateFilter" uib-btn-radio="'Yearly'">Yearly</label>
+            <label class="btn  btn-info btn-sm" ng-model="dateFilter" uib-btn-radio="'Custom Days'">Custom Days</label>
+          </div>
+        <input style="width: 200px; margin-left: 10px" ng-disabled="dateFilter != 'Custom Days'"
+          ng-model="daterange" ui-jq="daterangepicker" ui-options="dateRangeOption" class="form-control pull-right input-sm">
+      </div>      
+  </div>
+  <!--top bar-->
+    <div style="margin-top: 8px">
+        <!-- stats -->
+        <div class="col-md-12 text-center">
+                <div class="col-xs-3">
+                    <a href class="block padder-v bg-dark" style="border-radius: 6px">
+                        <span class="font-thin h1 block" style="color: #f89406">{{total_posted}}</span>
+                        <span class="text-muted text-xs">Total Posted</span>
+                    </a>
+                </div>
+                <div class="col-xs-3">
+                    <a href class="block panel padder-v bg-dark" style="border-radius: 6px">
+                        <span class="font-thin h1 block" style="color: #23b7e5">{{total_sale}}</span>
+                        <span class="text-muted text-xs">Total Sale ({{ currency }})</span>
+                    </a>
+                </div>
+
+                <div class="col-xs-3">
+                    <a href class="block panel padder-v bg-dark" style="border-radius: 6px">
+                        <span class="font-thin h1 block" style="color: #27c24c">{{total_checkout}}</span>
+                        <span class="text-muted text-xs">Checkout Post</span>
+                    </a>
+                </div>
+                <div class="col-xs-3">
+                    <a href class="block panel padder-v bg-dark" style="border-radius: 6px">
+                        <span class="font-thin h1 block" style="color: #6254b2">{{total_posting}}</span>
+                        <span class="text-muted text-xs">Lost Posting ({{ currency }})</span>
+                    </a>
+                </div>
+        </div>
+    </div>
+  <!--main bar-->
+  <div>
+      <div class="col-md-6">
+          <div class="col-md-12" style="background-color: #2a2a2a;margin-bottom: 10px; border-radius: 6px">
+              <div class="panel-body" style="padding: 0px;">
+                  <nvd3 options="byrevenues_options" data="byrevenues_data"></nvd3>
+              </div>
+          </div>       
+      </div>
+      <div class="col-md-6">
+          <div class="col-md-12" style="background-color: #2a2a2a;margin-bottom: 10px; border-radius: 6px">
+              <div class="panel-body" style="padding: 0px;">
+                  <nvd3 options="byuser_options" data="byuser_data"></nvd3>
+              </div>
+          </div>
+      </div>
+  </div>
+</div>

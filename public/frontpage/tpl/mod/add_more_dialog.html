@@ -1,0 +1,105 @@
+<script type="text/ng-template" id="locationTypeahead.html">
+    <a>
+        <span ng-bind="match.model.category_name"></span><br>
+    </a>
+</script>
+<form class="form-horizontal form-validation" ng-submit="onOk()">
+    <style>
+        .search-filter .checkbox {
+            margin: 0px;
+        }
+        table tr.selected-row {
+            background-color: #3b8ef4;
+        }
+
+        table tr.selected-row td {
+            color: #fff;
+        }
+
+    </style>
+    <div class="modal-content">
+        <div class="modal-header bg">
+            <button type="button" class="close" ng-click="onCancel()">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <h5 class="modal-title font-bold" style="color:#2691d9">
+                <i class="fa fa-plus"></i>&nbsp;Add Item
+            </h5>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="control-label col-sm-4">Category Name:</label>
+                <div class="col-sm-7">
+                    <input style="max-width: 300px"  type="text" ng-model="category_name" class="form-control input-sm" placeholder="Enter category name"
+                           uib-popover="Category name" popover-trigger="mouseenter"
+                           uib-typeahead="item.category_name for item in category_arr | filter:$viewValue | limitTo:10"
+                           typeahead-min-length="0"
+                           typeahead-editable="true"
+                           typeahead-template-url="locationTypeahead.html"
+                           typeahead-on-select="onSelectCategoryName($item)"
+                           required
+                    />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-4">Name:</label>
+                <div class="col-sm-7">
+                    <input class="form-control" ng-model="model_data.name" required />
+                </div>
+            </div>
+            <div class="form-group attach-wrapper">
+                <div class="col-xs-3" style="padding: 6px; text-align: center" ng-if="path.includes('uploads')" ng-repeat="path in model_data.download_array">
+                    <div style="padding: 4px; background-color: #11111111; text-align: center">
+                        <img style="width: auto; max-width: 100%; height: 80px;margin: auto;" src="/{{path}}" ng-if="!pdf_type_flag[$index]" ng-click="openModalImage(path);$event.stopPropagation();"/>
+                        <i class="fa {{icon_class[$index]}}" style="font-size: 24px; color:red; margin-right: 15px; vertical-align: middle;" ng-if="pdf_type_flag[$index]" ng-click="downloadFile(path);$event.stopPropagation();"></i>
+                        <span class="glyphicon icon-close" style="color: red; position: absolute;right:0;"
+                              ng-click="removeFileForRow(model_data, $index)">
+                            </span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group" style="display: flex; justify-content: flex-end; align-items: center">
+                <div class="col-sm-10" ng-if="model_data.item_type != 'Comment'">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <button type="button" class="btn {{model_data.check_flag == 1 && model_data.yes_no == 1 ? 'btn-success' : 'btn-grey'}}" ng-click="onChangeYesNo(model_data, 1)" style="width: 100%">Yes</button>
+                        </div>
+                        <div class="col-sm-6">
+                            <button type="button" class="btn {{model_data.check_flag == 1 && model_data.yes_no == 0 ? 'btn-danger' : 'btn-grey'}}"  ng-click="onChangeYesNo(model_data, 0)" style="width: 100%">No</button>
+                        </div>
+                    </div>
+                </div>
+                <div  class="col-sm-2" style="padding: 0; float: right">
+                    <a
+                            style="color: #4caf50"
+                            title="Upload images"
+                            ngf-select="uploadFiles($files, model_data)" multiple ngf-max-files="5"
+                            ngf-max-size="10MB" ngf-accept="'image/*,application/pdf,.eml'"
+                            ngf-pattern="'image/*,application/pdf,.eml'" ngf-capture="'camera'"
+                    >
+                        <i class="fa fa-paperclip" style="font-size: 20px"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-12">
+                        <textarea class="form-control input-sm" rows="4" ng-model="model_data.comment"
+                                  style="resize:none;"></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer ">
+            <button type="submit" class="btn btn-info btn-sm w-xs {{isLoading ? 'disabled' : ''}}">
+                <span class="glyphicon glyphicon-ok"></span>
+                <b> Add</b>
+            </button>
+
+            <button type="button" class="btn btn-default btn-sm {{isLoading ? 'disabled' : ''}}" data-dismiss="modal" ng-click="onCancel()">
+                <span class="glyphicon glyphicon-remove"></span>
+                <b> Cancel</b>
+            </button>
+        </div>
+
+    </div>
+
+</form>

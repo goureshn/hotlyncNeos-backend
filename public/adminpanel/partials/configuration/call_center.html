@@ -1,0 +1,167 @@
+<input type="hidden" id="id" value="-1" ng-model="call_center.model_data.id"/>
+<link href="/lib/angular/angular-toggle-switch-bootstrap-3.css" media="all" rel="stylesheet" type="text/css">
+<div class=" panel panel-default" style="border-color: #dee5e7">
+    <style>
+        .edit-time {
+            padding-right: 0px;
+        }
+
+        .edit-label {
+            margin-top: 4px;
+            padding-left: 4px;
+        }
+    </style>
+    <div class="panel-heading wrapper">
+        <div  style="float:right; margin-top: -5px; background: #efefef;padding:5px 10px 5px 10px;color: #868585;font-size: 16px; " >
+            <strong>{{message}}</strong>
+        </div>
+        <i class="fa fa-cog"></i>
+        <span class="font-bold"> &nbsp;&nbsp;Configuration</span>
+    </div>
+    <div class="" style="background-color: #eeeeee">        
+        <div class="col-sm-6">
+            <div>
+                <h5><strong> Call Center</strong></h5>
+            </div>
+            <div style="margin-left: 30px">
+                <div class="form-horizontal" >
+                    <div class="form-group">
+                        <label class="col-sm-3">Idle duration</label>
+                        <div class="col-sm-3">
+                            <input type="text" class="form-control" ng-model="call_center.idle_duration"
+                                   ng-keypress="($event.which === 13)?saveCallCenter('idle_duration'):0"/>
+                        </div>
+                        <div class="col-sm-6">
+                            Minutes(Range:1-1440) To disabled, select 0
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3">Max Idle duration</label>
+                        <div class="col-sm-3">
+                            <input type="text" class="form-control" ng-model="call_center.max_idle_duration"
+                                   ng-keypress="($event.which === 13)?saveCallCenter('max_idle_duration'):0"/>
+                        </div>
+                        <div class="col-sm-6">
+                            Minutes(Range:1-1440) To disabled, select 0
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3">Max wrapup time</label>
+                        <div class="col-sm-3">
+                            <input type="text" class="form-control" ng-model="call_center.max_wrapup_time"
+                                   ng-keypress="($event.which === 13)?saveCallCenter('max_wrapup_time'):0"/>
+                        </div>
+                        <div class="col-sm-6">
+                            Minutes(Range:1-1440) To disabled, select 0
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3">Max outgoing wrapup time</label>
+                        <div class="col-sm-3">
+                            <input type="text" class="form-control" ng-model="call_center.max_outgoing_wrapup_time"
+                                   ng-keypress="($event.which === 13)?saveCallCenter('max_outgoing_wrapup_time'):0"/>
+                        </div>
+                        <div class="col-sm-6">
+                            Minutes(Range:1-1440) To disabled, select 0
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3">No Avail Time</label>
+                        <div class="col-sm-3">
+                            <input type="text" class="form-control" ng-model="call_center.no_avail_time"
+                                   ng-keypress="($event.which === 13)?saveCallCenter('no_avail_time'):0"/>
+                        </div>
+                        <div class="col-sm-6">
+                            Minutes(Range:1-1440) To disabled, select 0
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3">No Avail Email</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" ng-model="call_center.no_avail_email"
+                                   ng-keypress="($event.which === 13)?saveCallCenter('no_avail_email'):0"/>
+                        </div>
+                        <div class="col-sm-5">
+                            User should enter valid email
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-3">Call To Idle</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" ng-model="call_center.call_to_idle"
+                                   ng-keypress="($event.which === 13)?saveCallCenter('call_to_idle'):0"/>
+                        </div>
+                        <div class="col-sm-5">
+                            Last 3 calls for agent become abandoned only then his status will change to Idle.
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3">SIP Server</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" ng-model="call_center.sip_server"
+                                   ng-keypress="($event.which === 13)?saveCallCenter('sip_server'):0"/>
+                        </div>
+                        <div class="col-sm-5">
+                            SIP Server Address
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-3">Auto WrapUp</label>
+                        <div class="col-sm-3">
+                            <div toggle-switch class="switch-primary" ng-model="call_center.auto_wrapup_flag"
+                            ng-change="saveCallCenter('auto_wrapup_flag')"
+                            >
+                            </div>						                                
+                        </div>
+                        <div class="col-sm-6">
+                            Auto WrapUp
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-3">Caller Information Save</label>
+                        <div class="col-sm-3">
+                            <div toggle-switch class="switch-primary" ng-model="call_center.caller_info_save_flag"
+                            ng-change="saveCallCenter('caller_info_save_flag')"
+                            >
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            Caller Information Save
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-3">Call Center Widget</label>
+                        <div class="col-sm-3">
+                            <div toggle-switch class="switch-primary" ng-model="call_center.call_center_widget"
+                            ng-change="saveCallCenter('call_center_widget')"
+                            >
+                            </div>						                                
+                        </div>
+                        <div class="col-sm-6">
+                            Auto WrapUp
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-3">Softphone</label>
+                        <div class="col-sm-3">
+                            <div toggle-switch class="switch-primary" ng-model="call_center.softphone_enabled"
+                            ng-change="saveCallCenter('softphone_enabled')"
+                            >
+                            </div>						                                
+                        </div>
+                        <div class="col-sm-6">
+                            Auto WrapUp
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

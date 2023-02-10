@@ -1,0 +1,135 @@
+<div ng-controller="CallSkillsController" style="padding-top: 5px">
+	<div class="col-sm-4">
+		<div class="panel panel-default" style="border-radius: 4px">
+			<div class="panel-heading">
+				<label class="font-bold text-sm"><i class="fa fa-user-circle-o text-default"></i>&nbsp;&nbsp;Call Skills</label>					
+				<div class="pull-right" style="margin-top:-3px">
+					<button type="button" class="btn btn-sm btn-bg btn-default" ng-click="onCreateSkill()">
+						<i class="fa fa-plus-circle"></i>&nbsp;New
+					</button>
+				</div>
+			</div>
+			
+			<div class="panel-body" style="padding: 5px 0px" fill-height additional-padding="120">
+				<table  st-table="skill_list"  st-pipe="getSkillList" class="table ticket table-striped b-t b-light">
+					<thead class="tblhead-sm" style="font-size: .8vw">
+						<tr class="text-center">
+							<th st-sort="id" width="50px"><b>&nbsp;&nbsp;ID</b></th>
+							<th st-sort="name"><b>Skill Name</b></th>
+							<th width="50px"><b>Action</b></th>
+						</tr>
+					</thead>
+
+					<tbody >
+						<tr class="highlight2 no-radius m-b-none m-t-n-xxs" ng-repeat="row in skill_list">
+							<td align="center">
+								<a>{{row.id}}</a>
+							</td>
+
+							<td>
+								<a>{{row.name}}</a>
+							</td>
+							<td align="center">
+                                <a class="btn default btn-xs green" ng-click="onCreateSkill(row)">
+                                    <i class="fa fa-pencil"></i></a>     
+								<a class="btn default btn-xs red" ng-click="onDeleteSkill(row)">
+                                    <i class="fa fa-times"></i></a>	                           
+                            </td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>	
+	</div>
+
+	<div class="col-sm-4">
+		<div class="panel panel-default" style="border-radius: 4px">
+			<div class="panel-heading">
+				<label class="font-bold text-sm"><i class="fa fa-user-circle-o text-default"></i>&nbsp;&nbsp;Call Skill Groups</label>					
+				<div class="pull-right" style="margin-top:-3px">
+					<button type="button" class="btn btn-sm btn-bg btn-default" ng-click="onCreateSkillGroup()">
+						<i class="fa fa-plus-circle"></i>&nbsp;New
+					</button>
+				</div>
+			</div>
+			
+			<div class="panel-body" style="padding: 5px 0px" fill-height additional-padding="120">
+				<table  st-table="skill_group_list"  st-pipe="getSkillGroupList" class="table ticket table-striped b-t b-light">
+					<thead class="tblhead-sm" style="font-size: .8vw">
+						<tr class="text-center">
+							<th st-sort="id" width="50px"><b>&nbsp;&nbsp;ID</b></th>
+							<th st-sort="name"><b>Skill Group Name</b></th>
+							<th st-sort="name"><b>Skill Name List</b></th>
+							<th ><b>Department</b></th>
+							<th width="50px"><b>Action</b></th>
+						</tr>
+					</thead>
+
+					<tbody >
+						<tr class="highlight2 no-radius m-b-none m-t-n-xxs" ng-repeat="row in skill_group_list">
+							<td align="center">
+								<a>{{row.id}}</a>
+							</td>
+							<td>
+								<a>{{row.group_name}}</a>
+							</td>
+							<td>
+								<a>{{row.skill_name_list}}</a>
+							</td>
+							<td>
+								<a>{{row.department}}</a>
+							</td>
+							<td align="center">
+                                <a class="btn default btn-xs green" ng-click="onCreateSkillGroup(row)">
+                                    <i class="fa fa-pencil"></i></a>                                
+								<a class="btn default btn-xs red" ng-click="onDeleteSkillGroup(row)">
+                                    <i class="fa fa-times"></i></a>
+                            </td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>	
+	</div>
+
+	<div class="col-sm-4">
+		<div class="panel panel-default" style="border-radius: 4px">
+			<div class="panel-heading">
+				<label class="font-bold text-sm"><i class="fa fa-user-circle-o text-default"></i>&nbsp;&nbsp;Agent Skill</label>
+			</div>
+			
+			<div class="panel-body" style="padding: 5px 0px" fill-height additional-padding="120">
+				<table  st-table="skill_group_list"  st-pipe="getAgentList" class="table ticket table-striped b-t b-light">
+					<thead class="tblhead-sm" style="font-size: .8vw">
+						<tr class="text-center">
+							<th st-sort="id" width="50px"><b>&nbsp;&nbsp;ID</b></th>
+							<th st-sort="name"><b>Agent Name</b></th>
+							<th st-sort="name"><b>Skill List</b></th>
+							<th width="50px"><b>Action</b></th>
+						</tr>
+					</thead>
+
+					<tbody >
+						<tr class="highlight2 no-radius m-b-none m-t-n-xxs" ng-repeat="row in agent_list">
+							<td align="center">
+								<a>{{row.id}}</a>
+							</td>
+							<td>
+								<a>{{row.agent}}</a>
+							</td>
+							<td>
+								<a>{{row.skill_name_list}}</a>
+							</td>
+							<td align="center">
+                                <a class="btn default btn-xs green" ng-click="onEditAgentSkill(row)">
+                                    <i class="fa fa-pencil"></i></a>                                
+                            </td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>	
+	</div>
+	
+
+</div>

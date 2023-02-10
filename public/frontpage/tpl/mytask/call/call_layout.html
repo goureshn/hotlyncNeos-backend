@@ -1,0 +1,105 @@
+<div class="hbox" ng-controller="MytaskCallController" style="position: fixed"	ng-init="asideFolded = true; menu = 'Dashboard'">
+	<style>
+		.tab-content {
+		  padding: 0px;
+		}
+	</style>
+
+	<script type="text/ng-template" id="notifyApprove.html">
+		<div class="form-group" style="text-transform: none;">
+			<p style="margin-top: 10px" ng-repeat="data in datalist"><a style="text-decoration: underline; color:#2691d9" ng-click="onClickName(data)">{{data.wholename}}</a> requesting for approval</p>
+		</div>
+	</script>
+
+	<div class="submenu col w-md bg-dark dk b-r bg-auto" style="height: 100vh" ng-hide="!asideFolded">
+		<div class="wrapper b-b bg" >
+			<a href="" class="font-bold">Category</a>
+		</div>
+		<nav ui-nav class="call_menu navi clearfix">
+			<ul class="nav">
+				<li ng-click="menu = 'Dashboard'">
+					<a href md-ink-ripple>
+						<span class="pull-right text-muted">
+							<i class="fa fa-fw fa-angle-right text"></i>
+						</span>
+						<i class="icon-bar-chart" style="margin-top: -12px; color:#FF9800;"></i>
+						<span class="font-bold">Dashboard</span>
+					</a>
+				</li>
+				<li ng-hide="true" ng-click="menu = 'Classification'">
+					<a href md-ink-ripple>
+						<span class="pull-right text-muted">
+							<i class="fa fa-fw fa-angle-right text"></i>
+						</span>
+						<i class="fa fa-pencil-square-o" style="margin-top: -12px; color:#FF9800;"></i>
+						<span class="font-bold">Classification</span>
+					</a>
+				</li>
+				<li ng-click="menu = 'Reporting'">
+					<a href md-ink-ripple>
+						<span class="pull-right text-muted">
+							<i class="fa fa-fw fa-angle-right text"></i>
+						</span>
+						<i class="mdi-action-list m-t-sm" style="margin-top: -12px; color:#FF9800;"></i>
+						<span class="font-bold">Reporting</span>
+					</a>
+				</li>
+				<li ng-click="menu = 'Directory'">
+					<a href md-ink-ripple>
+						<span class="pull-right text-muted">
+							<i class="fa fa-fw fa-angle-right text"></i>
+						</span>
+						<i class="mdi-file-folder m-t-sm" style="margin-top: -12px; color:#FF9800;"></i>
+						<span class="font-bold">Directory</span>
+					</a>
+				</li>
+				<li ng-hide="true" ng-click="menu = 'Approval'">
+					<a href md-ink-ripple>
+						<span class="pull-right text-muted">
+							<i class="fa fa-fw fa-angle-right text"></i>
+						</span>
+						<i class="icon-user-following" style="margin-top: -12px; color:#FF9800;"></i>
+						<span class="font-bold">My Approvals</span>
+					</a>
+				</li>
+				<li ng-hide="true" ng-click="menu = 'Finance'">
+					<a href md-ink-ripple>
+						<span class="pull-right text-muted">
+							<i class="fa fa-fw fa-angle-right text"></i>
+						</span>
+						<i class="icon-user-following" style="margin-top: -12px; color:#FF9800;"></i>
+						<span class="font-bold">Finance</span>
+					</a>
+				</li>
+			</ul>
+		</nav>
+		<!--<div class="text-center" style="margin-top: 35px">
+		  <a href uib-popover-template="'notifyApprove.html'" popover-enable="notify_count > 0" popover-trigger="outsideClick" popover-placement="right-top">
+			<i class="icon-bell fa-fw" style="font-size: 20px"></i>
+			<span ng-if="notify_count > 0" class="badge badge-sm up bg-danger pull-right-xs" style="top: -15px">{{notify_count}}</span>
+		  </a>
+		</div>-->
+  </div>
+  <div class="col" >
+    
+    <div>
+		<div id="left" style="float:left; padding:9px 3px 9px 2px;; background-color:#FF9800; border-radius: 0px 7px 7px 0px; height: 100%; bottom: 0">
+			<a href="" ng-click="asideFolded = !asideFolded">
+				<i class="fa fa-fw {{asideFolded ? 'fa-dedent' : 'fa-indent'}}"></i>
+			</a>
+		</div>
+        <div ng-if="menu == 'Dashboard'"
+	        ng-include="'tpl/mytask/call/dashboard.html'"
+		   ng-controller="MycallDashboardController"
+		   >
+        </div>
+        <div ng-if="menu == 'Classification'" style="background: white; padding: 10px;" ng-include="'tpl/mytask/call/classification.html'" ng-controller="MycallClassificationController as vm">
+        </div>
+        <div ng-if="menu == 'Approval'" style="background: white; padding: 10px; {{tab_content_height}}" ng-include="'tpl/mytask/call/myapproval.html'" ng-controller="MycallApprovalController">
+        </div>
+		<div ng-if="menu == 'Finance'" style="background: white; padding: 10px; {{tab_content_height}}" ng-include="'tpl/mytask/call/finance.html'" ng-controller="MycallFinanceController">
+		</div>
+    </div>
+  </div>
+
+</div>

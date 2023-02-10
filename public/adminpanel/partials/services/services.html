@@ -1,0 +1,201 @@
+<input type="hidden" id="id" value="-1" ng-model="model_data.id"/>
+
+<div  class="panel panel-default" style="border-color: #dee5e7">
+    <div class="panel-heading wrapper">
+        <div  style="float:right; margin-top: -5px; background: #efefef;padding:5px 10px 5px 10px;color: #868585">
+            <strong>{{message}}</strong>
+        </div>
+        <i class="fa fa-server"></i>
+        <span class="font-bold"> &nbsp;&nbsp;Services</span>
+    </div>
+    <div style="background-color: #eeeeee">
+        <!-- - - - - - LEFT GENERAL - - - - - -->
+        <div class="col-sm-6">
+            <div  style="margin-left:10px; height: 550px;padding:10px;">
+                <!-- - - - - - stock notification to user gorup - - - - - -->
+
+                <div>
+                    <h5 style = "border-bottom:1px solid #c0c0c0;"><strong><i class="fa fa-server" aria-hidden="true"></i>&nbsp;Live Server</strong></h5>
+                </div>
+                <div class = "row" style = "margin-top:15px;">
+                    <div class="form-group" style = "padding:15px;">
+                        <label class="col-sm-4">Directory :</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" ng-model="setting.liveserver_directory" >
+                        </div>
+                    </div>
+                    <div class="form-group" style = "padding:15px;">
+                        <label class="col-sm-4">URL :</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" ng-model="setting.liveserver_url" >
+                        </div>
+                    </div>
+
+
+                    <div class = "row">
+
+                        <div  class = "col-sm-8" style="float: right;padding:15px;">
+
+                            <button ng-disabled = 'setting.liveserver_connected' type="button" class="btn btn-success btn-sm" ng-click="startLiveserver()">
+                                <span class="glyphicon glyphicon-play"></span>
+                                <b> Start </b>
+                            </button>
+
+                            <button ng-disabled = 'setting.liveserver_connected == 0' type="button" class="btn btn-danger btn-sm" ng-click="stopLiveserver()">
+                                <span class="glyphicon glyphicon-stop"></span>
+                                <b> Stop </b>
+                            </button>
+
+                            <button ng-disabled = 'setting.liveserver_connected == 0' type="button" class="btn btn-warning btn-sm" ng-click="restartLiveserver()">
+                                <span class="glyphicon glyphicon-refresh"></span>
+                                <b> Restart </b>
+                            </button>
+                        </div>
+                        <div ng-if = 'setting.liveserver_connected' class = "col-sm-2 pull-right status7" style = "padding-top:20px;margin-top: 15px;vertical-align: middle; display: table-cell;width: 50px; height: auto; position: relative;" >
+                            <div class="dot" style="background-color:red;border:red"></div>
+                            <div class="pulse" style="background-color:red;border:red"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h5 style = "border-bottom:1px solid #c0c0c0;"><strong><i class="fa fa-server" aria-hidden="true"></i>&nbsp;Interface</strong></h5>
+                </div>
+                <div class = "row" style = "margin-top:15px;">
+                    <div class="form-group" style = "padding:15px;">
+                        <label class="col-sm-4">Directory :</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" ng-model="setting.interface_directory" >
+                        </div>
+                    </div>
+                    <div class="form-group" style = "padding:15px;">
+                        <label class="col-sm-4">URL :</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" ng-model="setting.interface_url" >
+                        </div>
+                    </div>
+                    <div class = "row">
+
+                        <div  class = "col-sm-8" style="float: right;padding:15px;">
+
+                            <button  ng-disabled = 'setting.interface_connected' type="button" class="btn btn-success btn-sm" ng-click="startInterfaceserver()">
+                                <span class="glyphicon glyphicon-play"></span>
+                                <b> Start </b>
+                            </button>
+
+                            <button ng-disabled = 'setting.interface_connected == 0' type="button" class="btn btn-danger btn-sm" ng-click="stopInterfaceserver()">
+                                <span class="glyphicon glyphicon-stop"></span>
+                                <b> Stop </b>
+                            </button>
+
+                            <button ng-disabled = 'setting.interface_connected == 0' type="button" class="btn btn-warning btn-sm" ng-click="restartInterfaceserver()">
+                                <span class="glyphicon glyphicon-refresh"></span>
+                                <b> Restart </b>
+                            </button>
+                        </div>
+                        <div ng-if = 'setting.interface_connected' class = "col-sm-2 pull-right status7" style = "padding-top:20px;margin-top: 15px;vertical-align: middle; display: table-cell;width: 50px; height: auto; position: relative;" >
+                            <div class="dot" style="background-color:red;border:red"></div>
+                            <div class="pulse" style="background-color:red;border:red"></div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div>
+                    <h5 style = "border-bottom:1px solid #c0c0c0;"><strong><i class="fa fa-server" aria-hidden="true"></i>&nbsp;Mobile Server</strong></h5>
+                </div>
+                <div class = "row" style = "margin-top:15px;">
+                    <div class="form-group" style = "padding:15px;">
+                        <label class="col-sm-4">Directory :</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" ng-model="setting.mobileserver_directory" >
+                        </div>
+                    </div>
+                    <div class="form-group" style = "padding:15px;">
+                        <label class="col-sm-4">URL :</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" ng-model="setting.mobileserver_url" >
+                        </div>
+                    </div>
+
+                    <div class = "row">
+
+                        <div  class = "col-sm-8" style="float: right;padding:15px;">
+
+                            <button ng-disabled = 'setting.mobileserver_connected' type="button" class="btn btn-success btn-sm" ng-click="startMobileserver()">
+                                <span class="glyphicon glyphicon-play"></span>
+                                <b> Start </b>
+                            </button>
+
+                            <button ng-disabled = 'setting.mobileserver_connected == 0' type="button" class="btn btn-danger btn-sm" ng-click="stopMobileserver()">
+                                <span class="glyphicon glyphicon-stop"></span>
+                                <b> Stop </b>
+                            </button>
+
+                            <button ng-disabled = 'setting.mobileserver_connected == 0' type="button" class="btn btn-warning btn-sm" ng-click="restartMobileserver()">
+                                <span class="glyphicon glyphicon-refresh"></span>
+                                <b> Restart </b>
+                            </button>
+                        </div>
+                        <div ng-if = 'setting.mobileserver_connected' class = "col-sm-2 pull-right status7" style = "padding-top:20px;margin-top: 15px;vertical-align: middle; display: table-cell;width: 50px; height: auto; position: relative;" >
+                            <div class="dot" style="background-color:red;border:red"></div>
+                            <div class="pulse" style="background-color:red;border:red"></div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div>
+                    <h5 style = "border-bottom:1px solid #c0c0c0;"><strong><i class="fa fa-server" aria-hidden="true"></i>&nbsp;Export Server</strong></h5>
+                </div>
+                <div class = "row" style = "margin-top:15px;">
+                    <div class="form-group" style = "padding:15px;">
+                        <label class="col-sm-4">Directory :</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" ng-model="setting.exportserver_directory" >
+                        </div>
+                    </div>
+                    <div class="form-group" style = "padding:15px;">
+                        <label class="col-sm-4">URL :</label>
+                        <div class="col-sm-8">
+                            <input type="text"  class="form-control" ng-model="setting.exportserver_url" >
+                        </div>
+                    </div>
+
+                    <div class = "row">
+
+                        <div  class = "col-sm-8" style="float: right;padding:15px;">
+
+                            <button ng-disabled = 'setting.exportserver_connected' type="button" class="btn btn-success btn-sm" ng-click="startExportserver()">
+                                <span class="glyphicon glyphicon-play"></span>
+                                <b> Start </b>
+                            </button>
+
+                            <button ng-disabled = 'setting.exportserver_connected == 0' type="button" class="btn btn-danger btn-sm" ng-click="stopExportserver()">
+                                <span class="glyphicon glyphicon-stop"></span>
+                                <b> Stop </b>
+                            </button>
+
+                            <button ng-disabled = 'setting.exportserver_connected == 0' type="button" class="btn btn-warning btn-sm" ng-click="restartExportserver()">
+                                <span class="glyphicon glyphicon-refresh"></span>
+                                <b> Restart </b>
+                            </button>
+                        </div>
+                        <div  ng-if = 'setting.exportserver_connected' class = "col-sm-2 pull-right status7" style = "padding-top:20px;margin-top: 15px;vertical-align: middle; display: table-cell;width: 50px; height: auto; position: relative;" >
+                            <div class="dot" style="background-color:red;border:red"></div>
+                            <div class="pulse" style="background-color:red;border:red"></div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <!-- - - - - - RIGHT GENERAL - - - - - -->
+        <div class="col-sm-6">
+
+        </div>
+        <!----end----->
+    </div>
+</div>
+
+

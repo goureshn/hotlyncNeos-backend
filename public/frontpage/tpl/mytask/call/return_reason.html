@@ -1,0 +1,28 @@
+<div class="modal-body wrapper-lg">
+    <h3 class="m-t-none m-b font-thin">CALL CLASSIFICATION (RETURNED)</h3>
+    <div class="row" style="margin-bottom: 15px" ng-repeat="comment in comment_list">
+        <div class="col-sm-2">
+            <p class="call_comment">{{comment.wholename}}&nbsp;:</p>
+            <span>{{comment.date_time | mydatetime}}&nbsp;:</span>
+        </div>
+        <div class="col-sm-10">
+            <p class="call_comment">{{comment.comment}}</p>
+        </div>
+    </div>
+
+    <div class="row" style="margin-top: 30px">
+        <div class="col-sm-11" style="padding-right: 0px">
+            <textarea class="form-control input-sm" rows="5" ng-model="call.comment_content" style="resize:none"></textarea>
+        </div>
+        <div class="col-sm-1">
+            <button class="btn btn-icon btn-info"><i class="fa fa-paperclip"></i></button>
+        </div>
+    </div>
+
+    <div class="row" style="margin-top: 20px">
+        <div class="pull-right">
+            <button type="submit" class="btn btn-sm btn-primary text-uc m-t-n-xs" ng-click="send()"><strong>&nbsp;&nbsp;&nbsp;Save&nbsp;&nbsp;&nbsp;</strong></button>
+            <button type="submit" class="btn btn-sm btn-default text-uc m-t-n-xs" ng-click="cancel()"><strong>&nbsp;&nbsp;Cancel&nbsp;&nbsp;</strong></button>
+        </div>
+    </div>
+</div>

@@ -49,6 +49,7 @@ class MinibarItemController extends UploadController
 							<span class="glyphicon glyphicon-trash"></span>
 						</button></p>';
 				})
+				->rawColumns(['checkbox', 'thumbnail', 'itemstatus', 'edit', 'delete'])
 				->make(true);
 
 
@@ -67,7 +68,9 @@ class MinibarItemController extends UploadController
 	public function store(Request $request)
 	{
 		$input = $request->except(['id','user_id']);
-		//$input  = $request->except('user_id');
+		foreach ($input as $key => $value) {
+			if($value === null) $input[$key] = "";
+		}
 
 		$model = RoomServiceItem::create($input);
 		$itm_id = $model->id;

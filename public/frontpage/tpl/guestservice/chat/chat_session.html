@@ -1,0 +1,99 @@
+<div style="padding-left: 0; padding-right: 0; font-size: 15px">
+    <div class="panel panel-default" style="border-radius: 4px">
+        <div class="panel-heading">
+            <label class="text-sm font-bold"><i class="fa fa-male text-default"></i>&nbsp;&nbsp;Guest Information</label>
+        </div>
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-sm-4">
+                    <div class="col-sm-6 control-label text-muted">Name</div>
+                    <div class="col-sm-6 control-label" style="text-align: left"><strong>{{room.guest_name}}</strong>
+                    </div>
+                    <div class="col-sm-6 control-label text-muted">Check In</div>
+                    <div class="col-sm-6 control-label" style="text-align: left"><strong>{{room.arrival | mydate}}</strong></div>
+                </div>
+                <div class="col-sm-4">
+                    <button class="btn m-b-xs btn-primary" style="width: 100%;vertical-align: middle;">Create 2 Requests
+                    </button>
+                </div>
+                <div class="col-sm-4">
+                    <div class="col-sm-8 control-label text-muted">Previous Request</div>
+                    <div class="col-sm-4 control-label" style="text-align: left"><strong>15</strong></div>
+                    <div class="col-sm-6 control-label text-muted">Check Out</div>
+                    <div class="col-sm-6 control-label" style="text-align: left"><strong>{{room.departure | mydate}}</strong></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <label class="text-sm font-bold"><i class="fa fa-comment text-default"></i>&nbsp;&nbsp;Chat</label>
+            <div class="pull-right">
+        <span class="" ng-class="{'label' : true, 'm-l-sm': true,
+            'bg-wakeup-success': room.status == 'Online',
+            'bg-wakeup-waiting': room.status == 'Offline'
+            }">{{room.status}}
+        </span>
+            </div>
+        </div>
+        <div class="panel-body" style="{{content_height}}" scroll-glue>
+            <div class="m-b" ng-repeat="msg in messages">
+                <a ng-if="msg.direction == 0" href class="pull-left"
+                   ng-style="{'margin-top': msg.language == 'en' || !msg.text_trans ? '0px' : '20px'}">
+                    <button class="btn btn-rounded btn-lg btn-icon btn-default">G</button>
+                </a>
+                <!-- self -->
+                <div class="m-l-xxl" style="margin-left: 60px" ng-if="msg.direction == 0">
+                    <div ng-show="msg.language != 'en' && msg.text_trans">
+                        <label class="font-bold">
+                            (
+                            <a class="text-sm ng-binding" dynamic="msg.text_trans">
+                            </a>
+                            )
+                        </label>
+                    </div>
+                    <div class="pos-rlt wrapper b b-light bg-info r r-2x">
+                        <span class="arrow left pull-up arrow-info"></span>
+                        <p class="m-b-none chat" dynamic="msg.text"></p>
+                    </div>
+                    <small class="text-muted"><i class="fa fa-ok text-success"></i>{{ msg.created_at | mydate: "h:mm a" }}
+                    </small>
+                </div>
+                <!-- self -->
+                <div ng-if="msg.direction == 1">
+                    <div style="text-align: right">
+                        <label class="font-bold">
+                            <a class="text-sm ng-binding">
+                                <i class="fa fa-user text-primary"></i>
+                                &nbsp;{{content.user_id == msg.agent_id ? 'Me' : msg.agent_name}}
+                            </a>
+                        </label>
+                    </div>
+                    <div class="pos-rlt wrapper bg-primary r r-2x">
+                        <span class="arrow right pull-up arrow-primary"></span>
+                        <p class="m-b-none">{{msg.text}}</p>
+                    </div>
+                    <small class="text-muted">{{ msg.created_at | mydate: "h:mm a" }}</small>
+                </div>
+            </div>
+        </div>
+        <footer class="panel-footer">
+            <!-- chat form -->
+            <div>
+                <form class="m-b-none">
+                    <div class="input-group">
+                        <label>
+                            <input type="text" class="form-control" ng-model="content.chat" placeholder="Say something"
+                                   ng-disabled="room.status != 'Online'">
+                        </label>
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" type="button" ng-disabled="!content.chat || room.status != 'Online'"
+                                  style="font-size: 12px" ng-click="onSendMessage(content.chat)">SEND</button>
+                        </span>
+                    </div>
+                </form>
+            </div>
+        </footer>
+    </div>
+</div>

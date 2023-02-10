@@ -1,0 +1,266 @@
+<style>
+  #room-dropdown-menu .dropdown-menu {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  #task-dropdown-menu .dropdown-menu {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  #location-dropdown-menu .dropdown-menu {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  #requester-dropdown-menu .dropdown-menu {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  #usergroup-dropdown-menu .dropdown-menu {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+</style>
+<script type="text/ng-template" id="locationTypeahead.html">
+  <a>
+    <span ng-bind="match.model.name"></span><br>
+    <span style="font-size: 10px" ng-bind="match.model.type"></span><br>
+  </a>
+</script>
+
+<script type="text/ng-template" id="userTypeahead.html">
+  <a>
+    <span ng-bind="match.model.wholename"></span><br>
+    <span style="font-size: 10px" ng-bind="match.model.job_role"></span><br>
+  </a>
+</script>
+
+<script type="text/ng-template" id="usergroupTypeahead.html">
+  <a>
+    <span ng-bind="match.model.group_name"></span><br>
+    <span style="font-size: 10px" ng-bind="match.model.access_level"></span><br>
+  </a>
+</script>
+
+<div style="width: 80%;" class="col-centered">
+
+</div>
+<div class="row" ng-repeat="task in tasks" style="margin: 0">
+  <div class="col-lg-12">
+    <div class="panel panel-default" >
+      <div class="panel-heading font-bold row" style="display: flex; align-items: center; margin-right: 0; margin-left: 0">
+        <div class="col-lg-2">
+          <span style="float: left;">Tasks #  {{getTicketNumber($index)}}</span>
+        </div>
+        <div class="col-lg-5 float-left">
+          <select class='form-control input-sm m-b' style="margin: 0" ng-model="task.subtype" ng-change="onChangeType(task)"
+                  ng-options="type for type in request_types">
+          </select>
+        </div>
+        <div class="col-lg-3" style="padding-right: 0;">
+          <div class="pull-right" ng-if="$index == 0">
+            <button type="button" class="btn btn-dark btn-sm" style="float: right" ng-click="removeNewSelectTicket(tab)">
+              <span class="text-danger font-bold">Cancel</span></button>
+            <button type="button" class="btn btn-dark btn-sm {{bAddAllow ? '' : 'disabled'}}" style="float:right; margin-right: 10px" ng-click="createTasks(0)">
+              <span class="text-success font-bold">Create</span></button>
+          </div>
+        </div>
+        <div class="col-lg-2">
+          <div class="pull-right">
+            <button type="button" class="btn btn-danger btn-icon-only btn-circle" ng-click="addTask()">
+              <i class="fa fa-plus"></i>
+            </button>
+            <button type="button" class="btn btn-info btn-icon-only btn-circle" ng-click="removeTask($index)" ng-show="tasks.length > 1">
+              <i class="fa fa-minus"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="panel-body" style="padding: {{task.subtype == '--Select Type--' ? 0 : '15px'}}">
+        <form class="form-horizontal">
+          <div ng-show="task.subtype == 'Guest Request'">
+            <div class="form-group">
+              <label class="col-lg-2 control-label">Room #</label>
+              <div class="col-lg-4" id="room-dropdown-menu" >
+                <input type="text" ng-model="task.selected_room.room" class="form-control input-sm" placeholder="Room No."
+                       uib-popover="Please input room number!" popover-trigger="mouseenter" popover-placement="right"
+                       uib-typeahead="room.room for room in room_list | filter:$viewValue | limitTo:10"
+                       typeahead-editable="false"
+                       typeahead-min-length="0"
+                       typeahead-on-select="onRoomSelect(task, $item, $model, $label)">
+
+              </div>
+              <label class="col-lg-2 control-label">Guest : </label>
+              <div class="col-lg-4">
+                <input class="form-control input-sm" placeholder="Guest Name" ng-model="task.guest.guest_name" disabled>
+              </div>
+            </div>
+          </div>
+
+          <div ng-show="task.subtype == 'Department Request'">
+            <div class="form-group">
+              <label class="col-lg-2 control-label">Location</label>
+              <div class="col-lg-4" id="location-dropdown-menu">
+                <input type="text" ng-model="task.location.name" class="form-control  input-sm"
+                       uib-popover="Please input location name!" popover-trigger="mouseenter" popover-placement="right"
+                       uib-typeahead="room.room for room in location_list | filter:$viewValue | limitTo:10"
+                       typeahead-editable="false"
+                       typeahead-min-length="0"
+                       typeahead-template-url="locationTypeahead.html"
+                       typeahead-on-select="onLocationSelect(task, $item, $model, $label)" required>
+
+              </div>
+              <label class="col-lg-2 control-label">Type</label>
+              <div class="col-lg-4">
+                <input class="form-control input-sm" placeholder="Location type" ng-model="task.location.type" disabled required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label">Requester</label>
+              <div class="col-lg-4" id="requester-dropdown-menu">
+                <input type="text" ng-model="task.requester.wholename" class="form-control  input-sm"
+                       uib-typeahead="user.username for user in staff_list | filter:$viewValue | limitTo:10"
+                       typeahead-min-length="0"
+                       typeahead-editable="false"
+                       typeahead-template-url="userTypeahead.html"
+                       typeahead-on-select="onRequesterSelect(task, $item, $model, $label)" required>
+              </div>
+              <label class="col-lg-2 control-label"> Job Role </label>
+              <div class="col-lg-4">
+                <input type="text" class="form-control input-sm" ng-model="task.requester.job_role" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-lg-2 control-label">Notify</label>
+              <div class="col-lg-3">
+                <label class="i-switch m-t-xs m-r">
+                  <input type="checkbox" ng-model="task.notify_flag" checked>
+                  <i></i>
+                </label>
+              </div>
+              <label class="col-lg-3 control-label"> Time </label>
+              <div class="col-lg-4">
+                <input type="text" class="form-control input-sm" ng-model="task.request_time" ng-show="task.notify_flag" required>
+              </div>
+            </div>
+
+            <div class="form-group" ng-show="task.notify_flag">
+              <label class="col-lg-2 control-label">Mobile</label>
+              <div class="col-lg-4">
+                <input type="text" class="form-control input-sm" ng-model="task.requester.mobile" required>
+              </div>
+              <label class="col-lg-2 control-label">Email</label>
+              <div class="col-lg-4">
+                <input type="text" class="form-control input-sm" ng-model="task.requester.email" required>
+              </div>
+            </div>
+          </div>
+
+          <div ng-show="task.subtype == 'Guest Request' || task.subtype == 'Department Request'">
+            <hr/>
+            <div class="form-group">
+              <label class="col-lg-2 control-label">Task</label>
+              <div class="col-lg-4" >
+                <div class="scrollable-dropdown-menu">
+                  <input ng-model="task.tasklist.task" class="form-control  input-sm"
+                         uib-typeahead="item.task for item in getTaskList(task, $viewValue)"
+                         typeahead-min-length="0"
+                         typeahead-on-select="onTaskSelect(task, $item, $model, $label)"
+                         typeahead-no-results="noResults"
+                         required
+                  />
+                  <span ng-if="noResults" uib-dropdown uib-dropdown-toggle auto-close="disabled" is-open="true">
+                    <ul class="dropdown-menu" >
+                      <li><a href ng-click="onAddTask(task)">{{task.tasklist.task}} (New Task Item))</a></li>
+                    </ul>
+                </span>
+                </div>
+              </div>
+              <label class="col-lg-2 control-label">Quantity</label>
+              <div class="col-lg-4">
+                <input type="number" min="1" class="form-control input-sm" ng-model="task.quantity" maxlength="2">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-lg-2 control-label">Department</label>
+              <div class="col-lg-4">
+                <div class="scrollable-dropdown-menu">
+                  <input ng-model="task.department" maxlength="50" class="form-control input-sm"
+                         uib-typeahead="item.department for item in dept_list | filter:$viewValue | limitTo:10"
+                         typeahead-on-select="onDepartSelect(task, $item, $model, $label)"
+                         typeahead-editable="false"
+                         typeahead-min-length="0"
+                         ng-disabled="!task.department_edit_flag"
+                         required />
+                </div>
+              </div>
+              <label class="col-lg-2 control-label">Function</label>
+              <div class="col-lg-4">
+                <input class="form-control input-sm" ng-model="task.dept_func.function">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-lg-2 control-label">Staff</label>
+              <div class="col-lg-4">
+                <input type="text" ng-model="task.username" class="form-control  input-sm"
+                       uib-typeahead="item.wholename for item in task.userlist | filter:{wholename:$viewValue} | limitTo:10"
+                       typeahead-min-length="0"
+                       typeahead-editable="false"
+                       typeahead-on-select="onStaffSelect(task, $item, $model, $label)">
+              </div>
+              <label class="col-lg-2 control-label">Device</label>
+              <div class="col-lg-4">
+                <input class="form-control input-sm" ng-model="task.device">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-lg-2 control-label">Priority</label>
+              <div class="col-lg-4">
+                <select class='form-control input-sm' ng-model="task.priority_id"
+                        ng-options="value.id as value.priority for (key, value) in prioritylist" />
+              </div>
+              <label class="col-lg-2 control-label">Duration (mins)</label>
+              <div class="col-lg-4">
+                <input type="number" class="form-control input-sm" ng-model="task.max_duration">
+              </div>
+            </div>
+          </div>
+
+          <div ng-show="task.subtype == 'Other Request'">
+            <hr/>
+            <div class="form-group">
+              <label class="col-lg-2 control-label">User Group</label>
+              <div class="col-lg-2">
+                <label class="i-switch m-t-xs m-r">
+                  <input type="checkbox" ng-model="task.group_flag" checked>
+                  <i></i>
+                </label>
+              </div>
+              <div class="col-lg-4" id="usergroup-dropdown-menu" >
+                <input type="text" ng-model="task.requester.wholename" class="form-control  input-sm" ng-show="!task.group_flag"
+                       uib-typeahead="item.wholename for item in staff_list | filter:$viewValue | limitTo:10"
+                       typeahead-min-length="0"
+                       typeahead-on-select="onUserSelect(task, $item, $model, $label)">
+                <input type="text" ng-model="task.requester_group.group_name" class="form-control  input-sm" ng-show="task.group_flag"
+                       uib-typeahead="item.name for item in usergroup_list | filter:$viewValue | limitTo:10"
+                       typeahead-min-length="0"
+                       typeahead-template-url="usergroupTypeahead.html"
+                       typeahead-on-select="onUserGroupSelect(task, $item, $model, $label)">
+              </div>
+              <div class="col-lg-4" ng-show="!task.group_flag">
+                <input class="form-control input-sm" ng-model="task.requester.mobile">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group" ng-show="task.subtype != '--Select Type--'">
+            <label class="col-lg-2 control-label">Comment</label>
+            <div class="col-lg-10">
+              <textarea class="form-control input-sm" rows="1" ng-model="task.custom_message" style="resize:none"></textarea>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+

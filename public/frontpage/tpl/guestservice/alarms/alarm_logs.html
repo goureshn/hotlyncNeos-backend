@@ -1,0 +1,50 @@
+<div ng-controller="AlarmLogsController" style="{{full_height}}">
+    <div class="wrapper-md1 bg-light b-b">
+        <h1 class="m-n font-thin h3">Logs</h1>
+    </div>
+    <div class="wrapper-md1">
+        
+
+        <div class="panel panel-default">
+            
+            <div class="table table-responsive">
+                <table  st-table="alarmlist"  st-pipe="getAlarmList" class="table ticket">
+                    <thead >
+                        <tr >
+                            <th st-sort="id" st-sort-default="reverse"><b>ID</b></th>
+                            <th st-sort="time"><b>Date</b></th>
+                            <th st-sort="time"><b>Time</b></th>
+                            <th st-sort="name"><b>Group</b></th>
+                            <th st-sort="message"><b>Message</b></th>
+                            <th st-sort="username"><b>Sent by</b></th>
+                        </tr>
+                    </thead>
+                    <tbody ng-hide="isLoading">
+                        <tr class="" ng-repeat="row in alarmlist">
+                            <td style="width: 40px">
+                                <a>{{row.id}}</a>
+                            </td>
+                            <td class="col-sm-1">{{getDate(row)}}</td>
+                            <td class="col-sm-1">{{getTime(row)}}</td>
+                            <td class="col-sm-1">{{row.group_name}}</td>
+                            <td>{{row.message}}</td>
+                            <td class="col-sm-1">{{row.wholename}}</td>
+                        </tr>
+                    </tbody>
+                    <tbody ng-show="isLoading">
+                    <tr>
+                        <td colspan="6" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+                    </tr>
+                    </tbody>
+                    <tfoot ng-hide="isLoading">
+                        <tr ng-show="paginationOptions.totalItems > paginationOptions.pageSize">
+                            <td colspan="6" class="text-center">
+                                <div st-pagination="" st-items-by-page="paginationOptions.pageSize" st-displayed-pages="7" class="no-margin"></div>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

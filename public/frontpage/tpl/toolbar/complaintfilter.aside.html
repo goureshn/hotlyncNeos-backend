@@ -1,0 +1,160 @@
+<div class="aside hbox" style="height: 100%;" tabindex="-1" role="dialog">
+	<div class="col bg-light dk b-r bg-auto" style="padding-left: 10px">
+		<div class="wrapper b-b bg">
+			<a href="" class="font-bold">Filters</a>
+			<button  type="button" class="btn btn-success btn-round-xs btn-xs pull-right"  ng-click="saveTicketFilter()" >Apply Filter</button>
+		</div>
+		
+		<div><h5><strong>All</strong>
+			<label class="i-switch m-t-xs m-r pull-right" style="margin-right: 80px; margin-top: -2px">
+				<input type="checkbox" ng-model="filter.all_flag" />
+				<i></i>
+			</label></h5>
+		</div> 	
+		<!-- Ticket Filter -->
+		<div>
+			<h5><strong>Ticket</strong></h5>
+			<ul class="headfilter" role="menu" style="list-style: none; margin-left:-50px;">
+				<li class="line-sm" ng-repeat="ticket in filter_list">
+					<label class="md-check" style="margin-left: 20px">
+						<input type="radio"  name="optionname"   ng-model="filter.ticket" ng-value="ticket"  ng-click ="onChangeradio(ticket)"  />
+						<i class="green"></i>
+						<span ng-if="ticket != 'Custom Days'">
+						{{ ticket }}
+						</span>
+					</label>
+					<div ng-if="ticket == 'Custom Days'" style="display: inline-block;">
+						<input style="min-width: 100px; margin-left: 10px;height:22px;padding:2px 
+						10px;" ng-change="fetchDateBetn(this)" id="dataranger" ng-disabled="ticket != 
+						'Custom Days'" ng-model="daterange2" ui-jq="daterangepicker" ui-options="dateRangeOption" 
+						class="form-control pull-right input-sm">
+					</div>
+				</li>
+			</ul>
+		</div>
+
+		<!-- Status Filter -->
+		<div>
+			<h5><strong>Status</strong></h5>
+			<ul class="headfilter" role="menu" style="list-style: none; margin-left:-50px;">
+				<li class="line-sm" ng-repeat="(key, value) in filter.status_filter">
+					<label class="md-check" style="margin-left: 20px">
+						<input type="checkbox" ng-model="filter.status_filter[key]" ng-disabled="filter.all_flag">
+						<i class="green"></i>
+						{{key}}
+					</label>
+				</li>
+			</ul>
+		</div>
+
+		<!-- Severity Filter -->
+		<div>
+			<h5><strong>Severity</strong></h5>
+			<ul class="headfilter" role="menu" style="list-style: none; margin-left:-50px;">
+				<li class="line-sm" ng-repeat="(key, value) in filter.severity_filter">
+					<label class="md-check" style="margin-left: 20px">
+						<input type="checkbox" ng-model="filter.severity_filter[key]" ng-disabled="filter.all_flag">
+						<i class="green"></i>
+						{{key}}
+					</label>
+				</li>
+			</ul>
+		</div>
+
+		<!-- Property Filter -->
+		<div ng-show="property_ids.length > 1">
+			<h5><strong>Property</strong></h5>
+			<ul class="headfilter" role="menu" style="list-style: none; margin-left:-50px;">
+				<li class="line-sm" ng-repeat="(key, value) in filter.property_filter">
+					<label class="md-check" style="margin-left: 20px">
+						<input type="checkbox" ng-model="filter.property_filter[key]" ng-disabled="filter.all_flag">
+						<i class="green"></i>
+						{{key}}
+					</label>
+				</li>
+			</ul>
+		</div>
+
+		<!-- Department Filter -->
+		<div>
+			<h5><strong>Department</strong></h5>
+			<div>
+				<tags-input ng-model="filter.department_tags" display-property="department" placeholder="Add Department" style="margin-top: -7px; margin-right: 7px" replace-spaces-with-dashes="false" ng-disabled="filter.all_flag">
+					<auto-complete source="loadDepartmentFilters($query)"
+								min-length="0"
+								load-on-focus="true"
+								load-on-empty="true"
+								debounce-delay="0"
+								max-results="10">
+					</auto-complete>
+				</tags-input>
+			</div>
+		</div>
+
+		<!-- Discussed Filter -->
+		<div>
+			<h5><strong>Discussed</strong></h5>
+			<ul class="headfilter" role="menu" style="list-style: none; margin-left:-50px;">
+				<li class="line-sm">
+					<label class="md-check" style="margin-left: 20px">
+						<input type="checkbox" ng-model="filter.discussed" ng-disabled="filter.all_flag">
+						<i class="green"></i>
+						Discussed
+					</label>
+				</li>
+			</ul>
+		</div>
+		
+		<!-- Service Recovery Filter -->
+		<div>
+			<h5><strong>Service Recovery</strong>
+			<label class="i-switch m-t-xs m-r pull-right" style="margin-right: 80px; margin-top: -2px">
+				<input type="checkbox" ng-model="filter.sr_flag" ng-change="onCompenChange(filter.sr_flag)" ng-disabled="filter.all_flag">
+				<i></i>
+			</label></h5>
+			<ul class="headfilter" ng-hide="!filter.sr_flag" role="menu" style="list-style: none; margin-left:-50px;">
+				<li class="line-sm" ng-repeat="compen in filter_compen">
+					<label class="md-check" style="margin-left: 20px">
+						<input type="radio"  ng-model="filter.service_recovery" ng-value="compen" ng-disabled="filter.all_flag"/>
+						<i class="green"></i>
+						{{compen}}
+					</label>
+				</li>
+			</ul>
+		</div>
+
+		<!-- Guest Type Filter -->
+		<div>
+		<h5><strong>Type</strong></h5>
+			<ul class="headfilter" role="menu" style="list-style: none; margin-left:-50px;">
+				<li class="line-sm" ng-repeat="(key, value) in filter.guest_type_filter">
+					<label class="md-check" style="margin-left: 20px">
+						<input type="checkbox" ng-model="filter.guest_type_filter[key]" ng-disabled="filter.all_flag">
+						<i class="green"></i>
+						{{key}}
+					</label>
+				</li>
+			</ul>
+		</div>
+
+		<!-- Departure Date Filter -->
+		<div style="margin-bottom: 10px">
+			<h5><strong>Departure Date</strong></h5>
+			<ul class="headfilter" role="menu" style="list-style: none; margin-left:-50px;">
+				<li class="line-sm">
+				<label class="md-check" style="margin-left: 20px">
+					<input type="checkbox" ng-model="filter.departure_flag" ng-disabled="filter.all_flag">
+					<i class="green"></i>
+					Departure Date
+				</label>
+				</li>
+			</ul>
+			<div class="input-group">
+				<span class="input-group-btn">
+					<button type="button" class="btn btn-default btn-sm" ng-click="open($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+				</span>
+				<input type="text" class="form-control input-sm" uib-datepicker-popup="yyyy-MM-dd" ng-model="filter.departure_date" is-open="config.opened" datepicker-options="dateOptions" close-text="Close" required ng-disabled="filter.departure_flag != true" ng-disabled="filter.all_flag" ng-change="select(filter.departure_date)"/>
+			</div>
+		</div>
+	</div>
+</div>

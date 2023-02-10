@@ -1,0 +1,52 @@
+<input type="hidden" id="id" value="-1" ng-model="model_data.id"/>
+ 
+	<div class="panel panel-default"> 
+		<div class="panel-heading wrapper"> 
+			<!--<button type="button" class="btn btn-success btn-sm" style="float:right; margin-top: -5px" data-toggle="modal" data-target="#addModal" ng-disabled="job_role!='SuperAdmin'&&edit_flag==0" ng-click="onShowEditRow(-1)">
+				<span class="glyphicon glyphicon-plus"></span>
+				<b> Add New </b>
+			</button>   -->                          
+			<i class="fa fa-cubes"></i>                            
+			<span class="font-bold">Logs Management</span>
+		</div>                        
+		<div class=""> 
+			<table id="table_grid" class="table table-hover table-bordered" style="text-align: center;width:100%" ng-model = "table_grid"> 
+				<thead> 
+					<tr> 
+						<tr><!--
+							<th class="no-sort" style="text-align: center">
+								<input type="checkbox" id="checkall" />
+							</th>-->
+							<th style="text-align: center" ng-repeat = "field in fields">
+								<b>{{field}}</b>
+							</th>																												
+						</tr>
+					</tr>                                     
+				</thead>                    
+			</table>                             
+		</div>                     
+	</div>    
+</div>
+	
+<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"> 
+	<div class="modal-dialog" role="document"> 
+		<div class="modal-content"> 
+			<div class="modal-header"> 
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"> 
+					<span aria-hidden="true">&times;</span> 
+				</button>                             				
+				<h3 class="modal-title" style="color:#2691d9">Detail Log</h3>				
+			</div>                         
+			<div class="modal-body"> 
+				<br> 
+				<form class="form-horizontal"> 					
+					<text-item formlabel="Time" modelname="model_data.timestamp"></text-item>
+					<text-item formlabel="Level" modelname="model_data.level"></text-item>					
+					<textarea-item formlabel="Message" modelname="model_data.message"></textarea-item>		
+				</form>                             
+			</div>                         					
+		</div>                     
+	</div>                 
+</div>             
+
+<dialog-delete title="Logs" modelname="model_data.name" deletedata="deleteRow()"></dialog-delete>

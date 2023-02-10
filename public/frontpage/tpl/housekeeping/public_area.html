@@ -1,0 +1,201 @@
+<div ng-controller="PublicAreaController" style="{{full_height}}">
+    <div class="wrapper-md1">
+        
+
+        <div class="col-sm-4" style="margin:0; padding:0;">
+
+            <div class="col-sm-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading"><i class="fa fa-plus" aria-hidden="true">
+                        </i>&nbsp;Main Task
+                        <div class="pull-right">
+                            <button type="button" class="btn btn-sm btn-primary text-uc m-t-n-xs" ng-click="addPublicAreaMain()" ><strong>&nbsp;&nbsp;&nbsp;Add Main Task&nbsp;&nbsp;&nbsp;</strong></button>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="table table-responsive" style="height:100%">
+                            <table st-table="datalist" class="table ticket">
+                                <thead class="tblhead-sm" style="background: #88888a">
+                                    <tr>
+                                        <td>Name</td>      
+                                        <td></td>               
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="area in publicAreasMain">
+                                        <td data-title="'Name'">{{area.name}}</td>  
+                                            
+                                        <td class="pull-right">
+                                            <a class="btn default btn-xs green" ng-click="onEditPublicAreaMain(area)" >
+                                                <i class="fa fa-pencil"></i></a>
+                                            <a class="btn default btn-xs blue" ng-click="onViewPublicAreaMain(area)" >
+                                                <i class="fa fa-eye"></i></a>  
+                                        </td>                     
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading"><i class="fa fa-plus" aria-hidden="true">
+                        </i>&nbsp;{{ mainTaskName }}
+                        <div class="pull-right">
+                            <button type="button" class="btn btn-sm btn-primary text-uc m-t-n-xs" ng-hide="mainTaskId == 0" ng-click="addPublicArea()" ><strong>&nbsp;&nbsp;&nbsp;Add Task&nbsp;&nbsp;&nbsp;</strong></button>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="table table-responsive" style="height:100%">
+                            <table st-table="datalist" class="table ticket">
+                                <thead class="tblhead-sm" style="background: #88888a">
+                                    <tr>
+                                        <td>Location</td>  
+                                        <!-- <td>Start Time</td>
+                                        <td>End Time</td>  -->
+                                        <td>Active</td>           
+                                        <td></td>               
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="area in publicAreas">
+                                        <td data-title="'Name'">{{area.name}}</td>  
+                                        <!-- <td data-title="'Start Time'">{{area.start_time}}</td> 
+                                        <td data-title="'End Time'">{{area.end_time}}</td>  -->
+                                        <td data-title="'Active'">
+                                            <label class="i-switch m-t-xs m-r">
+                                                <input type="checkbox" ng-model="area.status" ng-checked="area.status == 1 ? true : false" ng-change="onChangePAActive(area)" class="ng-pristine ng-untouched ng-valid ng-not-empty" tabindex="0" aria-checked="true" aria-invalid="false">
+                                                <i></i>
+                                            </label>
+                                        </td>
+                                        <td class="pull-right">
+                                            <a class="btn default btn-xs purple" ng-click="onViewQRCode(area)">
+                                                <i class="fa fa-qrcode"></i></a>
+                                            <a class="btn default btn-xs green" ng-click="onEditPublicArea(area)">
+                                                <i class="fa fa-pencil"></i></a>
+                                            <!-- <a class="btn default btn-xs blue" ng-click="onViewPublicArea(area)">
+                                                <i class="fa fa-eye"></i></a>   -->
+                                        </td>                     
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- <div class="col-sm-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <i class="fa fa-list-ul" aria-hidden="true"></i>&nbsp;SELECTED NAME
+                        <div class="pull-right">
+                            <button type="button" class="btn btn-sm btn-primary text-uc m-t-n-xs" ><strong>&nbsp;&nbsp;&nbsp;Btn&nbsp;&nbsp;&nbsp;</strong></button>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        {{test}}
+                        <p>{{calendarDate}}</p>
+                        <p>{{calendarMonth}}</p>
+                        <p>{{calendarMonthName}}</p>
+                        <p>{{calendarDay}}</p>
+                        <p>{{calendarDayName}}</p>
+                        <p>{{calendarYear}}</p>
+                        <p>{{daysInMonth}}</p>
+                        <p>{{publicAreas}}</p> 
+    
+                        <div class="panel">
+                            <button type="button" ng-click="nextCalendarDay()" class="btn btn-sm btn-primary text-uc m-t-n-xs" >
+                                <strong>&nbsp;&nbsp;&nbsp;<i class="fa fa-solid fa-chevron-left"></i>&nbsp;&nbsp;&nbsp;</strong>
+                            </button>
+                            <button type="button" ng-click="todayCalendarDay()" class="btn btn-sm btn-primary text-uc m-t-n-xs" >
+                                <strong>&nbsp;&nbsp;&nbsp;Today&nbsp;&nbsp;&nbsp;</strong>
+                            </button>
+                            <button type="button" ng-click="previousCalendarDay()" class="btn btn-sm btn-primary text-uc m-t-n-xs" >
+                                <strong>&nbsp;&nbsp;&nbsp;<i class="fa fa-solid fa-chevron-right"></i>&nbsp;&nbsp;&nbsp;</strong>
+                            </button>
+                            <span> {{calendarDate}} </span>
+                            <span> {{calendarDayName}} </span>
+                            <span> {{calendarYear}} </span>
+                            <input type="color" value="#f6b73c" ng-model="test">
+                            {{ test }}
+                        </div>
+    
+                        <div class="panel">
+                            <div style="display:flex;">
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> -->
+
+            
+
+        </div>
+        <div class="col-sm-8" style="margin:0; padding:0;">
+            
+            <div class="col-sm-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <i class="fa fa-list-ul" aria-hidden="true"></i>&nbsp;Filters
+                        <div class="pull-right">
+                            
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        
+                        <div class="col-sm-4" >
+                            <div class="form-group" >
+                                <select class="form-control input-sm ng-pristine ng-valid ng-not-empty ng-touched" placeholder="Select By"
+                                ng-model="reportBy" ng-options="value for value in selectReportBy" ng-change="" aria-invalid="false" style="">
+                                    
+                                </select>
+                            </div> 
+                        </div>
+                        <div class="col-sm-4" >
+                            <div class="form-group" >
+                                <select class="form-control input-sm ng-pristine ng-valid ng-not-empty ng-touched" placeholder="Select Duration"
+                                ng-model="reportDuration" ng-options="value for value in selectReportDuration" ng-change="" aria-invalid="false" style="">
+                               
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-sm-4" >
+                            <div class="form-group" >
+                                <button type="button" ng-click="generateReport()" class="btn btn-sm btn-primary" ><strong>&nbsp;&nbsp;&nbsp;Generate Report&nbsp;&nbsp;&nbsp;</strong></button>
+                            </div>
+                        </div>
+                          
+                    </div>
+                </div>
+            </div>
+    
+            <div class="col-sm-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <i class="fa fa-list-ul" aria-hidden="true"></i>&nbsp;Report
+                        <div class="pull-right">
+                            <button type="button" ng-click="downloadReport()" class="btn btn-sm btn-primary text-uc m-t-n-xs" ><strong>&nbsp;&nbsp;&nbsp;Download&nbsp;&nbsp;&nbsp;</strong></button>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+
+                        <div id="public_area_report">
+
+                        </div>
+                       
+                        
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        
+        
+
+        
+    </div>
+</div>
+

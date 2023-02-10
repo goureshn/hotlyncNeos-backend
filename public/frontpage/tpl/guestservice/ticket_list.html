@@ -1,0 +1,207 @@
+<style>
+	.ticket > tbody > tr > th, .ticket > tfoot > tr > th, .ticket > tbody > tr > td, .ticket > tfoot > tr > td {
+	/*padding: 1px 1px;*/
+	text-align: center;
+	vertical-align: middle;
+	}
+</style>
+
+<script type="text/ng-template" id="cancelReasonModal.html">
+	<div ng-include="'tpl/guestservice/modal/cancel_reason.html'"></div>
+</script>
+<script type="text/ng-template" id="modal_input.html">
+  	<div ng-include="'tpl/modal/modal_input.html'"></div>
+</script>
+<!-- header -->
+<div>
+	<div class="wrapper bg-light lter b-b">
+		<div class="btn-group pull-right">
+			<button type="button" class="btn btn-sm btn-bg btn-default">
+				{{paginationOptions.numberOfPages}}/{{paginationOptions.countOfPages}} - {{paginationOptions.totalItems}} Items
+			</button>
+			<button type="button" class="btn btn-sm btn-bg btn-default" ng-click="onPrevPage()" ng-disabled="paginationOptions.numberOfPages <= 1">
+				<i class="fa fa-chevron-left"></i>
+			</button>
+			<button type="button" class="btn btn-sm btn-bg btn-default" ng-click="onNextPage()" ng-disabled="paginationOptions.numberOfPages >= paginationOptions.countOfPages">
+				<i class="fa fa-chevron-right"></i>
+			</button>
+		</div>
+
+		<div class="btn-toolbar">
+			<div class="btn-group dropdown">
+				<a class="btn btn-sm btn-bg btn-primary" data-ng-click="openFilterPanel('left', true)"><i class="fa fa-filter"></i></a>
+			</div>
+			<div class="btn-group">
+				<button class="btn btn-sm btn-bg btn-default" data-toggle="tooltip" data-placement="bottom" data-title="Refresh" data-original-title="" title="" ng-click="listmode=!listmode">
+					<i ng-if="listmode" class="fa fa-list"></i><i ng-if="!listmode" class="icon-grid"></i>
+				</button>
+				<button class="btn btn-sm btn-bg btn-default" data-toggle="tooltip" data-placement="bottom" data-title="Refresh" data-original-title="" title="" ng-click="refreshTickets()">
+					<i class="fa fa-refresh"></i>
+				</button>
+
+			  </div>
+
+			  <button type="button" class="btn btn-sm btn-bg btn-default pull-right"  data-toggle="tooltip" data-placement="bottom" aria-hidden="false" data-title="Repeat Calendar"  title="Repeat Calendar" ng-click="repeatTickets()">
+				<i class="fa fa-calendar-check-o" aria-hidden="true"></i>
+		</button>
+		    <div ng-click="onChangeViewMode()" class="btn-group m-t-xs" style="vertical-align:middle">
+		    	<a class="text-lt changeview">
+			    	<i class="fa fa-dedent fa-fw text" ng-if="viewmode==1"></i>
+			    	<i class="fa fa-indent fa-fw text" ng-if="viewmode==0"></i>
+		    		<!--<img ng-if="viewmode==1" src="img/2column.png" alt="">
+						<img ng-if="viewmode==0" src="img/1column.png" alt="">-->
+		    	</a>
+		    </div>
+
+		    <div class="input-group pull-left" style="width: 200px; margin-left: 10px">
+			    <input type="text" ng-model="filter_value" ng-keyup="$event.keyCode == 13 && searchTicket(filter_value)" class="form-control input-sm bg-light no-border 		rounded padder" placeholder="Search">
+			    <span class="input-group-btn">
+			      	<button type="button" class="btn btn-sm bg-light rounded" ng-click="searchTicket(filter_value)"><i class="fa fa-search"></i></button>
+			    </span>
+		    </div>
+	  	</div>
+	</div>
+<!-- / header -->
+
+<!-- list -->
+	<div class="bg-light lter" style="width:100%">
+		<ul id="list_ticket" class="list-group list-group-lg no-radius table-striped m-b-none m-t-n-xxs" ng-style="{'height': ticketlist_height, 'overflow-y': 'auto'}"  ng-if="listmode">
+		  	<li ng-repeat="row in ticketlist" class="list-group-item {{::row.status_css}} {{::row.level_css}} clearfix b-l-5x {{::row.type_css}}">
+		    <!--<a class="avatar thumb pull-left m-r" href="#/app/page/profile"></a>-->
+			    <div class="pull-right text-muted">
+			    	<span class="hidden-xs ">{{::row.onlytime}}</span><br>
+			    	<span class="hidden-xs ">{{::row.onlydate}}</span><br>
+			    	<a ng-show="(row.status_id==1 || row.status_id==2 || row.task_type < 101) && row.running == 1" class="btn default btn-xs btn-success" ng-click="onCompleteTicket(row)"><i class="fa fa-thumbs-o-up"></i></a>
+			    	<a ng-if="(row.status_id==1 || row.status_id==2 || row.status_id==5)" class="btn default btn-xs btn-danger" ng-click="cancelTicket(row)"><i class="fa fa-ban"></i></a>
+			    </div>
+			    <div class="clear" ng-click="onSelectTicket(row, $index)">
+			    	<div>
+			    	  	<a class="text-sm">
+					    	<i class="fa fa-ticket"></i>&nbsp;{{::row.ticket_no}}&nbsp;-&nbsp;
+					    	<i class="icon-user"></i>&nbsp;{{::row.user_name}}&nbsp;&nbsp;
+					    	<i class="glyphicon glyphicon-home"></i>&nbsp;{{row.lgm_type == 'Common Area' ? '' : row.lgm_type}} - {{::row.lgm_name}}
+					    </a>
+						<span class="label m-l-xs {{::row.status_css_edit}}">{{::row.status}}
+							<i class="fa fa-pause" aria-hidden="true" ng-if="(row.status_id == 1 || row.status_id == 2) && row.running == 0"></i>
+						</span>
+			    	</div>
+			    	<div class="text-ellipsis m-t-xs ">{{::row.requested_name}}</div>
+			    	<span class="label bg-light m-l-sm ">{{::row.department}}</span>
+					<span class="label bg-light m-l-sm ">{{::row.wholename}}</span>
+					<span class="label {{::row.priority_css}} m-l-sm">{{::row.priority_name}}</span>
+					<span class="label bg-light m-l-sm ">{{::row.attendant_name}}</span>
+			    </div>
+		  	</li>
+		</ul>
+	</div>
+
+<!-- / list -->
+<!-- Grid Table -->
+
+	<div class="portlet" ng-if="!listmode" ng-style="{'height': ticketlist_height, 'overflow-y': 'auto'}">
+		<div class="portlet-body">
+			<div class="table table-responsive">
+				<table  st-table="ticketlist"  st-pipe="getTicketData" class="table ticket table-striped b-t b-light">
+					<thead class="tblhead-sm" style="font-size: .8vw">
+						<tr class="text-center">
+							<th st-sort="id" st-sort-default="reverse"><b>&nbsp;&nbsp;ID</b></th>
+							<!--<th><b>Time</b></th>-->
+							<th st-sort="priority"><b>Priority</b></th>
+							<th class="text-center" st-sort="cr.room"><b>Room/Guest</b></th>
+							<th class="text-center" st-sort="task"><b>Task</b></th>
+							<th class="text-center" st-sort="dispatcher"><b>Dept/Staff</b></th>
+							<th class="text-center" st-sort="status_id"><b>Status</b></th>
+							<th class="text-center" st-sort="attendant" style="white-space: nowrap"><b>Created By</b></th>
+							<th	class="text-center" colspan="2" st-sort="action"><b>Action</b></th>
+						</tr>
+					</thead>
+
+					<tbody >
+						<tr class="{{::row.status_css}} highlight2 no-radius m-b-none m-t-n-xxs" ng-repeat="row in ticketlist"
+							ng-click="onSelectTicket(row, $index)">
+							<td class="highlight" style="white-space: nowrap; border-left: 8px solid {{::row.ticket_type_color}};
+								margin-top: 4px ;margin-bottom: 6px;" >
+								<a ng-if = "row.type == 1 || row.type == 2">{{::row.ticket_no}}<br >{{::row.created_time | mydatetime:'DD-MMM-YYYY'}}<br/>{{::row.created_time | mydatetime:'hh:mm A'}}</a>
+								<a ng-if = "row.type == 4">{{::row.ticket_no}}<br >{{::row.start_date_time | mydatetime:'DD-MMM-YYYY'}}<br/>{{::row.start_date_time | mydatetime:'hh:mm A'}}</a>
+							</td>
+
+							<!--<td class="highlight" style="white-space: nowrap;">
+							<a> {{row.start_date_time | mydatetime : 'hh:mm a'}}</a>
+							</td>-->
+							<td class="highlight">
+								<span class="label {{::row.priority_css}} pulse">{{::row.priority_name}}</span>
+							</td>
+							<td class="highlight">
+								<a>
+									<i class="fa fa-address-book-o text-warning-dker" style="font-size: 12px" ng-hide="row.room < 1"></i>
+									<span>&nbsp;{{row.lgm_type == 'Common Area' ? '' : row.lgm_type}} {{::row.lgm_name}}</span>
+									</br>
+									<i class="fa fa-user-circle" ng-show="row.type == 1" style="font-size: 12px; color: #1565C0"></i>&nbsp;
+									<span class="font-bold" style="font-size:.7vw">{{::row.guest_name}}</span>
+								</a>
+							</td>
+							<td class="highlight">
+								<a> {{::row.ticket_item_name}}</a>
+							</td>
+							<td class="highlight">
+								<a><!--{{row.department}}-->
+								<i class="fa fa-building-o text-primary" style="font-size: 12px" ng-hide="row.dept_short_code < 1"></i>&nbsp;
+								<span class="text-xs">{{::row.dept_short_code}}</span></a></br>
+
+								<i class="fa fa-user-circle-o text-success" style="font-size: 12px" ng-hide="row.wholename < 1"></i>&nbsp;
+								<span class="font-bold" style="font-size:.7vw">{{::row.wholename}}</span>
+							</td>
+							<td class="highlight">
+								<a style="font-size:.7vw; padding-top: 3px;{{::row.status_style}}">
+									<i class="fa fa-clock-o fa-1"></i>
+									<span class="font-bold"> &nbsp;{{remainTime(row)| duration:'hh:mm:ss'}}</span>
+								</a>
+								</br>
+								<a>
+									<span class="label {{::row.status_css_edit}}">{{::row.status}}
+										<i class="fa fa-pause" aria-hidden="true" ng-if="(row.status_id == 1 || row.status_id == 2) && row.running == 0"></i>
+									</span>
+								</a>
+							</td>
+							<td>
+								<a style="font-size:.7vw" ng-if="row.attendant == 0">{{::row.attendant_auto}}</a>
+								<a style="font-size:.7vw" ng-if="row.attendant != 0">{{::row.attendant_name}}</a>
+							</td>
+							<td style="white-space: nowrap;">
+								<div>
+									<a class="btn default btn-xs green" ng-hide="row.action_disable_flag"
+										ng-if="(row.status_id==1 || row.status_id==2) && row.running == 1" ng-click="onCompleteTicket(row); $event.stopPropagation();">
+										<i class="fa fa-thumbs-o-up"></i>
+									</a>
+									<a class="btn default btn-xs red" ng-hide="row.action_disable_flag"
+										ng-if="(row.status_id==1 || row.status_id==2 || row.status_id>=5)" ng-click="cancelTicket(row); $event.stopPropagation();">
+										<i class="fa fa-ban"></i>
+									</a>
+								</div>
+							</td>
+							<td>
+								<div style=" padding: 0px; ">
+									<span class="fa-stack text-danger" ng-if="row.ack==0" title="Resend" ng-click="onSendMessage(row); $event.stopPropagation();">
+										<i class="fa fa-times fa-stack-1x" style="font-size:.7vw"> </i>
+									</span>
+									<span class="fa-stack text-success" ng-if="row.ack==1" title="Sent">
+										<i class="fa fa-check  fa-stack-1x" style="font-size:.7vw;"></i>
+									</span>
+									<span class="fa-stack text-success" ng-if="row.ack==2" title="Delivered">
+										<i class="fa fa-check fa-stack-1x" style="margin-left:4px font-size:.7vw;"></i>
+										<i class="fa fa-check fa-inverse fa-stack-1x" style="margin-left:-3px; font-size:.7vw;"></i>
+										<i class="fa fa-check fa-stack-1x" style="margin-left:-4px; font-size:.7vw;"></i>
+									</span>
+									<span class="fa-stack text-success" ng-if="row.ack==3" title="Read">
+										<i class="fa fa-eye" style="font-size:.7vw;color: #0D47A1;"></i>
+									</span>
+								</div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- / Grid Table -->

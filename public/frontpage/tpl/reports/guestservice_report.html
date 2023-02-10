@@ -1,0 +1,358 @@
+<style>
+	.fieldsetb {
+		width: 69%;
+    float: left;
+    margin: 2px;
+    max-height: 200px;
+    height: 200px;
+    min-height: 300px;
+    background-color: #ECEFF1;
+	}
+	.fieldseta {
+		width: 19%;
+    float: left;
+    margin: 2px;
+    max-height: 200px;
+    height: 200px;
+    min-height: 300px;
+    background-color: #ECEFF1;
+	}
+    .bootstrap-tagsinput {
+    white-space: nowrap;
+    overflow: scroll;
+    }
+</style>
+
+<div ng-controller="GuestserviceReportController">
+    <style>
+        .datetime .popover {
+            max-width: 650px;
+        }
+    </style>
+    <script type="text/ng-template" id="datetime_ranger.html">
+        <div style="width: 700px">
+            <div rg-range-picker="myDatetimeRange" labels="myDatetimeLabels"></div>
+        </div>
+    </script>
+    <script type="text/ng-template" id="tag-template">
+        <div class="tag-template">
+            <div class="right-panel">
+                <span>{{data.key}}</span>
+                <a class="remove-button" ng-click="$removeTag()">&#10006;</a>
+            </div>
+        </div>
+    </script>
+    <script type="text/ng-template" id="autocomplete-template">
+        <div class="autocomplete-template">
+            <div class="right-panel">
+                <span ng-bind-html="$highlight($getDisplayText())"></span><br>
+                <span style="font-size: 10px">{{data.type}}</span>
+            </div>
+        </div>
+    </script>
+    <!-------------------------------->
+    <div class="col-lg-12 col-centered">
+      <div class="panel-default">
+        <div class="form-horizontal" ng-show="!data.isHidden" style="`width:100%; margin: auto;">
+          <div class="row form-group" style="width:100%; margin:auto;">
+            <div class="form-horizontal form-validation" style="float:left; width:100%; height:20%; display:inline-block;">
+	            <div class="fieldseta panel panel-default" style="border-radius: 4px">
+		            <div class="panel-heading">
+									<div>
+										<label class="font-bold text-sm"><i class="fa fa-columns text-default"></i>&nbsp;&nbsp;Grouping</label>&nbsp;&nbsp;
+									</div>
+								</div>
+								<div style="padding-top: 15px">
+									<form class="form-horizontal form-validation">
+										<div class="col-sm-12">
+											<label class="control-label text-xs text-muted">Report Type : </label>
+                        <select class='form-control' ng-model="report_type" ng-change="onChangeReportType()" ng-options="type for type in reporttypes">
+                        </select>
+                    </div>
+										<div class="col-sm-12">
+											<label class="control-label text-xs text-muted">Report By : </label>
+                      <select class='form-control' ng-model="report_by" ng-change="onChangeReportBy()" ng-options="type for type in reportby_list" >
+                      </select>
+                    </div>
+                    <div class="col-sm-12">
+											<label class="control-label text-xs text-muted">Chart Graph : </label><br>
+                      <label class="i-switch m-t-xs m-r">
+                        <input type="checkbox" ng-model="chart_graph_flag"><i></i>
+                      </label>
+                    </div>
+									</form>
+								</div>
+	            </div>        
+	                    <!--
+                        <fieldset class="fieldset1" style="min-height:290px;">
+                            <legend><h5><i class="fa fa-columns"></i>&nbsp;&nbsp;Grouping</h5></legend>
+                            <div class="sfield1" >
+                                <div class="row form-horizontal" style="margin-bottom:3px;">
+                                    <label class="col-sm-5 control-label" style="white-space: nowrap;">Report Type : </label>
+                                    <div class="col-sm-7">
+                                        <select class='form-control' ng-model="report_type" ng-change="onChangeReportType()"
+                                                ng-options="type for type in reporttypes">
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row form-horizontal" style="margin-bottom:3px;">
+                                    <label class="col-sm-5 control-label" style="white-space: nowrap;">Report By :</label>
+                                    <div class="col-sm-7">
+                                        <select class='form-control' ng-model="report_by" ng-change="onChangeReportBy()"
+                                                ng-options="type for type in reportby_list" >
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row form-horizontal">
+                                    <label class="col-sm-5 control-label" style="white-space: nowrap;">Chart Graph : </label>
+                                    <div class="col-md-7">                                        
+                                        <label class="i-switch m-t-xs m-r">
+                                            <input type="checkbox" ng-model="chart_graph_flag">
+                                            <i></i>
+                                        </label>
+                                    </div>
+                                </div> 
+                            </div>
+                        </fieldset> -->
+              <div class="fieldsetb panel panel-default" style="border-radius: 4px; width: 80%" >
+		            <div class="panel-heading">
+			            <div>
+				            <button type="submit" class="btn btn-sm btn-info pull-right" onclick="loadBlockingUi();" ng-click="onGenerateReport()" style="margin-top: -5px">
+                      <i class="fa fa-file-text"></i>&nbsp;&nbsp;Generate Report
+                    </button>
+                    
+				            <button type="submit" class="btn btn-sm btn-default pull-right" style="color: white; background-color:#a9a9a9; margin-top: -5px; margin-right: 2px" ng-if="!auth_svc.isValidModule('app.reports.schedule')">
+                      <i class="glyphicon glyphicon-calendar"></i>&nbsp;&nbsp;Schedule Report</button>
+				            <button type="submit" class="btn btn-sm btn-info pull-right" ng-if="auth_svc.isValidModule('app.reports.schedule')" ng-click="onShowSchedule()" style="margin-top: -5px; margin-right: 2px">
+                      <i class="glyphicon glyphicon-calendar"></i>&nbsp;&nbsp;Schedule Report
+                    </button>
+                  </div>
+									<div>
+										<label class="font-bold text-sm"><i class="glyphicon glyphicon-filter"></i>&nbsp;&nbsp;Apply Filters</label>&nbsp;&nbsp;
+									</div>
+								</div>
+								<div style="padding-top: 15px">
+									<form class="form-horizontal form-validation">
+                                            <div class="btn-group col-sm-12" style="margin-top: -2px">
+                                                    <label class="btn btn-info btn-sm" ng-click="dateShort('Today')" >Today</label>
+                                                    <label class="btn btn-info btn-sm" ng-click="dateShort('Yesterday')">Yesterday</label>
+                                                    <label class="btn  btn-info btn-sm" ng-click="dateShort('This Week')">This Week</label>
+                                                    <label class="btn  btn-info btn-sm" ng-click="dateShort('Last Week')">Last Week</label>
+                                                    <label class="btn  btn-info btn-sm" ng-click="dateShort('This Month')">This Month</label>
+                                                    <label class="btn  btn-info btn-sm" ng-click="dateShort('Last Month')">Last Month</label>
+                                                    <label class="btn  btn-info btn-sm" ng-click="dateShort('This Year')">This Year</label>
+                                                    <label class="btn  btn-info btn-sm" ng-click="dateShort('Custom')">Custom</label>
+                                                  </div>
+										<div class="col-sm-6">
+											<label class="control-label text-xs text-muted">Period : </label>
+                      <div class="datetime">										
+												<input type="text" ng-model="time_range" ng-disabled="date_short!='Custom'" ui-jq="daterangepicker" ui-options="dateRangeOption" class="form-control input-sm">
+											</div>
+                    </div>
+										<div ng-show="valid_flag[0]" class="col-sm-2">
+											<label class="control-label text-xs text-muted">Status : </label>
+                      <div ng-dropdown-multiselect="" options="status_tags" selected-model="status" checkboxes="true" extra-settings="status_tags_hint_setting" translation-texts="status_tags_hint" ng-multiselect-disabled="status_flag"></div>
+                    </div>
+                    <div ng-show="valid_flag[7]" class="col-sm-2">
+											<label class="control-label text-xs text-muted">Ticket Type : </label><br>
+                      <div ng-dropdown-multiselect="" options="ticket_type_tags" selected-model="ticket_type" checkboxes="true" extra-settings="ticket_type_tags_hint_setting" translation-texts="ticket_type_tags_hint"></div>
+                    </div>
+                    <div ng-show="valid_flag[1]" class="col-sm-2">
+											<label class="control-label text-xs text-muted">Escalated to me : </label><br>
+                      <label class="i-switch m-t-xs m-r">
+												<input type="checkbox" ng-model="escalated_flag" ng-change="loadFiltersValue($query, '0')">
+											<i></i></label>
+                    </div>
+                    <div ng-show="valid_flag[8]" class="col-sm-3">
+                        <label class="control-label text-xs text-muted">Category :</label>
+                        <div ng-dropdown-multiselect="" options="categorys" selected-model="category_ids" checkboxes="true" extra-settings="category_hint_setting" translation-texts="category_hint">
+                        </div>
+                    </div>
+                    <div ng-show="valid_flag[2]" class="col-sm-6">
+											<label class="control-label text-xs text-muted">Department : </label><br>
+                      <tags-input ng-model="department_tags" placeholder="Add Department" replace-spaces-with-dashes="false" style="margin-top: -5px">
+                        <auto-complete source="loadFiltersValue($query, 'Department')" min-length="0" debounce-delay="0" load-on-focus="true" load-on-empty="true"
+                          max-results-to-show="100">
+                        </auto-complete>
+                      </tags-input>
+                    </div>
+                    <div ng-show="valid_flag[3]" class="col-sm-6">
+											<label class="control-label text-xs text-muted">Department Function : </label><br>
+                      <tags-input ng-model="department_function_tags" placeholder="Add Department Function" replace-spaces-with-dashes="false" style="margin-top: -5px">
+                      	<auto-complete source="loadFiltersValue($query, 'Department Function')" min-length="0" debounce-delay="0" load-on-focus="true" load-on-empty="true"
+                          max-results-to-show="100"></auto-complete>
+                      </tags-input>
+                    </div>
+                    <div ng-show="valid_flag[4]" class="col-sm-6">
+											<label class="control-label text-xs text-muted">Location : </label><br>
+                      <tags-input ng-model="location_tags" key-property="id" display-property="name" replace-spaces-with-dashes="false" style="margin-top: -5px" min-length="0" template="tag-template">
+                        <auto-complete source="getLocationList($query)" min-length="0" debounce-delay="0" load-on-focus="true" load-on-empty="true" max-results-to-show="50"
+                          template="autocomplete-template"></auto-complete>
+                      </tags-input>
+                    </div>
+                    <div ng-show="valid_flag[5]" class="col-sm-6">
+											<label class="control-label text-xs text-muted">Item : </label><br>
+                      <tags-input ng-model="item_tags" placeholder="Add Item" replace-spaces-with-dashes="false" style="margin-top: -5px">
+                        <auto-complete source="loadFiltersValue($query, 'Item')" min-length="0" debounce-delay="0" load-on-focus="true" load-on-empty="true" 
+                          max-results-to-show="100"></auto-complete>
+                      </tags-input>
+                    </div>
+                    <div ng-show="valid_flag[6]" class="col-sm-6">
+											<label class="control-label text-xs text-muted">Staff : </label><br>
+                      <div ng-dropdown-multiselect=""   options="stafflist" selected-model="staff_ids" checkboxes="true" extra-settings="stafflist_hint_setting" translation-texts="stafflist_hint"></div>
+                    </div>
+                    <div ng-show="report_by == 'Floor'" class="col-sm-6">
+                        <label class="control-label text-xs text-muted">Building : </label><br>
+                        <tags-input ng-model="build_tags" placeholder="Add Building" replace-spaces-with-dashes="false" style="margin-top: -5px" >
+                            <auto-complete source="loadFiltersValue($query, 'Building')" min-length="0" debounce-delay="0" load-on-focus="true" load-on-empty="true" 
+                            max-results-to-show="50"></auto-complete>
+                        </tags-input>
+                    <!--
+                        <label class="control-label text-xs text-muted">Floor : </label><br>
+                      <div ng-dropdown-multiselect=""   options="floorlist" selected-model="floor_ids" checkboxes="true" extra-settings="floorlist_hint_setting" translation-texts="floorlist_hint"></div>
+                    -->
+                    </div>
+                  
+                    <div ng-show="report_by == 'Floor'" class="col-sm-6">
+                        <label class="control-label text-xs text-muted">Floor : </label><br>
+                        <tags-input ng-model="floor_tags" placeholder="Add Floor" replace-spaces-with-dashes="false" style="margin-top: -5px" >
+                            <auto-complete source="loadFiltersValue($query, 'Floor')" min-length="0" debounce-delay="0" load-on-focus="true" load-on-empty="true" 
+                            max-results-to-show="50"></auto-complete>
+                        </tags-input>
+                    <!--
+                        <label class="control-label text-xs text-muted">Floor : </label><br>
+                      <div ng-dropdown-multiselect=""   options="floorlist" selected-model="floor_ids" checkboxes="true" extra-settings="floorlist_hint_setting" translation-texts="floorlist_hint"></div>
+                    -->
+                    </div>
+									</form>
+								</div>
+	            </div>
+<!--
+                        <fieldset class="fieldset2" style="min-height:290px;">
+                            <legend><h5><i class="glyphicon glyphicon-filter"></i>&nbsp;&nbsp;Apply filters</h5></legend>
+                            <div class="row form-horizontal">
+                                <div>
+                                    
+                                    <div class="row form-horizontal" style="margin-bottom:3px; ">
+                                        <label class="col-sm-2 control-label" style="white-space: nowrap;">Period : </label>
+                                        <div class="datetime col-md-3">										
+											<input type="text" ng-model="time_range" ui-jq="daterangepicker" ui-options="dateRangeOption" class="form-control input-sm">
+										</div>
+									</div>							
+                                    <div ng-show="valid_flag[0]" class="row form-horizontal" style="margin-bottom:3px; ">
+                                        <label class="col-sm-2 control-label" style="white-space: nowrap;">Status : </label>
+                                        <div class="col-md-9">
+                                            <div ng-dropdown-multiselect="" options="status_tags" selected-model="status" checkboxes="true" extra-settings="status_tags_hint_setting" translation-texts="status_tags_hint" ng-multiselect-disabled="status_flag"></div>
+                                        </div>
+                                    </div>
+
+                                    <div ng-show="valid_flag[1]" class="row form-horizontal" style="margin-bottom:3px; ">
+                                        <label class="col-sm-2 control-label" style="white-space: nowrap;">Ticket Type : </label>
+                                        <div class="col-md-4">
+                                            <div ng-dropdown-multiselect="" options="ticket_type_tags" selected-model="ticket_type" checkboxes="true" extra-settings="ticket_type_tags_hint_setting" translation-texts="ticket_type_tags_hint"></div>
+                                        </div>
+                                        
+                                        <label class="col-sm-2 control-label" style="white-space: nowrap;">Escalated To Me : </label>
+                                        <div class="col-md-4">
+	                                    
+											<label class="i-switch m-t-xs m-r">
+												<input type="checkbox" ng-model="escalated_flag" ng-change="loadFiltersValue($query, '0')">
+												<i></i>
+											</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row form-horizontal">
+                                <div ng-show="valid_flag[2]" class="row form-horizontal">
+                                    <label class="col-sm-2 control-label" style="white-space: nowrap;">Department : </label>
+                                    <div class="col-md-9">
+                                        <tags-input ng-model="department_tags" placeholder="Add Department" replace-spaces-with-dashes="false" style="margin-top: -5px">
+                                            <auto-complete source="loadFiltersValue($query, 'Department')"
+                                                           min-length="0"
+                                                           debounce-delay="0"
+                                                           load-on-focus="true"
+                                                           load-on-empty="true"
+                                                           max-results-to-show="100"></auto-complete>
+                                        </tags-input>
+                                    </div>
+                                </div>
+                                <div ng-show="valid_flag[3]" class="row form-horizontal">
+                                    <label class="col-sm-2 control-label" style="white-space: nowrap;">Department Function : </label>
+                                    <div class="col-md-9">
+                                        <tags-input ng-model="department_function_tags" placeholder="Add Department Function" replace-spaces-with-dashes="false" style="margin-top: -5px">
+                                            <auto-complete source="loadFiltersValue($query, 'Department Function')"
+                                                           min-length="0"
+                                                           debounce-delay="0"
+                                                           load-on-focus="true"
+                                                           load-on-empty="true"
+                                                           max-results-to-show="100"></auto-complete>
+                                        </tags-input>
+                                    </div>
+                                </div>
+                                <div ng-show="valid_flag[4]" class="row form-horizontal">
+                                    <label class="col-sm-2 control-label" style="white-space: nowrap;">Location : </label>
+                                    <div class="col-md-9">
+                                        <tags-input ng-model="location_tags" display-property="name"
+                                                    replace-spaces-with-dashes="false"
+                                                    style="margin-top: -5px"
+                                                    min-length="0"
+                                                    template="tag-template" >
+                                            <auto-complete source="getLocationList($query)"
+                                                           min-length="0"
+                                                           debounce-delay="0"
+                                                           load-on-focus="true"
+                                                           load-on-empty="true"
+                                                           max-results-to-show="1000"
+                                                           template="autocomplete-template" ></auto-complete>
+                                        </tags-input>
+                                    </div>
+                                </div>
+                                <div ng-show="valid_flag[5]" class="row form-horizontal">
+                                    <label class="col-sm-2 control-label" style="white-space: nowrap;">Item : </label>
+                                    <div class="col-md-9">
+                                        <tags-input ng-model="item_tags" placeholder="Add Item" replace-spaces-with-dashes="false" style="margin-top: -5px">
+                                            <auto-complete source="loadFiltersValue($query, 'Item')"
+                                                           min-length="0"
+                                                           debounce-delay="0"
+                                                           load-on-focus="true"
+                                                           load-on-empty="true"
+                                                           max-results-to-show="100"></auto-complete>
+                                        </tags-input>
+                                    </div>
+                                </div>
+                                <div ng-show="valid_flag[6]" class="row form-horizontal">
+                                    <label class="col-sm-2 control-label" style="white-space: nowrap;">Staff : </label>
+                                    <div class="col-md-9">
+                                        <div ng-dropdown-multiselect=""   options="stafflist" selected-model="staff_ids" checkboxes="true" extra-settings="stafflist_hint_setting" translation-texts="stafflist_hint"></div>
+                                    </div>
+                                </div>                                
+                            </div>
+                        </fieldset>
+
+                        <div class="searchbox">
+                            <div class="row form-horizontal" style="margin-bottom:3px;">
+                                <button type="submit" class="btn btn-info" ng-click="onGenerateReport()">
+                                    <i class="fa fa-file-text"></i>&nbsp;&nbsp;Generate Report&nbsp;</button>
+                                <!-- <button type="submit" class="btn btn-default">Cancel</button> -->
+                            <!--</div>
+                            <div class="row form-horizontal" style="margin-bottom:3px;">
+                                <button type="submit" class="btn btn-info" ng-if="auth_svc.isValidModule('app.reports.schedule')" ng-click="onShowSchedule()">
+                                    <i class="glyphicon glyphicon-calendar"></i>&nbsp;&nbsp;Schedule Report</button>
+                                <button type="submit" class="btn btn-info disabled" style="border:#a9a9a9;background-color:#a9a9a9" ng-if="!auth_svc.isValidModule('app.reports.schedule')">
+                                    <i class="glyphicon glyphicon-calendar"></i>&nbsp;&nbsp;Schedule Report</button>
+                            </div>-->
+														
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Preview -->
+			<div ng-include="'tpl/reports/report_preview.html'">
+			</div>
+        </div>
+    </div>
+    <!----------------------------------->
+
+</div>

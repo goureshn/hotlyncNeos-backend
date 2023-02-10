@@ -1,0 +1,222 @@
+<style>
+  	.tabsdemoDynamicHeight md-content {
+  	background-color: transparent !important;
+  }
+  .tabsdemoDynamicHeight md-content md-tabs {
+    background: #f6f6f6;
+    border: 1px solid #e1e1e1;
+  }
+  
+  .tabsdemoDynamicHeight md-content md-tabs md-tabs-wrapper {
+    background: white;
+  }
+  
+  .tabsdemoDynamicHeight md-content h1:first-child {
+    margin-top: 0;
+  }
+  .modal-body {
+	width: 900px;
+	}
+
+	.modal-dialog {
+	width: 900px;
+	}
+
+</style>
+<!-- - - - - - - - HEADER - - - - - - - -->
+
+  <!-- - - - - - - - /HEADER - - - - - - - -->
+  <div class="modal-body wrapper" class="modal-dialog">
+  <!--  <md-content>
+      <md-tabs md-dynamic-height md-border-bottom>
+      <md-tab label="Edit Task">
+      <md-content class="md-padding">   -->
+					<div class="form-horizontal col-md-12 wrapper" style="display: table; background-color: #D3D3D3;">
+							<div class="col-sm-6"><h1 class="m-n font-bold" style="color:#273746">
+											<label style="font-size: 20px; margin-bottom: 0px">
+									Task List</label></h1>
+							</div>
+					</div>      
+        <div class="wrapper-md">
+      <!-- - - - - - - - TASK DETAILS - - - - - - - -->
+          <div class="panel-body" style="padding: 5px 0px">
+            <div class="form-horizontal form-validation">
+                    <div class="col-sm-6" style="padding: 5px 0px">
+                      <label class="col-sm-12 text-muted text-xs"><b>Checklist Name :</b></label>
+                      <div class="col-sm-12">
+												<label class="text-sm font-bold">{{row.name}}</label>
+                      </div>
+										</div>
+										<div class="col-sm-6" style="padding: 5px 0px">
+												<label class="col-sm-12 text-muted text-xs"><b>Created By :</b></label>
+												<div class="col-sm-12">
+													<label class="text-sm font-bold">{{row.wholename}}</label>
+												</div>
+											</div>
+										<div class="line line-dashed b-b"></div>
+										<div class="col-centered" class="line-sm" style="width:99%; z-index:3">
+												<div class="panel panel-default" style="margin-left: 10px;">
+														<div class="panel-heading">
+																<label class="font-bold"><i style="text-align: center" aria-hidden="true"></i>&nbsp;&nbsp;List of Tasks</label>
+																
+														</div>
+														<div class="panel-body">
+															<table  st-table="detaillist"  st-pipe="getDataList1" class="table ticket" >
+																	<thead class="tblhead-sm">
+																	<tr>
+																			<th class="text-center" style="width: 15%"><b>Category</b></th>
+																			<th class="text-center" style="width: 15%"><b>Task</b></th>
+																			
+																			<th class="text-center" style="width: 15%"><b>Yes</b></th>
+																			<th class="text-center" style="width: 15%"><b>No</b></th>
+																			<th class="text-center" style="width: 15%"><b>N/A</b></th>
+																			<th class="text-center" style="width: 15%"><b>Comment</b></th>
+																	</tr>
+																	</thead>
+																	<tbody ng-hide="isLoading" >
+																	<tr class="" ng-repeat="row in detaillist">
+																	<td colspan="6">
+																	<table style="width: 100%">
+																	<tr class=""  >
+																			<td class="text-center" style="width: 15%">{{row.category}}</td>
+																			<td class="text-center" style="width: 15%">{{row.task}}</td>
+																			<td class="text-center " style="width: 15%" >
+																					<a href uib-popover-template="'task_yes.html'" popover-trigger="outsideClick" popover-placement="auto right" ng-click="onClick(row,'Yes')">
+																							<i class="fa fa-pencil" aria-hidden="true"  ></i>
+																							<label ng-hide="row.input_class" ng-if='row.yes' class="reportlabel text-sm">Yes</label>
+																							<label ng-hide="row.input_class" ng-if='!row.yes' class="reportlabel text-sm"></label>
+																					</a>
+																			</td>
+																			<td class="text-center " style="width: 15%" >
+																					<a href uib-popover-template="'task_no.html'" popover-trigger="outsideClick" popover-placement="auto right" ng-click="onClick(row, 'No')">
+																							<i class="fa fa-pencil" aria-hidden="true"  ></i>
+																							<label ng-hide="row.input_class" ng-if='row.no' class="reportlabel text-sm">Yes</label>
+																							<label ng-hide="row.input_class" ng-if='!row.no' class="reportlabel text-sm"></label>
+																					</a>
+																			</td>
+																			<td class="text-center " style="width: 15%" >
+																					<a href uib-popover-template="'task_na.html'" popover-trigger="outsideClick" popover-placement="auto right" ng-click="onClick(row, 'N/A')">
+																							<i class="fa fa-pencil" aria-hidden="true"  ></i>
+																							<label ng-hide="row.input_class" ng-if='row.na' class="reportlabel text-sm">Yes</label>
+																							<label ng-hide="row.input_class" ng-if='!row.na' class="reportlabel text-sm"></label>
+																					</a>
+																			</td>
+																			
+																			<td class="text-left" style="width: 15%"><i class="fa fa-pencil" aria-hidden="true"  ng-click="onFieldHidden(row)"></i>
+																				<label ng-hide="row.input_comment" class="reportlabel text-sm">{{row.comment}}</label>
+																				<input ng-show="row.input_comment" type="text" class="reportinput text-sm" ng-model="row.comment" ng-keyup="$event.keyCode == 13 && onKeySave(row)" />
+																			</td>
+																	</tr>
+																	</table>
+																	
+																 </td>
+																 </tr>
+																	</tbody>
+														
+																	<tbody ng-show="isLoading">
+																		<tr>
+																				<td colspan="6" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+																		</tr>
+																		</tbody>
+																		<tfoot ng-hide="isLoading">
+																		<tr ng-show="paginationOptions.totalItems > paginationOptions.pageSize">
+																				<td colspan="6" class="text-center">
+																						<div st-pagination="" st-items-by-page="paginationOptions.pageSize" st-displayed-pages="7" class="no-margin"></div>
+																				</td>
+																		</tr>
+																		</tfoot>
+															</table>
+													</div>
+												</div>
+										</div>
+                </div>
+              </div>
+            </div>
+            <center>
+								<button type="button" class="btn btn-dark btn-sm" ng-click="onComplete(row)">
+									<span class="text-success font-bold"><i class="fa fa-check"></i>&nbsp;Complete</span>
+								</button>
+							        
+							</center>
+ <!--   </md-content> </md-tab> -->
+ </div>
+ <script type="text/ng-template" id="task_yes.html"  >
+	<div ng-show="detailDisplayyes">
+			<div class="panel panel-default"  style="width: 250px;margin-bottom: 0px;">
+					<div class="panel-body">
+							<form class="form-horizontal form-validation" >
+								<div class="col-sm-6" style="padding: 5px 0px">
+									<label class="col-sm-12 text-muted text-xs"><b>Task Complete :</b></label>
+										<div class="col-sm-12">
+											<label class="i-switch m-t-xs m-r">
+												<input type="checkbox"  ng-model="task.yes" checked>
+												<i></i>
+											</label> 
+									</div>
+								</div>
+									<div class="line line-dashed b-b line-lg pull-in"></div>
+									<div class="form-group">
+											<div class="pull-right" style="margin-right: 20px">
+													<button type="button" class="btn btn-primary" ng-click="onSaveTask('Yes')">&nbsp;&nbsp;&nbsp;&nbsp;Save&nbsp;&nbsp;&nbsp;&nbsp;</button>
+													<button type="button" class="btn btn-default" ng-click="detailDisplayyes=false">Cancel</button>
+											</div>
+									</div>
+							</form>
+					</div>
+			</div>
+	</div>
+	</script>
+	<script type="text/ng-template" id="task_no.html"  >
+		<div ng-show="detailDisplayno">
+				<div class="panel panel-default"  style="width: 250px;margin-bottom: 0px;">
+						<div class="panel-body">
+								<form class="form-horizontal form-validation" >
+									<div class="col-sm-6" style="padding: 5px 0px">
+										<label class="col-sm-12 text-muted text-xs"><b>Task Incomplete :</b></label>
+											<div class="col-sm-12">
+												<label class="i-switch m-t-xs m-r">
+													<input type="checkbox"  ng-model="task.no" checked>
+													<i></i>
+												</label> 
+										</div>
+									</div>
+										<div class="line line-dashed b-b line-lg pull-in"></div>
+										<div class="form-group">
+												<div class="pull-right" style="margin-right: 20px">
+														<button type="button" class="btn btn-primary" ng-click="onSaveTask('No')">&nbsp;&nbsp;&nbsp;&nbsp;Save&nbsp;&nbsp;&nbsp;&nbsp;</button>
+														<button type="button" class="btn btn-default" ng-click="detailDisplayno=false">Cancel</button>
+												</div>
+										</div>
+								</form>
+						</div>
+				</div>
+		</div>
+		</script>
+		<script type="text/ng-template" id="task_na.html"  >
+			<div ng-show="detailDisplayna">
+					<div class="panel panel-default"  style="width: 250px;margin-bottom: 0px;">
+							<div class="panel-body">
+									<form class="form-horizontal form-validation" >
+										<div class="col-sm-6" style="padding: 5px 0px">
+											<label class="col-sm-12 text-muted text-xs"><b>Task Not Applicable :</b></label>
+												<div class="col-sm-12">
+													<label class="i-switch m-t-xs m-r">
+														<input type="checkbox"  ng-model="task.na" checked>
+														<i></i>
+													</label> 
+											</div>
+										</div>
+											<div class="line line-dashed b-b line-lg pull-in"></div>
+											<div class="form-group">
+													<div class="pull-right" style="margin-right: 20px">
+															<button type="button" class="btn btn-primary" ng-click="onSaveTask('N/A')">&nbsp;&nbsp;&nbsp;&nbsp;Save&nbsp;&nbsp;&nbsp;&nbsp;</button>
+															<button type="button" class="btn btn-default" ng-click="detailDisplayna=false">Cancel</button>
+													</div>
+											</div>
+									</form>
+							</div>
+					</div>
+			</div>
+			</script>
+
+    

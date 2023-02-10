@@ -1,0 +1,93 @@
+<div style="width: 250px; z-index: 5" ng-show="event_flag==1">
+  <div class="panel panel-default" style="margin-bottom: 10px;{{call_alarm_css}}" ng-show="agent_status.check==0">
+    <div class="panel-heading">
+      <div class="clearfix">
+        <div class="clear">
+          <div class="h3 m-t-xs m-b-xs">
+            {{agent_status.admincall.description}}
+            <i class="fa fa-circle text-success pull-right text-xs m-t-sm"></i>
+          </div>
+          <small class="text-muted">Origin - {{agent_status.origin}}</small>
+        </div>
+      </div>
+    </div>
+    <div class="list-group no-radius alt">
+      <a class="list-group-item" href>
+        <span class="badge bg-light">{{agent_status.ticket.callerid}}</span>
+        Caller ID
+      </a>
+      <a class="list-group-item" href>
+        <span class="badge bg-light">{{agent_status.admincall.description}}</span>
+        Description
+      </a>
+      <a class="list-group-item" href>
+        <span class="badge bg-light">{{agent_status.admincall.department}}</span>
+        Department
+      </a>
+    </div>
+  </div>
+  <div class="panel panel-default" style="margin-bottom: 10px;{{call_alarm_css}}" ng-show="agent_status.check==1">
+    <div class="panel-heading">
+      <div class="clearfix">
+        <div class="clear">
+          <div ng-show = 'agent_status.guestcall.guest_name != null'class="h3 m-t-xs m-b-xs">
+            {{agent_status.guestcall.guest_name}}
+            <i class="fa fa-circle text-success pull-right text-xs m-t-sm"></i>
+          </div>
+          <div ng-show = 'agent_status.guestcall.guest_name == null'class="h3 m-t-xs m-b-xs">
+            Vacant
+            <i class="fa fa-circle text-success pull-right text-xs m-t-sm"></i>
+          </div>
+          <small class="text-muted">Origin - {{agent_status.origin}}</small>
+        </div>
+      </div>
+    </div>
+    <div class="list-group no-radius alt">
+      <a class="list-group-item" href>
+        <span class="badge bg-light">{{agent_status.ticket.callerid}}</span>
+        Caller ID
+      </a>
+      <a class="list-group-item" href>
+        <span class="badge bg-light">{{agent_status.room}}</span>
+        Room Number
+      </a>
+      <a class="list-group-item" href>
+        <span ng-show = 'agent_status.guestcall.guest_name != null' class="badge bg-light">{{agent_status.guestcall.guest_name}}</span>
+        <span ng-show = 'agent_status.guestcall.guest_name == null' class="badge bg-light">Vacant</span>
+        Guest Name
+      </a>
+      <a class="list-group-item" href>
+        <span ng-show = 'agent_status.guestcall.vip_code != null' class="badge bg-light">{{agent_status.guestcall.vip_code}}</span>
+        <span ng-show = 'agent_status.guestcall.vip_code == null' class="badge bg-light">None</span>
+        VIP
+      </a>
+      <a class="list-group-item" href>
+        <span class="badge bg-light">{{agent_status.guestcall.arrival}}</span>
+        Arrival
+      </a>
+      <a class="list-group-item" href>
+        <span class="badge bg-light">{{agent_status.guestcall.departure}}</span>
+        Departure
+      </a>
+    </div>
+  </div>
+  <div class="panel panel-default" style="margin-bottom: 10px;{{call_alarm_css}}" ng-show="agent_status.check==2">
+    <div class="panel-heading">
+      <div class="clearfix">
+        <div class="clear">
+          <div class="h3 m-t-xs m-b-xs">
+            {{agent_status.caller_name}}
+            <i class="fa fa-circle text-success pull-right text-xs m-t-sm"></i>
+          </div>
+          <small class="text-muted">Origin - {{agent_status.caller.national}}</small>
+        </div>
+      </div>
+    </div>
+    <div class="list-group no-radius alt">
+      <a class="list-group-item" href>
+        <span class="badge bg-light">{{agent_status.ticket.callerid}}</span>
+        Caller ID
+      </a>
+    </div>
+  </div>
+</div>

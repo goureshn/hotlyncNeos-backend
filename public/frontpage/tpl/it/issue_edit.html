@@ -1,0 +1,261 @@
+<style>
+    button {
+        pointer: cursor;
+    }
+
+    input[type=file] {
+        width: 150px;
+        height: 20px;
+    }
+</style>
+<script type="text/ng-template" id="locationTypeahead.html">
+    <a>
+        <span ng-bind="match.model.name"></span><br>
+        <span style="font-size: 10px" ng-bind="match.model.type"></span><br>
+    </a>
+</script>
+<script type="text/ng-template" id="partTypeahead.html">
+    <a>
+        <span ng-bind="match.model.name"></span><br>
+        <span style="font-size: 10px" ng-bind="match.model.type"></span><br>
+    </a>
+</script>
+<div class="wrapper" ng-style="{'height': ticketlist_height, 'overflow-y': 'auto'}">
+  	<div>
+		<div class="panel panel-default" style="border-radius: 4px">
+			<div class="panel-heading">
+				<div class="">
+					<label class="font-bold"><i class="glyphicon glyphicon-user text-default"></i>&nbsp;&nbsp;Requestor Details</label>
+				</div>
+			</div>
+			<div class="panel-body">
+				<form class="form-horizontal form-validation">
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">Requestor Name</label><br>
+						<label class="text-sm font-bold">{{issue.req_name}}</label>
+					</div>
+
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">Building</label><br>
+						<label class="text-sm font-bold">{{issue.building}}</label>
+					</div>
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">E-mail</label><br>
+						<label class="text-sm font-bold">{{issue.email}}</label>
+					</div>
+					
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">Department</label><br>
+						<label class="text-sm font-bold">{{issue.department}}</label>
+					</div>
+					<div class="col-sm-6">
+						<label class="control-label text-xs text-muted">Job Role</label><br>
+						<label class="text-sm font-bold">{{issue.job_role}}</label>
+					</div>
+					
+				</form>
+			</div>
+		</div>
+  	</div>
+<div>
+<div class="panel panel-default" style="border-radius: 4px">
+    <div class="panel-heading">
+        <div class="">
+			<label class="font-bold"><i class="glyphicon glyphicon-user text-default"></i>&nbsp;&nbsp;Issue Details</label>
+			<label ng-show="issue.up_wholename" class="control-label text-xs text-muted">&nbsp;&nbsp;<i class="fa fa-clock-o"></i>&nbsp;
+				<span ng-hide="(issue.status=='Resolved'||issue.status=='Closed')"> Last updated By {{issue.up_wholename}}</span>
+				<span ng-show="(issue.status=='Resolved'||issue.status=='Closed')"> Resolved By {{issue.up_wholename}}</span>
+			</label>
+			<div  class="pull-right" style="margin-top: -4px">
+				<div class="btn-group">
+					<button ng-if ="auth_svc.isValidModule('app.mytask.itapprove')" type="button" class="btn btn-dark btn-sm" ng-show="issue.status=='Awaiting Approval' || issue.status=='Awaiting Approval 2' || issue.status=='Awaiting Approval 3'" class="btn btn-default btn-sm" ng-click="onApprove()">
+						<span class="text-success"><i class="fa fa-thumbs-up" ></i>&nbsp;Approve</span>
+					</button>
+					<button type="button" class="btn btn-dark btn-sm"  ng-show="issue.status=='Pending'|| issue.status=='On-Hold'" class="btn btn-default btn-sm" ng-click="inProgress()">
+						<span class="text-success"><i class="fa fa-check" ></i>&nbsp;In-Progress</span>
+					</button>
+					<button ng-if ="auth_svc.isValidModule('app.mytask.itreject')" type="button" class="btn btn-dark btn-sm" ng-show="issue.status=='Pending'|| issue.status=='Re-Opened' || issue.status=='On-Hold' || issue.status=='Awaiting Approval' || issue.status=='Awaiting Approval 2' || issue.status=='Awaiting Approval 3'" class="btn btn-default btn-sm" ng-click="onReject()" style="margin-left: 5px">
+						<span class="text-danger"><i class="fa fa-close" ></i>&nbsp;Reject</span>
+					</button>
+				</div>
+			</div>
+		</div>
+    </div>
+    <div class="panel-body">
+  	    <form class="form-horizontal form-validation">
+	  	    <div class="col-sm-6">
+				<label class="control-label text-xs text-muted">Severity</label><br>
+				<select class='form-control input-sm' ng-show="issue.status=='Pending'||issue.status=='In-Progress' || issue.status=='Re-Opened'|| issue.status=='Awaiting Approval' || issue.status=='Awaiting Approval 2' || issue.status=='Awaiting Approval 3'" ng-model="issue.sev" ng-change="onSeveritySelect()" ng-options="value.severity as value.severity for (key, value) in severity_list"
+				/>
+				<label ng-hide="issue.status=='Pending'||issue.status=='In-Progress'|| issue.status=='Re-Opened'|| issue.status=='Awaiting Approval' || issue.status=='Awaiting Approval 2' || issue.status=='Awaiting Approval 3'" class="text-sm font-bold">{{issue.sev}}</label>
+			</div>
+			<div class="col-sm-6" style="padding-bottom:15px">
+				<label class="control-label text-xs text-muted">Status</label><br>
+				<label class="text-sm font-bold">{{issue.status}}</label>
+			</div>
+			<div class="col-sm-6">
+				<label class="control-label text-xs text-muted">Type</label><br>
+				<select class='form-control input-sm' ng-show="issue.status=='Pending'||issue.status=='In-Progress' || issue.status=='Re-Opened'|| issue.status=='Awaiting Approval' || issue.status=='Awaiting Approval 2' || issue.status=='Awaiting Approval 3'" ng-model="issue.type_it" ng-change="onTypeSelect()" ng-options="value.type as value.type for (key, value) in type_list"
+				/>
+				<label ng-hide="issue.status=='Pending'||issue.status=='In-Progress'|| issue.status=='Re-Opened'|| issue.status=='Awaiting Approval' || issue.status=='Awaiting Approval 2' || issue.status=='Awaiting Approval 3'" class="text-sm font-bold">{{issue.type_it}}</label>
+			</div>
+
+			<div class="col-sm-6" ng-hide="issue.status =='Pending' || issue.status =='Awaiting Approval' || issue.status =='Awaiting Approval 2' || issue.status =='Awaiting Approval 3' || issue.status == 'Rejected' " >
+				<label class="control-label text-xs text-muted">Assigned To</label><br>
+				<div class="scrollable-dropdown-menu row col-sm-12" ng-hide="issue.status=='Resolved'||issue.status=='Closed'">
+						<input type="text" ng-model="issue.assigned_to" class="form-control input-sm"  popover-trigger="mouseenter"
+							popover-placement="top" uib-typeahead="value.assignee for value in getAssigneeList($viewValue)" typeahead-min-length="0" typeahead-on-select="onAssigneeSelect($item, $model, $label)">	
+				</div>
+
+				<label ng-show="issue.status=='Resolved'||issue.status=='Closed'" class="text-sm font-bold">{{issue.assigned_to}}</label>
+			
+			</div>
+		
+		
+			<div class="col-sm-6">
+				<label class="control-label text-xs text-muted">Category</label><br>
+				<div class="scrollable-dropdown-menu row" ng-show="issue.status=='Pending'||issue.status=='In-Progress'|| issue.status=='Re-Opened'|| issue.status=='Awaiting Approval' || issue.status=='Awaiting Approval 2' || issue.status=='Awaiting Approval 3'">
+					<div class="col-sm-10">
+						<input type="text" ng-model="issue.category" class="form-control input-sm"  popover-trigger="mouseenter"
+							popover-placement="top" uib-typeahead="cat.category for cat in getCategoryList($viewValue)" typeahead-min-length="0" typeahead-on-select="onCategorySelect($item, $model, $label)">
+					</div>
+					<div class="col-sm-2" ng-if="auth_svc.isValidModule('app.mytask.it_category_add')" >
+							<i class="fa fa-plus-circle fa-2x text-info" style="cursor: pointer" title="Create Category" ng-click="createCategory()"  role="button" tabindex="0" aria-hidden="false"></i>
+					</div>
+					</div>
+				<label ng-hide="issue.status=='Pending'||issue.status=='In-Progress'|| issue.status=='Re-Opened'|| issue.status=='Awaiting Approval'" class="text-sm font-bold">{{issue.category}}</label>
+			</div>
+			<div class="col-sm-6">
+				<label class="control-label text-xs text-muted">Sub-category</label><br>
+				<div class="scrollable-dropdown-menu row" ng-show="issue.status=='Pending'||issue.status=='In-Progress'|| issue.status=='Re-Opened'|| issue.status=='Awaiting Approval' || issue.status=='Awaiting Approval 2' || issue.status=='Awaiting Approval 3'">
+					<div class="col-sm-10">
+						<input type="text" ng-model="issue.subcategory" class="form-control input-sm"  popover-trigger="mouseenter"
+							popover-placement="top" uib-typeahead="sub.sub_cat for sub in getSubCategoryList($viewValue)" typeahead-min-length="0" typeahead-on-select="onSubCategorySelect($item, $model, $label)">
+					</div>
+					<div class="col-sm-2" ng-if="auth_svc.isValidModule('app.mytask.it_subcategory_add')" >
+							<i class="fa fa-plus-circle fa-2x text-danger" style="cursor: pointer" title="Create Sub Category" ng-click="createSubCategory()"  role="button" tabindex="0" aria-hidden="false"></i>
+					</div>
+				</div>
+				<label ng-hide="issue.status=='Pending'||issue.status=='In-Progress'|| issue.status=='Re-Opened'|| issue.status=='Awaiting Approval'" class="text-sm font-bold">{{issue.subcategory}}</label>
+			</div>
+			<div class="col-sm-12">
+				<label class="control-label text-xs text-muted">Subject</label><br>
+				<label class="text-sm font-bold">{{issue.subject}}</label>
+			</div>
+			<div class="col-sm-12">
+				<label class="control-label text-xs text-muted">Issue</label><br>
+				<label class="text-sm font-bold">{{issue.issue}}</label>
+			</div>
+			<div class="col-sm-11" ng-show="issue.status=='Closed'||issue.status=='Resolved'||issue.status=='In-Progress' || issue.status=='Re-Opened'">
+				<label class="control-label text-muted" >Comment
+				</label>
+				<br>
+				<div class="">
+					<textarea type="text" ng-show="issue.status=='In-Progress' || issue.status=='Re-Opened'" spellcheck="true" class="form-control input-sm ng-pristine  ng-untouched ng-empty ng-invalid ng-invalid-required"
+						rows="2" ng-model="issue.ipcomment" style="resize:none" required=""></textarea>
+					<label class="text-sm font-bold" style="margin-top: 5px" ng-show="issue.status=='Closed'||issue.status=='Resolved'">{{issue.ipcomment}}</label>
+				</div>
+			</div>
+			<div class="col-sm-1 pull-right" style="margin-top: 30px" ng-show="issue.status=='In-Progress' || issue.status=='Re-Opened'">					
+				<button class="btn btn-rounded btn btn-icon btn-dark ng-scope" title="Save" style="cursor: pointer" ng-click="onIPComment()">
+					<span class="text-success"><i class="fa fa-save" style="font-size: 15px"></i></span>
+				</button>				
+			</div>
+			<div class="col-sm-12" ng-show="issue.sendflag==1">
+				<label class="control-label text-xs text-muted">Reason for reject</label><br>
+				<label class="text-sm font-bold">{{issue.reject}}</label>
+			</div>
+			<div class="col-sm-12">
+				<label class="control-label text-xs text-muted">Download</label><br>
+				<a ng-repeat="upload in issue.sub_download_array" ng-href="{{'/' + upload}}">
+					<i class="fa fa-file-o thumb-xs avatar" style="font-size: 20px; margin-right: 15px;width: 25px">
+					<i class="busy md b-white bottom" ng-click="removeFile($index);$event.stopPropagation();"></i></i></a>                 
+				<a ng-if="issue.sub_download_array.length < 1" style="font-style: italic;">No Attachment</a>  
+			</div>
+              
+  	    </form>
+		<form class="form-horizontal form-validation" ng-show="issue.status=='In-Progress' || issue.status=='Re-Opened' || issue.status=='Resolved' || issue.status=='Closed'">
+			<div class="col-sm-12" style="margin-top: 15px" ng-show="issue.status=='In-Progress' || issue.status=='Re-Opened'">
+				<label class="control-label text-muted">Additional Files&nbsp;&nbsp;&nbsp;</label>						
+				<button class="btn btn-dark btn-sm" ngf-select="uploadFiles($files)" multiple ngf-max-files="5"
+					ngf-max-size="10MB" ngf-accept="'image/*,application/pdf'"
+					ngf-pattern="'image/*,application/pdf'" ngf-capture="'camera'"
+					ng-disabled="issue.status == 'Resolved' || issue.status=='Closed'">
+					<span class="text-success font-bold"><i class="fa fa-upload"></i>&nbsp;Select Files</span>
+				</button>
+			</div>	
+			<div class="col-sm-10 ">
+				<ul>
+					<li ng-repeat="f in files" style="font:smaller">
+						{{f.name}}
+					</li>
+				</ul>
+				<uib-progressbar ng-show="progress >= 0" class="progress-striped progress-sm" style="margin: 5px" value="progress" type="info">                  						
+				</uib-progressbar>                
+				{{errorMsg}}
+			</div>  
+			
+			<div class="col-sm-12">
+				<label class="control-label text-muted">Resolution<i class="text-danger">*</i></label>
+				<div class=""> 
+					<textarea type="text" ng-show="issue.status=='In-Progress' || issue.status=='Re-Opened'"  spellcheck="true" class="form-control input-sm ng-pristine  ng-untouched ng-empty ng-invalid ng-invalid-required" rows="2" ng-model="issue.resolution" style="resize:none" required=""></textarea> 
+					<label class="text-sm font-bold" style="margin-top: 5px" ng-show="issue.status=='Resolved' || issue.status=='Closed'">{{issue.resolution}}</label> 
+				</div> 
+			</div>
+			<br>
+			<div class="col-sm-7 pull-right" style="margin-top: 10px" ng-show="issue.status=='In-Progress' || issue.status=='Re-Opened'">
+				<button type="button" class="btn btn-success btn-sm" ng-click="onResolve()">
+					<span class="text-white"><i class="fa fa-check"></i>&nbsp;Resolve</span>
+				</button>
+				<button type="button" class="btn btn-dark btn-sm" ng-click="onHold()">
+					<span class="text-success"><i class="fa fa-check"></i>&nbsp;Hold</span>
+				</button>
+			</div>
+			<div class="col-sm-7 pull-right" style="margin-top: 10px" ng-show="issue.status=='Resolved'">
+				<button type="button" class="btn btn-dark btn-sm" ng-click="onReopen()">
+					<span class="text-success"><i class="fa fa-check"></i>&nbsp;Re-Open</span>
+				</button>						
+				<button type="button" class="btn btn-success btn-sm" ng-click="onClose()">
+					<span class="text-white"><i class="fa fa-check"></i>&nbsp;Close</span>
+				</button>						
+			</div>
+		</form>
+    </div>
+</div>
+  	
+<!-- - - - - - REQUEST HISTORY - - - - - -->
+<div> <!--class="col-centered"-->
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<label class="font-bold"><i class="fa fa-history" aria-hidden="true"></i>&nbsp;&nbsp;Request History</label>
+			<label class="control-label text-xs text-muted pull-right">&nbsp;&nbsp;<i class="fa fa-clock-o"></i>&nbsp;
+				<span> Created Time {{issue.created_at | mydatetime}}</span>
+			</label>
+		</div>
+		<div class="table table-responsive">
+			<table  class="table ticket table-striped b-t b-light">
+				<thead class="tblhead-sm" style="font-size: .7vw">
+					<tr>
+						<th class="text-center" st-sort-default="descend"><b>Date Time</b></th>
+						<th class="text-center"><b>Status</b></th>
+						<th class="text-center"><b>User</b></th>
+						<th class="text-center"><b>Assignee</b></th>
+						<th class="text-center"><b>Comment</b></th>
+					</tr>
+				</thead>
+				<tbody ng-hide="isLoading">
+					<tr class="" ng-repeat="row in issue.datalist">
+						<td class="text-center"><span>{{row.created_at}}</span></td>
+						<td class="text-center"><span>{{row.action}}</span></td>
+						<td class="text-center"><span>{{(row.user == -1) ? 'System':row.fullname}}</span></td>
+						<td class="text-center"><span>{{row.assignee}}</span></td>
+						<td class="text-center"><span>{{row.comment}}</span></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+<!-- - - - - - /REQUEST HISTORY - - - - - -->
+
+</div>

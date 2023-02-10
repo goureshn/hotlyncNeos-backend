@@ -1,0 +1,47 @@
+<style>
+    button {
+        pointer: cursor;
+    }
+
+    .btn.disabled {
+        pointer-events: none !important;
+    }
+
+    .active_users_multiselect,.active_users_multiselect .dropdown-multiselect, .active_users_multiselect .dropdown-multiselect > div,
+    .active_users_multiselect .dropdown-multiselect > div button, .active_users_multiselect .dropdown-multiselect ul
+    {
+        width: 100%;
+    }
+
+</style>
+
+<form class="form-horizontal form-validation" ng-submit="onSend()">
+    <div class="modal-content">
+        <div class="modal-body" style="padding-top: 30px; padding-bottom: 30px;">
+            <h3 style="text-align: center">Select Users</h3>
+            <br/>
+            <div class="row" style="padding: 0 0 20px 0; margin: 0;">
+                <div class="col-sm-12">
+                    <div ng-dropdown-multiselect="" class="active_users_multiselect {{isLoading ? 'disabled' : ''}}"
+                         events="acitve_users_events"
+                         options="activeUsers" style="display: inline-block;"
+                         selected-model="selectedUsers"
+                         extra-settings="active_users_setting"
+                         translation-texts="active_users_hint"
+                         required></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer ">
+            <div class="form-group" style="padding-left: 0; margin: 0;">
+                <button type="submit" class="btn btn-info btn-sm {{isLoading ? 'disabled' : ''}}" style="width: 80px">
+                    {{isLoading == false ? 'Send' : 'loading'}}
+                </button>
+                <button type="button" class="btn btn-danger btn-sm {{isLoading ? 'disabled' : ''}}" style="width: 80px" ng-click="onCancel()">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</form>

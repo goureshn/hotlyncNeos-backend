@@ -1,0 +1,80 @@
+<div ng-controller="RulesController" style="{{full_height}}">
+    <script type="text/ng-template" id="checklist_item.html">
+        <a>
+            <span>{{match.model.name}} - {{match.model.weight}}</span>            
+        </a>
+    </script>
+    <div class="wrapper-md1">
+        <div class="col-sm-12">
+            <div class="panel panel-default">
+                <div class="panel-heading"><i class="fa fa-plus" aria-hidden="true">
+                    </i>&nbsp;Rules
+                    <div class="pull-right">
+                        <button type="button" class="btn btn-sm btn-primary text-uc m-t-n-xs" ng-click="addRule()"><strong>&nbsp;&nbsp;&nbsp;Add Rule&nbsp;&nbsp;&nbsp;</strong></button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <form class="form-horizontal form-validation">                       
+                        <div class="form-group" >
+                            <div class="col-sm-4">
+                                <label class="text-muted">Room Type</label>
+                                <label style="color:#F44336">*</label>
+                                <select class='form-control input-sm' ng-model="filter.room_type_id"
+                                            ng-options="value.id as value.type for (key, value) in room_type_list" 
+                                            ng-change="onChangeRoomType()">
+                                </select> 
+                            </div>
+                             <div class="col-sm-4">
+                                <label class="text-muted">VIP Status</label>
+                                <label style="color:#F44336">*</label>
+                                <select class='form-control input-sm' ng-model="filter.vip_id"
+                                        ng-options="value.id as value.name for (key, value) in vip_list" 
+                                        ng-change="onChangeVip()"
+                                        >
+                                </select>                                
+                            </div>
+                            <div class="col-sm-4">
+                                <label class="text-muted">Days</label>
+                                <label style="color:#F44336">*</label>
+                                <input class="form-control input-sm" type = 'number' ng-model="filter.days"  required
+                                            placeholder="Days">                               
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="table table-responsive" style="height:100%">
+                        <table  st-table="datalist"  st-pipe="getDataList" class="table ticket">
+                            <thead class="tblhead-sm" style="background: #88888a">
+                                <tr>
+                                    <th><b>Room Type</b></th>
+                                    <th><b>VIP Status</b></th>
+                                    <th><b>Days</b></th>   
+                                    <th><b>Creator</b></th>                       
+                                    <th style="width:50px;"><b>Action</b></th>                            
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="" ng-repeat="row in rule_list">
+                                    <td>{{row.room_type}}</td>
+                                    <td>{{row.vip_name}}</td>
+                                    <td>{{row.days}}</td>
+                                    <td>{{row.wholename}}</td>
+                                    <td>
+                                        <a class="btn default btn-xs green" ng-click="onEditRule(row)">
+                                            <i class="fa fa-pencil"></i></a>
+                                        <a class="btn default btn-xs red" ng-click="onDeleteRule(row)">
+                                            <i class="fa fa-trash"></i></a>                                        
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+       
+
+    </div>
+
+</div>

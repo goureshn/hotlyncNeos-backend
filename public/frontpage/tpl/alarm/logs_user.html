@@ -1,0 +1,47 @@
+<div ng-controller="AlarmLogUserController" class="panel panel-default">
+    <div class="panel-heading"><i class="fa fa-list-ul" aria-hidden="true"></i>&nbsp;User List</div>
+    <div class="panel-body">
+        <div class="row">
+            <table  st-table="userlist"   st-pipe="getUserList" class="table ticket table-bordered table-hover table-condensed bg-white-only" >
+                <thead class="tblhead-sm-grey">
+                <tr>
+                    <th><b>Reciever name</b></th>
+                    <th><b>Notification type</b></th>
+                    <th><b>Acknowledge Status</b></th>  
+                    <th><b>Notification Event</b></th>                  
+                    <!--<th><b>Changed date</b></th>-->
+                </tr>
+                </thead>
+                <tbody  ng-hide="isLoading" ng-repeat="row in userlist">
+                    <tr class="">
+                        <td>
+                            {{row.user_name}}
+                        </td>
+                        <td>{{row.notifi_type}}</td>
+                        <td class="text-center"><i class="fa fa-check green"  aria-hidden="true" ng-if="row.status==1"></i>
+                               <!--{{showPermission(row.status)}}--> 
+                        </td>
+                        <td class="text-center" >                            
+                            <label ng-if='row.send_type==1'>Check</label>
+                            <label ng-if='row.send_type==2'>Clear</label>
+                            <label ng-if='row.send_type==0'>Active</label>
+                        </td>                       
+                        <!--<td >{{row.created_at}}</td>-->
+                    </tr>
+                </tbody>                    
+                <tbody ng-show="isLoading">
+                    <tr>
+                        <td colspan="4" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+                    </tr>
+                </tbody>
+                <tfoot ng-hide="isLoading">
+                    <tr ng-show="paginationOptions.totalItems > paginationOptions.pageSize">
+                        <td colspan="3" class="text-center">
+                            <div st-pagination="" st-items-by-page="paginationOptions.pageSize" st-displayed-pages="7" class="no-margin"></div>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>                   
+    </div>
+</div>

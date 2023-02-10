@@ -1,0 +1,513 @@
+<style>
+</style>
+<div ng-controller="LNFCreateController" class="stretch" style = "overflow:visible;" >
+    <script type="text/ng-template" id="locationTypeahead.html">
+        <a>
+            <span ng-bind="match.model.name"></span><br>
+            <span style="font-size: 10px" ng-bind="match.model.type"></span>-<span style="font-size: 10px" ng-bind="match.model.property"></span><br>
+        </a>
+    </script>
+    <script type="text/ng-template" id="userTypeahead.html">
+        <a>
+            <span ng-bind="match.model.fullname"></span>
+        </a>
+    </script>
+    <script type="text/ng-template" id="guestTypeahead.html">
+        <a>
+            <span ng-bind="match.model.guest_name"></span>
+        </a>
+    </script>
+    <script type="text/ng-template" id="storedLocTypeahead.html">
+        <a>
+            <span ng-bind="match.model.stored_loc"></span>
+        </a>
+    </script>
+    <script type="text/ng-template" id="itemtypeTypeahead.html">
+        <a>
+            <span ng-bind="match.model.type"></span>
+        </a>
+    </script>
+    <script type="text/ng-template" id="itembrandTypeahead.html">
+        <a>
+            <span ng-bind="match.model.brand"></span>
+        </a>
+    </script>
+    <script type="text/ng-template" id="lnf_storedlocation.html">
+        <div ng-include="'tpl/lnf/lnf_storedlocation.html'"></div>
+    </script>
+    <script type="text/ng-template" id="lnf_itemtype.html">
+        <div ng-include="'tpl/lnf/lnf_itemtype.html'"></div>
+    </script>
+    <script type="text/ng-template" id="lnf_itemcolor.html">
+        <div ng-include="'tpl/lnf/lnf_itemcolor.html'"></div>
+    </script>
+    <script type="text/ng-template" id="lnf_itembrand.html">
+        <div ng-include="'tpl/lnf/lnf_itembrand.html'"></div>
+    </script>
+    <script type="text/ng-template" id="lnf_item_category.html">
+        <div ng-include="'tpl/lnf/lnf_item_category.html'"></div>
+    </script>
+    <script type="text/ng-template" id="lnf_itemcustomuser.html">
+        <div ng-include="'tpl/lnf/lnf_itemcustomuser.html'"></div>
+    </script>
+    <script type="text/ng-template" id="lnf_newguest.html">
+        <div ng-include="'tpl/lnf/lnf_newguest.html'"></div>
+    </script>
+    <script type="text/ng-template" id="modalImage.html">
+        <div ng-include="'tpl/lnf/modalImage.html'"></div>
+    </script>
+    <div  ng-cloak style = "padding:10px;">
+        <div class="col-lg-12 col-centered" style = "margin-bottom:50px;">
+            <div class="panel panel-default">
+
+                <div class="panel-body">
+                    <!-- Finder Detail -->
+                    <div class="form-group col-lg-12">
+                        <div class="panel panel-default" style="border-radius: 4px; margin-bottom: 0px">
+                            <div class="panel-heading">
+                                <div>
+                                    <span><i class="fa fa-user text-default"></i>&nbsp;Finder Details</span>
+                                </div>
+                            </div>
+                            <div class="panel-body" style="padding: 5px 0px">
+                                <div class="form-horizontal form-validation col-lg-12" style="padding: 0px">
+                                    <div class="col-sm-6">
+                                        <label class="control-label text-xs text-muted">Type</label>
+                                        <div class=" scrollable-dropdown-menu">
+                                            <select class='form-control' ng-model="lnf_type" ng-init="lnf_type='Found'" ng-options="type for type in lnf_type_list" ng-change="onChangeLNFType()">
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <label class="control-label text-xs text-muted">Date {{lnf_type}}</label>
+                                        <div class="scrollable-dropdown-menu">
+                                            <div class="dropdown">
+                                                <a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+                                                    <div class="input-group">
+                                                        <input type="text" class="form-control" ng-model="datetime.time">
+                                                        <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                                                    </div>
+                                                </a>
+                                                <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+                                                    <datetimepicker ng-model="datetime.date"
+                                                                    data-datetimepicker-config="{ dropdownSelector: '#dropdown2' }"
+                                                                    data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+                                                </ul>
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                    <div ng-if="lnf_type == 'Found'" class="col-sm-6" >
+
+                                        <label class="control-label text-xs text-muted">Found By</label>
+                                        <div class="scrollable-dropdown-menu">
+                                            <div class="col-lg-10" style = "padding:0px;">
+                                                <input  type="text" ng-model="found_by.fullname" ng-init="found_by.fullname=activeUser" class="form-control input-sm" placeholder="Enter user name"
+                                                        uib-popover="Enter user name" popover-trigger="mouseenter"
+                                                        uib-typeahead="user.fullname for user in itemcustomuser_list | filter:$viewValue | limitTo:15"
+                                                        typeahead-min-length="0"
+                                                        typeahead-editable="false"
+                                                        typeahead-template-url="userTypeahead.html"
+                                                        typeahead-on-select="onUserSelect($item, $model, $label)" required>
+                                            </div>
+                                            <div class="col-lg-2" style = "margin:0px;">
+                                                <i class="fa fa-plus-circle fa-2x text-danger " style="cursor: pointer" title="Create Custom User" ng-click="createCustomUser()"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div ng-if="lnf_type == 'Found'" class="col-sm-6">
+                                        <label class="control-label text-xs text-muted">ID No</label>
+                                        <div class="scrollable-dropdown-menu">
+                                            <input  type="text" ng-model="received_by.id_no" class="form-control input-sm" 
+                                                    uib-typeahead="user.fullname for user in user_list | filter:$viewValue | limitTo:15"
+                                                    typeahead-min-length="0"
+                                                    typeahead-editable="false"
+                                                    typeahead-template-url="userTypeahead.html"
+                                                    typeahead-on-select="onReceiverSelect($item, $model, $label)" required>
+                                        </div>
+                                    </div>
+
+                                    <div ng-if="lnf_type == 'Found'" class="col-sm-6">
+                                        <label class="control-label text-xs text-muted">Received By</label>
+                                        <div class="scrollable-dropdown-menu">
+                                            <input  type="text" ng-model="received_by.fullname" class="form-control input-sm" placeholder="Enter Receiver Name"                                        
+                                                    uib-typeahead="user.fullname for user in user_list | filter:$viewValue | limitTo:15"
+                                                    typeahead-min-length="0"
+                                                    typeahead-editable="false"
+                                                    typeahead-template-url="userTypeahead.html"
+                                                    typeahead-on-select="onReceiverSelect($item, $model, $label)" required>
+                                        </div>
+                                    </div>
+
+                                    <div ng-if="lnf_type == 'Found'" class="col-sm-6">
+                                        <label class="control-label text-xs text-muted">Received Time</label>
+                                        <div class="dropdown">
+                                            <a class="dropdown-toggle" id="dropdown3" role="button" data-toggle="dropdown" data-target="#">
+                                                <div class="input-group">
+                                                    <input type="text" class="form-control" ng-model="datetime.received_time">
+                                                    <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                                                </div>
+                                            </a>
+                                            <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+                                                <datetimepicker ng-model="datetime.received_date" data-datetimepicker-config="{ dropdownSelector: '#dropdown3' }"
+                                                data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+                                            </ul>                                
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>        
+                    </div>    
+
+                    <!--  Location Detail -->
+                    <div class="form-group col-lg-12">
+                        <div class="panel panel-default" style="border-radius: 4px; margin-bottom: 0px">
+                            <div class="panel-heading">
+                                <div>
+                                    <span><i class="fa fa-map-marker text-default"></i>&nbsp;Location Details</span>
+                                </div>
+                            </div>
+                            <div class="panel-body" style="padding: 5px 0px">
+                                <div class="form-horizontal form-validation col-lg-12" style="padding: 0px">
+                                    <div class="col-sm-6" >
+                                        <label class="control-label text-xs text-muted">Location<i class="text-danger">*</i></label>
+                                        <div>
+                                            <input type="text" ng-model="location.name" class="form-control input-sm" placeholder="Enter location name"
+                                                uib-popover="Enter location name" popover-trigger="mouseenter"
+                                                uib-typeahead="room.name for room in location_list | filter:$viewValue | limitTo:10"
+                                                typeahead-min-length="0"
+                                                typeahead-editable="false"
+                                                typeahead-template-url="locationTypeahead.html"
+                                                typeahead-on-select="onLocationSelect($item, $model, $label)" required>
+                                        </div>
+                                    </div>
+
+                                    <div ng-if="lnf_type == 'Found'" class="col-sm-6">
+                                        <label class="control-label text-xs text-muted">Stored Location</label>
+                                        <div class="scrollable-dropdown-menu">
+                                            <div class="col-lg-10" style = "padding:0px;">
+                                                <input  type="text" ng-model="storedlocation.stored_loc" class="form-control input-sm" placeholder="Enter stored location"
+                                                        uib-popover="Enter stored location" popover-trigger="mouseenter"
+                                                        uib-typeahead="loc.stored_loc for loc in storedlocation_list | filter:$viewValue | limitTo:15"
+                                                        typeahead-min-length="0"
+                                                        typeahead-editable="false"
+                                                        typeahead-template-url="storedLocTypeahead.html"
+                                                        typeahead-on-select="onStoredLocationSelect($item, $model, $label)" required>
+
+                                            </div>
+                                            <div class="col-lg-2" style = "margin:0px;">
+                                                <i class="fa fa-plus-circle fa-2x text-danger " style="cursor: pointer" title="Add Location" ng-click="createStoredLocation()"
+                                                ></i>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                    <div ng-if="location.type == 'Room'">    
+                                        <div class="col-sm-12">
+                                            <label class="control-label text-xs text-muted">Guest Name</label>
+                                            <div class="scrollable-dropdown-menu">
+                                                <input  type="text" ng-model="guest.guest_name"  class="form-control input-sm"
+                                                        uib-popover="Enter guest name" popover-trigger="mouseenter"
+                                                        uib-typeahead="guest.guest_name for guest in guest_list | filter:$viewValue | limitTo:3"
+                                                        typeahead-min-length="0"
+                                                        typeahead-editable="false"
+                                                        typeahead-template-url="guestTypeahead.html"
+                                                        typeahead-on-select="onGuestSelect($item, $model, $label)" >
+
+                                            </div>
+                                        </div>
+
+                                        <div class="col-sm-6">
+                                            <label class="control-label text-xs text-muted">Arrival Date</label>
+                                            <div>
+                                                <input type="text" ng-model="guest.arrival"  class="form-control input-sm" readonly aria-invalid="false">
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <label class="control-label text-xs text-muted">Departure Date</label>
+                                            <div>
+                                                <input type="text" ng-model="guest.departure"  class="form-control input-sm" readonly aria-invalid="false">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div ng-if="location.type != 'Room' && location.type" class="col-sm-6" >
+
+                                        <label class="control-label text-xs text-muted">Guest Name</label>
+                                        <div ng-if="new_guest_input == 0" class="scrollable-dropdown-menu">
+                                            <div class="col-lg-10" style = "padding:0px;">
+                                                <input  type="text" ng-model="selected_guest.guest_name" class="form-control input-sm" placeholder="Enter guest name"
+                                                        uib-popover="Enter guest name" popover-trigger="mouseenter"
+                                                        uib-typeahead="guest.guest_name for guest in guest_list | filter:$viewValue | limitTo:15"
+                                                        typeahead-min-length="0"
+                                                        typeahead-editable="false"
+                                                        typeahead-template-url="guestTypeahead.html"
+                                                        typeahead-on-select="onGuestSelect($item, $model, $label)" ng-disabled = "new_guest_input == 1">
+                                            </div>
+
+                                            <div class="col-lg-2"  style = "margin:0px;">
+                                                <i class="fa fa-plus-circle fa-2x text-danger " style="cursor: pointer" title="Create New Guest" ng-click="createNewGuest()"></i>
+                                            </div>
+
+                                        </div>
+                                        <div ng-if="new_guest_input == 1" class="scrollable-dropdown-menu">
+
+                                            <div class="col-lg-10" style = "padding:0px;">
+                                                <input type="text" class="form-control" readonly ng-model="created_guest.fullname">
+
+                                            </div>
+                                            <div class="col-lg-2" style = "margin:0px;">
+                                                <i class="fa fa-search fa-2x" style="cursor: pointer" title="Create New Guest" ng-click="searchGuest()"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>    
+                
+                    <div class="form-group col-lg-12">
+                        <div class="panel panel-default" style="border-radius: 4px; margin-bottom: 0px">
+                            <div class="panel-heading">
+                                <div>
+                                    <span><i class="fa fa-eye text-default"></i>&nbsp;Item Details</span>
+                                    <span class="pull-right" style="margin-top:-3px" ng-click="addItem()" ng-if="items.length < 5">
+                                        <i class="fa fa-plus-circle fa-2x text-info " style="cursor: pointer" title="Add Item"
+                                        ></i>
+                                    </span>    
+                                </div>                                
+                            </div>
+                            <div class="panel-body" style="padding: 5px 0px">
+                                <div class="form-horizontal form-validation" style="padding: 0px">
+                                    <div class="col-lg-12" style = "padding:0px;">
+                                        <div class="col-sm-4">
+                                            <label class="control-label text-xs text-muted">Item Type</label>
+                                            <div class="scrollable-dropdown-menu">
+                                                <div class="col-sm-10" style = "padding:0px;">
+                                                    <input  type="text" ng-model="lnf_item.itemtype" class="form-control input-sm" placeholder="Enter Item type"
+                                                            uib-popover="Enter Item Type" popover-trigger="mouseenter"
+                                                            uib-typeahead="type.type for type in itemtype_list | filter:$viewValue | limitTo:15"
+                                                            typeahead-min-length="0"
+                                                            typeahead-editable="false"
+                                                            typeahead-template-url="itemtypeTypeahead.html"
+                                                            typeahead-on-select="onItemTypeSelect($item, $model, $label)" required>
+                                                </div>
+                                                <div class="col-sm-1">
+                                                    <i class="fa fa-plus-circle fa-2x text-info " style="cursor: pointer" title="Create Item Type" ng-click="createItemType()"
+                                                    ></i>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <label class="control-label text-xs text-muted">Brand</label>
+                                            <div class="scrollable-dropdown-menu">
+                                                <div class="col-sm-10" style = "padding:0px;">
+                                                    <input  type="text" ng-model="lnf_item.brand" class="form-control input-sm" placeholder="Enter Brand"
+                                                            uib-popover="Enter Brand" popover-trigger="mouseenter"
+                                                            uib-typeahead="brand.brand for brand in itembrand_list | filter:$viewValue | limitTo:15"
+                                                            typeahead-min-length="0"
+                                                            typeahead-editable="false"
+                                                            typeahead-template-url="itembrandTypeahead.html"
+                                                            typeahead-on-select="onItemBrandSelect($item, $model, $label)" required>
+                                                </div>
+                                                <div class="col-sm-2">
+                                                    <i class="fa fa-plus-circle fa-2x text-info " style="cursor: pointer" title="Create Item Found" ng-click="createItemBrand()"
+                                                    ></i>
+                                                </div>
+
+                                            </div>
+                                        </div>    
+                                        <div class="col-sm-4">
+                                            <label class="control-label text-xs text-muted">Quantity</label>
+                                            <div>
+                                                <input type="number" min="1" max="10" step="1" class="form-control input-sm" ng-model="lnf_item.quantity" ng-init="lnf_item.quantity=1" style="">
+                                            </div>
+                                        </div>                                        
+                                    </div>
+                                    <div class="col-lg-12" style = "padding:0px;">
+                                        <div class="col-sm-4">
+                                            <label class="control-label text-xs text-muted">Category</label>
+                                            <div class="scrollable-dropdown-menu">
+                                                <div class="col-sm-10" style = "padding:0px;">
+                                                    <input  type="text" ng-model="lnf_item.category" class="form-control input-sm" placeholder="Enter Item Category"
+                                                            uib-popover="Enter Item Category" popover-trigger="mouseenter"
+                                                            uib-typeahead="item.name for item in itemcategory_list | filter:$viewValue | limitTo:15"
+                                                            typeahead-min-length="0"
+                                                            typeahead-editable="false"                                                            
+                                                            typeahead-on-select="onItemCatgorySelect($item, $model, $label)" required>
+                                                </div>
+                                                <div class="col-sm-1">
+                                                    <i class="fa fa-plus-circle fa-2x text-info " style="cursor: pointer" title="Create Category Type" ng-click="createItemCategory()"
+                                                    ></i>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <label class="control-label text-xs text-muted">Tags</label>
+                                            <div>
+                                                <tags-input ng-model="lnf_item.item_tag" placeholder="Add Tag" replace-spaces-with-dashes="false" style="margin-top: -5px">
+                                                    <auto-complete  min-length="0" debounce-delay="0" load-on-focus="true" load-on-empty="true" source="loadFilters($query)"
+                                                                    max-results-to-show="100">
+                                                    </auto-complete>
+                                                </tags-input>
+                                            </div>
+                                        </div>
+                                        
+                                    </div>
+
+                                    <div class="col-lg-12" style = "padding:0px;">
+                                        <div class="col-sm-6">
+                                            <label class="control-label text-xs text-muted">Stored Location</label>
+                                            <div class="scrollable-dropdown-menu">
+                                                <div class="col-sm-10" style = "padding:0px;">
+                                                    <input  type="text" ng-model="lnf_item.stored_loc" class="form-control input-sm" placeholder="Enter stored location"
+                                                            uib-popover="Enter stored location" popover-trigger="mouseenter"
+                                                            uib-typeahead="loc.stored_loc for loc in storedlocation_list | filter:$viewValue | limitTo:15"
+                                                            typeahead-min-length="0"
+                                                            typeahead-editable="false"
+                                                            typeahead-template-url="storedLocTypeahead.html"
+                                                            typeahead-on-select="onStoredLocationForItemSelect($item, $model, $label)" required>
+
+                                                </div>
+                                                <div class="col-sm-2" style = "margin:0px;">
+                                                    <i class="fa fa-plus-circle fa-2x text-danger " style="cursor: pointer" title="Add Location" ng-click="createStoredLocation()"
+                                                    ></i>
+                                                </div>
+                                            </div>
+                                        </div> 
+                                        <div class="col-sm-6">
+                                            <label class="control-label text-xs text-muted">Stored Time</label>
+                                            <div class="dropdown">
+                                                <a class="dropdown-toggle" id="dropdown4" role="button" data-toggle="dropdown" data-target="#">
+                                                    <div class="input-group">
+                                                        <input type="text" class="form-control" ng-model="lnf_item.stored_time">
+                                                        <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                                                    </div>
+                                                </a>
+                                                <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+                                                    <datetimepicker ng-model="lnf_item.stored_date" data-datetimepicker-config="{ dropdownSelector: '#dropdown4' }"
+                                                    data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+                                                </ul>                                
+                                            </div>
+                                        </div>                                           
+                                    </div>
+
+
+                                    <div class="col-lg-12">
+                                        <label class="control-label text-xs text-muted">Description</label>
+                                        <div>
+                                            <textarea ng-model="lnf_item.comment" rows = 4 class="form-control input-sm ng-pristine ng-untouched ng-valid ng-empty" style="resize: none;" maxlength="200" ng-trim="false"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-12" style = "padding-top:10px;">
+                                        <div class="col-sm-4">
+                                            <label class="control-label text-xs text-muted">Attach</label>
+                                            <button class="btn btn-dark btn-xs" ng-if="lnf_item.files.length < 3" ngf-select="uploadFiles($files)" multiple ngf-max-files="3" ngf-max-size="10MB"
+                                                    ngf-accept="'image/*,application/pdf'" ngf-pattern="'image/*,application/pdf'">
+                                                <span class="text-success font-bold"><i class="fa fa-folder-open"></i>&nbsp;Add file</span>
+                                            </button>
+                                            <small class="text-muted">(Max 3 files)</small>
+                                            <br>
+                                            <small class="text-muted text-xs">Upload .jpg, .jpeg, .png and .pdf file with maximum size of 10MB is allowed.</small>
+                                        </div>
+                                        <div class="col-sm-8">
+
+                                            <label class="control-label text-xs text-muted"><i class="fa fa-file" aria-hidden="true"></i>&nbsp;Files</label><br/>
+                                            <div>
+                                                <div class = "col-sm-3" ng-repeat=" (key,f) in lnf_item.files" class="text-xs" style="margin-bottom: 5px">
+                                                    <img style = "width:85%;max-height: 217px;object-fit: cover;"  ng-src = "{{lnf_item.thumbnails[key]}}" alt = "{{f.name}}" ng-click="openModalImage(lnf_item.thumbnails[key], f.name)" >
+                                                    <span class="glyphicon icon-close" style="margin-top:3px; color: red"
+                                                            ng-click="removeFile($index)"></span>
+                                                </div>
+                                            </div>
+                                            <div style = "padding:0px;" ng-if="0">
+                                                <span class="progress" ng-show="upload_progress > 0">
+                                                <div style="width:{{progress}}%" ng-bind="upload_progress + '%'"></div>
+                                                </span>
+                                                {{errorUploadMsg}}
+                                            </div>
+                                        </div>
+                                    </div>                                    
+                                </div>
+                            </div>
+                        </div>                        
+                    </div>
+
+                    <div class="form-group col-lg-12" ng-if="items.length>0" >
+                        <div class="panel panel-default" style="border-radius: 4px; margin-bottom: 0px">
+                            <div class="panel-heading">
+                                <div>
+                                    <span><i class="fa fa-info-circle text-default"></i>&nbsp;Item List</span>
+                                </div>
+                            </div>
+                            <div class="panel-body" style="padding: 5px 0px">
+                                <div class="table table-responsive">
+                                    <table  class="table ticket table-striped b-t b-light">
+                                        <thead class="text-sm tblhead-sm" height="10px">
+                                            <tr>
+                                                <th class="text-center"><b>Item</b></th>
+                                                <th class="text-center"><b>Qty</b></th>
+                                                <th class="text-center"><b>Brand</b></th>
+                                                <th class="text-center"><b>Description</b></th>
+                                                <th class="text-center"><b>Stored Location</b></th>
+                                                <th class="text-center"><b>Stored Date</b></th>
+                                                <th class="text-center"><b>Tags</b></th>
+                                                <th class="text-center"><b>Image</b></th>
+                                                <th class="text-center"><b>Action</b></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody ng-if="items.length>0" ng-hide="isLoading">
+                                        <tr class="text-sm" ng-repeat="item in items" ng-if = "item.itemtype">
+                                            <td class="text-center"><span>{{item.itemtype.type}}</span></td>
+                                            <td class="text-center"><span>{{item.quantity}}</span></td>
+                                            <td class="text-center"><span>{{item.brand.brand}}</span></td>
+                                            <td class="text-center"><span>{{item.comment}}</span></td>
+                                            <td class="text-center"><span>{{item.stored_loc}}</span></td>
+                                            <td class="text-center"><span>{{item.stored_time}}</span></td>
+                                            <td class="text-center"><span>{{item.tags}}</span></td>
+                                            <td class="text-center">
+                                                <div class = "col-sm-3" ng-repeat=" (key,f) in item.files" class="text-xs" style="margin-bottom: 5px">
+                                                    <img style = "height:40px;object-fit: cover;"  ng-src = "{{item.thumbnails[key]}}" alt = "{{f.name}}" ng-click="openModalImage(item.thumbnails[key], f.name)" >                                                
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <a class="btn default btn-xs green" ng-disabled = "btn_add == 'Update'" ng-click="editItem(item,$index)">
+                                                    <i class="fa fa-pencil"></i></a>
+                                                <a class="btn default btn-xs red" ng-click="removeItem($index)">
+                                                    <i class="fa fa-times"></i></a>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                        <tbody ng-if="items.length==0">
+                                        <tr  style = "text-align:center;"><td colspan = "6"><label>No Item</label></td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>        
+
+                    <div class="form-group col-lg-12" style="margin-top: 25px;margin-bottom: 0px">
+                        <button type="button" class=" pull-right btn btn-danger btn-sm" ng-click="clearLnf()">
+                            <span class="glyphicon glyphicon-remove"></span>
+                            <b> Cancel</b>
+                        </button>
+                        <button style = "margin-right:10px;" type="button" class="pull-right btn btn-success btn-sm" ng-click="createLnf()">
+                            <span class="glyphicon glyphicon-ok"></span>
+                            <b> Submit</b>
+                        </button>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+
+    </div>
+
+</div>

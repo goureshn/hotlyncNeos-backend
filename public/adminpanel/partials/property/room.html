@@ -1,0 +1,181 @@
+<input type="hidden" id="id" value="-1" ng-model="model_data.id"/>
+
+	<div class="panel panel-default"> 
+		<div class="panel-heading wrapper"> 
+			<button type="button" class="btn btn-success btn-sm" style="float:right; margin-top: -5px" data-toggle="modal" data-target="#addModal" ng-disabled="job_role!='SuperAdmin'&&edit_flag==0" ng-click="onShowEditRow(-1)">
+				<span class="glyphicon glyphicon-plus"></span>
+				<b> Add New </b>
+			</button>
+			<button  type="button" class="btn btn-success btn-sm" style="float:right; margin-top: -5px; margin-right: 10px" data-target="#exportModal" data-toggle="modal" ng-disabled="job_role!='SuperAdmin'&&edit_flag==0" >
+				<b><i class="fa fa-download"></i> Export File </b>
+			</button>			
+			<i class="fa fa-bank"></i>                           
+			<span class="font-bold">Room Management</span>    
+		</div>                         
+		<div class="" style="{{full_height}}"> 
+			<table id="table_grid" class="table table-hover table-bordered" style="text-align: center; width:100%" ng-model = "table_grid"> 					
+				<thead> 
+					<tr> <!--
+						<th class="no-sort" style="text-align: center">
+							<input style="text-align: center" type="checkbox" id="checkall" />
+						</th>-->
+						<th style="text-align: center" ng-repeat = "field in fields">
+							<b>{{field}}</b>
+						</th>
+						<th style="text-align: center" class="no-sort">Edit</th>
+						<th style="text-align: center" class="no-sort">Delete</th>
+					</tr>                                     
+				</thead>                    
+			</table>                             
+		</div>                     
+	</div>  
+<div class="modal fade" id="exportModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"> 
+	<div class="modal-dialog" role="document"> 
+		<div class="panel"> 
+			<div class="modal-header bg"> 
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"> 
+					<span aria-hidden="true">&times;</span> 
+				</button>  
+				<h5 class="modal-title font-bold" style="color:#2691d9">
+						<i class="fa fa-download"></i>&nbsp;Export Report</h5>
+			</div>
+			<div class="modal-body"> 
+				<br>
+				<form class="form-horizontal form-validation">
+						<label class="control-label text-xs font-bold" style="margin-left: 15px;font-size: 10px">&nbsp;&nbsp;&nbsp;&nbsp;Do you want to export this table?</label><br><br>
+				</form>
+				<form class="form-horizontal form-validation">
+						<center>
+								<button type="button" class="btn btn-success btn-sm" ng-click="onDownloadExcel()" data-dismiss="modal">
+								<span class="font-bold"><i class="fa fa-check"></i>&nbsp;Ok</span></button>
+								<button type="button" class="btn btn-danger btn-sm" class="close" data-dismiss="modal">
+								<span class="font-bold"><i class="fa fa-times"></i>&nbsp;Cancel</span></button>           
+					  </center>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"> 
+	<div class="modal-dialog" role="document"> 
+		<div class="panel"> 
+			<div class="modal-header bg"> 
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"> 
+					<span aria-hidden="true">&times;</span> 
+				</button>  
+				<h5 class="modal-title font-bold" style="color:#2691d9">
+						<i class="fa fa-upload"></i>&nbsp;Upload Room Data</h5>
+			</div>
+			<div class="modal-body"> 
+				<br>
+				<form class="form-horizontal form-validation">
+					<label class="control-label text-xs font-bold" style="margin-left: 15px;font-size: 10px">&nbsp;&nbsp;&nbsp;&nbsp;Do you want to upload the room data?</label><br><br>
+				</form>
+				<form class="form-horizontal form-validation">
+					<center>
+						<button type="button" class="btn btn-success btn-sm" ng-click="onUploadData()" data-dismiss="modal">
+							<span class="font-bold"><i class="fa fa-check"></i>&nbsp;Ok</span>
+						</button>
+						<button type="button" class="btn btn-danger btn-sm" class="close" data-dismiss="modal">
+							<span class="font-bold"><i class="fa fa-times"></i>&nbsp;Cancel</span>
+						</button>           
+					</center>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"> 
+	<div class="modal-dialog" role="document"> 
+		<div class="panel"> 
+			<div class="modal-header bg"> 
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"> 
+					<span aria-hidden="true">&times;</span> 
+				</button>                             
+				<h5 class="modal-title font-bold" style="color:#2691d9" ng-if="model_data.id<0">
+					<i class="fa fa-plus"></i>&nbsp;Add Room</h5>
+				<h5 class="modal-title font-bold" style="color:#2691d9" ng-if="model_data.id>=0">
+					<i class="fa fa-pencil"></i>&nbsp;Edit Room</h5>				
+			</div>                         
+			<div class="modal-body"> 
+				<br>
+				<form class="form-horizontal form-validation">
+          <div class="form-group">
+              <label class="col-sm-4 text-right control-label" style="margin-bottom: 0px">Property<i class="text-danger">*</i>&nbsp;:</label>
+              <div class="col-sm-7" class="scrollable-dropdown-menu">
+	              <select id='prpty_id' class='form-control' ng-model="property_id" ng-change="changeProperty()"
+								ng-options="value.id as value.name for (key, value) in properties">		
+								</select>
+              </div>
+          </div>
+          <div class="form-group">
+              <label class="col-sm-4 text-right control-label" style="margin-bottom: 0px">Building<i class="text-danger">*</i>&nbsp;:</label>
+              <div class="col-sm-7" class="scrollable-dropdown-menu">
+	              <select id='prpty_id' class='form-control' modelname="model_data.bldg_id" ng-model="model_data.bldg_id" ng-change="changeBuild()"
+									ng-options="value.id as value.name for (key, value) in buildings">		
+								</select> 
+              </div>           
+          </div>
+          <div class="form-group">
+              <label class="col-sm-4 text-right control-label" style="margin-bottom: 0px">Floor<i class="text-danger">*</i>&nbsp;:</label>
+              <div class="col-sm-7" class="scrollable-dropdown-menu">
+	              <select id='prpty_id' class='form-control' ng-model="model_data.flr_id"
+									ng-options="value.id as value.floor for (key, value) in floors">		
+								</select>
+	            </div>           
+          </div>
+
+          <div class="form-group">
+              <label class="col-sm-4 text-right control-label" style="margin-bottom: 0px">Room Type<i class="text-danger">*</i>&nbsp;:</label>
+              <div class="col-sm-7" class="scrollable-dropdown-menu">
+	              <select id='prpty_id' class='form-control' ng-model="model_data.type_id"
+									ng-options="value.id as value.type for (key, value) in roomtypes">		
+								</select>
+              </div>
+          </div>
+				</form>
+				<form class="form-horizontal">
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Housekeeping Status:</label>
+						<div class="col-sm-5">
+							<select id='prpty_id' class='form-control' ng-model="model_data.hskp_status_id"
+								ng-options="value.id as value.status for (key, value) in hskps">		
+							</select>							
+						</div>
+					</div>
+					
+					<text-item formlabel="Room" modelname="model_data.room"></text-item>
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Stay Over:</label>
+						<div class="col-sm-5"><input type="number" class="form-control" ng-model="model_data.credits" /></div>
+					</div>
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Vacant:</label>
+						<div class="col-sm-5"><input type="number" class="form-control" ng-model="model_data.vacant" /></div>
+					</div>
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Departure:</label>
+						<div class="col-sm-5"><input type="number" class="form-control" ng-model="model_data.depart" /></div>
+					</div>
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Pickup:</label>
+						<div class="col-sm-5"><input type="number" class="form-control" ng-model="model_data.pickup" /></div>
+					</div>
+					<textarea-item formlabel="Description" texthint="Description" modelname="model_data.description"></textarea-item>	
+					<link href="/lib/angular/angular-toggle-switch-bootstrap-3.css" media="all" rel="stylesheet" type="text/css">
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Enable :</label>
+						<div class="col-sm-5">
+							<div toggle-switch class="switch-primary" ng-model="model_data.enable"></div>
+						</div>
+					</div>	 									
+				</form>                             
+			</div>    
+			<submit-form id="model_data.id" updatedata="onUpdateRow()"></submit-form>						
+		</div>                     
+	</div>                 
+</div>             
+
+<dialog-delete title="Room" modelname="model_data.room" deletedata="deleteRow()"></dialog-delete>

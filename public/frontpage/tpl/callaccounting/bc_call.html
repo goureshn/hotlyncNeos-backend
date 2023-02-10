@@ -1,0 +1,122 @@
+<div ng-controller="BCCallController">
+    <script type="text/ng-template" id="adminrateTemplate.html">
+        <div class="form-group">
+            <p>Carrier Rate: {{row.carrier_rate}}/min</p>
+			<p>Hotel charge Rate: {{getRoundValue(row.carrier_rate * row.hotel_rate / 100)}}/min</p>
+      <p>Tax Rate: {{getRoundValue(row.carrier_rate * row.tax_rate / 100)}}/min</p>
+      <p>Total Rate: {{getRoundValue(row.carrier_rate + row.carrier_rate * row.hotel_rate / 100 + row.carrier_rate * row.tax_rate / 100)}}/min</p>
+        </div>
+    </script>
+	
+	<script type="text/ng-template" id="CallTypeAdminCall.html">
+		<label style="color:#000000">Call Type : </label>
+        <select class='input-sm' ng-model="filters.call_type" ng-change="onChangeCallType()" ng-options="type for type in calltypes" style="color:#000000">
+        </select>
+    </script>
+	
+	<script type="text/ng-template" id="DateBusinessCall.html">
+		<style>
+            .popover {
+                max-width: 300px;
+            }
+        </style>
+
+        <div uib-datepicker ng-model="filters.call_date" datepicker-options="dateOptions" date-disabled="  disabled(date, mode)" ng-change="select()">                
+        </div>
+	</script>
+	<div style="padding: 3px;">
+		<div class="pull-left">
+			<label style="margin-left: 18px; margin-top: 5px">
+				<i class="fa fa-money" aria-hidden="true"></i>&nbsp;<b>Charged Calls</b>
+			</label>
+		</div>
+		<div class="pull-left" style="margin-left: 20px">
+        <label class="i-switch m-t-xs m-r"  >
+            <input type="checkbox" ng-model="totalcharge" ng-click="onTotalCharge()" >
+            <i></i>
+        </label>
+    </div>
+    <div class="input-group col-sm-2 pull-left">
+	      <input type="text"  ng-model="searchtext" ng-keyup="onSearch()" class="form-control input-sm bg-light no-border rounded padder" placeholder="Search">
+	      <span class="input-group-btn">
+	        <button type="submit" class="btn btn-sm bg-light rounded"><i class="fa fa-search"></i></button>
+	      </span>
+	  </div>
+		<div class="pull-right">
+			<label style="margin-right: 20px; margin-top: 5px; margin-bottom: 0px">
+				<i class="fa fa-phone" aria-hidden="true"></i>&nbsp;<b>Total Calls</b> : <label style="color: #FF5722"> {{total_count}}&nbsp; &nbsp;</label>|&nbsp; &nbsp;
+				<i class="fa fa-usd" aria-hidden="true"></i>&nbsp;<b>Total Cost</b> : <label style="color: #FF5722"> {{ currency }} {{total_cost | number :2}} &nbsp; &nbsp; </label>
+				<i class="fa fa-line-chart" aria-hidden="true"></i>&nbsp;&nbsp;<b>Total Profit</b> : <label style="color: #FF5722"> {{ currency }} {{total_profit | number :2}} </label>
+			</label>
+		</div>
+	</div>
+	<div>
+	
+    <div class="table table-responsive">
+        <table  st-table="guestlist" st-pipe="getDataList" class="table ticket table-striped b-t b-light">
+            <thead class="tblhead-sm">
+                <tr>
+					<th class="text-center" style="width: 100px">
+                        <a>&nbsp;<b>Date</b></a>&nbsp;
+                        <b class="fa fa-fw fa-filter" uib-popover-template="'DateBusinessCall.html'" popover-is-open="date_selector_is_open" popover-placement="bottom-left"></b>
+                    </th>
+                    
+                    
+                    <th class="text-center" style="width: 90px; white-space: nowrap"><b>Start Time</b></th>
+                    <th class="text-center" style="width: 90px; white-space: nowrap"><b>End Time</b></th>
+                    <th class="text-center" style="width: 90px" st-sort="ext"><b>Extension</b></th>
+					<th class="text-center" style="width: 110px; white-space: nowrap"><b>Called No.</b></th>
+                    <th class="text-center" style="width: 90px">
+                        <a st-sort="call_type"><b>Type&nbsp;&nbsp;</b></a>
+                        <b class="fa fa-fw fa-filter" uib-popover-template="'CallTypeAdminCall.html'" popover-trigger="outsideClick" popover-placement="right"></b>
+                    </th>
+					<th class="text-center" style="width: 90px" st-sort="duration"><b>Duration</b></th>
+                    <th class="text-center" style="width: 100px;" st-sort="country"><b>Destination</b></th>
+					<th class="text-center" style="width: 90px"><b>Trunk</b></th>
+                    <th class="text-center" style="width: 90px"><b>Carrier</b></th>
+                        <th class="text-center" style="width: 90px"><b>Tax</b></th>
+                        <th class="text-center" style="width: 90px"><b>Charges</b></th>
+                        <th class="text-center" style="width: 90px"><b>Total</b></th>
+                </tr>
+            </thead>
+            <tbody ng-hide="isLoading">
+                <tr class="" ng-repeat="row in datalist">
+                   
+                    <td class="text-center">{{row.call_date}}</td>
+                    
+                    <td class="text-center">{{row.start_time}}</td>
+                    <td class="text-center">{{row.end_time}}</td>
+					<td class="text-center">{{row.extension}}</td>
+                    <td class="text-center">{{row.called_no}}</td>
+                    <td class="text-center">{{row.call_type}}</td>
+                    
+                    
+                    <td class="text-center">{{getDuration(row)}}</td>
+                    <td class="text-center">
+                        <a  uib-popover-template="'adminrateTemplate.html'" popover-trigger="mouseenter" popover-placement="right" popover-title="{{row.country}}">{{row.country}}</a>
+                    </td>
+					<td class="text-center">{{row.trunk}}</td>
+                    <td class="text-center"><b>{{row.carrier_charges | number :2}}</b></td>
+					<td class="text-center">{{row.tax | number :2}}</td>
+                        <td class="text-center">{{row.hotel_charges | number :2}}</td>
+                        <td class="text-center"><b>{{row.total_charges | number :2}}</b></td>
+                    
+                </tr>
+            </tbody>
+            <tbody ng-show="isLoading">
+                <tr>
+                    <td colspan="17" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+                </tr>
+            </tbody>
+            <tfoot ng-hide="isLoading">
+                <tr ng-show="paginationOptions.totalItems > paginationOptions.pageSize">
+                    <td colspan="17" class="text-center">
+                        <div st-pagination="" st-items-by-page="paginationOptions.pageSize" st-displayed-pages="7" class="no-margin"></div>
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+

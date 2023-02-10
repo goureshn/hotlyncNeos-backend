@@ -1,0 +1,24 @@
+
+<div class="wrapper" >
+    <li class="list-group-item clearfix"  ng-repeat="row in workorderlist" >
+        <div class="col-sm-12" style="margin-left: -20px;" >
+            <div>
+                <label class="font-bold">
+                    {{getTicketNumber(row)}}</label>&nbsp;|
+                <label>{{row.equipment_name}}</label>
+                <label class="pull-right font-bold"><a class="text-sm"><i class="fa fa-calendar text-primary"></i>
+                    &nbsp;Last updated - {{row.end_date | mydate}}</a></label>
+            </div>
+            <div>
+                Location:{{row.equipment_location.name}}-{{row.equipment_location.type}} &nbsp;|&nbsp;
+                Type: {{row.work_order_type}} &nbsp;|&nbsp;
+                CheckList: {{row.checklist_name}}
+                <div class="pull-right bg-wakeup-success" style="padding-left: 5px; padding-right: 5px;">
+                    {{row.status}}
+                </div>
+            </div>
+        </div>
+    </li>
+</div>
+
+

@@ -1,0 +1,73 @@
+<div class="modal-body wrapper-lg">
+    <div class="row">
+        <div ng-if="(!multiple)&&(call.phonebk_flag==0)" class="col-sm-12 b-r">
+            <h3 class="m-t-none m-b font-thin">Add To Phonebook?</h3>
+            <form role="form">
+                <div  class="form-horizontal form-validation">
+                    <div class="col-sm-6" style="padding: 5px 0px">
+                        <label class="col-sm-12 text-muted text-xs">
+                            <b>Contact Name :</b>
+                        </label>
+                        <div class="col-sm-12">
+                            <input class='form-control input-sm' type="text" ng-model='call.contact_name'>
+                        </div>
+                    </div>
+                    <div class="col-sm-6" style="padding: 5px 0px">
+                        <label class="col-sm-12 text-muted text-xs">
+                            <b>Contact Number :</b>
+                        </label>
+                        <div class="col-sm-12">
+                            <input class='form-control input-sm' type="text" ng-model="call.contact_no" maxlength="15">
+                        </div>
+                    </div>
+                    <div class="col-sm-6" style="padding: 5px 0px">
+                        <label class="col-sm-12 text-muted text-xs">
+                            <b>Auto Classify :</b>
+                        </label>
+                        <div class="col-sm-12">
+                            <label class="i-switch m-t-xs m-r">
+                                <input type="checkbox" ng-model="call.auto_classify" checked>
+                                <i></i>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6" style="padding: 5px 0px">
+                        <label class="col-sm-12 text-muted text-xs">
+                            <b>Type :</b>
+                        </label>
+                        <div class="col-sm-12">
+                            <input type="radio" ng-model="call.type" ng-disabled="true" value="Personal">&nbsp;&nbsp;Personal&nbsp;&nbsp;
+                            <input type="radio" ng-model="call.type" ng-disabled="true" value="Business">&nbsp;&nbsp;Business
+                        </div>
+                    </div>
+                    <div class="form-group-mbl col-sm-12 label-group" style="padding: 5px 0px">
+                        <label class="col-sm-2 control-label text-muted text-xs">
+                            <b>Comment :</b>
+                        </label>
+                        <div class="col-sm-12 control-label" style="text-align: left">
+                            <textarea type="text" class='form-control input-sm' ng-model="call.classify_comment" style="resize:none" spellcheck="true"
+                                rows="4"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="checkbox m-t-lg pull-right ">
+                    <button type="submit" class="btn btn-sm btn-primary text-uc m-t-n-xs" ng-click="save()"><strong>&nbsp;&nbsp;&nbsp;Save&nbsp;&nbsp;&nbsp;</strong></button>
+                    <button type="submit" class="btn btn-sm btn-default text-uc m-t-n-xs" ng-click="cancel()"><strong>&nbsp;&nbsp;Cancel&nbsp;&nbsp;</strong></button>
+                </div>
+            </form>
+        </div>
+        <div ng-if="multiple||(call.phonebk_flag==1)" class="col-sm-12 b-r">
+            <h3 class="m-t-none m-b font-thin">Mark as Personal?</h3>
+            <form role="form">
+                <div class="checkbox m-t-lg pull-right ">
+                    <button type="submit" class="btn btn-sm btn-primary text-uc m-t-n-xs" ng-click="ok()">
+                        <strong>&nbsp;&nbsp;&nbsp;OK&nbsp;&nbsp;&nbsp;</strong>
+                    </button>
+                    <button type="submit" class="btn btn-sm btn-default text-uc m-t-n-xs" ng-click="cancel()">
+                        <strong>&nbsp;&nbsp;Cancel&nbsp;&nbsp;</strong>
+                    </button>
+                </div>
+            </form>
+        </div>    
+    </div>
+</div>

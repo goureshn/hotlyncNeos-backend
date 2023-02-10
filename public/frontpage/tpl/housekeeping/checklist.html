@@ -1,0 +1,150 @@
+<div ng-controller="ChecklistController" style="{{full_height}}">
+    <script type="text/ng-template" id="checklist_item.html">
+        <a>
+            <span>{{match.model.name}} - {{match.model.weight}}</span>            
+        </a>
+    </script>
+    <div class="wrapper-md1">
+        <div class="col-sm-6">
+            <div class="panel panel-default">
+                <div class="panel-heading"><i class="fa fa-plus" aria-hidden="true">
+                    </i>&nbsp;Check List
+                    <div class="pull-right">
+                        <button type="button" class="btn btn-sm btn-primary text-uc m-t-n-xs" ng-click="addChecklist()"><strong>&nbsp;&nbsp;&nbsp;Add Checklist&nbsp;&nbsp;&nbsp;</strong></button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <form class="form-horizontal form-validation">                       
+                        <div class="form-group" >
+                            <div class="col-sm-6">
+                                <label class="text-muted">Housekeeping Role</label>
+                                <label style="color:#F44336">*</label>
+                                <select class="form-control input-xs" ng-model="filter.hskp_role" ng-options="item for item in hskp_role_list"
+                                    ng-change="onChangeHskpRole()"
+                                    >
+                                </select>
+                            </div>
+                             <div class="col-sm-6">
+                                <label class="text-muted">Room Type</label>
+                                <label style="color:#F44336">*</label>
+                                <select class='form-control input-sm' ng-model="filter.room_type_id"
+                                        ng-options="value.id as value.type for (key, value) in room_type_list" 
+                                        ng-change="onChangeRoomType()"
+                                        >
+                                </select>                                
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="table table-responsive" style="height:100%">
+                        <table  st-table="datalist"  st-pipe="getDataList" class="table ticket">
+                            <thead class="tblhead-sm" style="background: #88888a">
+                                <tr>
+                                    <th><b>Name</b></th>
+                                    <th><b>Housekeeping Role</b></th>
+                                    <th><b>Room Type</b></th>
+                                    <th><b>Active</b></th>                            
+                                    <th style="width:50px;"><b>Action</b></th>                            
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="" ng-repeat="row in checklist_list">
+                                    <td>{{row.name}}</td>
+                                    <td>{{row.hskp_role}}</td>
+                                    <td>{{row.room_type}}</td>
+                                    <td>
+                                        <label class="i-switch m-t-xs m-r" >
+                                            <input type="checkbox" ng-model="row.active" checked
+                                                ng-change="onChangeActive(row)">
+                                            <i></i> 
+                                        </label>
+                                    </td>
+                                    <td>
+                                        <a class="btn default btn-xs green" ng-click="onEditCheckList(row)">
+                                            <i class="fa fa-pencil"></i></a>
+                                        <a class="btn default btn-xs red" ng-click="onEditCheckListItem(row)">
+                                            <i class="fa fa-eye"></i></a>                                        
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <i class="fa fa-list-ul" aria-hidden="true"></i>&nbsp;{{selected_checklist.name}}
+                    <div class="pull-right">
+                        <button type="button" class="btn btn-sm btn-primary text-uc m-t-n-xs" ng-click="addGroup()"><strong>&nbsp;&nbsp;&nbsp;Add Checklist Group&nbsp;&nbsp;&nbsp;</strong></button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <table  st-table="datalist"  class="table ticket" dnd-list="datalist" dnd-drop="onGroupDrop(item, index, 0)" >
+                        <thead class="tblhead-sm">
+                        <tr>                            
+                            <th><b>Group Name</b></th>                         
+                            <th style="width: 80px"><b>Action</b></th>
+                        </tr>
+                        </thead>
+                        <tbody ng-repeat="row in datalist" dnd-draggable="row">
+                            <tr class="" ng-click="onClickRow(row, $index)" >
+                                <td>
+                                    <i ng-if="row.collapse" class="fa fa-arrow-down" style="color:#66BB6A;"></i>
+                                    <i ng-if="!row.collapse" class="fa fa-arrow-right" style="color:#66BB6A;"></i>
+                                    &nbsp;{{row.name}}
+                                </td>                            
+                                <td>                                    
+                                    <a class="btn default btn-xs red" ng-click="delete(row);$event.stopPropagation();">
+                                        <i class="fa fa-times"></i></a>
+                                </td>
+                            </tr>
+                            <tr ng-if="row.collapse" class="checklist-bg">                                
+                                <td colspan="2">
+                                    <div class="form-group">
+                                        <div class="col-sm-6">
+                                            <label class="control-label text-xs text-muted">Check List Items : </label>
+                                            <div class="input-group">
+                                                <input type="text" ng-model="row.item_name" class="form-control  input-sm"
+                                                    uib-typeahead="item.name for item in check_list_items | filter:$viewValue | limitTo:10"
+                                                    typeahead-min-length="0"  
+                                                    typeahead-on-select="onItemSelect(row, $item, $model, $label)"
+                                                    typeahead-template-url="checklist_item.html"
+                                                    my-enter="addCheckListItem(row)"                                                  
+                                                    required/>
+                                                <span class="input-group-btn">
+                                                <button type="button" class="btn btn-default btn-sm" ng-click="addCheckListItem(row)"><i class="fa fa-plus"></i></button>
+                                                </span>
+                                            </div>
+                                            <div class="row" style="margin-top:5px; text-align: right">
+                                                <label class="col-sm-3 control-label text-muted" style="padding-top: 9px">Weight</label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" ng-model="row.weight" class="form-control input-sm"                                                        
+                                                        required/>
+                                                </div>
+                                            </div>
+                                        </div>    
+                                        <div class="col-sm-6" dnd-list="row.items"
+                                            dnd-drop="onItemDrop(row, item, index, 0)"
+                                            >
+                                            <a class="list-group-item" ng-repeat="item in row.items"
+                                                dnd-draggable="item"                                                                                                
+                                                >
+                                                {{item.name}} - {{item.weight}}
+                                                <i class="fa fa-times pull-right text-muted" ng-click="onDeleteCheckListItem(row, item)"></i>
+                                            </a>
+                                        </div>  
+                                    </div>        
+                                </td>
+                            </tr>
+                        </tbody>                        
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>

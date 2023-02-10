@@ -1,0 +1,59 @@
+<div class="modal-content">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">
+            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        </button>
+        <h3 class="modal-title" style="color:#2691d9" id="Heading">Add File</h3>
+    </div>
+    <br>
+    <div class="modal-body">
+        <form class="form-horizontal form-validation" style="height: 170px;">
+            <div class="form-group" style="margin-right: 0px">
+                <label class="col-sm-4 text-right control-label text-muted" >File Name</label>
+                <div class="col-sm-5  scrollable-dropdown-menu">
+                    <input class="form-control input-sm"  ng-model="data.filename"  required
+                           popover-trigger="mouseenter">
+                </div>
+            </div>
+            <div class="form-group" style="margin-right: 0px">
+                <label class="col-sm-4 text-right control-label text-muted" >Description</label>
+                <div class="col-sm-5">
+                        <textarea class="form-control input-sm" rows="3" ng-model="data.filedescription"
+                                  style="resize:none"  popover-trigger="mouseenter" ></textarea>
+                </div>
+            </div>
+            <div>
+                <div class="col-sm-4 control-label">          
+					<button class="btn btn-dark btn-sm" ngf-select="uploadFiles($files)" multiple ngf-max-files="5"
+						ngf-max-size="10MB" ngf-accept="'*/*'"
+						ngf-pattern="'*/*'" ngf-capture="'camera'">
+						<span class="text-success font-bold"><i class="fa fa-upload"></i>&nbsp;Select Files</span></button>
+				</div>
+				<div class="col-sm-8">
+					<ul>
+						<li ng-repeat="f in file.files" style="font:smaller">
+							{{f.name}}
+                            <i class="fa fa-minus-circle fa-2x text-danger " style="cursor: pointer"  ng-click="removeFile(f)"></i>
+						</li>
+					</ul>
+					<uib-progressbar ng-show="progress >= 0" class="progress-striped progress-sm" style="margin: 5px" value="progress" type="info">                  
+					</uib-progressbar>                
+					{{errorMsg}}
+				</div>                  
+            </div>
+        </form>
+    </div>
+
+    <div class="modal-footer ">
+        <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal" ng-click="AddFile()">
+            <span class="glyphicon glyphicon-ok"></span>
+            <b> Add</b>
+        </button>
+        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal" ng-click="cancel()">
+            <span class="glyphicon glyphicon-remove"></span>
+            <b> Cancel</b>
+        </button>
+    </div>
+
+</div>
+

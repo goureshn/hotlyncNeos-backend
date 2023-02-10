@@ -1,0 +1,137 @@
+<style>
+	.first_header {
+			background-position:center center;
+			background-repeat: no-repeat;
+			-webkit-background-size: cover;
+		  -moz-background-size: cover;
+		  -o-background-size: cover;
+		  background-size: cover;
+		  height: 100vh;
+	}
+  .first_foot {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1005;
+    background:#2e3344;
+  }
+</style>
+<div style="padding-left: 0px; padding-right: 0px; font-size: 15px" ng-controller="GuestLoginController as ctrl" ng-init="init()">
+  <toaster-container toaster-options="{'position-class': 'toast-top-right', 'close-button':true}">
+  </toaster-container>
+
+  <div>
+    <div class="navbar-inverse box-shadow" style="vertical-align:middle;">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" ng-init="navCollapsed = true" ng-click="navCollapsed = !navCollapsed">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <!-- brand -->
+          <a class="navbar-brand text-lt" >
+            <img src="img/guest_login_logo.png" alt="HotLync" style="margin-left: -7px; width:200px; height: 30px"   >
+          </a>
+          <!-- / brand -->
+        </div>
+        <div class="collapse navbar-collapse" uib-collapse="navCollapsed" >
+          <ul class="nav navbar-nav navbar-right">
+            <li class="dropdown"></li>
+          </ul>
+        </div>
+    </div>
+  </div>
+
+
+  <div class="wrapper-md first_header" style="height: '100vh'; width: '100%'; background-image: url('img/bg_GU.jpg')">
+    <div class="text-center" style="margin-top: 20px">
+      <!--<img src="{{property.logo_path}}"  height="80px" />-->
+      <!-- FOR DEMO -->
+      <img src="img/myhotel-logo.png"  height="80px" />
+    </div>
+    <div style="background-color: lightblue; opacity: 0.6; filter: alpha(opacity=60);height: 300px; width: 80%; position: fixed ; margin: 0 auto; left: 0; right:	0">
+	    
+    </div>
+    <div style="padding-top: 50px; height: 300px; width: 80%; margin: auto; position: relative">
+      <form class="form-horizontal form-validation" ng-submit="login()">
+        <div class="row">
+          <!--<label class="col-sm-2 control-label col-md-offset-3" style="margin-bottom: 0px"><i class="text-danger">*</i>Room</label>-->
+          <div class="col-sm-10 col-sm-offset-1 hid">
+			      <div class="row form-group">
+			        <div class="col-sm-6 col-sm-offset-3 text-center">
+			          <input ng-model="guest.room" class="form-control  input-sm" type="number" placeholder="Room"
+			            typeahead-editable="false"
+									ng-focus="onFocus($event)" empty-typeahead
+			            uib-typeahead="item.room for item in room_list | filter:$viewValue | limitTo:10"
+			            typeahead-min-length="0"
+			            typeahead-on-select="onRoomSelect($item, $model, $label)"
+			            required/>
+			        </div>
+			      </div>
+			    </div>
+					<!--<div class="col-sm-9" style="margin-bottom: 14px">
+              <div class="scrollable-dropdown-menu">
+                <input ng-model="guest.room" class="form-control  input-sm" type="number" placeholder="Room"
+                    typeahead-editable="false"
+                    ng-focus="onFocus($event)" empty-typeahead
+                    uib-typeahead="item.room for item in room_list | filter:$viewValue | limitTo:10"
+                    typeahead-min-length="0"
+                    typeahead-on-select="onRoomSelect($item, $model, $label)"
+                    required
+                    />
+              </div>
+          </div>-->         
+        </div>
+				
+				<div class="row form-group">
+					<div class="col-sm-10 col-sm-offset-1 hid">
+			      <div class="row form-group">
+			        <div class="col-sm-6 col-sm-offset-3 text-center">
+			          <input type="text" class="form-control input-sm" placeholder="Last Name" ng-model="guest.guest_name" required>
+			        </div>
+			      </div>
+			    </div>
+				</div>
+        <!--<div class="form-group">          
+          
+          <div class="col-sm-9 col-md-3 ">
+              <input type="text" class="form-control input-sm" placeholder="Last Name" ng-model="guest.guest_name" required>
+          </div>  
+        </div>-->
+				
+				<div class="row form-group">
+					<div class="col-sm-10 col-sm-offset-1 hid">
+			      <div class="row form-group">
+			        <div class="col-sm-6 col-sm-offset-3 text-center">
+			          <select class='form-control' ng-model="guest.language"
+                  ng-options="value.code as value.language for (key, value) in language_list">
+              	</select>
+			        </div>
+			      </div>
+			    </div>
+				</div>
+        <!--<div class="form-group">          
+          
+          <div class="col-sm-9 col-md-3">
+              <select class='form-control' ng-model="guest.language"
+                  ng-options="value.code as value.language for (key, value) in language_list">
+              </select>
+          </div>  
+        </div>-->
+
+        <div class="wrapper-md">
+          <center>
+            <button type="submit" class="btn m-b-xs w-xs btn-primary" style="font-size: 15px">Start</button>
+          </center>
+        </div>
+      </form>
+    </div>
+  </div> </div>
+  <footer id="footer" class="first_foot" role="footer" style="position: fixed">
+    <div class="wrapper b-t bg-light font-bold text-center">
+      Powered by Ennovatech Solutions
+    </div>
+  </footer>
+</div>

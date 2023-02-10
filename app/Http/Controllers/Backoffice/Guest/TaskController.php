@@ -40,6 +40,7 @@ class TaskController extends UploadController
 							<span class="glyphicon glyphicon-trash"></span>
 						</button></p>';
 					})
+					->rawColumns(['checkbox', 'edit', 'delete'])
 					->make(true);
         }
 		else
@@ -86,20 +87,23 @@ class TaskController extends UploadController
 	public function createTaskList(Request $request)
     {
 		$input = $request->all();
-
+		
 		$model = new TaskList();
+		if($model->where('task', $request->tasklist_name)->exists()){
+			return Response::json(['message' => 'Task already exists'], 500);
+		}
 
-		$model->task = $request->get('tasklist_name', '0');
-		$model->category_id = $request->get('category_id', '0');
-		$model->cost = $request->get('cost', '0');
-		$model->status = $request->get('status', '0');
-		$model->lang = json_encode($request->get('lang', '0'));
+		$model->task = $request->tasklist_name ?? '0';
+		$model->category_id = $request->category_id ?? '0';
+		$model->cost = $request->cost ?? '0';
+		$model->status = $request->status ?? '0';
+		$model->lang = json_encode($request->lang) ?? '0';
 		$model->save();
 
 		$tasklist_id = $model->id;
 
 		$pivot = new TaskGroupPivot();
-		$pivot->task_grp_id = $request->get('taskgroup_id', '0');
+		$pivot->task_grp_id = $request->get('taskgroup_id', '0') ?? '0';
 		$pivot->task_list_id = $tasklist_id;
 
 		$pivot->save();
@@ -132,6 +136,9 @@ class TaskController extends UploadController
 	public function store(Request $request)
     {
 		$input = $request->except('id');
+		foreach ($input as $key => $value) {
+			if($value === null) $input[$key] = "";
+		}
 
 		$model = TaskGroup::create($input);
 

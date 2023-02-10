@@ -1,0 +1,197 @@
+<div class="modal-body wrapper-lg" >
+	<h3 class="m-t-none m-b font-thin">Add Sub Complaint</h3>
+
+	<hr style="margin-top: 0px; margin-bottom: 15px" />
+
+	<div class="">
+		<form class="form-horizontal form-validation" ng-submit="ok()">
+			<div class="form-group">
+				<label class="col-sm-2 control-label">Category</label>
+				<div class="col-sm-3 scrollable-dropdown-menu">
+					<input class="form-control input-sm col-sm-11" type="text" ng-model="sub.category_name" 
+							uib-popover="Enter category name"  popover-trigger="mouseenter"                    
+							uib-typeahead="category.name for category in category_list | filter:$viewValue | limitTo:10"
+							typeahead-min-length="0"
+							typeahead-editable="false"
+							typeahead-on-select="onCategorySelect($item, $model, $label)" required>
+
+				</div>
+				<div class="col-sm-1">
+					<i class="fa fa-plus-circle fa-2x text-danger " style="cursor: pointer" ng-disabled="!(sub.dept_id > 0)"
+						title="Create Category" ng-click="createCategory()"></i>
+				</div>        
+				<label class="col-sm-2 control-label">Sub Category</label>
+				<div class="col-sm-3 scrollable-dropdown-menu">
+					<input class="form-control input-sm col-sm-11" type="text" ng-model="sub.subcategory_name"                     
+							uib-typeahead="subcategory.name for subcategory in subcategory_list | filter:$viewValue | limitTo:10"
+							typeahead-min-length="0"
+							typeahead-editable="false"
+							typeahead-on-select="onSubcategorySelect($item, $model, $label)" required>
+					</div>
+				<div class="col-sm-1">
+					<i class="fa fa-plus-circle fa-2x text-danger " style="cursor: pointer" ng-disabled="!(sub.dept_id > 0)" 
+					title="Create Sub Category"ng-click="createSubcategory()"></i>
+				</div>
+			</div>     
+			<div class="form-group">
+				<label class="col-sm-2 control-label">Department</label>
+				<div class="col-sm-4">
+					<input ng-model="sub.department" class="form-control  input-sm"                                  
+						ng-focus="onFocus($event)" empty-typeahead
+						uib-typeahead="item.department for item in dept_list | filter:$viewValue | limitTo:10"
+						typeahead-min-length="0"
+						typeahead-editable="false"
+						typeahead-on-select="onSelectDepartment(sub, $item, $model, $label)"
+						ng-disabled="dept_list.length == 1"
+						required
+					/>                      
+				</div>
+				<label class="col-sm-2 control-label">Severity</label>
+				<div class="col-sm-4">
+					<select class='form-control input-sm' ng-model="sub.severity" 
+						ng-options="value.id as value.type for (key, value) in severity_list"/>
+				</div>
+			</div>
+			<div class="form-group">        
+				<label class="col-sm-2 control-label">Assignee</label>
+				<div class="col-sm-4">
+					<input type="text" ng-model="sub.assignee_name" class="form-control input-sm" disabled>
+				</div>          
+
+				<label class="col-sm-2 control-label">Location</label>
+				<div class="col-sm-4">
+					<div class="scrollable-dropdown-menu">
+						<input type="text" ng-model="sub.location_name" class="form-control input-sm" placeholder="Enter location name"
+										uib-popover="Enter location name" popover-trigger="mouseenter"
+										uib-typeahead="room.room for room in dept_loc_list | filter:$viewValue | limitTo:10"
+										typeahead-min-length="0"
+										typeahead-editable="false"
+										typeahead-template-url="locationTypeahead.html"
+										typeahead-on-select="onLocationSelect($item, $model, $label)" required>
+					</div>   
+				</div>     
+			</div>  
+
+			<div class="form-group" hidden>				
+				<label class="col-sm-2 control-label">Type</label>
+				<div class="col-sm-3">
+					<div class="scrollable-dropdown-menu">
+						<input ng-model="sub.complaint_name" class="form-control  input-sm"                                  
+							ng-focus="onFocus($event)" empty-typeahead
+							uib-typeahead="item.complaint for item in complaint_list | filter:$viewValue | limitTo:10"
+							typeahead-min-length="0"
+							typeahead-editable="false"
+							typeahead-on-select="onComplaintSelect(sub, $item, $model, $label)"/>                      
+						
+					</div>   
+				</div>   
+				<div class="col-sm-1">
+					<i class="fa fa-plus-circle fa-2x text-danger " style="cursor: pointer"
+						title="Create Complaint Type" ng-click="createComplaintType()"></i>
+				</div>          
+			</div>
+			<div>
+				<span>SERVICE RECOVERY</span> 
+			</div>
+			<div class="form-group">
+				<div class="col-sm-6">
+					<div class="scrollable-dropdown-menu">
+						<input ng-model="sub.comp.compensation" class="form-control  input-sm"
+							ng-focus="onFocus($event)" empty-typeahead
+							uib-typeahead="item.compensation for item in compensations | filter:$viewValue | limitTo:10"
+							typeahead-min-length="0"
+							typeahead-on-select="onCompensationSelect(sub, $item, $model, $label)"
+							typeahead-no-results="sub.comp.no_compensation"/>
+					</div>  
+				</div>   
+				<div class="col-sm-2">
+					<input type="text" ng-model="sub.comp.cost" class="form-control input-sm">
+				</div>         
+				<div class="col-sm-3">
+					<div class="scrollable-dropdown-menu">
+						<input ng-model="sub.comp.sub_provider" class="form-control  input-sm"
+							ng-focus="onFocus($event)" empty-typeahead
+							uib-typeahead="user.wholename for user in staff_list | filter:$viewValue | limitTo:10"
+							typeahead-min-length="0"
+							typeahead-on-select="onProviderSelect(sub, $item, $model, $label)"
+							typeahead-no-results="sub.comp.no_staff"/>
+					</div>  
+				</div>   
+				<div class="col-sm-1">
+					<i class="fa fa-plus-circle fa-2x text-danger " style="cursor: pointer"
+						title="Add Compensation" ng-click="onAddCompensation()"></i>
+				</div>
+			</div>      
+
+			<div class="table table-responsive" style="margin-top: 6px; margin-bottom: 8px">
+				<table  st-table="ticketlist" class="table ticket table-striped b-t b-light">
+					<thead class="tblhead-sm" style="font-size: .7vw">
+						<tr>
+							<th class="text-center"><b>No</b></th>
+							<th class="text-center"><b>Compensation</b></th>
+							<th class="text-center"><b>Cost</b></th>
+							<th class="text-center"><b>Provided By</b></th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="row in sub.compensation_list">
+							<td class="text-center"><span>{{$index + 1}}</span></td>
+							<td class="text-center"><span>{{row.compensation}}</span></td>
+							<td class="text-center"><span>{{row.cost}}</span></td>                
+							<td class="text-center"><span>{{row.sub_provider}}</span></td>								
+						</tr>									
+					</tbody>
+				</table>
+			</div>
+
+			<div class="form-group">
+				<div class="col-sm-12">
+					<span>Comment</span> 
+					<textarea class="form-control input-sm" rows="3" ng-model="sub.comment" style="resize:none" required></textarea>
+				</div>        
+			</div>
+
+			<div class="form-group">				
+				<div class="col-sm-12">
+					<span>Initial Response</span> 
+					<textarea class="form-control input-sm" rows="3" ng-model="sub.init_response" style="resize:none"></textarea>
+				</div>        
+			</div>
+
+			<div class="label-group col-sm-12" style="margin-top: 15px">
+				<div class="col-sm-2 control-label">          
+					<button class="btn btn-dark btn-sm" ngf-select="uploadFiles($files)" multiple ngf-max-files="5"
+						ngf-max-size="10MB" ngf-accept="'image/*,application/pdf,.eml'"
+						ngf-pattern="'image/*,application/pdf,.eml'" ngf-capture="'camera'"
+						ng-disabled="complaint.status == '2' || complaint.status == '4'">
+						<span class="text-success font-bold"><i class="fa fa-upload"></i>&nbsp;Select Files</span></button>
+				</div>
+				<div class="col-sm-10 ">
+					<ul>
+						<li ng-repeat="f in sub.files" style="font:smaller">
+							<i class="fa fa-minus-circle text-danger " style="cursor: pointer; margin-right: 5px"  ng-click="removeFile($index)"></i>{{f.name}}
+						</li>
+					</ul>
+					<uib-progressbar ng-show="progress >= 0" class="progress-striped progress-sm" style="margin: 5px" value="progress" type="info">                  
+					</uib-progressbar>                
+					{{errorMsg}}
+				</div>  
+			</div>
+
+			<hr/>
+
+			<div class="row">
+				<div class="pull-right">  
+					<button type="submit" class="btn btn-sm btn-dark m-b-xs w-xs text-uc m-t-n-xs">
+						<strong>OK</strong>
+					</button>
+					<button type="button" class="btn btn-sm btn-dark m-b-xs w-xs text-uc m-t-n-xs" ng-click="cancel()">
+						<strong>Cancel</strong>
+					</button>
+				</div>  
+			</div>		
+		</form>
+	
+	</div>
+
+</div>

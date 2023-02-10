@@ -1,0 +1,31 @@
+<style>
+    .modalImage .image-wrapper {
+        text-align: center;
+    }
+    .modalImage .image-wrapper img {
+        max-width: 560px;
+        max-height: 560px;
+    }
+    .modalImage .image-description {
+        text-align: center;
+        margin-top: 10px;
+    }
+
+    </style>
+
+<div class="modalImage">
+    <div class="modal-header">{{selectedImg.header}}
+        <button ng-click="$dismiss()" class="close pull-right"
+                aria-hidden="true">&times;</button>
+        <div class="clearfix"></div>
+    </div>
+    <div class="modal-body">
+        <div class="image-wrapper">
+            <a ng-href="{{ImageSrc}}" target="_blank">
+                <img ng-src={{ImageSrc}}>
+            </a>
+        </div>
+        <div class="text-muted image-description">{{ImageDescription}}
+        </div>
+    </div>
+</div>

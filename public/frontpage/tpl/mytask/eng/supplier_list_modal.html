@@ -1,0 +1,88 @@
+<div class="modal-content">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">
+            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        </button>
+        <h3 class="modal-title" style="color:#2691d9" id="Heading">Add New Supplier</h3>
+    </div>
+    <br>
+    <div class="modal-body">
+        <form class="form-horizontal form-validation">
+            <div class="form-group" >
+                <div class="col-sm-3">
+                    <label class="control-label text-xs text-muted">Name</label><br>
+                    <div class="scrollable-dropdown-menu">
+                        <input type="text" class="form-control input-sm" ng-model="new_eng.supplier"></textarea>
+                    </div>
+                </div>
+
+                <div class="col-sm-3">
+                    <label class="control-label text-xs text-muted">Contact</label><br>
+                    <div class="scrollable-dropdown-menu">
+                        <input type="text" class="form-control input-sm" ng-model="new_eng.contact"></textarea>
+                    </div>
+                </div>
+
+                <div class="col-sm-3">
+                    <label class="control-label text-xs text-muted">Phone</label><br>
+                    <div class="scrollable-dropdown-menu">
+                        <input type="text" class="form-control input-sm" ng-model="new_eng.phone"></textarea>
+                    </div>
+                </div>
+
+                <div class="col-sm-3">
+                    <label class="control-label text-xs text-muted">Email</label><br>
+                    <div class="scrollable-dropdown-menu">
+                        <input type="text" class="form-control input-sm" ng-model="new_eng.email"></textarea>
+                    </div>
+                </div>
+ 
+            </div>            
+        </form>
+
+        <div class="table table-responsive" ng-show="supplier_list.length > 0" style="height: 500px; overflow-y: auto">
+            <label class="font-bold"><i class="fa fa-history" aria-hidden="true"></i>&nbsp;&nbsp;Supplier List</label>
+            <table  st-table="ticketlist" class="table ticket table-striped b-t b-light">
+                <thead class="tblhead-sm" style="font-size: .7vw">
+                    <tr>
+                        <th class="text-center"><b>Name</b></th>
+                        <th class="text-center"><b>Contact</b></th>
+                        <th class="text-center"><b>Phone</b></th>    
+                        <th class="text-center"><b>Email</b></th>         
+                        <th class="text-center"><b>Action</b></th>                  
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="row in supplier_list" ng-if="row.id > 0">
+                        <td class="text-center"><span>{{row.supplier}}</span></td>
+                        <td class="text-center"><span>{{row.contact}}</span></td>
+                        <td class="text-center"><span>{{row.phone}}</span></td>
+                        <td class="text-center"><span>{{row.email}}</span></td>                  
+                        <td class="text-center">
+                            <span ng-click="onClickUpdate(row)">
+                                <i class="fa fa-pencil text-success" style="font-size: 12px"></i>&nbsp;
+                            </span>
+                            <span ng-click="onClickDelete(row)">
+                                <i class="fa fa-remove text-danger" style="font-size: 12px"></i>&nbsp;
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal-footer ">
+        <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal" ng-click="createSupplier()">
+            <span class="glyphicon glyphicon-ok"></span>
+            <b ng-show="!(new_eng.id > 0)"> Create</b>
+            <b ng-show="new_eng.id > 0"> Update</b>
+        </button>
+        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal" ng-click="cancel()">
+            <span class="glyphicon glyphicon-remove"></span>
+            <b> Cancel</b>
+        </button>
+    </div>
+
+</div>
+

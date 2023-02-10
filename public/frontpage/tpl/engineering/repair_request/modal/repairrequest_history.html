@@ -1,0 +1,113 @@
+<style>
+    .pink{
+        background-color: rgb(250, 131, 33);
+    }
+
+</style>
+<div class="modal-content">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">
+            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        </button>
+        <h3 class="modal-title" style="color:#2691d9" id="Heading"><i class="fa fa-refresh"></i>&nbsp;Previous History</h3>
+    </div>
+    <br>
+    <div class="modal-body">
+
+        <div class="table table-responsive" >
+           
+            <table  st-table = "histlist"  st-pipe="getDataList"  class="table ticket table-striped b-t b-light">
+              <thead class="tblhead-sm" style="font-size: .7vw">
+                <tr>
+                  <th st-sort="id" st-sort-default="reverse" class="text-center"><b>ID</b></th>
+                  <th st-sort="status" class="text-center"><b>Status</b></th>
+                  <th st-sort="repair" class="text-center"><b>Summary</b></th>
+                  <th st-sort="equip_id" class="text-center"><b>Asset</b></th>  
+                  <th st-sort="location_id" class="text-center"><b>Location</b></th>  
+                  <th st-sort="category_id" class="text-center"><b>Category</b></th>
+                  <th st-sort="priority" class="text-center"><b>Priority</b></th>
+                  <th st-sort="created" class="text-center"><b>Scheduled</b></th>                              
+                  <th st-sort="assignee_name" class="text-center"><b>Assignee</b></th>
+                </tr>
+              </thead>
+              <tbody ng-hide="isLoading">
+                <tr class="highlight2 no-radius m-b-none m-t-n-xxs" ng-repeat="row in histlist">
+                    <td class="highlight" style="white-space: nowrap; border-left: 8px solid {{::row.ticket_type_color}};margin-top: 4px ;margin-bottom: 6px;text-align:left;">
+                        <a>{{getTicketNumber(row)}}</a>
+                    </td>
+                    <td class="highlight">
+                            <a>
+                                <span  ng-class="{'label pulse' : true, 'm-l-sm': true,
+                                    'bg-wakeup-pending': row.status_name == 'Pending',
+                                    'bg-wakeup-waiting': row.status_name == 'Assigned',
+                                    'bg-wakeup-progress': row.status_name == 'In Progress',
+                                    'bg-wakeup-success': row.status_name == 'Completed',
+                                    'bg-wakeup-canceled': row.status_name == 'Rejected',
+                                    'bg-complaint-ack': row.status_name == 'Closed',
+                                    'bg-info': row.status_name == 'Pre-Approved',
+                                    }">
+                                    {{::row.status_name}}
+                                </span>
+                            </a>
+                    </td>
+                      
+                    <td class="highlight"  style="text-align:left;">
+                            <a> {{::row.repair}}</a>
+                    </td>
+                    <td class="highlight">
+                            <a>
+                                <i ng-show="row.equip_id" class="fa fa-address-book-o text-warning-dker" style="font-size: 12px"></i>
+                                <span>&nbsp;{{row.equip_id ? (row.equip_id + ' - ') : ''}}{{row.equip_id ? row.equip_name : ''}}</span>                                            
+                            </a>
+                    </td>
+                    <td class="highlight"  style="text-align:left;">
+                                <a> {{::row.location_name}} - {{::row.location_type}}</a>
+                    </td>
+                    <td class="highlight"  style="white-space: nowrap;text-align:left;">
+                                <a> {{::row.category_name}}</a>
+                    </td>
+                    <td class="highlight">
+                        <span ng-class="{'label pulse' : true, 'm-l-sm': true,
+                            'bg-info': row.priority == 'Low',
+                            'bg-wakeup-waiting': row.priority == 'Medium',
+                            'pink': row.priority == 'High',
+                            'bg-wakeup-failed': row.priority == 'Urgent',
+                            }">
+                            {{row.priority}}
+                        </span>
+                    </td>  
+                    <td class="highlight"  style="white-space: nowrap;text-align:left;">
+                        <a> {{::row.schedule_date}}</a>
+                    </td>      
+                    <td style="white-space: nowrap;">
+                        <i ng-if = "row.assignee_name != null && row.assignee_name != '' " class="fa fa-user-circle" style="font-size: 12px; color: #1565C0"></i>&nbsp;
+                        <span class="font-bold" style="font-size:.7vw">{{row.supplier_id > 0 ? row.supplier : row.assignee_name}}</span>
+                    </td>
+                </tr>
+              </tbody>
+              <tbody ng-show="isLoading">
+                <tr>
+                    <td colspan="9" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+                </tr>
+                </tbody>
+              <tfoot ng-hide="isLoading">
+                <tr ng-show="paginationOptions.totalItems > paginationOptions.pageSize">
+                    <td colspan="9" class="text-center">
+                        <div st-pagination="" st-items-by-page="paginationOptions.pageSize" st-displayed-pages="7" class="no-margin"></div>
+                    </td>
+                </tr>
+            </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal-footer ">
+        
+        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal" ng-click="cancel()">
+            <span class="glyphicon glyphicon-remove"></span>
+            <b>Close</b>
+        </button>
+    </div>
+
+</div>
+

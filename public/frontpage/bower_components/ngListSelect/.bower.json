@@ -1,0 +1,24 @@
+{
+  "name": "ngListSelect",
+  "main": "ngListSelect.js",
+  "description": "An Awesome AngularJS Bootstrap supported directive for add/remove functionality",
+  "keywords": [
+    "ngListSelect",
+    "add-remove"
+  ],
+  "authors": [
+    "nidhishkrishnan"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/nidhishkrishnan/ngListSelect",
+  "_release": "a8a7d1fea7",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "a8a7d1fea7048fc7e68fe38f93c69700b66c1d0e"
+  },
+  "_source": "https://github.com/nidhishkrishnan/ngListSelect.git",
+  "_target": "*",
+  "_originalSource": "ngListSelect",
+  "_direct": true
+}

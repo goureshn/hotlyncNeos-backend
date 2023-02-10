@@ -1,0 +1,261 @@
+<div style="">
+	<div class="wrapper">
+		<div class="panel panel-default" style="border-radius: 4px; margin-bottom: 0px">
+		  <div class="panel-heading">
+			  <div>
+				  <span>Guest Information</span>
+          <div class="pull-right" style="margin-top: -5px">
+            <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" ng-click="multiple()">Multiple Rooms </button>
+	          <div class="btn-group" uib-dropdown is-open="status.isopen">
+	            <button type="button" class="btn btn-default btn-sm" ng-click="createWakeupRequest(0)">Create</button>
+	            <button type="button" class="btn btn-default btn-sm" uib-dropdown-toggle>
+	              <span class="caret"></span>
+	            </button>
+	            <ul class="dropdown-menu w1" role="menu" aria-labelledby="single-button" style="margin-left:-60px">
+	              <li ng-click="createWakeupRequest(1)"><a href>Create & add for same room</a></li>
+	              <li ng-click="createWakeupRequest(2)"><a href>Create & add for other room</a></li>
+	            </ul>
+	          </div>
+	          <button type="button" class="btn btn-default btn-sm" ng-click="cancelWakeupRequest()">Cancel</button>
+	        </div>
+	      </div>
+			</div>
+		  <div class="panel-body" style="padding: 5px 0px">
+				<div class="form-horizontal form-validation" style="padding: 0px">
+					<form class="form-horizontal form-validation">
+						<div class="col-sm-6">
+							<label class="control-label text-xs text-muted">Room Name</label>
+							<div class="scrollable-dropdown-menu">
+                <input type="text" ng-model="selected_room.room" class="form-control input-sm" placeholder="Enter room number"
+                  uib-typeahead="room.room for room in getRoomList($viewValue)"
+                  typeahead-min-length="0"
+                  typeahead-editable="false"
+                  typeahead-on-select="onRoomSelect($item, $model, $label)" required >
+                <tags-input ng-model="room_tags" ng-disabled="extension_tags.length > 0" replace-spaces-with-dashes="false" on-tag-added="onChangeRoom()" on-tag-removed="onChangeRoom()" placeholder="Add Room" style="margin-top: -5px" ng-hide="true">
+                  <auto-complete source="loadFilters($query, 'Room')"
+                    min-length="0"
+                    debounce-delay="0"
+                    load-on-focus="true"
+                    load-on-empty="true"
+                    max-results="10">
+                  </auto-complete>
+                </tags-input>
+              </div>
+            </div>
+						<div class="col-sm-6">
+							<label class="control-label text-xs text-muted">Guest</label>
+							<div>
+								<input type="text" ng-model="model.guest_name" class="form-control input-sm" disabled>
+							</div>
+						</div>
+						<div class="col-sm-6">
+							<label class="control-label text-xs text-muted">Check-in</label>
+							<div>
+								<input type="text" ng-model="model.arrival" class="form-control input-sm" disabled>
+							</div>
+						</div>
+						<div class="col-sm-6">
+							<label class="control-label text-xs text-muted">Check-out</label>
+							<div>
+								<input type="text" ng-model="model.departure" class="form-control input-sm" disabled>
+							</div>
+						</div>
+		    	</form>
+		    </div>
+			</div>
+		</div>
+	</div>
+		<!--
+		<fieldset>
+			<legend>
+          <div style="width: 95%;" class="col-centered wrapper-xs">
+              <form class="bs-example form-horizontal">
+                  <div class="row form-horizontal">
+                      <label style="font-size:15px;">&nbsp;<i class="icon-energy"></i>&nbsp;&nbsp;Guest Information</label>
+                      <div class="pull-right">
+                          <div class="btn-group" uib-dropdown is-open="status.isopen">
+                              <button type="button" class="btn btn-success btn-sm" ng-click="createWakeupRequest(0)">Create</button>
+                              <button type="button" class="btn btn-success btn-sm" uib-dropdown-toggle>
+                                  <span class="caret"></span>
+                              </button>
+                              <ul class="dropdown-menu" role="menu">
+                                  <li ng-click="createWakeupRequest(1)"><a href>Create & add for same room</a></li>
+                                  <li ng-click="createWakeupRequest(2)"><a href>Create & add for different room</a></li>
+                              </ul>
+                          </div>
+                          <button type="button" class="btn btn-danger btn-sm" ng-click="cancelWakeupRequest()">Cancel</button>
+                      </div>
+                  </div>
+              </form>
+          </div>
+			</legend>
+		    
+		  <div class=" ">
+		    <form class="form-horizontal form-validation">
+		      <div class="form-group">
+		        <label class="col-sm-2 control-label">Room Name</label>
+		        <div class="col-sm-4">
+                  <div class="scrollable-dropdown-menu">
+                      <input type="text" ng-model="selected_room.room" class="form-control input-sm" placeholder="Enter room number"
+                           uib-typeahead="room.room for room in getRoomList($viewValue)"
+                           typeahead-min-length="1"
+                           typeahead-editable="false"
+                           typeahead-on-select="onRoomSelect($item, $model, $label)" required >
+                      <tags-input ng-model="room_tags" ng-disabled="extension_tags.length > 0" replace-spaces-with-dashes="false" on-tag-added="onChangeRoom()" on-tag-removed="onChangeRoom()" placeholder="Add Room" style="margin-top: -5px" ng-hide="true">
+                          <auto-complete source="loadFilters($query, 'Room')"
+                                         min-length="0"
+                                         debounce-delay="0"
+                                         load-on-focus="true"
+                                         load-on-empty="true"
+                                         max-results="10">                                           
+                          </auto-complete>
+                      </tags-input>
+                  </div>
+		        </div>
+
+            <label class="col-sm-2 control-label">Check-in</label>
+            <div class="col-sm-4">
+              <input type="text" ng-model="model.arrival" class="form-control input-sm" disabled>
+            </div>
+		      </div>
+		    </form>
+		        
+			  <form class="form-horizontal form-validation">
+		      <div class="form-group">
+              <label class="col-sm-2 control-label">Guest </label>
+              <div class="col-sm-4">
+                <input type="text" ng-model="model.guest_name" class="form-control input-sm" disabled>
+              </div>
+
+  		        <label class="col-sm-2 control-label">Checkout </label>
+  		        <div class="col-sm-4">
+  		          <input class="form-control input-sm" ng-model="model.departure" disabled>
+  		        </div>
+		      </div>
+		    </form>
+			</div>
+		</fieldset> -->
+		
+	<div class="wrapper">
+		<div class="panel panel-default" style="border-radius: 4px">
+		  <div class="panel-heading">
+			  <div>
+				  <span><i class="fa fa-info"></i>&nbsp;Request Details</span>
+				</div>
+			</div>
+		  <div class="panel-body" style="padding: 5px 0px">
+				<div class="wrapper form-horizontal form-validation" style="padding: 0px">
+					<form class="form-horizontal form-validation">
+						<div class="col-sm-6">
+							<label class="control-label text-xs text-muted">Time</label>
+							<div class="dropdown">
+	              <a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+	                <div class="input-group">
+	                  <input type="text" class="form-control" ng-model="datetime.time">
+	                  <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+	                </div>
+	              </a>
+	              <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+	                <datetimepicker ng-model="datetime.date"
+	                  data-datetimepicker-config="{ dropdownSelector: '#dropdown2' }"
+	                  data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+	              </ul>
+	            </div>
+						</div>
+						<div class="col-sm-3">
+							<label class="control-label text-xs text-muted">Repeat</label><br>
+							<label class="i-switch m-t-xs m-r">
+                <input type="checkbox" ng-model="datetime.repeat" checked>
+                <i></i>
+              </label>
+						</div>
+						<div class="col-sm-3" ng-show="datetime.repeat">
+							<label class="control-label text-xs text-muted">Repeat until check-out</label>
+							<div>
+								<label class="i-switch m-t-xs m-r">
+                  <input type="checkbox" ng-model="datetime.until_checkout_flag" checked>
+                  <i></i>
+								</label>
+							</div>
+						</div>
+						<div class="col-sm-6" ng-show="datetime.repeat && !datetime.until_checkout_flag">
+							<label class="control-label text-xs text-muted">End Date</label>
+							<div class="input-group">
+								<span class="input-group-btn">
+                    <button type="button" class="btn btn-default btn-sm" ng-click="open($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+                </span>
+                <input type="text" class="form-control input-sm" uib-datepicker-popup="yyyy-MM-dd" ng-model="datetime.repeat_end_date" is-open="datetime.is_date_open" datepicker-options="dateOptions" close-text="Close" required  ng-change="select(datetime.repeat_end_date)"/>
+							</div>
+						</div>
+		    	</form>
+		    </div>
+		  </div>
+		</div>
+		<div ng-show="navflags==1">
+			<label class="pull-right control-label text-xs text-muted" style="font-style: italic">Best viewed in Firefox or Google Chrome browser</label>
+		</div>
+	</div>
+		<!--
+    <div class="wrapper">
+      <fieldset>
+        <legend>
+            <label style="font-size:1vw">&nbsp;&nbsp;<i class="fa fa-info"></i>&nbsp;Request Details</label>
+        </legend>
+
+        <form class="form-horizontal form-validation">
+          <div class="form-group">
+            <label class="col-sm-2 control-label">Time </label>
+            <div class="dropdown col-sm-4">
+              <a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+                <div class="input-group">
+                  <input type="text" class="form-control" ng-model="datetime.time">
+                  <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                </div>
+              </a>
+              <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+                <datetimepicker ng-model="datetime.date"
+                                data-datetimepicker-config="{ dropdownSelector: '#dropdown2' }"
+                                data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+              </ul>
+            </div>        
+          </div>
+
+          <div class="form-group label-group">            
+            <div class="col-sm-2 control-label">Repeat</div>
+            <div class="col-sm-1">
+              <label class="i-switch m-t-xs m-r">
+                <input type="checkbox" ng-model="datetime.repeat" checked>
+                <i></i>
+              </label>
+            </div>
+            <div class="col-sm-2 control-label text-muted" ng-show="datetime.repeat">Until Checkout</div>
+            <div class="col-sm-1" ng-show="datetime.repeat">
+              <label class="i-switch m-t-xs m-r">
+                  <input type="checkbox" ng-model="datetime.until_checkout_flag" checked>
+                  <i></i>
+              </label>
+            </div>
+            <div class="col-sm-2 control-label" ng-show="datetime.repeat && !datetime.until_checkout_flag">End Date</div>
+            <div class="col-sm-4 control-label" style="text-align: left" ng-show="datetime.repeat && !datetime.until_checkout_flag">
+              <div class="input-group">
+                <span class="input-group-btn">
+                    <button type="button" class="btn btn-default btn-sm" ng-click="open($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+                </span>
+                <input type="text" class="form-control input-sm" uib-datepicker-popup="yyyy-MM-dd" ng-model="datetime.repeat_end_date" is-open="datetime.is_date_open" datepicker-options="dateOptions" close-text="Close" required  ng-change="select(datetime.repeat_end_date)"/>
+              </div>
+            </div>
+          </div>
+        </form>
+
+      </fieldset>
+    </div>
+		-->
+    <!--<div class="wrapper">-->
+        <!--<fieldset>-->
+            <!--<legend>-->
+                <!--<label style="font-size:15px;">&nbsp;<i class="fa fa-history"></i>&nbsp;&nbsp;Notification History</label>-->
+            <!--</legend>-->
+            <!--<div class="grid" style="width:97%; max-height:150px; margin:auto" ui-grid="gridOptions" ui-grid-auto-resize ui-grid-selection ui-grid-pagination ui-grid-resize-columns></div>-->
+        <!--</fieldset>-->
+    <!--</div>-->
+</div>

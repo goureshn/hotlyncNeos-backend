@@ -1,0 +1,89 @@
+<script type="text/ng-template" id="departmentTypeahead.html">
+    <a>
+        <span ng-bind="match.model.department"></span>
+    </a>
+</script>
+
+<div class="modal-content">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">
+            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        </button>
+        <h3 class="modal-title" style="color:#2691d9" id="Heading">Add New Custom User</h3>
+    </div>
+    <br>
+    <div class="modal-body">
+        <form class="form-horizontal form-validation">
+            <div ng-if="0" class="form-group" >
+                <label class="col-sm-3 text-right control-label text-muted" >User Name</label>
+                <div class="col-sm-9  scrollable-dropdown-menu">
+                    <input class="form-control input-sm"  ng-model="lnf.new_itemcustomuser_username"  required
+                           uib-popover="Enter user name!" popover-trigger="mouseenter">
+                </div>
+            </div>
+            <div class="form-group" >
+                <label class="col-sm-3 text-right control-label text-muted" >First Name</label>
+                <div class="col-sm-9  scrollable-dropdown-menu">
+                    <input class="form-control input-sm"  ng-model="lnf.new_itemcustomuser_firstname"  required
+                           uib-popover="Enter user first name!" popover-trigger="mouseenter">
+                </div>
+            </div>
+            <div class="form-group" >
+                <label class="col-sm-3 text-right control-label text-muted" >Last Name</label>
+                <div class="col-sm-9  scrollable-dropdown-menu">
+                    <input class="form-control input-sm"  ng-model="lnf.new_itemcustomuser_lastname"  required
+                           uib-popover="Enter user last name!" popover-trigger="mouseenter">
+                </div>
+            </div>
+            <div class="form-group" >
+                <label class="col-sm-3 text-right control-label text-muted" >Department</label>
+                <div class="col-sm-9  scrollable-dropdown-menu">
+
+                    <input  type="text" ng-model="department.department"  class="form-control input-sm"
+                            uib-popover="Enter department!" popover-trigger="mouseenter"
+                            uib-typeahead="dep.department for dep in dep_list | filter:$viewValue | limitTo:15"
+                            typeahead-min-length="0"
+                            typeahead-editable="false"
+                            typeahead-template-url="departmentTypeahead.html"
+                            typeahead-on-select="onDepartmentSelect($item, $model, $label)" >
+
+
+                </div>
+            </div>
+        </form>
+
+        <div class="table table-responsive" ng-show="itemcustomuser_list.length > 0" ng-style="{'height': body_height, 'overflow-y': 'auto'}">
+            <label class="font-bold"><i class="fa fa-history" aria-hidden="true"></i>&nbsp;&nbsp;Item Custom User List</label>
+                <table  st-table="ticketlist" class="table ticket table-striped b-t b-light">
+                <thead class="tblhead-sm" style="font-size: .7vw">
+                    <tr>
+                    <th class="text-center"><b>Username</b></th>
+                        <th class="text-center"><b>Full Name</b></th>
+                        <th class="text-center"><b>Department</b></th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="row in itemcustomuser_list">
+                        <td class="text-center"><span>{{row.username}}</span></td>
+                        <td class="text-center"><span>{{row.fullname}}</span></td>
+                        <td class="text-center"><span>{{row.department}}</span></td>
+                    </tr>
+                </tbody>
+                </table>
+        </div>
+    </div>
+
+    <div class="modal-footer ">
+        <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal" ng-click="createItemCustomUser()">
+            <span class="glyphicon glyphicon-ok"></span>
+            <b> Create</b>
+        </button>
+        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal" ng-click="cancel()">
+            <span class="glyphicon glyphicon-remove"></span>
+            <b> Cancel</b>
+        </button>
+    </div>
+
+</div>
+

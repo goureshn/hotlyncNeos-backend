@@ -1,0 +1,119 @@
+
+<div class="modal-content">
+    <script type="text/ng-template" id="userTypeahead.html">
+        <a>
+            <span ng-bind="match.model.fullname"></span>
+        </a>
+    </script>
+    <script type="text/ng-template" id="guestTypeahead.html">
+        <a>
+            <span ng-bind="match.model.guest_name"></span>
+        </a>
+    </script>
+    
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">
+            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        </button>
+        <h3 class="modal-title" style="color:#2691d9" id="Heading">Returned To the Client</h3>
+    </div>
+    <br>
+    <div class="modal-body">
+        <form class="form-horizontal form-validation">
+            <div class="form-group" >
+                <label class="col-sm-3 text-right control-label text-muted" >Date</label>
+                <div class="col-sm-7">
+                    <div class="input-group">
+                        <span class="input-group-btn">
+                            <button type="button" class="btn btn-default btn-sm" ng-click="open($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+                        </span>
+                        <input type="text" class="form-control input-sm" uib-datepicker-popup="yyyy-MM-dd" ng-model="model.return_date" is-open="model.opened" datepicker-options="dateOptions" close-text="Close" required  ng-change="select(model.return_date)"/>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group" >
+                <label class="col-sm-3 text-right control-label text-muted" >Return Mode</label>
+                <div class="col-sm-7">
+                    <select class='form-control' ng-model="model.return_mode" ng-options="type for type in mode_list" ng-change="onChangeLNFType()">
+                    </select>
+                </div>
+            </div> 
+
+            <div class="form-group" ng-show="model.return_mode == mode_list[0]">
+                <label class="col-sm-3 text-right control-label text-muted" >Guest Name</label>
+                <div class="col-sm-7  scrollable-dropdown-menu">
+                    <input  type="text" ng-model="model.guest_name"  class="form-control input-sm"
+                            uib-popover="Enter guest name" popover-trigger="mouseenter"
+                            uib-typeahead="guest.guest_name for guest in guest_list | filter:$viewValue | limitTo:3"
+                            typeahead-min-length="0"
+                            typeahead-editable="false"
+                            typeahead-template-url="guestTypeahead.html"
+                            typeahead-on-select="onGuestSelect($item, $model, $label)">
+                </div>
+            </div>  
+
+            <div class="form-group" ng-show="model.return_mode == mode_list[1]">
+                <label class="col-sm-3 text-right control-label text-muted" >ID No</label>
+                <div class="col-sm-7">
+                    <input  type="text" ng-model="model.staff_id_no"  class="form-control input-sm"/>
+                </div>
+            </div>  
+
+            <div class="form-group" ng-show="model.return_mode == mode_list[1]">
+                <label class="col-sm-3 text-right control-label text-muted" >Name</label>
+                <div class="col-sm-7">
+                    <input  type="text" ng-model="model.staff_name"  class="form-control input-sm"/>
+                </div>
+            </div>  
+
+            <div class="form-group" ng-show="model.return_mode == mode_list[1]">
+                <label class="col-sm-3 text-right control-label text-muted" >Email</label>
+                <div class="col-sm-7">
+                    <input  type="text" ng-model="model.staff_email"  class="form-control input-sm"/>
+                </div>
+            </div>
+
+            <div class="form-group" ng-show="model.return_mode == mode_list[1]">
+                <label class="col-sm-3 text-right control-label text-muted" >Contact No</label>
+                <div class="col-sm-7">
+                    <input  type="text" ng-model="model.contact_no"  class="form-control input-sm"/>
+                </div>
+            </div>
+
+            <div class="form-group" ng-show="model.return_mode == mode_list[2]">
+                <label class="col-sm-3 text-right control-label text-muted" >Company</label>
+                <div class="col-sm-7">
+                    <input  type="text" ng-model="model.courier_company"  class="form-control input-sm"/>
+                </div>
+            </div>
+
+            <div class="form-group" ng-show="model.return_mode == mode_list[2]">
+                <label class="col-sm-3 text-right control-label text-muted" >AWB</label>
+                <div class="col-sm-7">
+                    <input  type="text" ng-model="model.courier_awb"  class="form-control input-sm"/>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-3 text-right control-label text-muted" >Comments</label>
+                <div class="col-sm-7">
+                    <textarea ng-model="model.comment" rows = 4 class="form-control input-sm" style="resize: none;" maxlength="200"></textarea>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="modal-footer ">
+        <button type="button" class="btn btn-info btn-sm" data-dismiss="modal" ng-click="saveChangeStatus()">
+            <span class="glyphicon glyphicon-ok"></span>
+            <b> Save</b>
+        </button>
+        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal" ng-click="cancel()">
+            <span class="glyphicon glyphicon-remove"></span>
+            <b> Cancel</b>
+        </button>
+    </div>
+
+</div>
+

@@ -1,0 +1,224 @@
+<div style="">
+	<div class="wrapper">
+		<div class="panel panel-default" style="border-radius: 4px">
+		  <div class="panel-heading">
+			  <div>
+				  <span><i class="fa fa-info"></i>&nbsp;Guest & Request Details</span>
+				  <div class="pull-right" style="margin-top: -5px">
+					  <button type="button" ng-show="wakeup.editable" class="btn btn-default btn-sm" ng-click="updateWakeupRequest()">Update</button>
+            <button type="button" ng-show="wakeup.cancelable" class="btn btn-default btn-sm" ng-click="cancelWakeupRequest()">Cancel</button>
+				  </div>
+				</div>
+			</div>
+		  <div class="panel-body" style="padding: 5px 0px">
+				<div class="form-horizontal form-validation" style="padding: 0px">
+					<form class="form-horizontal form-validation">
+						<div class="col-sm-6">
+							<label class="control-label text-xs text-muted">Room Number</label>
+							<input type="text" ng-model="selected_room.room" class="form-control input-sm" disabled>
+						</div>
+						<div class="col-sm-6">
+							<label class="control-label text-xs text-muted">Guest Name</label>
+							<input type="text" ng-model="model.guest_name" class="form-control input-sm" disabled>
+						</div>
+						<div class="col-sm-6">
+							<label class="control-label text-xs text-muted">Check-in</label>
+							<input type="text" ng-model="model.arrival" class="form-control input-sm" disabled>
+						</div>
+						<div class="col-sm-6">
+							<label class="control-label text-xs text-muted">Check-out</label>
+							<input type="text" ng-model="model.departure" class="form-control input-sm" disabled>
+						</div>
+						<div class="col-sm-6">
+							<label class="control-label text-xs text-muted">Time</label>
+							<a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#" ng-disabled="!wakeup.editable">
+                <div class="input-group">
+                  <input type="text" class="form-control" ng-model="wakeup.time" ng-disabled="!wakeup.editable">
+                  <span class="input-group-addon"><i class="glyphicon glyphicon-calendar" ng-disabled="!wakeup.editable"></i></span>
+                </div>
+              </a>
+						</div>
+						<div class="col-sm-3">
+							<label class="control-label text-xs text-muted">Repeat Flag</label><br>
+							<label class="i-switch m-t-xs m-r">
+                <input type="checkbox" ng-model="wakeup.repeat" checked ng-disabled="!wakeup.editable">
+                <i></i>
+              </label>
+						</div>
+						<div class="col-sm-3">
+							<label class="control-label text-xs text-muted">Repeat</label><br>
+							<label class="i-switch m-t-xs m-r">
+                <input type="checkbox" ng-model="wakeup.repeat" checked ng-disabled="!wakeup.editable">
+                <i></i>
+              </label>
+						</div>
+						<div class="col-sm-6" ng-show="wakeup.repeat"><!--ng-show="wakeup.repeat"-->
+							<label class="control-label text-xs text-muted">Until Checkout</label><br>
+							<label class="i-switch m-t-xs m-r">
+                <input type="checkbox" ng-model="wakeup.until_checkout_flag" checked ng-disabled="!wakeup.editable">
+                <i></i>
+							</label>
+						</div>
+						<div class="col-sm-6" ng-show="wakeup.repeat && !wakeup.until_checkout_flag"><!--ng-show="wakeup.repeat && !wakeup.until_checkout_flag"-->
+							<label class="control-label text-xs text-muted">End Date</label><br>
+              <div class="control-label" style="text-align: left">
+            	  <div class="input-group">
+              	  <span class="input-group-btn">
+                    <button type="button" class="btn btn-default btn-sm" ng-click="open($event)"><i class="glyphicon glyphicon-calendar"></i>
+                    	</button ng-disabled="!wakeup.editable">
+									</span>
+                <input type="text" class="form-control input-sm" uib-datepicker-popup="yyyy-MM-dd" ng-model="wakeup.repeat_end_date" is-open="wakeup.is_date_open" datepicker-options="dateOptions" close-text="Close" required  ng-change="select(wakeup.repeat_end_date)" ng-disabled="!wakeup.editable"/>
+              	</div>
+            	</div>
+						</div>
+					</form>
+				</div>
+		  </div>
+		</div>
+		
+		<div class="panel panel-default" style="border-radius: 4px">
+		  <div class="panel-heading">
+			  <div>
+				  <span><i class="fa fa-history"></i>&nbsp;History</span>
+				</div>
+			</div>
+		  <div class="panel-body" style="padding: 5px 0px">
+				<div class="form-horizontal form-validation" style="padding: 0px">
+					<form class="form-horizontal form-validation">
+						<div class="grid" style="width:97%; max-height:200px; margin:auto" ui-grid="gridOptions" ui-grid-auto-resize ui-grid-resize-columns></div>
+					</form>
+				</div>
+		  </div>
+<!--
+		<fieldset>
+			<legend>
+                <div style="width: 95%;" class="col-centered wrapper-xs">
+                    <form class="bs-example form-horizontal">
+                        <div class="row form-horizontal">
+                            <label style="font-size:15px;">&nbsp;<i class="icon-energy"></i>&nbsp;&nbsp;Guest Information</label>
+                        </div>
+                    </form>
+                </div>
+			</legend>
+		    
+		  <div class=" ">
+		    <form class="form-horizontal form-validation">
+		      <div class="form-group">
+		        <label class="col-sm-2 control-label">Room Name</label>
+		        <div class="col-sm-4">
+                  <div class="scrollable-dropdown-menu">
+                    <input type="text" ng-model="selected_room.room" class="form-control input-sm" placeholder="Enter room number"
+                           uib-typeahead="room.room for room in getRoomList($viewValue)"
+                           typeahead-min-length="1"
+                           typeahead-on-select="onRoomSelect($item, $model, $label)" required disabled>
+                  </div>
+		        </div>
+
+                <label class="col-sm-2 control-label">Check-in</label>
+                <div class="col-sm-4">
+                  <input type="text" ng-model="model.arrival" class="form-control input-sm" disabled>
+                </div>
+		      </div>
+		    </form>
+		        
+			<form class="form-horizontal form-validation">
+		      <div class="form-group">
+                <label class="col-sm-2 control-label">Guest </label>
+                <div class="col-sm-4">
+                  <input type="text" ng-model="model.guest_name" class="form-control input-sm" disabled>
+                </div>
+
+		        <label class="col-sm-2 control-label">Checkout </label>
+		        <div class="col-sm-4">
+		          <input class="form-control input-sm" ng-model="model.departure" disabled>
+		        </div>
+		      </div>
+		    </form>
+
+
+
+          </div>
+		</fieldset>
+		
+	</div>
+
+    <div class="wrapper">
+      <fieldset>
+        <legend>
+            <label style="font-size:1vw">&nbsp;&nbsp;<i class="fa fa-info"></i>&nbsp;Request Details</label>
+        </legend>
+
+        <form class="form-horizontal form-validation">
+          <div class="form-group">
+            <label class="col-sm-2 control-label">Time </label>
+            <div class="dropdown col-sm-4">
+              <a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#" ng-disabled="!wakeup.editable">
+                <div class="input-group">
+                  <input type="text" class="form-control" ng-model="wakeup.time" ng-disabled="!wakeup.editable">
+                  <span class="input-group-addon"><i class="glyphicon glyphicon-calendar" ng-disabled="!wakeup.editable"></i></span>
+                </div>
+              </a>
+              <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+                <datetimepicker ng-model="wakeup.date"
+                                data-datetimepicker-config="{ dropdownSelector: '#dropdown2' }"
+                                data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+              </ul>
+            </div>
+            <label class="col-sm-2 control-label">Repeat Flag</label>
+            <div class="col-sm-4">
+                <label class="i-switch m-t-xs m-r">
+                    <input type="checkbox" ng-model="wakeup.repeat" checked ng-disabled="!wakeup.editable">
+                    <i></i>
+                </label>
+            </div>
+          </div>
+
+          <div class="form-group label-group">            
+            <div class="col-sm-2 control-label">Repeat</div>
+            <div class="col-sm-1">
+              <label class="i-switch m-t-xs m-r">
+                <input type="checkbox" ng-model="wakeup.repeat" checked ng-disabled="!wakeup.editable">
+                <i></i>
+              </label>
+            </div>
+            <div class="col-sm-2 control-label text-muted" ng-show="wakeup.repeat">Until Checkout</div>
+            <div class="col-sm-1" ng-show="wakeup.repeat">
+              <label class="i-switch m-t-xs m-r">
+                  <input type="checkbox" ng-model="wakeup.until_checkout_flag" checked ng-disabled="!wakeup.editable">
+                  <i></i>
+              </label>
+            </div>
+            <div class="col-sm-2 control-label" ng-show="wakeup.repeat && !wakeup.until_checkout_flag">End Date</div>
+            <div class="col-sm-4 control-label" style="text-align: left" ng-show="wakeup.repeat && !wakeup.until_checkout_flag">
+              <div class="input-group">
+                <span class="input-group-btn">
+                    <button type="button" class="btn btn-default btn-sm" ng-click="open($event)"><i class="glyphicon glyphicon-calendar"></i></button ng-disabled="!wakeup.editable">
+                </span>
+                <input type="text" class="form-control input-sm" uib-datepicker-popup="yyyy-MM-dd" ng-model="wakeup.repeat_end_date" is-open="wakeup.is_date_open" datepicker-options="dateOptions" close-text="Close" required  ng-change="select(wakeup.repeat_end_date)" ng-disabled="!wakeup.editable"/>
+              </div>
+            </div>
+          </div>
+        </form>
+
+          <form class="form-horizontal form-validation" ng-show="wakeup.cancelable">
+              <div class="form-group">
+                  <label class="col-sm-2 control-label">Action</label>
+                  <div class="col-sm-4">
+                      <button type="button" ng-show="wakeup.editable" class="btn btn-success btn-sm" ng-click="updateWakeupRequest()" >Update</button>
+                      <button type="button" ng-show="wakeup.cancelable" class="btn btn-danger btn-sm" ng-click="cancelWakeupRequest()">Cancel</button>
+                  </div>
+              </div>
+          </form>
+
+      </fieldset>
+    </div>
+
+    <div class="wrapper">
+        <fieldset>
+            <legend>
+                <label style="font-size:15px;">&nbsp;<i class="fa fa-history"></i>&nbsp;&nbsp;History</label>
+            </legend>
+            <div class="grid" style="width:97%; max-height:400px; margin:auto" ui-grid="gridOptions" ui-grid-auto-resize ui-grid-pagination ui-grid-resize-columns></div>
+        </fieldset>
+    </div>-->
+</div>

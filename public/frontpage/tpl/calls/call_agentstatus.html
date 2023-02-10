@@ -1,0 +1,1214 @@
+<!--<style>
+    .call_div{
+        height:50px;
+    }
+    .profileinput {
+        width:150px;
+    }
+</style>-->
+<style>
+    .anyClass {
+        height: 800px;
+        overflow-y: scroll;
+    }
+
+    .sortable tr {
+        cursor: pointer;
+    }
+
+    nav {
+        position: relative;
+        z-index: 1;
+        white-space: nowrap;
+        font-size: 12px;
+        ;
+    }
+
+    nav a {
+        position: relative;
+        display: inline-block;
+        padding: 1.5em 1.5em 1em;
+        text-decoration: none;
+        margin: 0 -7px;
+        color: #fff;
+    }
+
+    nav a:hover {
+        color: #ef6905;
+    }
+
+    nav a::before,
+    main {
+        border: .1em solid #aaa;
+    }
+
+    nav a::before {
+        content: '';
+        /* To generate the box */
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: .5em;
+        left: 0;
+        z-index: -1;
+        border-bottom: none;
+        border-radius: 10px 10px 0 0;
+        background: #2e3344;
+        box-shadow: 0 2px hsla(0, 0%, 100%, .5) inset;
+        transform: perspective(5px) rotateX(2deg);
+        transform-origin: bottom;
+    }
+
+    nav.left a {
+        padding: 1.5em 2em 1em 1em;
+    }
+
+    nav.left a::before {
+        transform-origin: bottom left;
+    }
+
+    nav.right a {
+        padding: 1.5em 1em 1em 2em;
+    }
+
+    nav.right a::before {
+        transform-origin: bottom right;
+    }
+
+    nav a.selected {
+        z-index: 2;
+    }
+
+    nav a.selected::before {
+        margin-bottom: -1px;
+        border-top-width: 1px;
+    }
+
+    nav a.selected::before {
+        background: #0e08b6;
+    }
+
+    main {
+        display: block;
+        margin: -8px 0 30px -15px;
+        padding: 1em;
+        border-radius: 3px;
+        background: #fff;
+    }
+
+    .tabsdemoDynamicHeight md-content {
+        background-color: transparent !important;
+    }
+
+    .tabsdemoDynamicHeight md-content md-tabs {
+        background: #f6f6f6;
+        border: 1px solid #e1e1e1;
+    }
+
+    .tabsdemoDynamicHeight md-content md-tabs md-tabs-wrapper {
+        background: white;
+    }
+
+    .tabsdemoDynamicHeight md-content h1:first-child {
+        margin-top: 0;
+    }
+
+    .filter-row span {
+        margin-left: 15px;
+        cursor: pointer;
+    }
+
+    .call-details > div > label {
+        margin-bottom: 0px !important;
+    }
+
+    .call-details > div > div > label {
+        margin-left: 20px;
+    }
+
+    .modal-dialog {
+        text-align: left
+    }
+
+    .modal {
+        margin-top: 45px;
+    }
+
+    .image-upload > input
+    {
+        display: none;
+    }
+
+    .image-upload img
+    {
+        width: 80px;
+        cursor: pointer;
+    }
+
+
+</style>
+<div ng-controller="AgentStatusController">
+   
+    <div class="row clear-me" style="{{full_height}}">       
+        <div class="col-md-9">
+            <!--under table about  history-->
+
+            <div class="row" style="max-height: 400px; overflow-y:auto">
+                <div class="table-responsive" ng-class="{'col-sm-6':queue_flag==1, 'col-sm-12':queue_flag==0}" style="width: 100% margin-top: 30px; overflow-x: hidden" ng-show="!(agent_status.status == 'Ringing' || agent_status.status == 'Busy' || agent_status.status == 'Wrapup')">
+                    <div  ng-cloak>
+                        <md-content>
+                            <md-tabs md-dynamic-height md-border-bottom>
+                                <md-tab>
+                                    <md-tab-label>
+                                        Call Back ({{callback_take}})
+                                    </md-tab-label>
+                                    <md-tab-body>
+                                        <table st-table="callbacklist" st-pipe="getCallbackList" class="table ticket table-striped b-t b-light">
+                                            <thead class="tblhead-sm">
+                                                <tr class="text-center" style="padding-left: 2px; padding-right: 2px">
+                                                    <th>Time</th>                                                    
+                                                    <th>Caller</th>
+                                                    <th style="white-space: nowrap">Wait Time</th>
+                                                    <th style="white-space: nowrap">Agent</th>
+
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="sortable" ng-hide="isCallbackLoading">
+                                                <tr ng-dblclick="commentCallback(row)" ng-repeat="row in callbacklist" class="text-center">
+                                                    <td>{{row.time}}</td>                                                    
+                                                    <td><a ng-click="callCallbackAgent(row)">{{row.callerid}}</a></td>
+                                                    <td>{{row.waiting}}</td>
+                                                    <td style="white-space: nowrap" ng-if="row.callback_flag == 0 || row.callback_flag == 2">{{row.wholename_taken}}</td>
+                                                    <td ng-if="row.callback_flag == 1">
+                                                        <button class="btn btn-info btn-xs" ng-click="onTakeCallback(row)">Take</button>
+                                                    </td>
+
+                                                    <td ng-if="row.callback_flag == 0">Done</td>
+                                                    <td ng-if="row.callback_flag == 1">Pending</td>
+                                                    <td ng-if="row.callback_flag == 2">Taken</td>
+                                                </tr>
+                                            </tbody>
+                                            <tbody ng-show="isCallbackLoading">
+                                                <tr>
+                                                    <td colspan="6" class="text-center">
+                                                        <i class="fa fa-spin fa-refresh"></i>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+
+                                        </table>
+                                    </md-tab-body>
+                                </md-tab>
+                                <md-tab>
+                                    <md-tab-label>
+                                        Missed ({{missed_take}})
+                                    </md-tab-label>
+                                    <md-tab-body>
+                                        <table st-table="missedlist" st-pipe="getMissedList" class="table ticket table-striped b-t b-light">
+                                            <thead class="tblhead-sm">
+                                                <tr class="text-center" style="padding-left: 2px; padding-right: 2px">
+                                                    <th>Time</th>                                                    
+                                                    <th>Caller</th>
+                                                    <th style="white-space: nowrap">Wait Time</th>
+                                                    <th style="white-space: nowrap">Agent</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="sortable" ng-hide="isMissedbackLoading">
+                                                <tr ng-dblclick="commentMissed(row)" ng-repeat="row in missedlist" class="text-center">
+                                                    <td>{{row.time}}</td>                                                    
+                                                    <td><a ng-click="callAgent(row.callerid)">{{row.callerid}}</a></td>
+                                                    <td>{{row.waiting}}</td>
+                                                    <td style="white-space: nowrap" ng-if="row.missed_flag == 0 || row.missed_flag == 2">{{row.wholename_taken}}</td>
+                                                    <td ng-if="row.missed_flag == 1">
+                                                        <button class="btn btn-info btn-xs" ng-click="onTakeCallback(row)">Take</button>
+                                                    </td>
+                                                    <td ng-if="row.missed_flag == 0">Done</td>
+                                                    <td ng-if="row.missed_flag == 1">Pending</td>
+                                                    <td ng-if="row.missed_flag == 2">Taken</td>
+                                                </tr>
+                                            </tbody>
+                                            <tbody ng-show="isMissedLoading">
+                                                <tr>
+                                                    <td colspan="6" class="text-center">
+                                                        <i class="fa fa-spin fa-refresh"></i>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+
+                                        </table>
+                                    </md-tab-body>
+                                </md-tab>
+                                <md-tab>
+                                    <md-tab-label>
+                                        Abandoned ({{abandon_take}})
+                                    </md-tab-label>
+                                    <md-tab-body>
+                                        <table st-table="abandonlist" st-pipe="getAbandonList" class="table ticket table-striped b-t b-light">
+                                            <thead class="tblhead-sm">
+                                                <tr class="text-center" style="padding-left: 2px; padding-right: 2px">
+                                                    <th>Time</th>                                                    
+                                                    <th>Caller</th>
+                                                    <th style="white-space: nowrap">Wait Time</th>
+                                                    <th style="white-space: nowrap">Agent</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="sortable" ng-hide="isAbandonLoading">
+                                                <tr ng-dblclick="commentAbandon(row)" ng-repeat="row in abandonlist" class="text-center">
+                                                    <td>{{row.time}}</td>                                                    
+                                                    <td><a ng-click="callAgent(row.callerid)">{{row.callerid}}</a></td>
+                                                    <td>{{row.waiting}}</td>
+                                                    <td style="white-space: nowrap" ng-if="row.abandon_flag == 0 || row.abandon_flag == 2">{{row.wholename_taken}}</td>
+                                                    <td ng-if="row.abandon_flag == 1">
+                                                        <button class="btn btn-info btn-xs" ng-click="onTakeCallback(row)">Take</button>
+                                                    </td>
+                                                    <td ng-if="row.abandon_flag == 0">Done</td>
+                                                    <td ng-if="row.abandon_flag == 1">Pending</td>
+                                                    <td ng-if="row.abandon_flag == 2">Taken</td>
+                                                </tr>
+                                            </tbody>
+                                            <tbody ng-show="isAbandonLoading">
+                                                <tr>
+                                                    <td colspan="6" class="text-center">
+                                                        <i class="fa fa-spin fa-refresh"></i>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+
+                                        </table>
+                                    </md-tab-body>
+                                </md-tab>
+                            </md-tabs>
+                        </md-content>
+                    </div>
+
+                </div>
+                
+                
+            </div>
+
+
+
+
+
+
+
+            <div class="panel panel-default" style="border-radius: 4px; margin:3px 15px 3px 0px">
+                <div class="panel-heading row" style="display: flex; justify-content: center; align-items: center">
+                    <!--
+					<div class="col-sm-1">
+                        <label class="font-bold text-sm" style="margin-bottom: 0"><i class="fa fa-user-circle-o text-default"></i>&nbsp;&nbsp;Call Logs</label>
+                    </div>
+					-->
+                    <div class="col-sm-12" style="padding: 0px">
+                        <div class="col-sm-3 btn-toolbar btn-group" style="margin: 0px">
+                            <div style="display: inline-flex; padding: 0px; overflow: hidden; white-space: nowrap;">
+                                <input type="text" ng-model="searchtext" ng-keypress="($event.which === 13) ? onSearch():0" class="form-control input-sm bg-light no-border padder"
+                                       placeholder="Search">
+								<span class="input-group-btn">
+                                    <button type="button" ng-click="onSearch()" class="btn btn-sm bg-light">
+                                        <i class="fa fa-search"></i>
+                                    </button>
+                                </span>
+							</div>
+							
+							<div style="display: inline-flex; padding: 0px; overflow: hidden; white-space: nowrap;">
+								<button class="btn btn-sm btn-bg btn-default" data-toggle="tooltip" data-placement="bottom" data-title="Refresh" data-original-title=""
+                                        title="" ng-click="onRefresh()">
+                                    <i class="fa fa-refresh"></i>
+                                </button>
+							</div>
+                        </div>
+						<div class="col-sm-6"  style="display: inline-flex; padding: 6px; overflow: hidden; white-space: nowrap;">
+                            <span class="text-success text-sm" ng-click="onSelectCategory('Answered')"><b>Answered - {{answered}}</b></span> &emsp;&emsp;&emsp;
+                            <span class="text-danger text-sm" ng-click="onSelectCategory('Missed')"><b>Missed - {{miss}} </b></span> &emsp;&emsp;&emsp;
+                            <span class="text-danger text-sm" ng-click="onSelectCategory('Abandoned')"><b>Abandoned - {{abandoned}}</b></span> &emsp;&emsp;&emsp;
+                            <!--     <span class="text-warning text-sm" ng-click="onSelectCategory('Follow Up')">Follow Up - {{followup}}</span> -->
+                            <span class="text-warning text-sm" ng-click="getCallbackList()"><b>Callback - {{callback}}</b></span> &emsp;&emsp;&emsp;
+                            <!--       <span class="text-info text-sm" ng-click="onSelectCategory('Queue')">Queue - {{queue}}</span> -->
+                            <span class="text-info text-sm" ng-click="onSelectCategory('Outgoing')"><b>Outgoing - {{outgoing}}</b></span> &emsp;&emsp;&emsp;
+                        </div>
+						<div class="col-sm-3 btn-group">
+                            <button type="button" class="btn btn-sm btn-bg btn-default pull-right">
+                                {{paginationOptions.numberOfPages}}/{{paginationOptions.countOfPages}} - {{paginationOptions.totalItems}} Items
+                            </button>
+                            <button type="button" class="btn btn-sm btn-bg btn-default pull-right" ng-click="onPrevPage()" ng-disabled="paginationOptions.numberOfPages <= 1">
+                                <i class="fa fa-chevron-left"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-bg btn-default pull-right" ng-click="onNextPage()" ng-disabled="paginationOptions.numberOfPages >= paginationOptions.countOfPages">
+                                <i class="fa fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <!--<div class="col-sm-3">
+                        <div class="pull-right" style="display: flex; justify-content: center; align-items: center; padding-top: 5px;">
+                            <label class="i-switch"  >
+                                <input type="checkbox" ng-model="bMyCall" ng-change="onRefresh()" >
+                                <i></i>
+                            </label>
+                            &nbsp;&nbsp;
+                            <span>My Calls</span>
+                        </div>
+                    </div>-->
+                </div>
+                <div class="panel-body" style="padding:0px">
+                    <div class="row">
+                        <div class="col-md-12 table table-responsive" ng-show="!(agent_status.status == 'Ringing' || agent_status.status == 'Busy' || agent_status.status == 'Wrapup' || agent_status.status == 'Outgoing') && !view"
+                             style="max-height: 400px; position: relative; overflow-y: auto;">
+
+                            <table st-table="guestlist" st-pipe="getDataList" class="table table-striped b-t b-light" style="margin: 0; padding: 0; height: 100%; font-size: .8vw">
+                                <thead class="tblhead-sm">
+                                <tr>
+                                    <th style="text-align:center; width: 5%" st-sort="stat_date_time">Time</th>
+                                    <th style="text-align:center; width: 10%">Number</th>
+                                    <th style="text-align:center; width: 15%">Name</th>
+                                    <th style="text-align:center; width: 5%">Duration</th>
+                                    <th style="text-align:center; white-space: nowrap; width: 15%">Agent</th>
+                                    <th style="text-align:center; width: 10%">Type</th>
+                                    <th style="text-align:center;width: 10% ">Channel</th>
+                                    <th style="width:30%" class="text-center" ng-if="auth_svc.isValidModule('app.calls.logger')">Action</th>
+                                </tr>
+                                </thead>
+                                <tbody ng-hide="isLoading">
+                                <tr ng-repeat="row in datalist">
+                                    <td align="center"> {{row.cutime}}</td>
+                                    <td align="center"> {{row.mobile}}</td>
+                                    <td align="center"> {{row.tickname}}</td>
+                                    <td align="center"> {{row.duration}}</td>
+                                    <td align="center"> {{row.agentname}}</td>
+
+                                    <td align="center"> {{row.type}}</td>
+                                    <td align="center"> {{row.channel}}</td>
+                                    <td class="text-center" ng-if="auth_svc.isValidModule('app.calls.logger')">
+                                        <div ng-if="row.user_id == user_id">
+                                            <a href="{{row.filepath+row.filename}}"><i class="fa fa-download" style="font-size: 20px"></i></a>
+                                            <div class="btn">
+                                                <audio style="width:200px;height:15px" src="{{log.filepath+log.filename}}" controls> </audio>
+                                            </div>
+                                            &nbsp;
+                                            <a class="btn default btn-xs green" ng-click="edit(row)">
+                                                <i class="fa fa-pencil"></i>
+                                            </a>
+                                        </div>
+                                        <div ng-if="row.user_id != user_id && auth_svc.isValidModule('app.access.other.calllogs')">
+                                            <a href="{{row.filepath+row.filename}}"><i class="fa fa-download" style="font-size: 20px"></i></a>
+                                            <div class="btn">
+                                                <audio style="width:200px;height:15px" src="{{log.filepath+log.filename}}" controls> </audio>
+                                            </div>
+                                            &nbsp;
+                                            <a class="btn default btn-xs green" ng-click="edit(row)">
+                                                <i class="fa fa-pencil"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                                <tbody ng-show="isLoading">
+                                <tr>
+                                    <td colspan="11" class="text-center">
+                                        <i class="fa fa-spin fa-refresh"></i>
+                                    </td>
+                                </tr>
+                                </tbody>
+                                <tfoot ng-hide="true">
+                                <tr ng-show="paginationOptions.totalItems > paginationOptions.pageSize">
+                                    <td colspan="11" class="text-center">
+                                        <div st-pagination="" st-items-by-page="paginationOptions.pageSize" st-displayed-pages="7" class="no-margin"></div>
+                                    </td>
+                                </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        <!--active call form about customer-->
+                        <div class="col-md-12 clear-side" ng-show="callcenter_config.caller_info_save_flag && (agent_status.status == 'Ringing' || agent_status.status == 'Busy' || agent_status.status == 'Wrapup' || agent_status.status == 'Outgoing') && !view "
+                             style="padding-top: 20px">
+                            <div>
+                                <div>
+                                    <form class=" form-horizontal form-validation">
+                                        <div class="panel panel-default" style="margin-left: 10px;">
+                                            <div class="panel-heading">
+                                                <label class="font-bold">
+                                                    <i class="fa fa-tasks" aria-hidden="true"></i>&nbsp;&nbsp;Caller Information&nbsp;</label>
+                                                <label style="float: right">
+                                                    <input class="form-group" type="checkbox" ng-model="agent_status.caller.spam" checked>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Spam</label>
+                                            </div>
+                                            <div class="panel-body">
+                                                <form class="form-horizontal">
+                                                    <div class="col-sm-12">
+                                                        <div class="col-sm-6 form-validation" style="margin-top: -3px;">
+                                                            <label class="col-sm-12 control-label text-left" style="font-size:10px;"> Salutation </label>
+                                                            <div class="col-sm-5" style="margin-left: 0px">
+                                                                <select ng-model="agent_status.caller.salutation" style="height:28px">
+                                                                    <option value="Mr.">Mr.</option>
+                                                                    <option value="Mrs.">Mrs.</option>
+                                                                    <option value="Ms.">Ms.</option>
+                                                                    <option value="Miss.">Miss.</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-sm-6 form-validation" style="margin-top: -3px;">
+                                                            <label class="col-sm-12 control-label text-left" style="font-size:10px;"> Nationality </label>
+                                                            <div class="col-sm-12">
+                                                                <select class="input-info" style="width: 9vw" ng-model="agent_status.caller.national" ng-options="name for name in countrylist">
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-sm-6 form-validation" style="margin-top: -3px;">
+                                                            <label class="col-sm-12 control-label text-left" style="font-size:10px;"> First Name </label>
+                                                            <div class="col-sm-12">
+                                                                <input type="text" ng-model="agent_status.caller.firstname" class="form-control input-info" placeholder="">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-sm-6 form-validation" style="margin-top: -3px;">
+                                                            <label class="col-sm-12 control-label text-left" style="font-size:10px;"> Last Name </label>
+                                                            <div class="col-sm-12">
+                                                                <input type="text" ng-model="agent_status.caller.lastname" class="form-control input-info" placeholder="">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-sm-6 form-validation" style="margin-top: -3px;">
+                                                            <label class="col-sm-12 control-label text-left" style="font-size:10px;"> Email </label>
+                                                            <div class="col-sm-12">
+                                                                <input type="text" ng-model="agent_status.caller.email" class="form-control input-info" placeholder="">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-sm-6 form-validation" style="margin-top: -3px;">
+                                                            <label class="col-sm-12 control-label text-left" style="font-size:10px"> Company </label>
+                                                            <div class="col-sm-11 input-group" style="margin-left:15px">
+                                                                <span class="input-group-addon ">
+                                                                    <input type="checkbox" ng-model="agent_status.caller.company">
+                                                                </span>
+                                                                <input type="text" ng-model="agent_status.caller.companyname" ng-disabled="!agent_status.caller.company" class="form-control input-info">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-sm-6 form-validation" style="margin-top: -3px;">
+                                                            <label class="col-sm-12 control-label text-left" style="font-size:10px;"> Mobile </label>
+                                                            <div class="col-sm-11 input-group" style="margin-left:15px">
+                                                                <span class="input-group-addon ">
+                                                                    <input type="checkbox" ng-model="mobile_flag">
+                                                                </span>
+                                                                <input ng-disabled="!mobile_flag" type="text" ng-model="agent_status.caller.mobile" class="form-control input-info" placeholder="+xx xxxx xxxxx">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-sm-6 form-validation" style="margin-top: -3px;">
+                                                            <label class="col-sm-12 control-label text-left" style="font-size:10px;"> Fixed Phone </label>
+                                                            <div class="col-sm-11 input-group" style="margin-left:15px">
+                                                                <span class="input-group-addon ">
+                                                                    <input type="checkbox" ng-model="phone_flag">
+                                                                </span>
+                                                                <input ng-disabled="!phone_flag" type="text" ng-model="agent_status.caller.phone" class="form-control input-info" placeholder="+xx xxxx xxxxx">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-sm-12 form-validation" style="margin-top: -3px;">
+                                                            <label class="col-sm-12 control-label text-left" style="font-size:10px;"> Address </label>
+                                                            <div class="col-sm-12">
+                                                                <input type="text" ng-model="agent_status.caller.address" class="form-control input-info" placeholder="">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                        <!- - - - - - - - /TOP PANEL - - - - - - - ->
+
+                                        <!- - - - - - - - BOTTOM PANEL - - - - - - - ->
+                                        <div class="panel panel-default" style="margin-left: 10px;">
+                                            <div class="panel-heading">
+                                                <label class="font-bold">
+                                                    <i class="fa fa-phone" aria-hidden="true"></i>&nbsp;&nbsp;Active Call&nbsp;
+                                                </label>
+                                                <label style="float: right">
+                                                    <b>Ticket #</b>
+                                                    <span style="color:orange">&nbsp;&nbsp;{{getCallTicketID(agent_status)}}</span>
+                                                </label>
+                                            </div>
+                                            <div class="panel-body">
+                                                <form class="form-horizontal">
+                                                    <div class="col-sm-12" style="padding-left: 7px;">
+                                                        <div class="col-sm-6 form-validation" style="margin-top: -3px; padding-left: 0px;">
+                                                            <label class="col-sm-12 control-label text-left" style="font-size:10px;"> Type </label>
+                                                            <div class="col-sm-12">
+
+                                                                <select id='id_' class='form-control' ng-model="ticket.type" ng-options="value.label as value.label for (key, value) in types"></select>
+
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-sm-6 form-validation" style="margin-top: -3px;">
+                                                            <label class="col-sm-12 control-label text-left" style="font-size:10px;"> Channel </label>
+                                                            <div class="col-sm-12">
+                                                                <input type="text" ng-disabled="true" ng-model="agent_status.ticket.channel" class="form-control input-info">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-sm-12 form-validation" style="margin-top: -3px; padding-left: 0px;">
+                                                            <label class="col-sm-12 control-label text-left" style="font-size:10px;"> Comment </label>
+                                                            <div class="col-sm-12">
+                                                                <textarea rows="4" cols="30" class="form-control" ng-model="ticket.comment" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
+
+                                        </div>
+                                        <div class="wrapper-md pull-right">
+                                            <button ng-click="onSaveProfile()" class="btn btn-primary">&nbsp;&nbsp;&nbsp;&nbsp;Save&nbsp;&nbsp;&nbsp;&nbsp;</button>
+                                        </div>
+                                        <br/>
+                                        <br/>
+                                        <br/>
+                                        <br/>
+                                        <br/>
+                                        <br/>
+                                    </form>
+
+                                    <!- - - - - - - - /BOTTOM PANEL - - - - - - - ->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6" style="padding-left:0px" ng-show="callcenter_config.caller_info_save_flag == false && (agent_status.status == 'Ringing' || agent_status.status == 'Busy' || agent_status.status == 'Wrapup' || agent_status.status == 'Outgoing')">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <label class="font-bold">
+                                <i class="fa fa-tasks" aria-hidden="true"></i>&nbsp;&nbsp;Caller Details&nbsp;</label>
+                        </div>
+                        <div class="panel-body call-details">
+                            <div>
+                                <label class="control-label text-xs text-muted">Type</label>
+                                <div>
+                                    <label class="text-sm font-bold">{{call_detail.call_type}}</label>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="control-label text-xs text-muted">Channel</label>
+                                <div>
+                                    <label class="text-sm font-bold">{{call_detail.channel}}</label>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="control-label text-xs text-muted">{{call_detail.call_type == 'Outside Call' ? 'Calling Number' : 'Extension Number'}}</label>
+                                <div>
+                                    <label class="text-sm font-bold">{{call_detail.extension}}</label>
+                                </div>
+                            </div>
+
+                            <div ng-show="call_detail.call_type == 'Guest Call'">
+                                <label class="control-label text-xs text-muted">Guest Name</label>
+                                <div>
+                                    <label class="text-sm font-bold">{{call_detail.guest_name}}</label>
+                                </div>
+                            </div>
+
+                            <div ng-show="call_detail.call_type == 'Guest Call' || call_detail.call_type == 'In-House'">
+                                <label class="control-label text-xs text-muted">Room Number</label>
+                                <div>
+                                    <label class="text-sm font-bold">{{call_detail.room_number}}</label>
+                                </div>
+                            </div>
+
+                            <div ng-show="call_detail.call_type == 'Guest Call' || call_detail.call_type == 'In-House'">
+                                <label class="control-label text-xs text-muted">Room Type</label>
+                                <div>
+                                    <label class="text-sm font-bold">{{call_detail.room_type}}</label>
+                                </div>
+                            </div>
+
+                            <div ng-show="call_detail.call_type == 'Guest Call'">
+                                <label class="control-label text-xs text-muted">Arrival and Depature Date</label>
+                                <div>
+                                    <label class="text-sm font-bold">{{call_detail.arrival | mydate}} to {{call_detail.departure | mydate}}</label>
+                                </div>
+                            </div>
+
+                            <div ng-show="call_detail.call_type == 'Guest Call'">
+                                <label class="control-label text-xs text-muted">VIP Status</label>
+                                <div>
+                                     <label class="text-sm font-bold">{{call_detail.vip_status}}</label>
+                                </div>
+                            </div>
+
+                            <div ng-show="call_detail.call_type == 'Outside Call'">
+                                    <label class="control-label text-xs text-muted">Salutation</label>
+                                    <div>
+                                        <label class="text-sm font-bold">{{call_detail.salutation}}</label>
+                                    </div>
+                            </div>
+                            <div ng-show="call_detail.call_type == 'Outside Call'">
+                                <label class="control-label text-xs text-muted">First Name</label>
+                                <div>
+                                    <label class="text-sm font-bold">{{call_detail.first_name}}</label>
+                                    <a class="text-md font-bold pull-right" style="cursor:pointer"
+                                       ng-click="onShowPhonebook()"
+                                       ng-show="call_detail.non_exist_flag == 1">
+                                        <i class="fa fa-address-book-o" aria-hidden="true"></i>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div ng-show="call_detail.call_type == 'Outside Call'">
+                                <label class="control-label text-xs text-muted">Last Name</label>
+                                <div>
+                                    <label class="text-sm font-bold">{{call_detail.last_name}}</label>
+                                </div>
+                            </div>
+
+                            <div ng-show="call_detail.call_type == 'Outside Call'">
+                                    <label class="control-label text-xs text-muted">Nationality</label>
+                                    <div>
+                                        <label class="text-sm font-bold">{{call_detail.nationality}}</label>
+                                    </div>
+                            </div>
+                            <div ng-show="call_detail.call_type == 'Outside Call'">
+                                    <label class="control-label text-xs text-muted">Company</label>
+                                    <div>
+                                        <label class="text-sm font-bold">{{call_detail.company}}</label>
+                                    </div>
+                            </div>
+                            <div ng-show="call_detail.call_type == 'Outside Call'">
+                                    <label class="control-label text-xs text-muted">Alternate Number</label>
+                                    <div>
+                                        <label class="text-sm font-bold">{{call_detail.alt_no}}</label>
+                                    </div>
+                            </div>
+                            <div ng-show="call_detail.call_type == 'Outside Call'">
+                                    <label class="control-label text-xs text-muted">Email</label>
+                                    <div>
+                                        <label class="text-sm font-bold">{{call_detail.email}}</label>
+                                    </div>
+                            </div>
+                            <div ng-show="call_detail.call_type == 'Outside Call'">
+                                    <div ng-show="call_detail.vip == 1">
+                                        <label class="text-sm font-bold">VIP</label>
+                                    </div>
+                            </div>
+                            <div ng-show="call_detail.call_type == 'Outside Call'">
+                                    <div ng-show="call_detail.blacklist == 1">
+                                        <label class="text-sm font-bold">Blacklisted</label>
+                                    </div>
+                            </div>
+
+                            <div ng-show="call_detail.call_type == 'Admin Call'">
+                                <label class="control-label text-xs text-muted">Description</label>
+                                <div>
+                                    <label class="text-sm font-bold">{{call_detail.desc}}</label>
+                                </div>
+                            </div>
+
+                            <div ng-show="call_detail.call_type == 'Admin Call'">
+                                <label class="control-label text-xs text-muted">Section</label>
+                                <div>
+                                    <label class="text-sm font-bold">{{call_detail.section}}</label>
+                                </div>
+                            </div>
+
+                            <div ng-show="call_detail.call_type == 'Admin Call'">
+                                <label class="control-label text-xs text-muted">Department</label>
+                                <div>
+                                    <label class="text-sm font-bold">{{call_detail.department}}</label>
+                                </div>
+                            </div>
+
+                            <div ng-show="call_detail.call_type != 'Admin Call'">
+                                <label class="control-label text-xs text-muted">Comment</label>
+                                <div>
+                                    <label class="text-sm font-bold">{{call_detail.comment}}</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <label class="font-bold">
+                                <i class="fa fa-tasks" aria-hidden="true"></i>&nbsp;&nbsp;Call History&nbsp;</label>
+                        </div>
+                        <div class="panel-body" directive-when-scrolled="onLoadMoreCallHistory()" fill-height additional-padding="300">
+                            <table st-table="guestlist" st-pipe="getDataListSecond" class="table ticket table-striped b-t b-light">
+                                <thead class="tblhead-sm">
+                                <tr>
+                                    <th st-sort="name">Date & Time</th>
+                                    <th>Call Status</th>
+                                    <th>Duration</th>
+                                    <th>Agent</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr ng-repeat="row in call_detail.history">
+                                    <td>{{row.start_date_time}}</td>
+                                    <td>{{row.dial_status}}</td>
+                                    <td>{{row.duration}}</td>
+                                    <td>{{row.wholename}}</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="panel panel-default" ng-show="queue_flag == 1">
+                        <div class="panel-heading text-muted">
+                            <label class="font-bold">
+                                <i class="fa fa-tasks" aria-hidden="true"></i>&nbsp;&nbsp;{{total}} Call(s) on Queue&nbsp;</label>
+                        </div>
+                        <div class="panel-body"  style="max-height: 400px; overflow-y: auto">
+                        <table st-table="queuecalllist" st-pipe="getDataListThird" class="table ticket table-striped b-t b-light" style="margin: 0; padding: 0; height: 100%;">
+                            <thead class="tblhead-sm">
+                            <tr>
+                                <th style="text-align:center" >Caller</th>
+                                <th style="text-align:center" >Name</th>
+                                <th style="text-align:center" >Room</th>
+                                <th style="text-align:center" >VIP</th>
+                                <th style="text-align:center" >Priority</th>
+                                <th style="text-align:center">Time</th>
+                                <th style="text-align:center" >Take</th>
+                                <th style="text-align:center">Action</th>
+                            </tr>
+                            </thead>
+                            <tbody ng-hide="isLoadingthird">
+                            <tr ng-repeat="row in datalistthird">
+                            <!--    <td align="center"> {{row.id}}</td> -->
+                                <td align="center"> <a ng-click="callAgent(row.callerid)">{{row.callerid}}</a></td>
+                                <td align="center"> {{row.tickname}}</td>
+                                <td align="center"> {{row.room}}</td>
+                                <td align="center"> {{row.vip}}</td>
+                                <td class="text-center">
+                                    <button ng-show="row.selected!=1" ng-click="onClick(row)" class="btn btn-sm btn-success"  ng-if="row.priority=='Normal'" data-toggle="dropdown" aria-expanded="false">
+                                        <label>
+                                            &nbsp;Normal&nbsp;
+                                        </label><span class="caret"></span>
+                                    </button>
+
+                                    <button ng-show="row.selected!=1" ng-click="onClick(row)"class="btn btn-sm btn-warning"  ng-if="row.priority=='Medium'" data-toggle="dropdown" aria-expanded="false">
+                                        <label >
+                                            &nbsp;Medium&nbsp;
+                                        </label><span class="caret"></span>
+                                    </button>
+
+                                    <button ng-show="row.selected!=1" ng-click="onClick(row)" class="btn btn-sm btn-danger"  ng-if="row.priority=='High'" data-toggle="dropdown" aria-expanded="false">
+                                        <label >
+                                            &nbsp;High&nbsp;
+                                        </label><span class="caret"></span>
+                                    </button>
+
+
+                                    <select ng-hide="row.selected!=1" ng-model='row.new_priority' ng-change="onSelect(row)">
+                                        <option ng-repeat="x in priority_list" ng-hide="x==row.priority" >{{x}}</option>
+                                    </select>
+                                </td>
+                                <td align="center">
+                                    <a>
+                                        <span> &nbsp;{{remainTimeCC(row)| duration:'hh:mm:ss'}}</span>
+                                    </a> </td>
+                                <td class="text-center"> <button ng-click="takeQueueCall(row)" class="btn btn-sm btn-info" data-toggle="dropdown" aria-expanded="false">
+                                    <label>
+                                        &nbsp;Take&nbsp;
+                                    </label>
+                                </button> </td>
+                                <td align="center">
+                                    <a class="text-sm" ng-click="moveUp(row);$event.stopPropagation();"><i class="fa fa-arrow-up text-mute"></i>&nbsp;
+                                    </a>
+                                    <a class="text-sm" ng-click="moveDown(row);$event.stopPropagation();"><i class="fa fa-arrow-down text-mute"></i>&nbsp;
+                                    </a>
+                                </td>
+                            </tr>
+                            </tbody>
+                            <tbody ng-show="isLoadingthird">
+                            <tr>
+                                <td colspan="3" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+                            </tr>
+                            </tbody>
+                            <tfoot ng-hide="isLoadingthird">
+                            <tr ng-show="paginationOptionsThird.totalItems > paginationOptionsThird.pageSize">
+                                <td colspan="3" class="text-center">
+                                    <div st-pagination="" st-items-by-page="paginationOptionsThird.pageSize" st-displayed-pages="7" class="no-margin"></div>
+                                </td>
+                            </tr>
+                            </tfoot>
+                        </table>
+                        </div>
+                    </div>
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <label class="font-bold">
+                                        <i class="fa fa-tasks" aria-hidden="true"></i>&nbsp;&nbsp;Phone Book&nbsp;</label>
+                                </div>
+                                <div class="col-sm-4">
+
+                                    <button class="btn btn-icon-only pull-right btn-circle btn-default" data-toggle="tooltip" title="Export to Excel File" ng-click="onDownloadExcel('excel')" style="padding-bottom: 5px; margin-left: 4px;">&nbsp;
+                                        <i class="fa fa-file-excel-o text-sm" style="margin-right: 5px; color: green;"></i>
+                                    </button>
+                                    <button class="btn btn-icon-only pull-right btn-circle btn-default" data-toggle="tooltip" title="Export to Csv Format file" ng-click="onDownloadExcel('csv')" style="padding-bottom: 5px;">&nbsp;
+                                        <i class="fa fa-file-text text-sm" style="margin-right: 5px;color: green;"></i>
+                                    </button>
+
+                                    <div class="image-upload pull-right" style="margin-right: 10px;" >
+                                        <label for="file-input" title="Upload excel" class="btn btn-icon-only pull-right btn-circle btn-default">
+                                            <i class="fa fa-upload"></i>
+                                        </label>
+
+                                        <input id="file-input" type="file" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" onchange="angular.element(this).scope().onShowUploadModal(event)"/>
+                                    </div>
+                                </div>
+                                <div class="col-sm-1">
+                                    <button class="btn btn-icon-only pull-right btn-circle btn-info" data-toggle="tooltip" title="Add New" ng-click="onShowAddUpdateModal()" style="padding-bottom: 5px;">&nbsp;
+                                        <i class="fa fa-plus text-sm" style="margin-right: 5px;"></i>
+                                    </button>
+                                </div>
+                                <div class="input-group col-sm-3 pull-right" style="padding-right: 15px;">
+                                    <input type="text" ng-model="searchtextBook" ng-keypress="($event.which === 13) ? onSearchBook() : 0" class="form-control input-sm bg-light no-border  padder" placeholder="Search">
+                                    <span class="input-group-btn">
+                                                        <button type="button" class="btn btn-sm bg-light " ng-click="onSearchBook()"><i class="fa fa-search"></i></button>
+                                                    </span>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="panel-body" directive-when-scrolled="onLoadMoreBook()" style="max-height: 400px; overflow-y: auto">
+                            <table st-table="guestlist" st-pipe="getCallPhonebook" class="table ticket table-striped b-t b-light">
+                                <thead class="tblhead-sm">
+                                <tr>
+                                    <th class="text-center">No</th>
+                                    <th>First Name</th>
+                                    <th>Last Name</th>
+                                    <th>Phone Number</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr ng-repeat="row in dataListBook">
+                                    <td class="text-center">{{$index + 1}}</td>
+                                    <td>{{row.first_name}}</td>
+                                    <td>{{row.last_name}}</td>
+                                    <td>
+                                        <button type="button" class="btn btn-default" title="call from this number" ng-click="onCallFromPhoneNumber(row.calledno)">
+                                            {{row.calledno}}
+                                        </button>
+                                    </td>
+                                    <td class="text-center">
+                                        <button class="btn btn-icon btn-xs btn-primary" data-toggle="tooltip" title="Update Row" ng-click="onShowAddUpdateModal(row)" style="padding-bottom: 5px;">&nbsp;
+                                            <i class="fa fa-edit text-sm" style="margin-right: 5px;"></i>&nbsp;
+                                        </button> &nbsp;
+                                        <button class="btn btn-icon btn-xs btn-danger" data-toggle="tooltip" title="Delete Row" ng-click="onRemoveBookRow(row, $index)" style="padding-bottom: 5px;">&nbsp;
+                                            <i class="fa fa-remove text-sm" style="margin-right: 5px;"></i>&nbsp;
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tbody ng-show="isLoadingBook">
+                                <tr>
+                                    <td colspan="5" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+                                </tr>
+                                </tbody>
+                                <tr ng-show="!isLoadingBook && dataListBook.length < 1">
+                                    <td colspan="5" class="text-center">
+                                        There is no data
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <!---------------------------right------------------------------------------------------------------------------------------------------>
+        <div class="col-md-3" style="padding-left: 0px; margin-left:0px">
+            <div class="" style="height:50%; margin-top: 5px">
+                <div class="panel panel-default" style="margin-bottom: 10px">
+                    <div class="panel-heading bg-page bg-gd-dk" style="border-radius: 6px 6px 0px 0px;">
+                        <div class="clearfix">
+                            <a href class="pull-left thumb-xs avatar b-3x m-r">
+                                <img src="{{agent_profile.picture}}" alt="...">
+                            </a>
+                            <div class="clear">
+                                <div class="h3 m-t-xs m-b-xs">
+                                    <label class="hidden-xs hidden-sm" style="color: white"> {{agent_status.wholename}} </label>
+
+                                    <i class="fa fa-circle text-info pull-right text-xs m-t-sm" ng-if="agent_status.status=='Online'"></i>
+                                    <i class="fa fa-circle text-success pull-right text-xs m-t-sm" ng-if="agent_status.status=='Available'"></i>
+                                    <i class="fa fa-circle text-danger pull-right text-xs m-t-sm" ng-if="agent_status.status=='Busy'"></i>
+                                    <i class="fa fa-circle text-danger pull-right text-xs m-t-sm" ng-if="agent_status.status=='Outgoing'"></i>
+                                    <i class="fa fa-circle text-danger pull-right text-xs m-t-sm" ng-if="agent_status.status=='Ringing'"></i>
+                                    <i class="fa fa-circle text-warning pull-right text-xs m-t-sm" ng-if="agent_status.status=='Idle'"></i>
+                                    <i class="fa fa-circle text-warning pull-right text-xs m-t-sm" ng-if="agent_status.status=='On Break'"></i>
+				                    <i class="fa fa-circle text-warning pull-right text-xs m-t-sm" ng-if="agent_status.status=='Away'"></i>
+                                    <i class="fa fa-circle text-default pull-right text-xs m-t-sm" ng-if="agent_status.status=='Log out'"></i>
+                                    <i class="fa fa-circle text-info pull-right text-xs m-t-sm" style="color: #337ab7" ng-if="agent_status.status=='Wrapup'"></i>
+                                </div>
+                                <!--
+				<div class="row-md form-horizontal" style="margin-top: -6px; margin-left: -19px">
+                                    <div class="col-sm-6">
+                                        <label class="label bg-info m-l-xs" ng-if="agent_status.status=='Online'">
+                                            <i class="icon-power"></i>&nbsp;&nbsp;Online
+                                        </label>
+                                        <label class="label bg-success m-l-xs" ng-if="agent_status.status=='Available'">
+                                            <i class="fa fa-check"></i>&nbsp;&nbsp;Available
+                                        </label>
+                                        <label class="label bg-danger m-l-xs" ng-if="agent_status.status=='Busy'">
+                                            <i class="icon-earphones-alt"></i>&nbsp;&nbsp;Busy
+                                        </label>
+                                        <label class="label bg-danger m-l-xs" ng-if="agent_status.status=='Ringing'">
+                                            <i class="icon-call-in"></i>&nbsp;&nbsp;Ringing
+                                        </label>
+                                        <label class="label bg-danger m-l-xs" ng-if="agent_status.status=='Outgoing'">
+                                            <i class="icon-call-out"></i>&nbsp;&nbsp;Outgoing
+                                        </label>
+                                        <label class="label bg-warning m-l-xs" ng-if="agent_status.status=='Idle'">
+                                            <i class="fa fa-asterisk"></i>&nbsp;&nbsp;Idle
+                                        </label>
+                                        <label class="label bg-warning m-l-xs" ng-if="agent_status.status=='On Break'">
+                                            <i class="fa fa-coffee"></i>&nbsp;&nbsp;On Break
+                                        </label>
+					                    <label class="label bg-warning m-l-xs" ng-if="agent_status.status=='Away'">
+                                            <i class="fa fa-coffee"></i>&nbsp;&nbsp;Away
+                                        </label>
+                                        <label class="label bg-default m-l-xs" ng-if="agent_status.status=='Log out'">
+                                            <i class="icon-logout"></i>&nbsp;&nbsp;Log out
+                                        </label>
+                                        <label class="label label-primary m-l-xs" ng-if="agent_status.status=='Wrapup'">
+                                            <i class="fa fa-pencil"></i>&nbsp;&nbsp;Wrapup
+                                        </label>
+                                    </div>
+                                </div>
+				-->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="list-group no-radius alt">
+                        <a class="list-group-item" href>
+                            <span class="badge bg-success">{{elapse_time | duration:'hh:mm:ss'}}</span>
+                            <i class="fa fa-clock-o fa-fw text-muted"></i>
+                            Duration: 
+                        </a>
+                        <a class="list-group-item" href>
+                            <div class="pull-right">
+                                <select class='input-sm' style="margin-top: -5px; " ng-model="agent_status.extension"
+                                    ng-disabled="select_status_view || agent_status.status == 'Log out'" ng-change="onChangeExtension()"
+                                    ng-options="value.extension as value.extension for (key, value) in extensionlist"
+                                    >
+                                </select>                                
+                            </div>
+                            <i class="glyphicon glyphicon-phone-alt fa-fw text-muted"></i>
+                            Extension
+                        </a>
+                        <div class="list-group-item">
+                            <div class="pull-right" style="margin-top: -5px; display:inline-block">
+                                <div class="btn-group" uib-dropdown>
+                                    <button type="button" class="btn btn-success btn-sm" style="{{status_color}}">{{select_status}}</button>
+                                    <button type="button" class="btn btn-success btn-sm" style="{{status_color}}" uib-dropdown-toggle ng-disabled="select_status_view">
+                                        <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu" role="menu">
+                                        <li class="stclick" ng-repeat="status in statuses" ng-click="onChangeCallStatus(status)">
+                                            <a href>{{status}}</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <i class="fa fa-cog fa-fw text-muted"></i>
+                            Change Status
+                        </div>
+                    </div>
+                </div>
+                <div style="position:relative">
+                    
+                    <div class="text-center" ng-show="softphone_show && callcenter_config.softphone_enabled">
+                        <iframe elem-ready="softphoneReady()" allow="microphone; camera" allowfullscreen="true" frameborder="0" width="100%%" height="420" src="/webphone/softphone.html?isdemopage=false" name="softphone" id="softphone" class="frame_conatiner" scrolling="no" __idm_frm__="467"></iframe>                    
+                    </div>
+
+                    <div class="text-center" ng-hide="softphone_show || !callcenter_config.softphone_enabled">
+                        <i class="fa fa-spinner fa-spin"></i>
+                        Loading Softphone 
+                    </div>
+               
+                    <div style="position:absolute;bottom:0;right:0" ng-show="callcenter_config.call_center_widget">
+                        <div>                    
+                            <button class="btn btn-sm btn-bg btn-default" data-toggle="tooltip" data-placement="bottom" title="Feedback Management" 
+                                ng-if="auth_svc.isValidModule('app.complaint.complaint')"
+                                ng-click="refreshTickets()">
+                                <i class="fa fa-comment"></i>
+                            </button>
+                        </div>
+                        <div>                    
+                            <button class="btn btn-sm btn-bg btn-default" data-toggle="tooltip" data-placement="bottom" title="Alarm" 
+                                ng-if="auth_svc.isValidModule('app.guestservice.alarm')"
+                                ng-click="openWakeupPanel()">
+                                <i class="fa fa-bell"></i>
+                            </button>
+                        </div>
+                        <div>                    
+                            <button class="btn btn-sm btn-bg btn-default" data-toggle="tooltip" data-placement="bottom" title="Guest Service" 
+                                ng-if="auth_svc.isValidModule('app.guestservice.ticket')"
+                                ng-click="openGuestServicePanel()">
+                                <i class="fa fa-street-view"></i>
+                            </button>
+                        </div>                
+                        <div>                    
+                            <button class="btn btn-sm btn-bg btn-default" data-toggle="tooltip" data-placement="bottom" title="Guest Service" 
+                                ng-if="auth_svc.isValidModule('app.callaccounting.livedata')"
+                                ng-click="openManualPostingPanel()">
+                                <i class="fa fa-phone-square"></i>
+                            </button>
+                        </div>
+                    </div>  
+                </div>
+
+                <div class="table table-responsive" style="overflow-y: auto;max-height: 500px" ng-style="table_body_style" directive-when-scrolled="onLoadMoreAgentList()" >
+                    <table  class="table ticket table-striped" style="margin-top: 3px">
+                        <thead>
+                            <tr class="tblhead-sm" style="font-size: .7vw">
+                                <th class="text-center" width="200px;">
+                                    <b>Agent</b></th>
+                                <th class="text-center" width="10px;"><b>Extension</b></th>
+                                <th class="text-center" width="10px;"><b>Status</b></th>
+                                <th class="text-center" width="70px;"><b>Duration</b></th>                            
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="height:1vw" ng-repeat="row in agent_list"  >
+                                <td class="text-center">
+                                    <span class="thumb-sm avatar pull-left thumb-xs m-r-xs" >
+                                     <!--   <img src="{{row.picture}}" alt="...">
+                                            <i class="bg-info b-white bottom" ng-if="row.status=='Online'"></i>
+                                            <i class="bg-success b-white bottom" ng-if="row.status=='Available'"></i>
+                                            <i class="bg-danger b-white bottom" ng-if="row.status=='Busy'"></i>
+                                            <i class="bg-danger b-white bottom" ng-if="row.status=='Ringing'"></i>
+                                            <i class="bg-danger b-white bottom" ng-if="row.status=='Outgoing'"></i>
+                                            <i class="bg-warning b-white bottom" ng-if="row.status=='Idle'"></i>
+                                            <i class="bg-warning b-white bottom" ng-if="row.status=='On Break'"></i>
+                                            <i class="bg-default b-white bottom" ng-if="row.status=='Log out'"></i>
+                                            <i class="bg-primary b-white bottom" ng-if="row.status=='Wrapup'"></i>
+                                            <i class="bg-primary b-white bottom" ng-if="row.status=='Away'"></i>
+                                     -->
+                                        <span class="hidden-xs hidden-sm status-view" ng-dblclick ="onChangeCallStatusLogOut(row)" style="cursor: pointer;" >&nbsp;&nbsp;{{row.agent}}</span>
+                                    </span>
+                                </td>
+                                <td class="text-center"><b>{{row.extension}}</b></td>
+                                <td class="text-center">
+                                    <div ng-if="auth_svc.isValidModule('app.access.agent.status')"></div>
+                                    <button ng-show="row.selected!=1" ng-click="onClick(row)" class="btn btn-sm btn-info {{user_id == row.user_id || auth_svc.isValidModule('app.access.agent.status') ? '' : 'disabled'}}"  ng-if="row.status=='Online'" data-toggle="dropdown" aria-expanded="false">
+                                        <label>
+                                            <i class="icon-power"></i>&nbsp;&nbsp;Online&nbsp;
+                                        </label><span class="caret"></span>
+                                    </button>
+
+                                    <button ng-show="row.selected!=1" ng-click="onClick(row)"class="btn btn-sm btn-success {{user_id == row.user_id || auth_svc.isValidModule('app.access.agent.status') ? '' : 'disabled'}}"  ng-if="row.status=='Available'" data-toggle="dropdown" aria-expanded="false">
+                                    <label >
+                                        <i class="fa fa-check"></i>&nbsp;&nbsp;Available&nbsp;
+                                    </label><span class="caret"></span>
+                                    </button>
+
+                                    <button ng-show="row.selected!=1" ng-click="onClick(row)" class="btn btn-sm btn-danger {{user_id == row.user_id || auth_svc.isValidModule('app.access.agent.status') ? '' : 'disabled'}}"  ng-if="row.status=='Busy'" data-toggle="dropdown" aria-expanded="false">
+                                    <label >
+                                        <i class="icon-earphones-alt"></i>&nbsp;&nbsp;Busy&nbsp;
+                                    </label><span class="caret"></span>
+                                    </button>
+
+                                    <button ng-show="row.selected!=1" ng-click="onClick(row)" class="btn btn-sm btn-danger {{user_id == row.user_id || auth_svc.isValidModule('app.access.agent.status') ? '' : 'disabled'}}"  ng-if="row.status=='Ringing'" data-toggle="dropdown" aria-expanded="false">
+                                    <label>
+                                        <i class="icon-call-in"></i>&nbsp;&nbsp;Ringing&nbsp;
+                                    </label><span class="caret"></span>
+                                    </button>
+
+                                    <button ng-show="row.selected!=1" ng-click="onClick(row)" class="btn btn-sm btn-danger {{user_id == row.user_id || auth_svc.isValidModule('app.access.agent.status') ? '' : 'disabled'}}"  ng-if="row.status=='Outgoing'" data-toggle="dropdown" aria-expanded="false">
+                                    <label>
+                                        <i class="icon-call-out"></i>&nbsp;&nbsp;Outgoing&nbsp;
+                                    </label><span class="caret"></span>
+                                    </button>
+
+                                    <button ng-show="row.selected!=1" ng-click="onClick(row)" class="btn btn-sm btn-warning {{user_id == row.user_id || auth_svc.isValidModule('app.access.agent.status') ? '' : 'disabled'}}"  ng-if="row.status=='Idle'" data-toggle="dropdown" aria-expanded="false">
+
+                                    <label >
+                                        <i class="fa fa-clock-o"></i>&nbsp;&nbsp;Idle&nbsp;
+                                    </label><span class="caret"></span>
+                                    </button>
+                                    <button ng-show="row.selected!=1" ng-click="onClick(row)" class="btn btn-sm btn-warning {{user_id == row.user_id || auth_svc.isValidModule('app.access.agent.status') ? '' : 'disabled'}}"  ng-if="row.status=='On Break'" data-toggle="dropdown" aria-expanded="false">
+
+                                    <label >
+                                        <i class="fa fa-coffee "></i>&nbsp;&nbsp;On Break&nbsp;
+                                    </label><span class="caret"></span>
+                                    </button>
+                                    <button ng-show="row.selected!=1" ng-click="onClick(row)" class="btn btn-sm btn-warning {{user_id == row.user_id || auth_svc.isValidModule('app.access.agent.status') ? '' : 'disabled'}}"  ng-if="row.status=='Away'" data-toggle="dropdown" aria-expanded="false">
+
+                                    <label >
+                                        <i class="fa fa-coffee "></i>&nbsp;&nbsp;Away&nbsp;
+                                    </label><span class="caret"></span>
+                                    </button>
+
+                                    <button ng-show="row.selected!=1" ng-click="onClick(row)" class="btn btn-sm btn-default {{user_id == row.user_id || auth_svc.isValidModule('app.access.agent.status') ? '' : 'disabled'}}"  ng-if="row.status=='Log out'" data-toggle="dropdown" aria-expanded="false">
+                                        <label >
+                                            <i class="fa fa-sign-out "></i>&nbsp;&nbsp;Log Out&nbsp;
+                                        </label><span class="caret"></span>
+                                    </button>
+
+                                    <button ng-show="row.selected!=1" ng-click="onClick(row)" class="btn btn-sm btn-primary {{user_id == row.user_id || auth_svc.isValidModule('app.access.agent.status') ? '' : 'disabled'}}"  ng-if="row.status=='Wrapup'" data-toggle="dropdown" aria-expanded="false">
+
+                                    <label >
+                                        <i class="fa fa-pencil "></i>&nbsp;&nbsp;Wrap Up&nbsp;
+                                    </label>
+
+                                    <span class="caret"></span>
+                                    </button>
+                                    <select class=" {{auth_svc.isValidModule('app.access.agent.status') ? '' : 'disabled'}}" ng-hide="row.selected!=1" ng-model='row.new_status' ng-change="onSelect(row)">
+                                            <option ng-repeat="x in status_list" ng-hide="x==row.status" >{{x}}</option>
+                                            </select>
+                                </td>
+                                <td class="text-center" ng-style="row.duration_style"><b>{{getDuration(row)}}</b></td>                            
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div ng-hide="true">
+                    <div class="col-md-12 table table-responsive" style="height: 400px; width: 100%">
+                        <div style="font-size: 15px; ">Caller History</div>
+                        <table st-table="guestlist" st-pipe="getDataListSecond" class="table ticket table-striped b-t b-light">
+                            <thead class="tblhead-sm">
+                                <tr>
+                                    <th st-sort="name">Ticket#</th>
+                                    <th st-sort="frequency">Date</th>
+                                    <th>Reason</th>
+                                    <th>Success</th>                                    
+                                </tr>
+                            </thead>
+                            <tbody ng-hide="isLoadingSecond">
+                                <tr ng-repeat="row in datalistSecond">
+                                    <td>{{Ticketnumber(row.ticketid)}}</td>
+                                    <td>{{row.cudate}}</td>
+                                    <td>Reason</td>
+                                    <td>{{row.success == 1 ? 'Y' : 'N'}}</td>                                    
+                                </tr>
+                            </tbody>
+                            <tbody ng-show="isLoadingSecond">
+                                <tr>
+                                    <td colspan="5" class="text-center">
+                                        <i class="fa fa-spin fa-refresh"></i>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot ng-hide="isLoadingSecond">
+                                <tr ng-show="paginationOptionsSecond.totalItems > paginationOptionsSecond.pageSize">
+                                    <td colspan="5" class="text-center">
+                                        <div st-pagination="" st-items-by-page="paginationOptionsSecond.pageSize" st-displayed-pages="7" class="no-margin"></div>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+                
+             <!--   </div> -->
+            </div>
+
+                  
+        </div>
+    </div>
+</div>

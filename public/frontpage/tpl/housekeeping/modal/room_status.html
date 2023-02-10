@@ -1,0 +1,183 @@
+<div class="modal-content">
+    <style>
+        .room-status .form-group {
+            margin-bottom: 0px; 
+        }
+        .right-button-container button {
+            margin-bottom: 5px;
+        }
+    </style>
+
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">
+            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        </button>
+        <h3 class="modal-title" style="color:#2691d9" id="Heading">Room {{room_status.room}}</h3>
+    </div>    
+    <div class="modal-body">        
+        <form class="form-horizontal room-status">
+            <div class="form-group" >
+                <label class="col-sm-3 text-right control-label text-muted" >Room Type:</label>
+                <div class="col-sm-9">
+                    <p class="form-control-static">{{room_status.type}}</p>
+                </div>
+            </div>
+            <div class="form-group" >
+                <label class="col-sm-3 text-right control-label text-muted" >Rush Clean:</label>
+                <div class="col-sm-3">                        
+                    <label class="i-switch m-t-xs m-r" >
+                        <input type="checkbox" ng-model="room_status.new_rush_flag" checked>
+                        <i></i> 
+                    </label>
+                </div>
+
+                <label class="col-sm-3 text-right control-label text-muted" >Remark:</label>
+                <div class="col-sm-3">                                            
+                    <span class="badge m-t-sm"  ng-click = "addPreference()" 
+                        ng-style="{'background-color': room_status.remark ? 'rgb(13, 175, 67)' : ''}" title="Add Preference"><i class="fa fa-edit"></i>
+                    </span>
+                </div>
+            </div>
+            <div class="form-group" >
+                <label class="col-sm-3 text-right control-label text-muted" style="margin-top: 10px;">Cleaning State:</label>
+                <div class="col-sm-9">                        
+                    <select class = "form-control" style="margin-top: 10px;" ng-options = "value for value in cleaning_state_list" ng-change="onChangeCleanning()"  
+                        ng-model = "room_status.new_cleaning_state">
+                    </select>
+                </div>
+            </div>
+            <div class="form-group" >
+                <label class="col-sm-3 text-right control-label text-muted" style="margin-top: 10px;">Assigned to:</label>
+                <div class="col-sm-9">                        
+                    <input class="form-control input-sm" style="margin-top: 10px;" type="text" ng-model="room_status.assigne_to"                                
+                            uib-typeahead="user.wholename for user in staff_list | filter:$viewValue | limitTo:15"
+                            typeahead-min-length="0"
+                            typeahead-editable="false"
+                            typeahead-on-select="onAssignerSelect(row, $item, $model, $label)"
+                            required />                  
+                </div>
+            </div>
+
+            <div class="form-group" >
+                <label class="col-sm-3 text-right control-label text-muted" >Credit:</label>
+                <div class="col-sm-9">
+                    <p class="form-control-static">{{room_status.credits}}</p>
+                </div>
+            </div>
+
+            <div class="form-group" >
+                <label class="col-sm-3 text-right control-label text-muted" >Duration:</label>
+                <div class="col-sm-9">
+                    <p class="form-control-static">{{room_status.duration}}</p>
+                </div>
+            </div>
+
+            <div class="form-group" >
+                <label class="col-sm-3 text-right control-label text-muted" >Pref:</label>
+                <div class="col-sm-9">
+                    <p class="form-control-static">{{room_status.pref}}</p>
+                </div>
+            </div>
+
+            <div class="form-group" >
+                <label class="col-sm-3 text-right control-label text-muted" >Remark:</label>
+                <div class="col-sm-9">
+                    <p class="form-control-static">{{room_status.remark}}</p>
+                </div>
+            </div>  
+            
+            <div class="form-group" >
+                <label class="col-sm-3 text-right control-label text-muted" >Discrepancy:</label>
+                
+                <div class="col-sm-4">
+                    <div class="col-sm-3">
+                        <label>A</label>
+                    </div>
+                    <div class="col-sm-9">
+                        <input class="form-control input-sm" type="number" ng-model="room_status.new_adult">
+                    </div>
+                 </div>
+                <div class="col-sm-4">
+                    <div class="col-sm-3">
+                        <label>K</label>
+                    </div>
+                    <div class="col-sm-9">
+                        <input class="form-control input-sm" type="number" ng-model="room_status.new_chld">
+                    </div>
+                 </div>
+            </div>  
+            
+            <div class="form-group" >
+                <label class="col-sm-3 text-right control-label text-muted" style="margin-top: 10px;">Room Status:</label>
+                <div class="col-sm-9">                      
+                    <select class = "form-control" style="margin-top: 10px;" ng-options = "value for value in room_status_list" ng-change="onChangeStatus()"  
+                        ng-model = "room_status.new_room_status">
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group" >
+                <label class="col-sm-3 text-right control-label text-muted" style="margin-top: 10px;" >Service State:</label>
+                <div class="col-sm-9">                        
+                    <select class = "form-control" style="margin-top: 10px;" ng-options = "value for value in service_state_list" ng-change="onChangeState()"  
+                        ng-model = "room_status.new_service_state">
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group" >
+                <label class="col-sm-3 text-right control-label text-muted" style="margin-top: 10px;" >Schedule:</label>
+                <div class="col-sm-9">                        
+                    <select class = "form-control" style="margin-top: 10px;" ng-options = "value.id as value.name for (key, value) in schedule_list" ng-change="onChangeState()"  
+                        ng-model = "room_status.new_schedule">
+                    </select>
+                </div>
+            </div>
+
+
+            <div class="form-group" >
+                <label class="col-sm-3 text-right control-label text-muted" style="margin-top: 30px;" >Comment:</label>
+                <div class="col-sm-9">                        
+                    <textarea rows="4" cols="30"style="margin-top: 10px;" class="form-control" ng-model="room_status.comment" />
+                </div>
+            </div>
+
+      
+        </form>          
+
+        <div class="table table-responsive" style="margin-top:10px; height:200px;overflow-y:auto">
+            <table  st-table="datalist"  class="table ticket">
+                <thead class="tblhead-sm" style="background: #88888a">
+                    <tr>
+                        <th align="center"><b>No</b></th>
+                        <th><b>Type</b></th>
+                        <th><b>Content</b></th>
+                        <th><b>Date</b></th>                                                    
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="" ng-repeat="row in room_history">
+                        <td align="center">{{$index + 1}}</td>
+                        <td>{{row.type}}</td>
+                        <td>{{row.content}}</td>
+                        <td>{{row.created_at | mydatetime}}</td>                        
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal-footer ">
+        <button type="button" class="btn btn-success btn-sm" ng-click="onClickUpdate()">                    
+            <span class="fa fa-check"></span>
+            <b>Update</b>
+        </button>
+                
+        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal" ng-click="cancel()">
+            <span class="glyphicon glyphicon-remove"></span>
+            <b> Cancel</b>
+        </button>
+    </div>
+
+</div>
+

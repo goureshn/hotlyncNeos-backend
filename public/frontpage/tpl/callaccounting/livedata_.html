@@ -1,0 +1,18 @@
+<div ng-controller="LiveCallDataController">
+    <uib-tabset class="tab-container">
+      <uib-tab>
+        <uib-tab-heading>
+          <b style="color:#01579B">Guest Calls</b>
+        </uib-tab-heading>
+        <div style="{{tab_full_height}}" ng-include="'tpl/callaccounting/guest_call.html'">
+        </div>
+      </uib-tab>
+      <uib-tab>
+        <uib-tab-heading>
+          <b style="color:#01579B">Admin Calls</b>
+        </uib-tab-heading>
+        <div style="{{tab_full_height}}" ng-include="'tpl/callaccounting/admin_call.html'">
+        </div>
+      </uib-tab>
+    </uib-tabset>
+</div>

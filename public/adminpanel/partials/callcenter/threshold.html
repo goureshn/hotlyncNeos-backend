@@ -1,0 +1,128 @@
+<div class=" panel panel-default" style="border-color: #dee5e7">
+    <style>
+        .edit-time {
+            padding-right: 0px;
+        }
+
+        .edit-label {
+            margin-top: 4px;
+            padding-left: 4px;
+        }
+    </style>
+    <div class="panel-heading wrapper">
+        <div  style="float:right; margin-top: -5px; background: #efefef;padding:5px 10px 5px 10px;color: #868585;font-size: 16px; " >
+            <strong>{{message}}</strong>
+        </div>
+        <i class="fa fa-cog"></i>
+        <span class="font-bold"> &nbsp;&nbsp;Call Center Threshold</span>
+    </div>
+    <div class="" style="background-color: #eeeeee">        
+        <div class="col-sm-6">
+            <div>
+                <h5><strong> Call Center Threshold</strong></h5>
+            </div>
+            <div style="margin-left: 30px">
+                <div class="form-horizontal" >
+                    <link href="/lib/angular/angular-toggle-switch-bootstrap-3.css" media="all" rel="stylesheet" type="text/css">
+					
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Call Center Threshold :</label>
+						<div class="col-sm-3">
+							<div toggle-switch class="switch-primary" ng-model="call_center.call_enter_threshold_flag"
+                                ng-change="saveCallCenter('call_enter_threshold_flag')"
+                            >
+                            </div>						
+						</div>						
+					</div>
+                    <div class="form-group">
+                        <label class="col-sm-3">Statistics Name</label>
+                        <label class="col-sm-3">Yellow threshold</label>
+                        <label class="col-sm-3">Red threshold</label>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3">Current Calls In Queue:</label>
+                        <div class="col-sm-3">
+                            <input type="text" class="form-control input-sm" ng-model="call_center.call_center_queue_yellow"
+                                   ng-keypress="($event.which === 13) ? saveCallCenter('call_center_queue_yellow') : 0"/>
+                        </div>
+                        <div class="col-sm-3">
+                            <input type="text" class="form-control input-sm" ng-model="call_center.call_center_queue_red"
+                                   ng-keypress="($event.which === 13) ? saveCallCenter('call_center_queue_red') : 0"/>                            
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3">Current Longest Waiting Call:</label>
+                        <div class="col-sm-2 edit-time">
+                            <input type="text" class="form-control input-sm" ng-model="call_center.call_center_longest_wait_yellow"
+                                   ng-keypress="($event.which === 13) ? saveCallCenter('call_center_longest_wait_yellow') : 0"/>                            
+                        </div>
+                        <label class="col-sm-1 edit-label">(mm:ss)</label>
+                        <div class="col-sm-2 edit-time">
+                            <input type="text" class="form-control input-sm" ng-model="call_center.call_center_longest_wait_red"
+                                   ng-keypress="($event.which === 13) ? saveCallCenter('call_center_longest_wait_red') : 0"/>                            
+                        </div>
+                        <label class="col-sm-1 edit-label">(mm:ss)</label>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3">Estimated Wait Time:</label>
+                        <div class="col-sm-2 edit-time">
+                            <input type="text" class="form-control input-sm" ng-model="call_center.call_center_estimated_time_yellow"
+                                   ng-keypress="($event.which === 13) ? saveCallCenter('call_center_estimated_time_yellow') : 0"/>                            
+                        </div>
+                        <label class="col-sm-1 edit-label">(mm:ss)</label>
+                        <div class="col-sm-2 edit-time">
+                            <input type="text" class="form-control input-sm" ng-model="call_center.call_center_estimated_time_red"
+                                   ng-keypress="($event.which === 13) ? saveCallCenter('call_center_estimated_time_red') : 0"/>                            
+                        </div>
+                        <label class="col-sm-1 edit-label">(mm:ss)</label>
+                        <div class="col-sm-2">
+                            <select class='form-control input-sm' ng-model="call_center.call_center_estimated_time_unit"                            
+                                    ng-options="value for value in time_unit_list" ng-change="saveCallCenter('call_center_estimated_time_unit')">
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-3">Average Handling Time:</label>
+                        <div class="col-sm-2 edit-time">
+                            <input type="text" class="form-control input-sm" ng-model="call_center.call_center_average_time_yellow"
+                                   ng-keypress="($event.which === 13) ? saveCallCenter('call_center_average_time_yellow') : 0"/>                            
+                        </div>
+                        <label class="col-sm-1 edit-label">(mm:ss)</label>
+                        <div class="col-sm-2 edit-time">
+                            <input type="text" class="form-control input-sm" ng-model="call_center.call_center_average_time_red"
+                                   ng-keypress="($event.which === 13) ? saveCallCenter('call_center_average_time_red') : 0"/>                            
+                        </div>
+                        <label class="col-sm-1 edit-label">(mm:ss)</label>
+                        <div class="col-sm-2">
+                            <select class='form-control input-sm' ng-model="call_center.call_center_average_time_unit"                            
+                                    ng-options="value for value in time_unit_list" ng-change="saveCallCenter('call_center_average_time_unit')">
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-3">Average Speed Of Answer:</label>
+                        <div class="col-sm-2 edit-time">
+                            <input type="text" class="form-control input-sm" ng-model="call_center.call_center_average_speed_yellow"
+                                   ng-keypress="($event.which === 13) ? saveCallCenter('call_center_average_speed_yellow') : 0"/>
+                        </div>
+                        <label class="col-sm-1 edit-label">(mm:ss)</label>
+                        <div class="col-sm-2 edit-time">
+                            <input type="text" class="form-control input-sm" ng-model="call_center.call_center_average_speed_red"
+                                   ng-keypress="($event.which === 13) ? saveCallCenter('call_center_average_speed_red') : 0"/>                            
+                        </div>
+                        <label class="col-sm-1 edit-label">(mm:ss)</label>
+                        <div class="col-sm-2">
+                            <select class='form-control input-sm' ng-model="call_center.call_center_average_speed_unit"                            
+                                    ng-options="value for value in time_unit_list" ng-change="saveCallCenter('call_center_average_speed_unit')">
+                            </select>
+                        </div>
+                    </div>
+
+                </div>    
+            </div>
+        </div>
+    </div>
+</div>
+

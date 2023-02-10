@@ -1,0 +1,168 @@
+<div ng-controller="ManageChecklistController" fill-padding>
+    <div class="wrapper-md1 bg-light b-b">
+        <h1 class="m-n font-thin h3">Manage Checklist</h1>
+    </div>
+
+    <script type="text/ng-template" id="filter_template.html">        
+        <div style="width: 400px">
+            <form class="form-horizontal form-validation" ng-submit="createRepairRequest()">        
+                <div class="form-group">
+                    <!-- Job Role Filter -->
+                    <div class="col-sm-12">
+                        <label class="control-label text-xs text-muted">Type : </label>
+                        <div class="scrollable-dropdown-menu">
+                            <tags-input ng-model="filter.type_tags"
+                                    style="margin-top: -5px"
+                                    placeholder="Add Type"
+                                    on-tag-added="getDataList()" on-tag-removed="getDataList()"
+                                    replace-spaces-with-dashes="false"  >
+                                    <auto-complete source="typeTagFilter($query)"
+                                                    min-length="0"
+                                                    load-on-focus="true"
+                                                    load-on-empty="true"
+                                                    debounce-delay="0"
+                                                    max-results="10"
+                                                    template="staff-template">
+                                    </auto-complete>
+                            </tags-input>
+                        </div>
+                    </div>          
+
+                    <!-- Status Filter -->
+                    <div class="col-sm-12">
+                        <label class="control-label text-xs text-muted">Status : </label>
+                        <div class="scrollable-dropdown-menu">
+                            <tags-input ng-model="filter.status_tags" display-property="status_name" key-property="id"
+                                style="margin-top: -5px"
+                                placeholder="Add Status"
+                                on-tag-added="getDataList()" on-tag-removed="getDataList()"
+                                replace-spaces-with-dashes="false"  >
+                                <auto-complete source="statusTagFilter($query)"
+                                                min-length="0"
+                                                load-on-focus="true"
+                                                load-on-empty="true"
+                                                debounce-delay="0"
+                                                max-results="10"
+                                                >
+                                </auto-complete>
+                            </tags-input>
+                        </div>
+                    </div>     
+                </div>
+            </form>       
+        </div>    
+    </script>
+
+    <style>
+        table tr th, td {
+            text-align: center;
+        }
+
+        .pagination {
+            margin-bottom:0px;
+        }
+
+        .search-filter .checkbox {
+            margin: 0px;
+        }
+
+        .popover-container .popover-content {
+            padding-left: 6px;
+            padding-right: 6px;
+        }
+
+        .popover-container .popover {
+            max-width: 650px;
+        }
+    </style>    
+
+    <div class="wrapper-md1 col-centered" style="width: 100%;">
+        <!---search condition---->
+        <div>
+            <div class="row wrapper" style="margin-right:0px">          
+                <div class="col-sm-10 search-filter">              
+                    <div class="btn-toolbar pull-left">
+                        <div class="btn-group  popover-container" style="maring-left:0px">
+                            <button class="btn btn-sm btn-icon btn-default" data-toggle="tooltip" title="Refresh" data-placement="bottom" ng-click="getDataList()">
+                                <i class="fa fa-refresh"></i>
+                            </button>
+                            <button id="dateranger" class="btn btn-sm btn-icon btn-default" data-toggle="tooltip" title="Date Range" data-placement="bottom" hidden
+                                    ui-jq="daterangepicker" ui-options="dateRangeOption">
+                                <i class="fa fa-calendar"></i>
+                            </button>
+                            <button class="btn btn-sm btn-icon btn-default" data-toggle="tooltip" title="Filter" data-placement="bottom" hidden
+                                uib-popover-template="'filter_template.html'" popover-placement="bottom-left">
+                                <i class="fa fa-filter" ng-style="{'color': filter_apply ? '#23b7e5' : '#58666e'}"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="input-group pull-left" style="width: 300px; margin-left: 2px;padding-left:1px;">
+                        <input type="text" ng-model="searchtext" my-enter="onSearch()" class="form-control input-sm bg-light no-border rounded padder" placeholder="Search">
+                        <span class="input-group-btn">
+                            <button type="submit" class="btn btn-sm bg-light rounded"><i class="fa fa-search"></i></button>
+                        </span>
+                    </div>
+                </div>   
+                <div class="col-sm-2" style="padding-right: 0px">    
+                    <button type="button" class="btn btn-sm btn-dark text-uc pull-right" ng-click="onShowEditDialog()"><strong>
+                        <span class="text-success">&nbsp;&nbsp;&nbsp;Add Checklist&nbsp;&nbsp;&nbsp;</span></strong>
+                    </button>                                            
+                </div>    
+            </div>
+        </div>
+        <!---view list -->
+        <div class="table table-responsive" fill-height additional-padding="120">
+            <table  st-table="datalist"  st-pipe="getDataList" class="table ticket">
+                <thead class="tblhead-sm" style="background: #88888a">
+                    <tr>
+                        <th><b>Name</b></th>
+                        <th><b>Assigner</b></th>
+                        <th><b>Frequency</b></th>                            
+                        <th><b>Start Date</b></th>
+                        <th><b>Next Date</b></th>     
+                        <th><b>Reporter</b></th>
+                        <th><b>Location Mode</b></th>
+                        <th><b>Location</b></th>
+                        <th width="140px"><b>Action</b></th>
+                    </tr>
+                </thead>
+                <tbody ng-hide="isLoading">
+                    <tr class="" ng-repeat="row in datalist">
+                        <td>{{row.name}}</td>
+                        <td>{{row.assigner}}</td>
+                        <td>{{row.frequency}} - {{row.freq_unit}}</td>
+                        <td>{{row.start_date}}</td>
+                        <td>{{row.next_date}}</td>
+                        <td>{{row.report_list}}</td>
+                        <td>{{row.location_mode}}</td>
+                        <td>{{row.location_list}}</td>
+                        <td>
+                            <a class="btn default btn-xs green" ng-click="onShowEditDialog(row)">
+                                <i class="fa fa-pencil"></i></a>
+                            <a class="btn default btn-xs grey-300" ng-click="onActive(row)">
+                                <i class="fa" ng-class="{'fa-toggle-off': row.disabled == 0, 'fa-toggle-on': row.disabled == 1}"></i></a>
+                            <a class="btn default btn-xs red" ng-click="delete(row)">
+                                <i class="fa fa-times"></i></a>
+                            <a class="btn default btn-xs green" ng-click="editCheck(row)">
+                                <i class="fa fa-check"></i></a>    
+                        </td>
+                    </tr>
+                </tbody>
+                <tbody ng-show="isLoading">
+                <tr>
+                    <td colspan="9" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+                </tr>
+                </tbody>
+                <tfoot ng-hide="isLoading">
+                    <tr ng-show="paginationOptions.totalItems > paginationOptions.pageSize">
+                        <td colspan="13" class="text-center">
+                            <div st-pagination="" st-items-by-page="paginationOptions.pageSize" st-displayed-pages="7" class="no-margin"></div>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+
+        </div>
+          
+    </div>
+</div>    

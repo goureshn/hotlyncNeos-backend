@@ -1,0 +1,17 @@
+<div class="aside" style="height: 100%;" tabindex="-1">
+	<md-content>
+		<md-tabs md-dynamic-height md-border-bottom>
+			<md-tab label="Create New" md-on-select="getAlarmUpdate(item.id)" index="101" >
+				<md-content fill-height additional-padding="100" ng-include="'tpl/guestservice/wakeup/wakeup_create.html'">
+					<b>Create New</b> 
+				</md-content>
+			</md-tab>
+			<md-tab label="View All WUC" md-on-select="getWakeupList()" index="100" >
+				<md-content fill-height additional-padding="100" ng-include="'tpl/calls/modal/wakeup.list.html'">	
+					<b>View All WUC</b>				
+				</md-content>					
+			</md-tab>  		
+		</md-tabs>
+	</md-content>
+
+</div>

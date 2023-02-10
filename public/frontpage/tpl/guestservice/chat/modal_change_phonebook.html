@@ -1,0 +1,53 @@
+<style>
+    button {
+        pointer: cursor;
+    }
+
+    .btn.disabled {
+        pointer-events: none !important;
+    }
+
+    .active_users_multiselect,.active_users_multiselect .dropdown-multiselect, .active_users_multiselect .dropdown-multiselect > div,
+    .active_users_multiselect .dropdown-multiselect > div button, .active_users_multiselect .dropdown-multiselect ul
+    {
+        width: 100%;
+    }
+
+</style>
+
+<form class="form-horizontal form-validation" ng-submit="onSave()">
+    <div class="modal-content">
+        <div class="modal-body" style="padding-top: 30px; padding-bottom: 30px;">
+            <h3 style="text-align: center">{{title}}</h3>
+            <br/>
+            <div class="form-group" style="padding: 0 0 20px 0; margin: 0;">
+                <div class="col-sm-2"></div>
+                <div class="col-sm-8">
+                    <label>Phone number</label>
+                    <input class="form-control" disabled ng-model="mobile_number">
+                </div>
+            </div>
+            <div class="form-group" style="padding: 0 0 20px 0; margin: 0;">
+                <div class="col-sm-2"></div>
+                <div class="col-sm-8">
+                    <label>Name</label>
+                    <input class="form-control" ng-model="phonebook_name" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer ">
+            <div class="form-group" style="padding-left: 0; margin: 0;text-align: center">
+                <button type="submit" class="btn btn-info btn-sm {{isLoading ? 'disabled' : ''}}" style="width: 80px">
+                    {{isLoading == false ? 'Save' : 'loading'}}
+                </button>
+                <button type="button" class="btn btn-danger btn-sm {{isLoading ? 'disabled' : ''}}" style="width: 80px" ng-click="onCancel()">
+                    Cancel
+                </button>
+                <button type="button" ng-if="phonebook_id != 0" class="btn btn-default btn-sm {{isLoading ? 'disabled' : ''}}" style="width: 80px; margin-left: 20px" ng-click="onDelete()">
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</form>

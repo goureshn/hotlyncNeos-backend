@@ -1,0 +1,700 @@
+<div class="hbox" ng-controller="WorkorderController">
+    <style>
+        .tab-container .tab-content {
+            padding: 0px;
+        }
+
+        .nopadding {
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        .splitdiv {
+            border-right: 1px solid #d7d6d4;
+            border-bottom: 1px solid #d7d6d4;
+        }
+
+        .work-order-count {
+            margin-top:4px;
+            margin-right: 6px;
+            font-size: 14px;
+        }
+
+        .bottom-emtpy-space {
+            height: 20px;
+            border-style: dashed;
+            border-width: thin;
+        }
+
+        ul[dnd-list] li.selected {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+
+        ul[dnd-list] li {
+            cursor: pointer;
+        }
+
+        .grid-selected{
+            border-style: dashed;
+        }
+
+        .select2 > .select2-choice.ui-select-match {
+            /* Because of the inclusion of Bootstrap */
+            height: 29px;
+        }
+
+        .popover-container .popover {
+            max-width: 650px;
+        }
+
+        .b-pending {
+            border-color: #4d4c87;
+        }
+
+        .b-in-progress {
+            border-color: #a06c96;
+        }
+
+        .b-on-hold {
+            border-color: #d88e57;
+        }
+
+        .b-completed {
+            border-color: #5e9267;
+        }
+    </style>
+
+    <script type="text/ng-template" id="myPopoverTemplate.html">
+        <div class="text-ellipsis text-sm clear small" ng-repeat="item in row.assigne_list">
+            {{item.assignee_name}}
+        </div>
+    </script>
+
+    <script type="text/ng-template" id="staff-template">
+        <div class="autocomplete-template">
+            <div class="right-panel">
+                <span ng-bind-html="$highlight($getDisplayText())"></span><br>
+                <span style="font-size: 10px">{{data.job_role_name}} </span>
+            </div>
+        </div>
+    </script>
+
+    <script type="text/ng-template" id="location-template">
+        <div class="autocomplete-template">
+            <div class="right-panel">
+                <span ng-bind-html="$highlight($getDisplayText())"></span><br>
+                <span style="font-size: 10px">{{data.type}} </span>
+            </div>
+        </div>
+    </script>
+
+    <script type="text/ng-template" id="filter_template.html">
+        <div style="width: 400px">
+            <form class="form-horizontal form-validation" ng-submit="createRepairRequest()">
+                <div class="form-group">
+                    <!-- Assignee Filter -->
+                    <div class="col-sm-12">
+                        <label class="control-label text-xs text-muted">Assignee : </label>
+                        <div class="scrollable-dropdown-menu">
+                             <tags-input ng-model="staff_tags" display-property="wholename" key-property="id"
+                                style="margin-top: -5px"
+                                placeholder="Add Assignee"
+                                on-tag-added="pageChanged()" on-tag-removed="pageChanged()"
+                                replace-spaces-with-dashes="false"  >
+                                <auto-complete source="staffTagFilter($query)"
+                                                min-length="0"
+                                                load-on-focus="true"
+                                                load-on-empty="true"
+                                                debounce-delay="0"
+                                                max-results="10"
+                                                template="staff-template">
+                                </auto-complete>
+                            </tags-input>
+                        </div>
+                    </div>
+
+                    <!-- Location Filter -->
+                    <div class="col-sm-12">
+                        <label class="control-label text-xs text-muted">Location : </label>
+                        <div class="scrollable-dropdown-menu">
+                            <tags-input ng-model="location_tags" display-property="name" key-property="id"
+                                style="margin-top: -5px"
+                                placeholder="Add Location"
+                                on-tag-added="pageChanged()" on-tag-removed="pageChanged()"
+                                replace-spaces-with-dashes="false"  >
+                                <auto-complete source="locationTagFilter($query)"
+                                                min-length="0"
+                                                load-on-focus="true"
+                                                load-on-empty="true"
+                                                debounce-delay="0"
+                                                max-results="10"
+                                                template="location-template">
+                                </auto-complete>
+                            </tags-input>
+                        </div>
+                    </div>
+
+                    <!-- Equipment Group Filter -->
+                    <div class="col-sm-12">
+                        <label class="control-label text-xs text-muted">Asset Group : </label>
+                        <div class="scrollable-dropdown-menu">
+                            <tags-input ng-model="equip_tags" display-property="name" key-property="id"
+                                style="margin-top: -5px"
+                                placeholder="Add Asset/Group"
+                                on-tag-added="pageChanged()" on-tag-removed="pageChanged()"
+                                replace-spaces-with-dashes="false"  >
+                                <auto-complete source="equipTagFilter($query)"
+                                                min-length="0"
+                                                load-on-focus="true"
+                                                load-on-empty="true"
+                                                debounce-delay="0"
+                                                max-results="10"
+                                                template="location-template">
+                                </auto-complete>
+                            </tags-input>
+                        </div>
+                    </div>
+
+                    <!-- Priority Filter -->
+                    <div class="col-sm-12">
+                        <label class="control-label text-xs text-muted">Priority : </label>
+                        <div class="scrollable-dropdown-menu">
+                            <ui-select ng-model="priority_selected" theme="select2" style="min-width: 100%;" title="Choose a Priority"
+                                on-select="onSelectPriority($item, $model)"
+                                >
+                                <ui-select-match placeholder="Priority">{{$select.selected}}</ui-select-match>
+                                <ui-select-choices repeat="row in priority_list">
+                                    <div ng-bind-html="row | highlight: $select.search"></div>
+                                </ui-select-choices>
+                            </ui-select>
+                        </div>
+                    </div>
+
+                    <!-- Type Filter -->
+                    <div class="col-sm-12">
+                        <label class="control-label text-xs text-muted">Type : </label>
+                        <div class="scrollable-dropdown-menu">
+                            <ui-select ng-model="type_selected" theme="select2" style="min-width: 100%;" title="Choose a Type"
+                                on-select="onSelectType($item, $model)"
+                                >
+                                <ui-select-match placeholder="Type">{{$select.selected.name}}</ui-select-match>
+                                <ui-select-choices repeat="row in type_list  | filter:$select.search | limitTo:10">
+                                    <div ng-bind-html="row.name | highlight: $select.search"></div>
+                                </ui-select-choices>
+                            </ui-select>
+                        </div>
+                    </div>
+
+                     <!-- WR ID Filter -->
+                     <div class="col-sm-12">
+                        <label class="control-label text-xs text-muted">WR ID : </label>
+                        <div class="scrollable-dropdown-menu">
+                             <tags-input ng-model="wrid_tags" display-property="ref_id" key-property="ref_id"
+                                style="margin-top: -5px"
+                                placeholder="Add WR ID"
+                                on-tag-added="pageChanged()" on-tag-removed="pageChanged()"
+                                replace-spaces-with-dashes="false"  >
+                                <auto-complete source="wrIDTagFilter($query)"
+                                                min-length="0"
+                                                load-on-focus="true"
+                                                load-on-empty="true"
+                                                debounce-delay="0"
+                                                max-results="10"
+                                                >
+                                </auto-complete>
+                            </tags-input>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </script>
+
+
+    <div>
+        <div class="hbox" style="height:0px;">
+            <div class="col b-r" style="width:80vw;">
+                <div class="wrapper bg-light lter b-b">
+                    <div class="btn-toolbar" style="padding-left: 2px">
+                        <div class="btn-group">
+                            <h3 class="m-n font-thin" style="color: #5fbae8;">Work Order &nbsp;&nbsp;</h3>
+                        </div>
+                        <div class="btn-group popover-container">
+                            <button id="dateranger" class="btn btn-sm btn-icon btn-default" data-toggle="tooltip" title="Filter" data-placement="bottom"
+                                data-title="Refresh" ui-jq="daterangepicker" ui-options="dateRangeOption" class="form-control pull-right input-sm">
+                                <i class="glyphicon glyphicon-calendar"></i>
+                            </button>
+                            <button class="btn btn-sm btn-icon btn-default" data-toggle="tooltip" title="Filter" data-placement="bottom"
+                                uib-popover-template="'filter_template.html'" popover-placement="bottom-left">
+                                <i class="fa fa-filter" ng-style="{'color': filter_apply ? '#23b7e5' : '#58666e'}"></i>
+                            </button>
+                        </div>
+                        <button class="btn btn-sm btn-bg btn-default" data-toggle="tooltip" data-placement="bottom" title="View Mode" ng-click="onClickViewMode()">
+                            <i ng-if="listmode" class="fa fa-list"></i><i ng-if="!listmode" class="icon-grid"></i>
+                        </button>
+                        <div class="input-group col-md-2 pull-left">
+                            <input type="text" ng-model="searchtext" ng-keyup="pageChanged()" class="form-control input-sm bg-light no-border rounded padder"
+                                placeholder="Search">
+                            <span class="input-group-btn">
+                                <button type="submit" class="btn btn-sm bg-light rounded">
+                                    <i class="fa fa-search"></i>
+                                </button>
+                            </span>
+                        </div>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-sm btn-bg btn-default" ng-click="onExportExcel()">
+                                <i class="fa fa-file-excel-o"></i>&nbsp;Export Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div class="row wrapper bg-light lter b-b" style="margin-right:0px">
+                    <div class="col-sm-12  pull-right" style="text-align: right;">
+                        <button type="button" class="btn btn-sm btn-bg btn-default" ng-click="Close()" ng-show="detailview">
+                            <i class="fa fa-window-close" aria-hidden="true"></i>&nbsp;Close
+                        </button>
+                        <button type="button" class="btn btn-sm btn-bg btn-default" ng-click="onCreateWorkorder()">
+                            <i class="fa fa-plus-circle"></i>&nbsp;Create
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div ng-show="listmode">
+            <div class="row nopadding">
+                <div class="col-sm-3 nopadding">
+                    <div class="splitdiv">
+                        <h4 style="color:#4d4c87">
+                            <strong style="margin-left: 5px;">Pending</strong>
+                            <span class="pull-right work-order-count">{{pending_list.length}} Work Orders</span>
+                        </h4>
+                    </div>
+                    <div fill-height additional-padding="100" directive-when-scrolled="onLoadMore(0)"
+                    >
+                        <ul class="list-group list-group-lg no-radius m-b-none m-t-n-xxs" dnd-list="pending_list" dnd-drop="onPendingDrop(pending_list, item, index, 0)">
+                            <li ng-repeat="row in pending_list | limitTo:totalDisplayed[0]"  class="list-group-item {{gs.getStatusCss(row)}} clearfix b-l-5x"
+                                style="padding-left:0px; padding-right: 0px;border-left-color:#4d4c87"
+                                dnd-selected="row.selected = !row.selected"
+                                dnd-draggable="getSelectedItemsIncluding(pending_list, row)"
+                                ng-class="{'selected': row.selected}"
+                                ng-dblclick="onSelectTicket(row, $event, 1)"
+                                ng-click="onClickItem(row)"
+                                context-menu="menuOptions(row)"
+                                >
+                                <div class="clear col-sm-6" style="padding-left:3px;padding-right: 0px;">
+                                    <div class="clear">
+                                        <label class="font-bold">
+                                            <i class="fa fa-cog"></i>&nbsp; {{row.ticket_id}}
+                                            &nbsp; <i class="fa"
+                                                ng-class="{'fa-flag-o': row.favorite_flag == 0, 'fa-flag': row.favorite_flag == 1}"
+                                                ng-click="onClickFlag(row); $event.stopPropagation();"
+                                                >
+                                            </i>
+                                        </label>
+
+                                    </div>
+                                    <div class="text-ellipsis text-sm clear small">
+                                        Asset: {{row.equipment_name}}
+                                    </div>
+                                    <div class="clear small">
+                                        <span ng-class="{'label' : true,
+                                            'bg-wakeup-pending': row.work_order_type == 'Repairs',
+                                            'bg-wakeup-success': row.work_order_type == 'Requests',
+                                            'bg-wakeup-failed': row.work_order_type == 'Preventive',
+                                            'bg-wakeup-busy': row.work_order_type == 'Upgrade',
+                                            'bg-wakeup-snooze': row.work_order_type == 'New',
+                                            }">
+                                            {{row.work_order_type}}
+                                        </span>
+                                        <span ng-class="{'label' : true,
+                                            'bg-wakeup-in-progress': row.priority == 'Low',
+                                            'bg-wakeup-waiting': row.priority == 'Medium',
+                                            'bg-wakeup-failed': row.priority == 'High',
+                                            'bg-wakeup-canceled': row.priority == 'Urgent',
+                                            }" class="m-l-xs">
+                                            {{row.priority}}
+                                        </span>
+                                    </div>
+                                    <div class="text-ellipsis text-sm clear small">
+                                        Location: {{row.location_type}} {{row.location_name}}
+                                    </div>
+                                    <div class="text-ellipsis text-sm clear small">
+                                        User:
+                                            {{row.assigne_list.length == 1 ? row.assigne_list[0].assignee_name : ''}}
+                                            {{row.assigne_list.length < 1 ? 'Unassigned' : ''}}
+                                        <span ng-show="row.assigne_list.length > 1" type="text"
+                                            uib-popover-template="'myPopoverTemplate.html'" popover-trigger="mouseenter"
+                                            popover-placement="right-bottom"
+                                            >
+                                            ...
+                                        </span>
+                                    </div>
+                                    <div class="text-ellipsis text-sm clear small">
+                                        <span style="font-size:16px"><b>{{row.name}}</b></span>
+                                    </div>
+                                </div>
+                                <div class="clear col-sm-6" style="padding-left:6px;padding-right:3px;height:100px">
+                                    <div class="pull-right">
+                                        <div class="clear">
+                                            <label class="font-bold">
+                                                <a class="text-sm small">Due:{{row.due_date | mydate }}</a>
+                                            </label>
+                                        </div>
+                                        <div class="text-ellipsis text-sm clear small">
+                                            Group: {{row.equip_group ? row.equip_group.name : 'None'}}
+                                        </div>
+
+                                        <div class="text-ellipsis text-sm clear small">
+                                            Age: {{row.age_days}} Days
+                                        </div>
+                                        <div class="text-ellipsis text-sm clear small">
+                                            Estimated: {{row.estimated_duration}} Hours
+                                        </div>
+                                        <div class="text-ellipsis text-sm clear small">
+                                            WR ID: {{row.ref_id}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="bottom-emtpy-space">
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <!--2 column-->
+                <div class="col-sm-3 nopadding">
+                    <div class="splitdiv">
+                        <h4 style="color:#a06c96">
+                            <strong style="margin-left: 5px;">In Progress</strong>
+                            <span class="pull-right work-order-count">{{in_progress_list.length}} Work Orders</span>
+                        </h4>
+                    </div>
+                    <div fill-height additional-padding="100" directive-when-scrolled="onLoadMore(1)">
+                        <ul class="list-group list-group-lg no-radius m-b-none m-t-n-xxs" dnd-list="in_progress_list" dnd-drop="onInProgressDrop(in_progress_list, item, index, 0)">
+                            <li ng-repeat="row in in_progress_list | limitTo:totalDisplayed[1]" class="list-group-item {{gs.getStatusCss(row)}} clearfix b-l-5x"
+                                style="padding-left:0px; padding-right: 0px;border-left-color:#a06c96;"
+                                dnd-selected="row.selected = !row.selected"
+                                dnd-draggable="getSelectedItemsIncluding(in_progress_list, row)"
+                                ng-class="{'selected': row.selected}"
+                                ng-dblclick="onSelectTicket(row, $event, 1)"
+                                ng-click="onClickItem(row)"
+                                context-menu="menuOptions(row)"
+                                >
+                                <div class="clear col-sm-6" style="padding-left:3px;padding-right: 0px;">
+                                    <div class="clear">
+                                        <label class="font-bold">
+                                            <i class="fa fa-cog"></i>&nbsp; {{row.ticket_id}}
+                                            &nbsp; <i class="fa"
+                                                ng-class="{'fa-flag-o': row.favorite_flag == 0, 'fa-flag': row.favorite_flag == 1}"
+                                                ng-click="onClickFlag(row); $event.stopPropagation();"
+                                                >
+                                            </i>
+                                        </label>
+                                    </div>
+                                    <div class="text-ellipsis text-sm clear small">
+                                        Asset: {{row.equipment_name}}
+                                    </div>
+
+                                    <div class="clear small">
+                                        <span ng-class="{'label' : true,
+                                            'bg-wakeup-pending': row.work_order_type == 'Repairs',
+                                            'bg-wakeup-success': row.work_order_type == 'Requests',
+                                            'bg-wakeup-failed': row.work_order_type == 'Preventive',
+                                            'bg-wakeup-busy': row.work_order_type == 'Upgrade',
+                                            'bg-wakeup-snooze': row.work_order_type == 'New',
+                                            }">
+                                            {{row.work_order_type}}
+                                        </span>
+                                        <span ng-class="{'label' : true,
+                                            'bg-wakeup-in-progress': row.priority == 'Low',
+                                            'bg-wakeup-waiting': row.priority == 'Medium',
+                                            'bg-wakeup-failed': row.priority == 'High',
+                                            'bg-wakeup-canceled': row.priority == 'Urgent',
+                                            }" class="m-l-xs">
+                                            {{row.priority}}
+                                        </span>
+                                    </div>
+
+                                    <div class="text-ellipsis text-sm clear small">
+                                        Location: {{row.location_type}} {{row.location_name}}
+                                    </div>
+
+                                    <div class="text-ellipsis text-sm clear small">
+                                        User:
+                                            {{row.assigne_list.length == 1 ? row.assigne_list[0].assignee_name : ''}}
+                                            {{row.assigne_list.length < 1 ? 'Unassigned' : ''}}
+                                        <span ng-show="row.assigne_list.length > 1" type="text"
+                                            uib-popover-template="'myPopoverTemplate.html'" popover-trigger="mouseenter"
+                                            popover-placement="right-bottom"
+                                            >
+                                            ...
+                                        </span>
+                                    </div>
+                                    <div class="text-ellipsis text-sm clear small">
+                                        <span style="font-size:16px"><b>{{row.name}}</b></span>
+                                    </div>
+                                </div>
+                                <div class="clear col-sm-6" style="padding-left:6px;padding-right:3px;height:100px">
+                                    <div class="pull-right">
+                                        <div class="clear">
+                                            <label class="font-bold">
+                                                <a class="text-sm small">Due:{{row.due_date | mydate }}</a>
+                                            </label>
+                                        </div>
+                                        <div class="text-ellipsis text-sm clear small">
+                                            Group: {{row.equip_group ? row.equip_group.name : 'None'}}
+                                        </div>
+
+                                        <div class="text-ellipsis text-sm clear small">
+                                            Age: {{row.age_days}} Days
+                                        </div>
+                                        <div class="text-ellipsis text-sm clear small">
+                                            Estimated: {{row.estimated_duration}} Hours
+                                        </div>
+                                        <div class="text-ellipsis text-sm clear small">
+                                            WR ID: {{row.ref_id}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="bottom-emtpy-space">
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <!--3-->
+                <div class="col-sm-3 nopadding">
+                    <div class="splitdiv">
+                        <h4 style="color:#d88e57">
+                            <strong style="margin-left: 5px;">On Hold</strong>
+                            <span class="pull-right work-order-count">{{on_hold_list.length}} Work Orders</span>
+                        </h4>
+                    </div>
+                    <div style="{{splitdiv_height}}" directive-when-scrolled="onLoadMore(2)">
+                        <ul class="list-group list-group-lg no-radius m-b-none m-t-n-xxs" dnd-list="on_hold_list" dnd-drop="onOnHoldDrop(on_hold_list, item, index, 0)">
+                            <li ng-repeat="row in on_hold_list | limitTo:totalDisplayed[2]" class="list-group-item {{gs.getStatusCss(row)}} clearfix b-l-5x"
+                                style="padding-left:0px; padding-right: 0px;border-left-color:#d88e57;"
+                                dnd-selected="row.selected = !row.selected"
+                                dnd-draggable="getSelectedItemsIncluding(on_hold_list, row)"
+                                ng-class="{'selected': row.selected}"
+                                ng-dblclick="onSelectTicket(row, $event, 1)"
+                                ng-click="onClickItem(row)"
+                                context-menu="menuOptions(row)"
+                                >
+                                <div class="clear col-sm-6" style="padding-left:3px;padding-right: 0px;" >
+                                    <div class="clear">
+                                        <label class="font-bold">
+                                            <i class="fa fa-cog"></i>&nbsp; {{row.ticket_id}}
+                                            &nbsp; <i class="fa"
+                                                ng-class="{'fa-flag-o': row.favorite_flag == 0, 'fa-flag': row.favorite_flag == 1}"
+                                                ng-click="onClickFlag(row); $event.stopPropagation();"
+                                                >
+                                            </i>
+                                        </label>
+                                    </div>
+                                    <div class="text-ellipsis text-sm clear small">
+                                        Asset: {{row.equipment_name}}
+                                    </div>
+                                    <div class="clear small">
+                                        <span ng-class="{'label' : true,
+                                            'bg-wakeup-pending': row.work_order_type == 'Repairs',
+                                            'bg-wakeup-success': row.work_order_type == 'Requests',
+                                            'bg-wakeup-failed': row.work_order_type == 'Preventive',
+                                            'bg-wakeup-busy': row.work_order_type == 'Upgrade',
+                                            'bg-wakeup-snooze': row.work_order_type == 'New',
+                                            }">
+                                            {{row.work_order_type}}
+                                        </span>
+                                        <span ng-class="{'label' : true,
+                                            'bg-wakeup-in-progress': row.priority == 'Low',
+                                            'bg-wakeup-waiting': row.priority == 'Medium',
+                                            'bg-wakeup-failed': row.priority == 'High',
+                                            'bg-wakeup-canceled': row.priority == 'Urgent',
+                                            }" class="m-l-xs">
+                                            {{row.priority}}
+                                        </span>
+                                    </div>
+                                    <div class="text-ellipsis text-sm clear small">
+                                        Location: {{row.location_type}} {{row.location_name}}
+                                    </div>
+
+                                    <div class="text-ellipsis text-sm clear small">
+                                        User:
+                                            {{row.assigne_list.length == 1 ? row.assigne_list[0].assignee_name : ''}}
+                                            {{row.assigne_list.length < 1 ? 'Unassigned' : ''}}
+                                        <span ng-show="row.assigne_list.length > 1" type="text"
+                                            uib-popover-template="'myPopoverTemplate.html'" popover-trigger="mouseenter"
+                                            popover-placement="right-bottom"
+                                            >
+                                            ...
+                                        </span>
+                                    </div>
+                                    <div class="text-ellipsis text-sm clear small">
+                                        <span style="font-size:16px"><b>{{row.name}}</b></span>
+                                    </div>
+                                </div>
+                                <div class="clear col-sm-6" style="padding-left:6px;padding-right:3px;height:100px">
+                                    <div class="pull-right">
+                                        <div class="clear">
+                                            <label class="font-bold">
+                                                <a class="text-sm small">Due:{{row.due_date | mydate }}</a>
+                                            </label>
+                                        </div>
+                                        <div class="text-ellipsis text-sm clear small">
+                                            Group: {{row.equip_group ? row.equip_group.name : 'None'}}
+                                        </div>
+
+                                        <div class="text-ellipsis text-sm clear small">
+                                            Age: {{row.age_days}} Days
+                                        </div>
+                                        <div class="text-ellipsis text-sm clear small">
+                                            Estimated: {{row.estimated_duration}} Hours
+                                        </div>
+                                        <div class="text-ellipsis text-sm clear small">
+                                            WR ID: {{row.ref_id}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+
+                            <li class="bottom-emtpy-space">
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <!--4-->
+                <div class="col-sm-3 nopadding">
+                    <div class="splitdiv">
+                        <h4 style="color:#5e9267">
+                            <strong style="margin-left: 5px;">Completed</strong>
+                            <span class="pull-right work-order-count">{{completed_list.length}} Work Orders</span>
+                        </h4>
+                    </div>
+                    <div style="{{splitdiv_height}}" directive-when-scrolled="onLoadMore(3)">
+                        <ul class="list-group list-group-lg no-radius m-b-none m-t-n-xxs" dnd-list="completed_list" dnd-drop="onCompletedDrop(completed_list, item, index, 0)">
+                            <li ng-repeat="row in completed_list | limitTo:totalDisplayed[3]" class="list-group-item {{gs.getStatusCss(row)}} clearfix b-l-5x"
+                                style="padding-left:0px; padding-right: 0px;border-left-color:#5e9267;"
+                                ng-dblclick="onSelectTicket(row, $event, 1)"
+                                ng-click="onClickItem(row)"
+                                context-menu="menuOptions(row)"
+                                >
+                                <div class="clear col-sm-6" style="padding-left:3px;padding-right: 0px;" >
+                                    <div class="clear">
+                                        <label class="font-bold">
+                                            <i class="fa fa-cog"></i>&nbsp; {{row.ticket_id}}
+                                            &nbsp; <i class="fa"
+                                                ng-class="{'fa-flag-o': row.favorite_flag == 0, 'fa-flag': row.favorite_flag == 1}"
+                                                ng-click="onClickFlag(row); $event.stopPropagation();"
+                                                >
+                                            </i>
+                                        </label>
+                                        <label class="font-bold" ng-if="row.checklist_id > 0" style="margin-top: -5px" ng-click="onDownloadChecklist(row)">
+                                            &nbsp; <img style="width: 15px;height: 15px" src="/images/eng/checklist.svg"/>
+                                        </label>
+
+                                    </div>
+                                    <div class="text-ellipsis text-sm clear small">
+                                        Asset: {{row.equipment_name}}
+                                    </div>
+
+                                    <div class="clear small">
+                                        <span ng-class="{'label' : true,
+                                            'bg-wakeup-pending': row.work_order_type == 'Repairs',
+                                            'bg-wakeup-success': row.work_order_type == 'Requests',
+                                            'bg-wakeup-failed': row.work_order_type == 'Preventive',
+                                            'bg-wakeup-busy': row.work_order_type == 'Upgrade',
+                                            'bg-wakeup-snooze': row.work_order_type == 'New',
+                                            }">
+                                            {{row.work_order_type}}
+                                        </span>
+                                        <span ng-class="{'label' : true,
+                                            'bg-wakeup-in-progress': row.priority == 'Low',
+                                            'bg-wakeup-waiting': row.priority == 'Medium',
+                                            'bg-wakeup-failed': row.priority == 'High',
+                                            'bg-wakeup-canceled': row.priority == 'Urgent',
+                                            }" class="m-l-xs">
+                                            {{row.priority}}
+                                        </span>
+                                    </div>
+                                    <div class="text-ellipsis text-sm clear small">
+                                        Location: {{row.location_type}} {{row.location_name}}
+                                    </div>
+
+                                    <div class="text-ellipsis text-sm clear small">
+                                        User:
+                                            {{row.assigne_list.length == 1 ? row.assigne_list[0].assignee_name : ''}}
+                                            {{row.assigne_list.length < 1 ? 'Unassigned' : ''}}
+                                        <span ng-show="row.assigne_list.length > 1" type="text"
+                                            uib-popover-template="'myPopoverTemplate.html'" popover-trigger="mouseenter"
+                                            popover-placement="right-bottom"
+                                            >
+                                            ...
+                                        </span>
+                                    </div>
+                                    <div class="text-ellipsis text-sm clear small">
+                                        WR ID: {{row.ref_id}}
+                                    </div>
+                                    <div class="text-ellipsis text-sm clear small">
+                                        <span style="font-size:16px"><b>{{row.name}}</b></span>
+                                    </div>
+                                </div>
+                                <div class="clear col-sm-6" style="padding-left:6px;padding-right:3px;height:100px">
+                                    <div class="pull-right">
+                                        <div class="clear">
+                                            <label class="font-bold">
+                                                <a class="text-sm small">Due:{{row.due_date | mydate }}</a>
+                                            </label>
+                                        </div>
+                                        <div class="text-ellipsis text-sm clear small">
+                                            Group: {{row.equip_group ? row.equip_group.name : 'None'}}
+                                        </div>
+                                        <div class="text-ellipsis text-sm clear small">
+                                            Cost: AED {{row.staff_cost*row.duration+row.part_cost}}
+                                        </div>
+                                        <div class="text-ellipsis text-sm clear small">
+                                            Time spent: {{row.time_spent}}
+                                        </div>
+                                        <div class="text-ellipsis text-sm clear small">
+                                            Age: {{row.age_days}} Days
+                                        </div>
+                                        <div class="text-ellipsis text-sm clear small">
+                                            Estimated: {{row.estimated_duration}} Hours
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="bottom-emtpy-space">
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <!---->
+            </div>
+
+        </div>
+
+        <div ng-hide="listmode">
+            <div class="col wrapper-md1">
+                <div class="clearfix m-b">
+                    <div class="pull-right">
+                        <button type="button" class="btn btn-sm btn-default" ng-click="today()">today</button>
+                        <div class="btn-group m-l-xs">
+                            <button class="btn btn-sm btn-default" ng-click="changeView('basicWeek')">Week</button>
+                            <button class="btn btn-sm btn-default" ng-click="changeView('month')">Month</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="pos-rlt" fill-height additional-padding="130">
+                    <div class="calendar" ng-model="eventSources" config="uiConfig.calendar" ui-calendar="uiConfig.calendar"
+                    >
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

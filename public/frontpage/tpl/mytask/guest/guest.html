@@ -1,0 +1,118 @@
+<div class="hbox" ng-controller="MyGuestserviceController" style="height:100%;" ng-init="asideFolded = false">
+  <style>
+    .tab-container .tab-content {
+      padding: 0px;
+    }
+  </style>
+
+  <script type="text/ng-template" id="cancelReasonModal.html">
+    <div ng-include="'tpl/guestservice/modal/cancel_reason.html'"></div>
+  </script>
+
+
+  <!--<div class="submenu" ng-hide="myCheck"></div>-->
+
+  <div class="col" style="height:100%;" >
+    <div class="wrapper b-b bg" ng-hide="true">
+      <a href="" ng-click="asideFolded = !asideFolded">
+        <i class="fa fa-fw {{asideFolded ? 'fa-dedent' : 'fa-indent'}}" style=""></i>
+      </a>
+    </div>
+    <div>
+      <div class="hbox" style="height:100%;">
+        <div class="col b-r" style="width:45vw;">
+          
+          <!-- header -->
+          <div class="wrapper bg-light lter b-b">
+            <div class="btn-group pull-right">
+              <button class="btn btn-sm btn-info w-xs font-bold" style="margin-right: 3px" data-ng-click="openFilterPanel('left', true)">Filter</button>
+              <button type="button" class="btn btn-sm btn-bg btn-default">
+                {{paginationOptions.numberOfPages}}/{{paginationOptions.countOfPages}} - {{paginationOptions.totalItems}} Items
+              </button>
+              <button type="button" class="btn btn-sm btn-bg btn-default" ng-click="onPrevPage()" ng-disabled="paginationOptions.numberOfPages <= 1">
+                <i class="fa fa-chevron-left"></i>
+              </button>
+              <button type="button" class="btn btn-sm btn-bg btn-default" ng-click="onNextPage()"
+                ng-disabled="paginationOptions.numberOfPages >= paginationOptions.countOfPages">
+                <i class="fa fa-chevron-right"></i>
+              </button>
+            </div>
+            <div class="btn-toolbar" style="padding-left: 2px">
+              <div class="btn-group">
+                <button id="dateranger" class="btn btn-sm btn-icon btn-default" data-toggle="tooltip" title="Filter" data-placement="bottom"
+                data-title="Refresh" ui-jq="daterangepicker" ui-options="dateRangeOption" class="form-control pull-right input-sm">
+                <i class="fa fa-filter"></i>
+                </button>                
+              </div>
+              <div class="btn-group">
+                <button class="btn btn-sm btn-icon btn-default" data-toggle="tooltip" title="Refresh" data-placement="bottom" ng-click="refreshTickets()">
+                <i class="fa fa-refresh"></i>
+                </button>
+              </div>
+              <button class="btn btn-sm btn-icon bg-wakeup-pending" data-toggle="tooltip" title="Open" data-placement="bottom" ng-click="onFilter(1)"> <!-- Open -->
+                <i class="fa fa-inbox fa-fw"></i>
+              </button>
+              <button class="btn btn-sm btn-icon bg-wakeup-success" data-toggle="tooltip" title="Completed" data-placement="bottom" ng-click="onFilter(0)"> <!-- Completed -->
+                <i class="fa fa-check fa-fw"></i>
+              </button>
+              <button class="btn btn-sm btn-icon bg-danger" data-toggle="tooltip" title="Escalated" data-placement="bottom" ng-click="onFilter(2)"> <!-- Escalated -->
+                <i class="fa fa-mail-forward fa-fw"></i>
+              </button>
+              <button class="btn btn-sm btn-icon bg-all" data-toggle="tooltip" title="Timeout" data-placement="bottom" ng-click="onFilter(3)"> <!-- Timeout -->
+                <i class="fa fa-star fa-fw"></i>
+              </button>
+              <button class="btn btn-sm btn-icon bg-danger" data-toggle="tooltip" title="Canceled" data-placement="bottom" ng-click="onFilter(4)"> <!-- Canceled -->
+                <i class="fa fa-times fa-fw"></i>
+              </button>
+              <button class="btn btn-sm btn-icon bg-all" data-toggle="tooltip" title="Show All" data-placement="bottom" ng-click="onFilter(-1)">
+                <i class=""></i><label><b>ALL</b></label>
+              </button>
+            </div>
+          </div>
+          <!-- / header -->
+
+          <!-- list -->          
+          <ul id="list_ticket" class="list-group list-group-lg no-radius table-striped m-b-none m-t-n-xxs" ng-style="{'height': ticketlist_height, 'overflow-y': 'auto'}">
+            <li ng-repeat="row in ticketlist" class="list-group-item {{gs.getStatusCss(row)}} {{gs.getLevelCss(row)}} clearfix b-l-5x {{gs.getTicketTypeCss(row)}}">
+              <div class="pull-right text-muted">
+                <span class="hidden-xs ">{{row.start_date_time | mydatetime : 'hh:mm a'}}</span><br>
+                <span class="hidden-xs ">{{row.start_date_time | mydate}}</span><br>
+                <a ng-show="(row.status_id==1 || row.status_id==2 || row.task_type < 101) && row.running == 1" class="btn default btn-xs btn-success" ng-click="completeTicket(row)"><i class="fa fa-thumbs-o-up"></i></a>                
+              </div>
+              <div class="clear" ng-click="onSelectTicket(row, $index)">
+                <div>
+                  <a  class="text-sm">
+                    <i class="fa fa-ticket"></i>&nbsp;{{gs.getTicketNumber(row)}}&nbsp;-&nbsp;
+                    <i class="icon-user"></i>&nbsp;{{row.type == 1 ? row.guest_name : ''}}{{row.type == 2 ? row.requester_name : ''}}&nbsp;-&nbsp;
+                    <i class="glyphicon glyphicon-home"></i>&nbsp;{{row.lgm_type}} - {{row.lgm_name}}
+                  </a>
+                  <span class="label m-l-xs {{gs.getStatusCssInEdit(row)}}">{{gs.getStatus(row)}}
+                    <i class="fa fa-pause" aria-hidden="true" ng-if="row.status_id == 1 && row.running == 0"></i>
+                  </span>
+                </div>
+                <div class="text-ellipsis m-t-xs ">{{gs.getTicketRequestName(row)}}</div>
+                <span class="label bg-light m-l-sm ">{{row.department}}</span>
+              <span class="label bg-light m-l-sm ">{{row.wholename}}</span>
+              <span class="label {{gs.getPriorityCss(row)}} m-l-sm">{{row.priority_name}}</span>
+              <span class="label bg-light m-l-sm ">{{row.attendant_name}}</span>
+              </div>
+            </li>
+          </ul>          
+        </div>
+        <div class="col">
+          <div class="wrapper bg-light lter b-b" style="text-align: center">
+            <a class="btn btn-sm w-xs font-bold" disabled>{{gs.getTicketNumber(selectedTicket[0])}}</a>
+          </div>
+          <div ng-repeat="tab in selectedTicket" ng-if="$index == selectedNum && ticketlist.length > 0 " fill-height padding: 15px" >
+            <div ng-if="tab.type == 1" ng-include="'tpl/guestservice/ticket/guest_request_edit.html'" ng-controller="GuestrequestEditController" ng-init="init(tab)">
+            </div>
+            <div ng-if="tab.type == 2" ng-include="'tpl/guestservice/ticket/department_request_edit.html'" ng-controller="MyDepartmentrequestEditController" ng-init="init(tab)">
+            </div>
+            <div ng-if="tab.type == 4" ng-include="'tpl/guestservice/ticket/managed_task_edit.html'" ng-controller="MyManagedtaskEditController" ng-init="init(tab)">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

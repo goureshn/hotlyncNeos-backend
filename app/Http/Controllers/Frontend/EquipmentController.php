@@ -19,6 +19,10 @@ use App\Models\Eng\EquipmentPreventivePart;
 use App\Models\Eng\EquipmentPreventiveStaff;
 use App\Models\Eng\EquipmentPreventiveEquipStatus;
 use App\Models\Eng\EquipmentCheckListCategory;
+use App\Exports\CommonExport;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use App\Imports\CommonImportExcel;
 
 use App\Http\Controllers\Frontend\GuestserviceController;
 use Illuminate\Support\Facades\Config;
@@ -2217,7 +2221,7 @@ class EquipmentController extends Controller
         $image_url = $request->get('name','');
         $output_file = $_SERVER["DOCUMENT_ROOT"] . '/uploads/equip/';
         if(!file_exists($output_file)) {
-            mkdir($output_file, 0777);
+            mkdir($output_file, 0777, true);
         }
         if($image_url != '') {
             $output_file = $_SERVER["DOCUMENT_ROOT"] . '/uploads/equip/' . $image_url;
@@ -2415,93 +2419,94 @@ class EquipmentController extends Controller
                     break;
 
             }
-
             $locationlist = $query->where('lgm.type', $type_name)
                 ->where('lc.' . $field_name, 'like', $filter)
                 //->where('property_id', $pro_id)
                 ->select(['lgm.*', 'lg.id as lg_id', 'lc.' . $field_name . ' as name', $property_id . ' as property_id'])
-                ->get();
-
+                ->first();
+                // ->get();
+                
         if(!empty($locationlist))  return $locationlist->id;
         else return 0;
     }
 
     public function parseExcelFile($path,&$count)
     {
-        Excel::selectSheets('Equipment List')->load($path, function($reader) {
-            date_default_timezone_set(config('app.timezone'));
-            $cur_time = date('Y-m-d H:i:s');
-            $rows = $reader->all()->toArray();
-            $count = $rows;
-            for($i = 0; $i < count($rows); $i++ )
+        date_default_timezone_set(config('app.timezone'));
+        $cur_time = date('Y-m-d H:i:s');
+        $rows = Excel::toArray(new CommonImportExcel, $path);
+        $rows = [$rows[0]];
+        $count = $rows;
+        for($i = 0; $i < count($rows); $i++ )
+        {
+            foreach( $rows[$i] as $key => $data )
             {
-                foreach( $rows[$i] as $data )
-                {
-                    //echo jswon_encode($data);
-                    $inform = array();
-                    $inform['name'] = $data['equipment_name'];
-                    $inform['equip_id'] = $data['id'];
-                    $codes = array();
-                    if(!empty($data['id'])) {
-                     $codes = explode("-", $data['id']);
-                    }
-                    $inform['description'] = $data['equipment_name'];
-                    $critical = $data['critical'];
-                    if(strtolower($critical) == 'yes') $inform['critical_flag'] = 1;
-                    if(strtolower($critical) == 'no') $inform['critical_flag'] = 0;
-                    $external_maintenance  = $data['external_maintenance'] ;
-                    if(strtolower($external_maintenance) == 'yes') $inform['external_maintenance'] = 1;
-                    if(strtolower($external_maintenance) == 'no') $inform['external_maintenance'] = 0;
-                    //get external_maintenance_id  from external maintenance company
-                    $external_maintenance_company = $data['external_maintenance_company'] ;
-                    $inform['external_maintenance_id'] = $this->getId('eng_external_maintenance', $external_maintenance_company, '');
-                    //get dept_id from Department
-                    $department = $data['department'];
-                    $inform['dept_id'] = $this->getId('common_department', $department, '');
-                    $inform['life'] = $data['life'];
-                    $inform['life_unit'] = $data['life_unit'];
-                    //get group id from Equipment group
-                    $equipment_group = $data['equipment_group'];
-                    $inform['equip_group_id'] = $this->getId('eng_equip_group', $equipment_group, $codes[1]);
-                    //get part group id from parts group
-                    $part_group = $data['parts_group'];
-                    $inform['part_group_id'] = $this->getId('eng_part_group', $part_group, $codes[3]);
-                    //get group id from Equipment group
-                    $property = $data['property'];
-                    $inform['property_id'] = $this->getId('common_property', $property, '');
-                    //get Location id from location
-                    $location = $data['location'];
-                    $locations  = explode(" ", $location);
-                    $inform['location_group_member_id'] = $this->getLocationid($locations[0], $locations[1], $inform['property_id']);
-                    $inform['purchase_cost'] = $data['cost'];
-                    $inform['purchase_date'] =  date('Y-m-d',strtotime($data['purchase_date']));
-                    $inform['manufacture'] = $data['manufacturer'];
-                    //get status id from status
-                    $status = $data['status'];
-                    $inform['status_id'] = $this->getId('eng_equip_status', $status, '');
-                    $inform['model'] = $data['model'];
-                    $inform['barcode'] = $data['barcode'];
-                    $inform['warranty_start'] =  date('Y-m-d',strtotime($data['warranty_start']));
-                    $inform['warranty_end'] =  date('Y-m-d',strtotime($data['warranty_end']));
-                    // get  supplier id  from supplier
-                    $supplier = $data['supplier'];
-                    $inform['supplier_id'] = $this->getId('eng_supplier', $supplier, '');
-                    $inform['maintenance_date'] = $cur_time;
-
-                    if( EquipmentList::where('name', $inform['name'])->where('equip_id', $inform['equip_id'])->exists() )
-                        continue;
-                    EquipmentList::create($inform);
+                //echo jswon_encode($data);                    
+                $inform = array();
+                $inform['name'] = $data['equipment_name'];
+                $inform['equip_id'] = $data['id'];
+                $codes = array();
+                if(!empty($data['id'])) {
+                    $codes = explode("-", $data['id']);
                 }
+                $inform['description'] = $data['equipment_name'];
+                $critical = $data['critical'];
+                if(strtolower($critical) == 'yes') $inform['critical_flag'] = 1;
+                if(strtolower($critical) == 'no') $inform['critical_flag'] = 0;
+                $external_maintenance  = $data['external_maintenance'] ;
+                if(strtolower($external_maintenance) == 'yes') $inform['external_maintenance'] = 1;
+                if(strtolower($external_maintenance) == 'no') $inform['external_maintenance'] = 0;
+                //get external_maintenance_id  from external maintenance company
+                $external_maintenance_company = $data['external_maintenance_company'] ;
+                $inform['external_maintenance_id'] = $this->getId('eng_external_maintenance', $external_maintenance_company, '');
+                //get dept_id from Department
+                $department = $data['department'];
+                $inform['dept_id'] = $this->getId('common_department', $department, '');
+                $inform['life'] = $data['life'];
+                $inform['life_unit'] = $data['life_unit'];
+                //get group id from Equipment group
+                $equipment_group = $data['equipment_group'];
+                $inform['equip_group_id'] = $this->getId('eng_equip_group', $equipment_group, $codes[1]);
+                //get part group id from parts group
+                $part_group = $data['parts_group'];
+                $inform['part_group_id'] = $this->getId('eng_part_group', $part_group, $codes[3]);
+                //get group id from Equipment group
+                $property = $data['property'];
+                $inform['property_id'] = $this->getId('common_property', $property, '');
+                //get Location id from location
+                $location = $data['location'];
+                $locations  = explode(" ", $location);
+                $inform['location_group_member_id'] = $this->getLocationid($locations[0], $locations[1], $inform['property_id']);
+                $inform['purchase_cost'] = $data['cost'];
+                $inform['purchase_date'] =  date('Y-m-d',strtotime($data['purchase_date']));
+                $inform['manufacture'] = $data['manufacturer'];
+                //get status id from status
+                $status = $data['status'];
+                $inform['status_id'] = $this->getId('eng_equip_status', $status, '');
+                $inform['model'] = $data['model'];
+                $inform['barcode'] = $data['barcode'];
+                $inform['warranty_start'] =  date('Y-m-d',strtotime($data['warranty_start']));
+                $inform['warranty_end'] =  date('Y-m-d',strtotime($data['warranty_end']));
+                // get  supplier id  from supplier
+                $supplier = $data['supplier'];
+                $inform['supplier_id'] = $this->getId('eng_supplier', $supplier, '');
+                $inform['maintenance_date'] = $cur_time;
+
+                if( EquipmentList::where('name', $inform['name'])->where('equip_id', $inform['equip_id'])->exists() )
+                    continue;
+                EquipmentList::create($inform);
             }
-        });
+        }
     }
 
     public function parseExcelFilePart($path,&$count)
     {
-        Excel::selectSheets('Part List')->load($path, function($reader) {
+        // Excel::selectSheets('Part List')->load($path, function($reader) {
             date_default_timezone_set(config('app.timezone'));
             $cur_time = date('Y-m-d H:i:s');
-            $rows = $reader->all()->toArray();
+            // $rows = $reader->all()->toArray();
+            $rows = Excel::toArray(new CommonImportExcel, $path);
+            $rows = [$rows[0]];
             $count = $rows;
             for($i = 0; $i < count($rows); $i++ )
             {
@@ -2511,40 +2516,40 @@ class EquipmentController extends Controller
                     $inform = array();
                     $inform['name'] = $data['part_name'];
                     $inform['part_id'] = $data['id'];
-//                    $codes = array();
-//                    if(!empty($data['id'])) {
-//                        $codes = explode("-", $data['id']);
-//                    }
+                    // $codes = array();
+                    // if(!empty($data['id'])) {
+                    //     $codes = explode("-", $data['id']);
+                    // }
                     $inform['description'] = $data['part_name'];
-//                    $critical = $data['critical'];
-//                    if(strtolower($critical) == 'yes') $inform['critical_flag'] = 1;
-//                    if(strtolower($critical) == 'no') $inform['critical_flag'] = 0;
-//                    $external_maintenance  = $data['external_maintenance'] ;
-//                    if(strtolower($external_maintenance) == 'yes') $inform['external_maintenance'] = 1;
-//                    if(strtolower($external_maintenance) == 'no') $inform['external_maintenance'] = 0;
-                    //get external_maintenance_id  from external maintenance company
-//                    $external_maintenance_company = $data['external_maintenance_company'] ;
-//                    $inform['external_maintenance_id'] = $this->getId('eng_external_maintenance', $external_maintenance_company, '');
-                    //get dept_id from Department
-//                    $department = $data['department'];
-//                    $inform['dept_id'] = $this->getId('common_department', $department, '');
-//                    $inform['life'] = $data['life'];
-//                    $inform['life_unit'] = $data['life_unit'];
+                    // $critical = $data['critical'];
+                    // if(strtolower($critical) == 'yes') $inform['critical_flag'] = 1;
+                    // if(strtolower($critical) == 'no') $inform['critical_flag'] = 0;
+                    // $external_maintenance  = $data['external_maintenance'] ;
+                    // if(strtolower($external_maintenance) == 'yes') $inform['external_maintenance'] = 1;
+                    // if(strtolower($external_maintenance) == 'no') $inform['external_maintenance'] = 0;
+                    // get external_maintenance_id  from external maintenance company
+                    // $external_maintenance_company = $data['external_maintenance_company'] ;
+                    // $inform['external_maintenance_id'] = $this->getId('eng_external_maintenance', $external_maintenance_company, '');
+                    // get dept_id from Department
+                    // $department = $data['department'];
+                    // $inform['dept_id'] = $this->getId('common_department', $department, '');
+                    // $inform['life'] = $data['life'];
+                    // $inform['life_unit'] = $data['life_unit'];
                     $inform['quantity'] = $data['quantity'];
                     $inform['minquantity'] = $data['minimum_quantity'];
                     $property = $data['property'];
                     $inform['property_id'] = $this->getId('common_property', $property, '');
 
-                    //get Location id from location
-//                    $location = $data['location'];
-//                    $locations  = explode(" ", $location);
+                    // get Location id from location
+                    // $location = $data['location'];
+                    // $locations  = explode(" ", $location);
 
                     $inform['purchase_cost'] = $data['cost'];
                     $inform['purchase_date'] = date('Y-m-d',strtotime($data['purchase_date']));
                     $inform['manufacture'] = $data['manufacturer'];
-                    //get status id from status
-//                    $status = $data['status'];
-//                    $inform['status_id'] = $this->getId('eng_equip_status', $status, '');
+                    // get status id from status
+                    // $status = $data['status'];
+                    // $inform['status_id'] = $this->getId('eng_equip_status', $status, '');
                     $inform['model'] = $data['model'];
                     $inform['barcode'] = $data['barcode'];
                     $inform['warranty_start'] =  date('Y-m-d',strtotime($data['warranty_start']));
@@ -2552,7 +2557,7 @@ class EquipmentController extends Controller
                     // get  supplier id  from supplier
                     $supplier = $data['supplier'];
                     $inform['supplier_id'] = $this->getId('eng_supplier', $supplier, '');
-//                    $inform['maintenance_date'] = $cur_time;
+                    // $inform['maintenance_date'] = $cur_time;
                     if( $data['id'] != null) {
                         if (PartList::where('name', $inform['name'])->where('part_id', $inform['part_id'])->exists())
                             continue;
@@ -2560,18 +2565,18 @@ class EquipmentController extends Controller
                     }
                 }
             }
-        });
+        // });
     }
 
     public function exceltest(Request $request) {
         $list_count = 2;
         $output_file = $_SERVER["DOCUMENT_ROOT"] . '/uploads/part/sample.xlsx';
-       // try {
+        // try {
             $this->parseExcelFilePart($output_file, $list_count);
-//        }catch (QueryException $e) {
-//            $errCode = $e->errorInfo[1];
-//            echo  $errCode;
-//        }
+        // }catch (QueryException $e) {
+        //     $errCode = $e->errorInfo[1];
+        //     echo  $errCode;
+        // }
     }
 
     public function getWorkorderList(Request $request) {
@@ -6456,12 +6461,12 @@ class EquipmentController extends Controller
             ->whereRaw(sprintf("DATE(ew.created_date) >= '%s' and DATE(ew.created_date) <= '%s'", $start_date, $end_date));
 
          $query->whereIn('ew.property_id', $property_list);
-/*
-         if( !empty($searchtext) )
-         {
-             $query->whereRaw("(ew.id LIKE '%%$searchtext%%' OR ew.name LIKE '%%$searchtext%%' OR ew.description LIKE '%%$searchtext%%' OR err.ref_id LIKE '%%$searchtext%%')");
-         }
-*/
+        /*
+                if( !empty($searchtext) )
+                {
+                    $query->whereRaw("(ew.id LIKE '%%$searchtext%%' OR ew.name LIKE '%%$searchtext%%' OR ew.description LIKE '%%$searchtext%%' OR err.ref_id LIKE '%%$searchtext%%')");
+                }
+        */
          if($searchtext != '')
         {
             $query->where(function ($query) use ($searchtext) {
@@ -6523,7 +6528,7 @@ class EquipmentController extends Controller
         }
 
 
-        $data_list = array_merge($data_list, array());
+        $data_list = array_merge(is_array($data_list) ? $data_list : $data_list->toArray() , array());
 
         // equipment group filter
         if( !empty($equip_list) )
@@ -6579,90 +6584,127 @@ class EquipmentController extends Controller
 
 		$logo_path = $property->logo_path;
 
-		Excel::create($filename, function($excel) use ($logo_path, $data) {
+        $export_data = [];
+        $datalist = [];
+        $height = [];
+        $row_num = 2;
+        $style = [
+            1    => [
+                'font' => ['bold' => true, 'size' => 11],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
+            ],
+            2    => [
+                'font' => ['bold' => true, 'family' => 'Tahoma',],
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID, 
+                    'startColor' => ['argb' => 'ECEFF1']
+                ],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
+            ],
+        ];
 
-			$excel->sheet('Workorder Report', function($sheet) use ($data, $logo_path) {
-				$sheet->setOrientation('landscape');
+        foreach($data['datalist'] as $row)
+        {
+            $arr = [];
+            $com = '';
+            $row_num++;
+            $lfcr = chr(10);
 
-                $row_num = 1;
+            for($p=0; $p < count($row->comments) ;$p++) {
+                $com .= $row->comments[$p]->description . ' - ' . $row->comments[$p]->wholename . ' - ' . $row->comments[$p]->setdate  . $lfcr;
 
-                $sheet->mergeCells('A' . $row_num . ':N' . $row_num);
-                $sheet->cell('A' . $row_num, function($cell) {
-				$cell->setValue('Work Order List');
-				$cell->setAlignment('center');
-				$cell->setFont(array(
-						'size'       => '11',
-						'bold'       =>  true
-				));
-			    });
+            }
 
-                $row_num += 1;
+            $arr['ID'] = 'WR' . WorkOrder::getDailyId($row);
+            $arr['Name'] =  $row->name ;
+            $arr['Description'] =  $row->description ;
+            $arr['Priority'] =  $row->priority ;
+            $arr['Type'] =  $row->work_order_type ;
+            $arr['Status'] =  $row->status ;
+            $arr['Asset'] =  "$row->eq_id - $row->equipment_name" ;
+            $arr['Location'] =  "$row->location_name - $row->location_type" ;
+            $arr['Start Date'] =  $row->status=='In Progress' || $row->status=='Completed' ? $row->start_date : '' ;
+            $arr['End Date'] =  $row->status=='Completed' ? $row->end_date : '' ;
+            $arr['Total Time'] =  $row->time_spent ;
+            $arr['Actual Time'] =  $row->hold_time != '' ? gmdate('H:i:s' , $row->actual_time) : $row->time_spent ;
+            $arr['Assigned Staff'] =  $row->assigne_list_names ;
+            $arr['Comments'] =  $com;
 
-                $sheet->cell('A' . $row_num . ':N' . $row_num, function ($cell) {
-                    $cell->setFontColor('#212121');
-                    $cell->setBackground('#ECEFF1');
-                    $cell->setAlignment('center');
-                    $cell->setFont(array(
-                            'family'     => 'Tahoma',
-                            'bold'       =>  true
-                    ));
-                });
+            $style[$row_num] = ['alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER]];
+            $height[$row_num] = 30;
+            array_push($datalist, $arr);
+        } 
 
-                $header_list = ['ID','Name','Description', 'Priority', 'Type', 'Status', 'Asset','Location', 'Start Date', 'End Date', 'Total Time', 'Actual Time','Assigned Staff', 'Comments'];
-                $sheet->row($row_num, $header_list);
-                $row_num += 1;
+        $export_data['datalist'] = $datalist;
+        $export_data['height'] = $height;
+        $export_data['sub_title'] = "Work Order List";
 
-                foreach($data['datalist'] as $row)
-                {
-                    $row_num++;
+        return Excel::download(new CommonExport('excel.common_export', $export_data, 'Work Order List', $style), 'Work_Order_Report.xlsx');
+		// Excel::create($filename, function($excel) use ($logo_path, $data) {
 
-                    $com = '';
-                    $lfcr = chr(10);
+		// 	$excel->sheet('Workorder Report', function($sheet) use ($data, $logo_path) {
+		// 		$sheet->setOrientation('landscape');
 
-                    for($p=0; $p < count($row->comments) ;$p++) {
-                        $com .= $row->comments[$p]->description . ' - ' . $row->comments[$p]->wholename . ' - ' . $row->comments[$p]->setdate  . $lfcr;
+        //         $row_num = 1;
 
-                    }
-/*
-                    $row1 = [
-                        WorkOrder::getDailyId($row),
-                        $row->name,
-                        $row->description,
-                        $row->priority,
-                        $row->work_order_type,
-                        $row->status,
-                        "$row->eq_id - $row->equipment_name",
-                        "$row->location_name - $row->location_type",
-                        $row->status == 'In Progress' || $row->status == 'Completed' ? $row->start_date : '',
-                        $row->status == 'Completed' ? $row->end_date : '',
-                        $row->time_spent,
-                        $row->hold_time != '' ? gmdate('H:i:s' , $row->actual_time) : $row->time_spent,
-                        $row->assigne_list_names,
+        //         $sheet->mergeCells('A' . $row_num . ':N' . $row_num);
+        //         $sheet->cell('A' . $row_num, function($cell) {
+		// 		$cell->setValue('Work Order List');
+		// 		$cell->setAlignment('center');
+		// 		$cell->setFont(array(
+		// 				'size'       => '11',
+		// 				'bold'       =>  true
+		// 		));
+		// 	    });
 
-                    ];
+        //         $row_num += 1;
 
-                    $sheet->row($row_num, $row1);
-*/
-                    $this->setMergeRowText($sheet,'WR' . WorkOrder::getDailyId($row), $row_num, 'A', 0, 30, 30);
-                    $this->setMergeRowText($sheet, $row->name , $row_num, 'B', 0, 30, 30);
-                    $this->setMergeRowText($sheet, $row->description , $row_num, 'C', 0, 30, 30);
-                    $this->setMergeRowText($sheet, $row->priority , $row_num, 'D', 0, 30, 30);
-                    $this->setMergeRowText($sheet, $row->work_order_type , $row_num, 'E', 0, 30, 30);
-                    $this->setMergeRowText($sheet, $row->status , $row_num, 'F', 0, 30, 30);
-                    $this->setMergeRowText($sheet, "$row->eq_id - $row->equipment_name" , $row_num, 'G', 0, 30, 30);
-                    $this->setMergeRowText($sheet, "$row->location_name - $row->location_type" , $row_num, 'H', 0, 30, 30);
-                    $this->setMergeRowText($sheet, $row->status=='In Progress' || $row->status=='Completed' ? $row->start_date : '' , $row_num, 'I', 0, 30, 30);
-                    $this->setMergeRowText($sheet, $row->status=='Completed' ? $row->end_date : '' , $row_num, 'J', 0, 30, 30);
-                    $this->setMergeRowText($sheet, $row->time_spent , $row_num, 'K', 0, 30, 30);
-                    $this->setMergeRowText($sheet, $row->hold_time != '' ? gmdate('H:i:s' , $row->actual_time) : $row->time_spent , $row_num, 'L', 0, 30, 30);
-                    $this->setMergeRowText($sheet, $row->assigne_list_names , $row_num, 'M', 0, 60, 40);
-                    $this->setMergeRowText($sheet, $com , $row_num, 'N', 0, 60, 40);
-                }
-            });
+        //         $sheet->cell('A' . $row_num . ':N' . $row_num, function ($cell) {
+        //             $cell->setFontColor('#212121');
+        //             $cell->setBackground('#ECEFF1');
+        //             $cell->setAlignment('center');
+        //             $cell->setFont(array(
+        //                     'family'     => 'Tahoma',
+        //                     'bold'       =>  true
+        //             ));
+        //         });
 
-		})->export($excel_file_type);
+        //         $header_list = ['ID','Name','Description', 'Priority', 'Type', 'Status', 'Asset','Location', 'Start Date', 'End Date', 'Total Time', 'Actual Time','Assigned Staff', 'Comments'];
+        //         $sheet->row($row_num, $header_list);
+        //         $row_num += 1;
 
-        return Response::json($ret);
+        //         foreach($data['datalist'] as $row)
+        //         {
+        //             $row_num++;
+
+        //             $com = '';
+        //             $lfcr = chr(10);
+
+        //             for($p=0; $p < count($row->comments) ;$p++) {
+        //                 $com .= $row->comments[$p]->description . ' - ' . $row->comments[$p]->wholename . ' - ' . $row->comments[$p]->setdate  . $lfcr;
+
+        //             }
+
+        //             $this->setMergeRowText($sheet,'WR' . WorkOrder::getDailyId($row), $row_num, 'A', 0, 30, 30);
+        //             $this->setMergeRowText($sheet, $row->name , $row_num, 'B', 0, 30, 30);
+        //             $this->setMergeRowText($sheet, $row->description , $row_num, 'C', 0, 30, 30);
+        //             $this->setMergeRowText($sheet, $row->priority , $row_num, 'D', 0, 30, 30);
+        //             $this->setMergeRowText($sheet, $row->work_order_type , $row_num, 'E', 0, 30, 30);
+        //             $this->setMergeRowText($sheet, $row->status , $row_num, 'F', 0, 30, 30);
+        //             $this->setMergeRowText($sheet, "$row->eq_id - $row->equipment_name" , $row_num, 'G', 0, 30, 30);
+        //             $this->setMergeRowText($sheet, "$row->location_name - $row->location_type" , $row_num, 'H', 0, 30, 30);
+        //             $this->setMergeRowText($sheet, $row->status=='In Progress' || $row->status=='Completed' ? $row->start_date : '' , $row_num, 'I', 0, 30, 30);
+        //             $this->setMergeRowText($sheet, $row->status=='Completed' ? $row->end_date : '' , $row_num, 'J', 0, 30, 30);
+        //             $this->setMergeRowText($sheet, $row->time_spent , $row_num, 'K', 0, 30, 30);
+        //             $this->setMergeRowText($sheet, $row->hold_time != '' ? gmdate('H:i:s' , $row->actual_time) : $row->time_spent , $row_num, 'L', 0, 30, 30);
+        //             $this->setMergeRowText($sheet, $row->assigne_list_names , $row_num, 'M', 0, 60, 40);
+        //             $this->setMergeRowText($sheet, $com , $row_num, 'N', 0, 60, 40);
+        //         }
+        //     });
+
+		// })->export($excel_file_type);
+
+        // return Response::json($ret);
     }
 
     private function setMergeRowText($sheet,$value1, $row_num, $col_num, $count, $width, $height) {

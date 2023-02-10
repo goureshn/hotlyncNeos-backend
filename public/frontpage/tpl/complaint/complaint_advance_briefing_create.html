@@ -1,0 +1,118 @@
+<style>
+
+</style>
+
+<script type="text/ng-template" id="userTypeahead.html">
+   <a>
+        <span ng-bind="match.model.wholename"></span><br>
+        <span style="font-size: 10px" ng-bind="match.model.job_role"></span>
+   </a>
+</script>
+
+<div class="modal-body">
+		
+	<h4 class="m-t-none m-b font-thin">Briefing Room Create</h4>
+
+  	<hr style="margin-top: 0px; margin-bottom: 15px" />	
+
+  	<!-- - - - - - - - GUEST DETAILS - - - - - - - -->
+  	<div class="panel panel-default" style="border-radius: 4px">
+	  	<div class="panel-heading">
+			<div class="pull-left">
+				<label class="font-bold text-sm"><i class="fa fa-user-circle-o text-default"></i>&nbsp;&nbsp;Add Attendees</label>
+			</div>
+			<br>
+		</div>
+		  
+		<div class="panel-body" style="padding: 5px 0px">
+			<div class="form-horizontal form-validation">
+				<div class="form-group" style="margin-left: 0px; margin-right: 0px">
+					<label class="md-check" style="margin-left: 40px">
+		        	    <input type="radio"  ng-model="briefing.free_join_flag" value="1"/>
+		        	    <i class="green"></i>
+		        	    Free Join
+		        	</label>
+				</div>
+
+				<div class="form-group" style="margin-left: 0px; margin-right: 0px">
+					<label class="md-check" style="margin-left: 40px">
+		        	    <input type="radio"  ng-model="briefing.free_join_flag" value="0"/>
+		        	    <i class="green"></i>
+		        	    Add Attendees
+		        	</label>	
+				</div>
+
+				<div class="form-group" style="margin-left: 0px; margin-right: 0px">
+					<div class="col-sm-6 col-sm-offset-2 scrollable-dropdown-menu">
+						<input type="text" ng-model="attendent.wholename" class="form-control input-sm" placeholder="Enter attendee name"
+							   uib-typeahead="user.wholename for user in attendent_list | filter:$viewValue | limitTo:10"
+							   typeahead-min-length="0"
+							   typeahead-editable="false"
+							   typeahead-template-url="userTypeahead.html"
+							   typeahead-on-select="onUserSelect($item, $model, $label)" ng-disabled="briefing.free_join_flag == 1">
+					</div>
+
+					<div class="col-sm-1">
+		              	<i class="fa fa-plus-circle fa-2x text-danger " style="cursor: pointer"
+			              	title="Add Attendee" ng-click="addAttendee()" ng-disabled="briefing.free_join_flag == 1"></i>
+		            </div>	
+				</div>
+
+				<div class="form-group" style="margin-left: 0px; margin-right: 0px">
+					<div class="col-sm-6 col-sm-offset-2">
+						<table width="100%">	
+							<thead>
+								<tr padding="3px">
+									<th width="45%">User</th>
+									<th width="45%">Job Role</th>
+									<th width="10%"></th>
+								</tr>	
+							</thead>
+							<tbody>
+								<tr ng-repeat="row in selected_list" padding="3px">
+									<td>{{::row.wholename}}</td>
+									<td>{{::row.job_role}}</td>
+									<td>
+										<a ng-click="onDeleteUser(row)">
+                                        	<i class="fa fa-times"></i>
+                                        </a>
+                                    </td>
+								</tr>
+							</tbody>
+						</table>
+					</div>	
+				</div>
+
+				<div class="form-group" style="margin-left: 0px; margin-right: 0px">
+					<label class="md-check" style="margin-left: 40px; margin-top: 5px;">
+			            <input type="checkbox" ng-model="briefing.schedule_flag">
+			            <i class="green"></i>
+			            Schedule Briefing At
+			        </label>
+
+			        <input type="text" ng-model="briefing.start_at_date" class="form-control input-sm" style="width: 130px; display: inline; margin-left: 10px" ui-date-mask ng-disabled="!briefing.schedule_flag">
+			        <input type="text" ng-model="briefing.start_at_time" class="form-control input-sm" style="width: 70px; display: inline;" 	ui-time-mask="short" ng-disabled="!briefing.schedule_flag">
+				</div>
+
+				<div class="form-group" style="margin-left: 0px; margin-right: 0px">
+					<label class="md-check" style="margin-left: 40px; margin-top: 5px;">
+			            <input type="checkbox" ng-model="briefing.email_link_flag">
+			            <i class="green"></i>
+			            Send attendees  email link to join briefing
+			        </label>
+				</div>
+
+		    </div>  
+		</div>
+	</div>
+			
+	<center>
+		<button type="button " class="btn btn-dark btn-sm" ng-click="createRoom()">
+		<span class="text-success font-bold">&nbsp;&nbsp;&nbsp;<i class="fa fa-check"></i>&nbsp;Create&nbsp;&nbsp;&nbsp;</span></button>
+		<button type="button" class="btn btn-dark btn-sm" ng-click="cancelRoom()">
+		<span class="text-danger font-bold">&nbsp;&nbsp;&nbsp;<i class="fa fa-times"></i>&nbsp;Cancel&nbsp;&nbsp;&nbsp;</span></button>
+	</center>
+	  		
+
+
+</div>  

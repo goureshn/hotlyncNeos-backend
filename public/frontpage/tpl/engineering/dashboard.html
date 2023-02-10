@@ -1,0 +1,175 @@
+<style>
+  tbody > tr > th, tfoot > tr > th, tbody > tr > td, tfoot > tr > td {
+    /*padding: 1px 1px;*/
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  .jqplot-target {
+    color:#ffffff;
+    background-color: #2a2a2a;
+  }
+  .jqplot-table-legend {
+    /*background-color: #595959;*/
+    background-color: #2a2a2a;
+    font-size: 0.9em;
+    border: 1px solid #2a2a2a;
+    padding-top:1em;
+    padding-left:1em;
+  }
+  .jqplot-title {
+    padding-top: 0.6em;
+    font-size: 1.2em;
+  }
+
+  div.jqplot-table-legend-swatch-outline {
+    border: 1px solid #2a2a2a;
+  }
+
+  svg text {
+    fill: white;
+
+  }
+
+  .nvd3 .nv-legend text {
+    font: normal 10px Arial;
+    cursor: pointer;
+  }
+
+  .nvd3.nv-pie .nv-slice text {
+    fill: white !important;
+    cursor: pointer;
+  }
+
+  .nvd3 .nv-discretebar .nv-groups text, .nvd3 .nv-multibarHorizontal .nv-groups text {
+    fill: rgba(255,255,255,1);
+    stroke: rgba(255,255,255,0);
+    cursor: pointer;
+  }
+
+  .tick line{
+    opacity: 0.2;
+  }
+  .status-view:hover{
+    color:#0b2ef4;
+  }
+
+  .nv-group .nv-bar {
+    cursor: pointer !important;
+  }
+
+</style>
+<div ng-controller="EngineeringDashboardController">
+  <div style="overflow-y: auto;background-color: #141414; height: 100vh;">
+    <div class="wrapper-md1 bg-light lt"  style="background-color: #141414" >
+      <div class="col-sm-6 col-xs-12">
+        <h1 class="m-n font-thin h3 text-black" style="color:#337ab7">
+          <label style="font-size: 1.5vw"><i class="fa fa-gears"></i>
+            &nbsp;&nbsp;Engineering
+          </label>
+        </h1>
+      </div>
+      <div class="col-sm-6 input-group text-right">
+        <a ui-fullscreen style="margin-right: 20px"></a>
+        <div class="btn-group">
+          <!--<a ng-click="onDownloadPDF()"><i class="fa fa-file-pdf-o" style="font-size: 30px; color:red" aria-hidden="true"></i></a>&nbsp;&nbsp;&nbsp;&nbsp;-->
+        </div> <!-- Dummy Need to add logic to export dash to pdf -->
+        <div class="btn-group">
+          <label class="btn btn-info btn-sm" ng-model="dateFilter" uib-btn-radio="'Today'">Today</label>
+          <label class="btn  btn-info btn-sm" ng-model="dateFilter" uib-btn-radio="'Weekly'">Weekly</label>
+          <label class="btn  btn-info btn-sm" ng-model="dateFilter" uib-btn-radio="'Monthly'">Monthly</label>
+          <label class="btn  btn-info btn-sm" ng-model="dateFilter" uib-btn-radio="'Yearly'">Yearly</label>
+          <label class="btn  btn-info btn-sm" ng-model="dateFilter" uib-btn-radio="'Custom Days'">Custom Days</label>
+        </div>
+        <input style="width: 200px; margin-left: 10px" ng-disabled="dateFilter != 'Custom Days'" ng-model="daterange" ui-jq="daterangepicker" ui-options="dateRangeOption" class="form-control pull-right input-sm">
+      </div>
+    </div>
+    <!-- / main header -->
+    <div style="margin-top: 8px">
+      <!-- stats -->
+      <div class="text-center col-md-12">
+          <div class="col-xs-2">
+            <a href class="block padder-v bg-dark" style="border-radius: 6px">
+              <span class="font-thin h1 block" style="color: #f89406">{{total_out_of_stock}}</span>
+              <span class="text-muted text-xs">Out of Stock(Parts)</span>
+            </a>
+          </div>
+          <div class="col-xs-2">
+            <a href class="block padder-v bg-dark" style="border-radius: 6px">
+              <span class="font-thin h1 block" style="color: #f89406">{{total_low_stock}}</span>
+              <span class="text-muted text-xs">Low Stock(Parts)</span>
+            </a>
+          </div>
+          <div class="col-xs-2">
+            <a href class="block panel padder-v bg-dark" style="border-radius: 6px" ng-click="onChangeFilterItem('Pending')">
+              <span class="font-thin h1 block" style="color: #23b7e5">{{total_pending}}</span>
+              <span class="text-muted text-xs">Pending(Waiting for approval)</span>
+            </a>
+          </div>
+
+          <div class="col-xs-2">
+            <a href class="block panel padder-v bg-dark" style="border-radius: 6px" ng-click="onChangeFilterItem('In Progress')">
+              <span class="font-thin h1 block" style="color: #27c24c">{{total_inprogress}}</span>
+              <span class="text-muted text-xs">In Progress</span>
+            </a>
+          </div>
+          <div class="col-xs-2">
+            <a href class="block panel padder-v bg-dark" style="border-radius: 6px" ng-click="onChangeFilterItem('Completed')">
+              <span class="font-thin h1 block" style="color: #6254b2">{{total_completed}}</span>
+              <span class="text-muted text-xs">Completed</span>
+            </a>
+          </div>
+
+          <div class="col-xs-2">
+            <a href class="block panel padder-v bg-dark" style="border-radius: 6px" ng-click="onChangeFilterItem('Closed')">
+              <span class="font-thin h1 block" style="color: #6a93ee">{{total_closed}}</span>
+              <span class="text-muted text-xs">Closed</span>
+            </a>
+          </div>
+      </div>
+    </div>
+
+    <!---top line--->
+    <div>
+      <div class="col-md-4">
+        <div class="col-md-12" style="background-color: #2a2a2a;margin-bottom: 10px; border-radius: 6px">
+          <div class="panel-body" style="padding: 0px;">
+            <nvd3 options="number_of_workorder_options" data="number_of_workorder_data"></nvd3>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="col-md-12" style="background-color: #2a2a2a;margin-bottom: 10px; border-radius: 6px">
+          <div class="panel-body" style="padding: 0px;">
+            <nvd3 options="cost_of_workorder_options" data="cost_of_workorder_data"></nvd3>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="col-md-12" style="background-color: #2a2a2a;margin-bottom: 10px; border-radius: 6px">
+          <div class="panel-body" style="padding: 0px;">
+            <nvd3 options="number_of_workorder_completed_options" data="number_of_workorder_completed_data"></nvd3>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--second line--->
+    <div>
+      <div class="col-md-6">
+        <div class="col-md-12" style="background-color: #2a2a2a;margin-bottom: 10px; border-radius: 6px">
+          <div class="panel-body" style="padding: 0px;">
+            <nvd3 options="priority_options" data="priority_data"></nvd3>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="col-md-12" style="background-color: #2a2a2a;margin-bottom: 10px; border-radius: 6px">
+          <div class="panel-body" style="padding: 0px;">
+            <nvd3 options="status_options" data="status_data"></nvd3>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--end-->
+  </div>
+  </div>

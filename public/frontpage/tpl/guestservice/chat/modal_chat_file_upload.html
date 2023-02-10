@@ -1,0 +1,81 @@
+<style>
+    .drag-area{
+        border: 2px dashed #fff;
+        height: 500px;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        padding-top: 50px;
+        flex-direction: column;
+    }
+    .drag-area.active{
+        border: 2px solid #fff;
+    }
+    .drag-area .icon{
+        font-size: 100px;
+        color: #fff;
+    }
+    .drag-area header{
+        font-size: 30px;
+        font-weight: 500;
+        color: #fff;
+    }
+    .drag-area span{
+        font-size: 25px;
+        font-weight: 500;
+        color: #fff;
+        margin: 10px 0 15px 0;
+    }
+    .upload-button{
+        padding: 10px 25px;
+        font-size: 20px;
+        font-weight: 500;
+        border: none;
+        outline: none;
+        background: #fff;
+        color: #5256ad;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    .drag-area img{
+        height: 100%;
+        width: 100%;
+        object-fit: cover;
+        border-radius: 5px;
+    }
+
+    .file-upload-modal-body {
+        background-color: #8d8d8d;
+        border-radius: 4px 4px 0 0;
+    }
+
+    .dragover {
+        border-color: red;
+    }
+</style>
+
+<div class="modal-body file-upload-modal-body">
+    <div class="drag-area" ngf-drop="uploadFiles($files)" ngf-drag-over-class="'dragover'">
+        <div class="icon"><i class="fa fa-upload"></i></div>
+        <header>Drag & Drop to Upload File</header>
+        <span>OR</span>
+        <a style="color: #4caf50"
+           class="upload-button"
+           title="Upload images" ngf-select="uploadFiles($files)"
+           ngf-max-size="10MB" ngf-capture="'camera'"
+        >
+            Browse File
+        </a>
+        <div>
+            <h4 style="color: #fff">{{fileName}}</h4>
+        </div>
+    </div>
+</div>
+<div class="modal-footer text-center">
+    <div class="row">
+        <div class="col-lg-12 col-sm-12 text-center">
+            <button ng-disabled="file == null || isUploading == true || isSending == true" class="btn btn-primary" style="width: 100px" ng-click="onUpload()">{{isUploading ? 'Uploading...' : (isSending ? 'Sending...' : 'Send')}}</button>
+            <button class="btn btn-default" ng-disabled="isUploading == true || isSending == true" style="width: 100px" ng-click="onCancel()">Cancel</button>
+        </div>
+    </div>
+</div>

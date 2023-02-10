@@ -1,0 +1,24 @@
+<style type="text/css">
+
+    .ql-container {
+        height: 500px;
+    }
+
+</style>
+<div ng-controller="GusetSmsTemplateController" class="wrapper">
+    <div class="row" style="margin-right: 5px">
+        <div class="col-sm-3">
+            <select class='form-control input-sm'  ng-model="temp_item" ng-change="onChangedItem(temp_item)"
+                    ng-options="value.key as value.value for (key, value) in temp_item_list"/>
+        </div>
+
+        <div class="pull-right">
+            <button class="btn btn-sm btn-info" ng-click="saveTemplate()">Save</button>
+            <button class="btn btn-sm btn-info" ng-click>Cancel</button>
+        </div>
+    </div>
+
+    <div class="row" style="margin: 10px 0px 0px 0px;">
+        <textarea class="form-control input-sm" my-text="" rows="5" ng-model="guest_sms_temp" style="resize:none"></textarea>
+    </div>
+</div>

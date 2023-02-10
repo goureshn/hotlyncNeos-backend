@@ -1,0 +1,220 @@
+<script type="text/ng-template" id="customTemplate.html">
+    <a>
+        <span ng-bind-html="match.label | uibTypeaheadHighlight:query"></span>
+    </a>
+</script>
+
+<div ng-controller="RoomAssignmentController">
+    <div class="wrapper-md1 bg-light b-b">
+        <h1 class="m-n font-thin h3">Room Assignment</h1>
+    </div>
+    <div class="wrapper-md1">
+        <div class="panel panel-default" style="margin-bottom: 0px">
+            <div class="panel-heading">
+                <label class="text-sm font-bold"><i class="fa fa-comment text-default"></i>&nbsp;&nbsp;Dispatcher List</label>
+                <div class="pull-right">
+                    <button class="btn btn-sm m-b-xs w-xs btn-success text-success font-bold" ng-click="onAutoAssign()">
+                        Auto Assign 
+                    </button>                                     
+                </div>  
+            </div>
+            <div class="panel-body" style="padding: 0px 5px 0px 5px">
+                <form class="form-horizontal">
+                    <div class="form-group" style="margin-top: 15px; margin-bottom: 0px">
+                        <div class="col-sm-10">
+                            <label class="col-sm-2" ng-click="onSelectCategory('check_in')">Check in - <a href="" class="text-info">{{sub_count.check_in}} Rooms</a></label>
+                            <label class="col-sm-2" ng-click="onSelectCategory('due_out')">Due Out - <a href="" class="text-info">{{sub_count.due_out}} Rooms</a></label>
+                            <label class="col-sm-2" ng-click="onSelectCategory('check_out')">Check Out - <a href="" class="text-info">{{sub_count.check_out}} Rooms</a></label>
+                            <label class="col-sm-2" ng-click="onSelectCategory('rush_clean')">Rush Clean - <a href="" class="text-warning-dker">{{sub_count.rush_clean}} Rooms</a></label>
+                            <label class="col-sm-2" ng-click="onSelectCategory('arrival')">Arrival - <a href="" class="text-warning-dker">{{sub_count.arrival}} Rooms</a></label>
+                            <label class="col-sm-2" ng-click="onSelectCategory('clean')">Total Clean - <a href="" class="text-success">{{sub_count.clean}} Rooms</a></label>
+                        </div> 
+                        <div class="col-sm-2">
+                            <label class="col-sm-12" ng-click="onSelectCategory('dirty')">Total Dirty - <a href="" class="text-danger">{{sub_count.dirty}} Rooms</a></label>
+                        </div>    
+                    </div>
+                    <div class="form-group" style="margin-top: 15px; margin-bottom: 0px">
+                        <div class="col-sm-2">
+                            <label class="col-sm-4 control-label">Shift</label>
+                            <div class="col-sm-8">
+                                <select class='form-control input-sm m-b' ng-model="shift_group_id"
+                                        ng-options="value.shift as value.name for (key, value) in shift_list"
+                                        ng-change="onChangeShift(shift_group_id)"
+                                    >
+                                </select>
+                            </div>                                             
+                        </div>
+
+                        <div class="col-sm-2 pull-right">
+                            <label class="col-sm-4 control-label">Building</label>
+                            <div class="col-sm-8">
+                                <select class='form-control input-sm m-b' ng-model="building_id"
+                                        ng-options="value.id as value.name for (key, value) in build_list"
+                                        ng-change="onChangeBuilding(shift_group_id)"
+                                    >
+                                </select>
+                            </div>                              
+                        </div>
+                    </div>                    
+                </form>
+                <div class="row multiDemo" style="margin-right: 0px">
+                    <div class="col-sm-3">
+                        <div class="panel panel-default" style="margin-bottom: 5px">
+                            <div class="panel-heading">Available Staff</div>
+                            <div class="panel-body" style="padding: 5px">
+                                <form class="form-horizontal">                                    
+                                    <div class="form-group" style="margin-top: 15px; margin-right: 0px">
+                                        <label class="col-sm-3 control-label">Name</label>
+                                        <div class="col-sm-9">
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" ng-model="attendant_name" ng-keyup="$event.keyCode == 13 && searchStaff()" />
+                                                <span class="input-group-btn">
+                                                    <button type="button" class="btn btn-default" ng-click="searchStaff()"><i class="fa fa-search"></i></button>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                                <div class="list-group" style="margin-bottom: 5px" 
+                                fill-height additional-padding="256" debounce-wait="300">
+                                    <a href class="list-group-item" ng-class="{'selected': row.selected}"
+                                       ng-repeat="row in attendantlist" ng-click="onSelectAttendant(row)">
+                                        <i class="fa fa-chevron-right text-muted"></i>
+                                        <span class="badge bg-success">{{row.assigned_count}}</span>
+                                        {{row.wholename}}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="panel panel-default" style="margin-bottom: 5px">
+                            <div class="panel-heading">
+                                <label class="text-sm font-bold"><i class="fa fa-comment text-default"></i>&nbsp;&nbsp;Room Assignment</label>
+                                <div class="pull-right">
+                                    <button class="btn btn-sm m-b-xs w-xs btn-success text-success font-bold" ng-click="onAssign()">
+                                        Assign 
+                                    </button>                                     
+                                </div>  
+                            </div>
+                            <div class="panel-body" style="padding: 5px">
+                                <div fill-height additional-padding="290" 
+                                    dnd-list dnd-drop="onDrop(models[1], item, index)">
+                                    <table  st-table="assigned_list" class="table ticket table-striped b-t b-light" style="width:97%; margin:auto">
+                                        <thead class="tblhead-sm" style="font-size: .7vw">
+                                            <tr>
+                                                <th class="text-center" width="10%"><b>Room</b></th>
+                                                <th class="text-center" width="10%"><b>Floor</b></th>
+                                                <th class="text-center" width="10%"><b>Duration</b></th>
+                                                <th class="text-center" width="10%"><b>Status</b></th>
+                                                <th class="text-center" width="10%"><b>Cleaning</b></th>
+                                                <th class="text-center" width="10%"><b>No of Audit</b></th>
+                                                <th class="text-center" width="10%"><b>No of Children</b></th>
+                                                <th class="text-center" width="30%"><b>Start</b></th>       
+                                            </tr>
+                                        </thead>                                               
+                                    </table>
+                                    <table  st-table="assigned_list" class="drag_table table ticket table-striped b-t b-light" style="width:97%; margin:auto"
+                                            ng-repeat="item in models[1].items"
+                                            dnd-draggable="getSelectedItemsIncluding(models[1], item)"
+                                            dnd-dragstart="onDragstart(models[1], event)"
+                                            dnd-moved="onMoved(models[1])"
+                                            dnd-dragend="models[1].dragging = false"
+                                            dnd-selected="item.selected = !item.selected"                                            
+                                            ng-hide="models[1].dragging && item.selected"
+                                        >                                       
+                                        <tbody>
+                                            <tr ng-class="{'selected': item.selected}">
+                                                <td class="text-center" width="10%"><span>{{item.room}}</span></td>
+                                                <td class="text-center" width="10%"><span>{{item.floor}}</span></td>
+                                                <td class="text-center" width="10%"><span>{{item.max_time}}</span></td>
+                                                <td class="text-center" width="10%"><span>{{item.room_status}}</span></td>
+                                                <td class="text-center" width="10%">
+                                                    <span>
+                                                        {{item.working_status == 100 ? 'Not Assigned': ''}}
+                                                        {{item.working_status == 0 ? 'Pending': ''}}
+                                                        {{item.working_status == 1 ? 'Cleaning': ''}}
+                                                        {{item.working_status == 2 ? 'Done': ''}}
+                                                        {{item.working_status == 3 ? 'DND': ''}}
+                                                        {{item.working_status == 4 ? 'Declined': ''}}
+                                                        {{item.working_status == 5 ? 'Postponed': ''}}
+                                                    </span>
+                                                </td>
+                                                <td class="text-center" width="10%"><span>{{item.audit_no}}</span></td>
+                                                <td class="text-center" width="10%"><span>{{item.children}}</span></td>
+                                                <td class="text-center" width="30%"><span>{{item.start_time}}</span></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <hr style="margin-top: 5px; margin-bottom: 5px">
+                                <div class="row">
+                                    <label class="col-sm-2" style="padding-left: 15px; padding-right: 0px">Total Rooms : {{selected_sub_count.total}}</label>
+                                    <label class="col-sm-2" style="padding-left: 5px; padding-right: 0px">Total Checkin : {{selected_sub_count.check_in}}</label>
+                                    <label class="col-sm-2" style="padding-left: 5px; padding-right: 0px">Total Due Out : {{selected_sub_count.due_out}}</label>
+                                    <label class="col-sm-2" style="padding-left: 5px; padding-right: 0px">Total Arrival : {{selected_sub_count.arrival}}</label>
+                                    <label class="col-sm-2" style="padding-left: 5px; padding-right: 0px">Total Check Out : {{selected_sub_count.check_out}}</label>
+                                    <label class="col-sm-2" style="padding-left: 5px; padding-right: 0px">Total Dur : {{selected_sub_count.duration}} mins</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-3">
+                        <div class="panel panel-default" style="margin-bottom: 5px">
+                            <div class="panel-heading">Room List</div>
+                            <div class="panel-body" style="padding: 5px">
+                                <form class="form-horizontal">
+                                    <div class="form-group" style="margin-right: 0px">
+                                        <label class="col-sm-3 control-label" style="margin-top: 5px">Floor(s)</label>
+                                        <div class="col-sm-9">
+                                            <tags-input ng-model="floor_tags" display-property="floor_name" placeholder="Add a Floor"
+                                                        replace-spaces-with-dashes="false" on-tag-added="searchRooms()"
+                                                        on-tag-removed="searchRooms()">
+                                                <auto-complete source="loadFloorFilters($query)"
+                                                               min-length="0"
+                                                               load-on-focus="true"
+                                                               load-on-empty="true"
+                                                               debounce-delay="0"
+                                                               max-results="10">
+                                                </auto-complete>
+                                            </tags-input>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" style="margin-top: 15px; margin-right: 0px">
+                                        <label class="col-sm-3 control-label">Name</label>
+                                        <div class="col-sm-9">
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" ng-keyup="$event.keyCode == 13 && searchRooms()" ng-model="query_name" />
+                                                <span class="input-group-btn">
+                                                    <button type="button" class="btn btn-default" ng-click="searchRooms()"><i class="fa fa-search"></i></button>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                                <div class="list-group" style="margin-bottom: 5px" 
+                                    dnd-list dnd-drop="onDrop(models[0], item, index)"
+                                    fill-height additional-padding="265" debounce-wait="300">
+                                    <a href class="list-group-item" 
+                                        ng-repeat="item in models[0].items"
+                                        dnd-draggable="getSelectedItemsIncluding(models[0], item)"
+                                        dnd-dragstart="onDragstart(models[0], event)"
+                                        dnd-moved="onMoved(models[0])"
+                                        dnd-dragend="models[0].dragging = false"
+                                        dnd-selected="item.selected = !item.selected"
+                                        ng-class="{'selected': item.selected}"
+                                        ng-hide="models[0].dragging && item.selected"
+                                        >
+                                        <i class="fa fa-chevron-right text-muted"></i>
+                                        <span class="badge" ng-class="{'bg-warning':item.dispatcher > 0, 'bg-success':item.dispatcher == 0}">{{item.max_time}}</span>
+                                        <i class="fa fa-bed fa-fw m-r-xs"></i> {{item.room}}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

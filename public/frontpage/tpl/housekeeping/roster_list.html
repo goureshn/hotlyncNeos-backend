@@ -1,0 +1,184 @@
+<script type="text/ng-template" id="customTemplate.html">
+    <a>
+        <span ng-bind-html="match.label | uibTypeaheadHighlight:query"></span>
+    </a>
+</script>
+
+<div ng-controller="RosterListController">
+    <!-- <div class="wrapper-md1 bg-light b-b">
+        <h1 class="m-n font-thin h3">Roster Allocation</h1>
+    </div> -->
+    <div class="wrapper-md1">
+        <div class="panel panel-default" style="margin-bottom: 0px">
+            <div class="panel-heading">
+                <label class="text-sm font-bold">
+                    <i class="fa fa-tasks text-default"></i>&nbsp;&nbsp;List</label>
+                <div class="pull-right">
+                    <!-- <button class="btn btn-sm m-b-xs w-xs btn-success text-success font-bold" ng-click="onAutoAssign()">
+                        Auto Assign
+                    </button> -->
+                </div>
+            </div>
+            <div class="panel-body hbox">
+                
+                    <!-- header -->
+                    <div class="wrapper bg-light lter b-b" style="padding-bottom:11px">
+                        <div class="btn-group pull-right">
+                            <button type="button" class="btn btn-sm btn-bg btn-default">
+                                {{paginationOptions.numberOfPages}}/{{paginationOptions.countOfPages}} - {{paginationOptions.totalItems}} Items
+                            </button>
+                            <button type="button" class="btn btn-sm btn-bg btn-default" ng-click="onPrevPage()" ng-disabled="paginationOptions.numberOfPages <= 1">
+                                <i class="fa fa-chevron-left"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-bg btn-default" ng-click="onNextPage()" ng-disabled="paginationOptions.numberOfPages >= paginationOptions.countOfPages">
+                                <i class="fa fa-chevron-right"></i>
+                            </button>
+                        </div>
+            
+                        <div class="btn-toolbar" style="padding-left: 2px">
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-icon btn-default" data-toggle="tooltip" title="Filter" data-placement="bottom" data-ng-click="openFilterPanel('left', true)">
+                                    <i class="fa fa-filter"></i>
+                                </button>
+                            </div>
+                            <div class="btn-group">
+                                <button id="dateranger" class="btn btn-sm btn-icon btn-default" data-toggle="tooltip" title="Filter" data-placement="bottom"
+                                    ui-jq="daterangepicker" ui-options="dateRangeOption" data-title="Refresh" ng-click="onClickDateFilter()">
+                                    <i class="fa fa-calendar"></i>
+                                </button>
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-icon btn-default" data-toggle="tooltip" title="Refresh" data-placement="bottom" ng-click="pageChanged()">
+                                    <i class="fa fa-refresh"></i>
+                                </button>
+                            </div>
+                           
+                            <div class="btn-group pull-right" style="margin-right: 20px;margin-top: 5px;">
+                                <a ng-click="onDownloadPDF()">
+                                    <i class="fa fa-file-pdf-o" style="font-size: 20px; color:red" aria-hidden="true" title="Summary PDF download"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- / header -->
+                    <!-- Grid Table -->
+                    <div class="bg-light lter multiDemo" style="width:100%; padding: 0px; margin: 0px" ng-style="{'height': tab_height1, 'overflow-y': 'auto'}">
+                        <ul id="list_ticket" class="list-group list-group-lg no-radius table-striped m-b-none m-t-n-xxs">
+                            <li ng-repeat="row in datalist" class="list-group-item clearfix b-l-5x" ng-class="{'selected': row.active}" style="padding-bottom: 0px">
+                                <div class="pull-right text-muted" style="margin-top: 13px">
+                                    <!--
+            				      <a class="btn default btn-xs btn-danger" ng-click="completeTicket(row)">
+            				      	<i class="fa fa-times"></i>
+            				      </a>-->
+                                </div>
+                                <div class="clear" ng-click="onSelectTicket(row, $index)" style="padding: 0px">
+                                    <div class="clear">
+                                        <label class="font-bold">
+                                            <a>
+                                                <i class="fa fa-id-badge" style="font-size: 17px; color: #1565C0"></i>&nbsp; {{::row.name}}</a>
+                                        </label>&nbsp;
+                                        <!-- <label>
+                                            <i class="fa text-info fa-home"></i>&nbsp;{{::row.name}}</label>&nbsp; -->
+                                        <!-- <label>
+                                            <i class="fa fa-map-marker text-danger"></i> {{::row.lgm_type}} {{::row.lgm_name}} </label>&nbsp; -->
+                                        <!-- <label ng-show="row.compensation_total">|&nbsp;
+                                            <i class="fa fa-dollar text-success"></i> {{::row.compensation_total}} </label> -->
+                                        <!-- <span class="label m-l-sm bg-update-warning" ng-if="!row.latest">
+                                            New Update
+                                        </span>
+            
+                                        <span class="label m-l-sm" ng-class="{'bg-info':$index == 0, 'bg-primary':$index == 1, 'bg-warning':$index == 2, 'bg-danger':$index == 3}"
+                                            ng-repeat="dept in row.dept_list | limitTo:4">
+                                            {{::dept.short_code}}
+                                        </span> -->
+            
+            
+                                        <label class="pull-right font-bold">
+                                            <!-- <a class="text-sm" ng-click="flagComplaint(row);$event.stopPropagation();">
+                                                <i class="fa fa-flag" ng-class="{'text-danger': row.flag == 1, 'text-mute': row.flag != 1}"></i>&nbsp;</a> -->
+                                            <a class="text-sm" ng-click="setReminder(row);$event.stopPropagation();">
+                                                <i class="fa fa-calendar text-primary"></i>&nbsp;{{::row.begin_date_time}}</a>
+                                        </label>
+                                    </div>
+            
+                                    <div class="text-ellipsis text-sm clear" style=" width: 100%; margin: 0px">
+                                        <i class="fa fa-user-circle-o" style="color: #00796B" ></i>
+                                        <label>&nbsp;{{::row.device_name}}&nbsp;|&nbsp;</label>
+                                        <!-- <i class="fa fa-male text-warning-dker" ng-if="row.guest_type == 'Walk-in' || row.guest_type == 'Arrival'"></i>
+                                        <i class="fa fa-bank text-warning-dker" ng-if="row.guest_type == 'In-House CI'"></i>
+                                        <i class="fa fa-bank text-warning-dker" ng-if="row.guest_type == 'In-House CO'"></i>
+                                        <i class="fa fa-home text-warning-dker" ng-if="row.guest_type == 'House Complaint'"></i>
+                                        &nbsp;{{row.guest_type != 'House Complaint' ? row.guest_type : row.house_complaint_name}}&nbsp;&nbsp;| &nbsp;
+                                        <i class="fa fa-exclamation-triangle text-danger" ng-if="row.severity_name == 'Serious'"></i>
+                                        <i class="fa fa-exclamation-circle text-danger" ng-if="row.severity_name == 'Major'"></i>
+                                        <i class="fa fa-exclamation-circle text-warning-dker" ng-if="row.severity_name == 'Moderate'"></i>
+                                        <i class="fa fa-exclamation-circle text-primary" ng-if="row.severity_name == 'Minor'"></i>
+                                        <i class="fa fa-info-circle text-info" ng-if="row.severity_name == 'Informational'"></i> -->
+                                        <!-- &nbsp;{{::row.severity_name}}&nbsp; -->
+            
+            
+                                        <!-- <label class="text-default" ng-if="row.discussed_flag == 1" style="width: auto;
+            														  white-space: nowrap;
+            														  text-overflow: ellipsis;
+            														  text-overflow: ellipsis;
+            															-o-text-overflow: ellipsis">|&nbsp;
+                                            <i class="fa fa-comments" style="color: #1B5E20"></i>{{::row.discuss_end_time_at}}
+                                        </label>
+            
+                                        <div class="pull-right" style="margin-right: 6px; margin-top: -1px">
+                                            <span ng-if="row.closed_flag == 1" class="label m-l-sm bg-wakeup-success">
+                                                Closed
+                                            </span>
+                                            <span ng-class="{'label' : true, 'm-l-sm': true,
+            								    							'bg-wakeup-pending': row.status == 'Pending',
+            								    							'bg-wakeup-waiting': row.status == 'Acknowledge',
+            								    							'bg-wakeup-success': row.status == 'Resolved',
+            								    							'bg-wakeup-canceled': row.status == 'Rejected',
+            								    							'bg-wakeup-in-progress': row.status == 'Forwarded',	
+            								    							'bg-complaint-ack': row.status == 'Unresolved',
+            								    						}">{{::row.status}}
+                                            </span>
+                                        </div> -->
+                                    </div>
+                                    <!-- <div class="text-ellipsis text-sm" style="width: 100%; margin-top: 0px">
+                                        <label style="width: 100%;
+            													  white-space: nowrap;
+            													  text-overflow: ellipsis;
+            													  overflow: hidden;
+            													  text-overflow: ellipsis;
+            														-o-text-overflow: ellipsis;">
+            
+                                            <i class="fa fa-commenting-o text-primary" aria-hidden="true"></i>&nbsp;{{::row.comment}}
+                                        </label>
+            
+                                    </div>
+                                    <div class="text-ellipsis text-sm" style="width: 100%; margin-top: 0px">
+                                        <label style="width: 70%;
+            													  white-space: nowrap;
+            													  text-overflow: ellipsis;
+            													  overflow: hidden;
+            													  text-overflow: ellipsis;
+            														-o-text-overflow: ellipsis;">
+            
+                                            <i class="fa fa-tags text-primary" aria-hidden="true" ng-show="row.send_flag==1"></i>
+                                            <span class="label m-l-sm" ng-class="{'bg-default':$index == 0, 'bg-info':$index == 1, 'bg-warning':$index == 2, 'bg-danger':$index == 3, 'bg-wakeup-waiting':$index == 4, 'bg-primary':$index == 5}"
+                                                ng-repeat="depts in row.selected_ids | limitTo:11">
+                                                {{::depts.short_code}}
+                                            </span>
+                                        </label>
+                                        <div ng-if="row.total > 0" class="text-ellipsis text-sm pull-right" style="font-size: 10px; width: 26%">
+                                            <uib-progressbar class="progress-striped progress-sm" style="margin: 5px" value="getProcess(row)" type="info">
+                                            </uib-progressbar>
+                                        </div> -->
+                                    </div>
+                                <!-- </div> -->
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+            </div>
+            
+        
+    </div>
+</div>

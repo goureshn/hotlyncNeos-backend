@@ -1,0 +1,186 @@
+<style>
+    button {
+        pointer: cursor;
+    }
+
+    input[type=file] {
+        width: 150px;
+        height: 20px;
+    }
+</style>
+<script type="text/ng-template" id="locationTypeahead.html">
+    <a>
+        <span ng-bind="match.model.name"></span><br>
+        <span style="font-size: 10px" ng-bind="match.model.type"></span><br>
+    </a>
+</script>
+<div class="wrapper" style="margin-top: 7px" >
+    <div class="panel panel-default" style="border-radius: 4px">
+        <div class="panel-heading">
+            <label class="font-bold"><i class="fa fa-warning text-default"></i>&nbsp;&nbsp;Part Edit</label>
+            <div class="pull-right" style="margin-top: -3px">
+                <button type="button" class="btn btn-dark btn-sm" ng-click="UpdatePart()">
+                    <span class="text-success font-bold"><i class="fa fa-check"></i>&nbsp;Update</span></button>
+                <button type="button" class="btn btn-dark btn-sm" ng-click="cancelComplaint()">
+                    <span class="text-danger font-bold"><i class="fa fa-times"></i>&nbsp;Cancel</span></button>
+            </div>
+        </div>
+        <div class="panel-body">
+            <form class="form-horizontal form-validation">
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-2 text-right control-label text-muted" style="margin-bottom: 0px">Part ID</label>
+                    <div class="col-sm-4 scrollable-dropdown-menu">
+                        <input class="form-control input-sm"  ng-model="part.part_id"  required
+                                popover-trigger="mouseenter">
+                    </div>
+                    <label class="col-sm-2 text-right control-label text-muted" style="margin-bottom: 0px">Part Name</label>
+                    <div class="col-sm-4 scrollable-dropdown-menu">
+                        <input class="form-control input-sm"  ng-model="part.name"  required
+                                popover-trigger="mouseenter">
+                    </div>
+                </div>
+                <div class="form-group" style="margin-right: 0px"  ng-repeat="row in part.part_group" >
+                    <label class="col-sm-2 text-right">Part Group</label>
+                    <label class="col-sm-3">{{$index+1}}, {{row.name}} </label>
+                    <div class="col-sm-1">
+                        <i class="fa fa-minus-circle fa-2x text-primary " style="cursor: pointer"  ng-click="delPartGroup(row.part_group_id)"></i>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 text-right control-label text-muted" style="margin-bottom: 0px">Part Group</label>
+                    <div class="col-sm-3 scrollable-dropdown-menu">
+                        <input type="text" ng-model="part.part_group_name" class="form-control input-sm"
+                               popover-trigger="mouseenter" popover-placement="top"
+                               uib-typeahead="partgroup.name for partgroup in getPartGroupList($viewValue)"
+                               typeahead-min-length="0"
+                               typeahead-on-select="onPartGroupSelect(equipment, $item, $model, $label)">
+                    </div>
+                    <div class="col-sm-1">
+                        <i class="fa fa-plus-circle fa-2x text-danger " style="cursor: pointer" title="Create Part Group" ng-click="CreatePartGroup()"></i>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-2 text-right control-label text-muted" style="margin-bottom: 0px">Description</label>
+                    <div class="col-sm-4">
+                        <textarea class="form-control input-sm" rows="3" ng-model="part.description"
+                                  style="resize:none"  popover-trigger="mouseenter" ></textarea>
+                    </div>
+                    <label class="col-sm-2 text-right control-label text-muted" style="margin-bottom: 0px">Manufacture</label>
+                    <div class="col-sm-4">
+                        <input class="form-control input-sm" data-ng-model="part.manufacture"
+                               popover-trigger="mouseenter"  />
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-2 text-right control-label text-muted" style="margin-bottom: 0px">Quantity</label>
+                    <div class="col-sm-4 scrollable-dropdown-menu">
+                        <input class="form-control input-sm" type="number" data-ng-model="part.quantity"
+                                popover-trigger="mouseenter"  />
+                    </div>
+                    <label class="col-sm-2 text-right control-label text-muted" style="margin-bottom: 0px">Minimum Quantity</label>
+                    <div class="col-sm-4 scrollable-dropdown-menu">
+                        <input class="form-control input-sm" type="number" data-ng-model="part.minquantity"
+                                popover-trigger="mouseenter"  />
+                    </div>
+                </div>
+
+
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-2 text-right control-label text-muted" style="margin-bottom: 0px">Purchase Cost</label>
+                    <div class="col-sm-4">
+                        <input class="form-control input-sm" type="number" data-ng-model="part.purchase_cost"
+                               popover-trigger="mouseenter"  />
+                    </div>
+                    <label class="col-sm-2 text-right control-label text-muted" style="margin-bottom: 0px">Purchase Date</label>
+                    <div class="col-sm-4">
+                        <a class="dropdown-toggle" id="dropdown2" role="button" data-toggle="dropdown" data-target="#">
+                            <div class="input-group">
+                                <input type="text" class="form-control" ng-model="part.purchase_date" readonly  />
+                                <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                            </div>
+                        </a>
+                        <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+                            <datetimepicker ng-model="datetime.date"
+                                            data-datetimepicker-config="{ dropdownSelector: '#dropdown2',startView:'day', minView:'day'  }"
+                                            data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+                        </ul>
+                    </div>
+
+                </div>
+
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-2 text-right control-label text-muted" style="margin-bottom: 0px">Model</label>
+                    <div class="col-sm-4">
+                        <input class="form-control input-sm" data-ng-model="part.model"
+                               popover-trigger="mouseenter"  />
+                    </div>
+                    <label class="col-sm-2 text-right control-label text-muted" style="margin-bottom: 0px">Serial/Barcode</label>
+                    <div class="col-sm-4">
+                        <input class="form-control input-sm" data-ng-model="part.barcode"
+                               popover-trigger="mouseenter"  />
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-2 text-right control-label text-muted" style="margin-bottom: 0px">Warranty Start</label>
+                    <div class="col-sm-4">
+                        <a class="dropdown-toggle" id="dropdown3" role="button" data-toggle="dropdown" data-target="#">
+                            <div class="input-group">
+                                <input type="text" class="form-control" ng-model="part.warranty_start"  readonly />
+                                <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                            </div>
+                        </a>
+                        <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+                            <datetimepicker ng-model="datetime.date_warranty_start"
+                                            data-datetimepicker-config="{ dropdownSelector: '#dropdown3',startView:'day', minView:'day' }"
+                                            data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+                        </ul>
+                    </div>
+
+                    <label class="col-sm-2 text-right control-label text-muted" style="margin-bottom: 0px">Warranty End</label>
+                    <div class="col-sm-4">
+                        <a class="dropdown-toggle" id="dropdown4" role="button" data-toggle="dropdown" data-target="#">
+                            <div class="input-group">
+                                <input type="text" class="form-control" ng-model="part.warranty_end" readonly  />
+                                <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                            </div>
+                        </a>
+                        <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+                            <datetimepicker ng-model="datetime.date_warranty_end"
+                                            data-datetimepicker-config="{ dropdownSelector: '#dropdown4',startView:'day', minView:'day'  }"
+                                            data-before-render="beforeRender($view, $dates, $leftDate, $upDate, $rightDate)"/>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-right: 0px">
+                    <label class="col-sm-2 text-right control-label text-muted" style="margin-bottom: 0px">Supplier</label>
+                    <div class="col-sm-4 scrollable-dropdown-menu">
+                        <input type="text" ng-model="part.supplier" class="form-control input-sm"
+                               popover-trigger="mouseenter" popover-placement="right"
+                               uib-typeahead="supplier.supplier for supplier in getSupplierList($viewValue)"
+                               typeahead-min-length="0"
+                               typeahead-on-select="onSupplierSelect(part, $item, $model, $label)">
+                    </div>
+                    <label class="col-sm-2 text-right control-label text-muted" style="margin-bottom: 0px">Picture</label>
+                    <div class="col-sm-4">
+                        <button class="btn btn-icon btn-info" style="cursor: pointer"><i class="fa fa-paperclip"></i></button>
+                        <div class="dropzone" file-dropzone="[image/png, image/jpeg, image/gif]"
+                             file="image"  file-name="imageFileName"  data-max-file-size="3" >
+                        </div>
+                        <div class="image-container" >
+                            <img ng-src={{image}}  />
+                            <span class="file-name" >{{imageFileName}}</span>
+                        </div>
+                        <form action>
+                            <input type="file" fileread="uploadme.src" imagename="uploadme.imagename" imagetype="uploadme.imagetype"
+                                   style="opacity:0.001;width:35px;margin-top:-45px;max-height: 50px;" />
+                            <img ng-src="{{ uploadme.src }}"  style="margin-top:10px; width: 80px;height: 80px;">
+                        </form>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

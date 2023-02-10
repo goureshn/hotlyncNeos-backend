@@ -91,7 +91,8 @@ class HSKPController extends Controller
 					return '<p data-placement="top" data-toggle="tooltip" title="Delete"><button class="btn btn-danger btn-xs" data-title="Delete" data-toggle="modal" data-target="#deleteModal" ng-disabled="job_role!=\'SuperAdmin\'" ng-click="onDeleteRow('.$data->id.')">
 						<span class="glyphicon glyphicon-trash"></span>
 					</button></p>';
-				})				
+				})
+				->rawColumns(['checkbox', 'edit', 'delete'])				
 				->make(true);
     }
 
@@ -108,23 +109,23 @@ class HSKPController extends Controller
     public function store(Request $request)
     {
     	$model = new HskpStatus();
+
+		$model->bldg_id = $request->bldg_id ?? '0';
+		$model->status = $request->status ?? '';
+		$model->pms_code = $request->pms_code ?? '0';
 		
-		$model->bldg_id = $request->get('bldg_id', '0');
-		$model->status = $request->get('status', '');
-		$model->pms_code = $request->get('pms_code', '0');
-		
-		$check_diff_ivr_code = $request->get('chk_ivr_flag', '0');
-		$ivr_code = $request->get('pms_code', '0');
+		$check_diff_ivr_code = $request->chk_ivr_flag ?? '0';
+		$ivr_code = $request->pms_code ?? '0';
 		if( $check_diff_ivr_code != 0 )
-			$ivr_code = $request->get('ivr_code', '0');
+			$ivr_code = $request->ivr_code ?? '0';
 		
 		$model->ivr_code = $ivr_code;
 		
 		$typelist = $model->getTypeList();
-		$type = $typelist[$request->get('type_id', '1')];
+		$type = $typelist[$request->type_id ?? '1'];
 		
 		$model->type = $type;
-		$model->description = $request->get('description', '');
+		$model->description = $request->description ?? '';
 		$model->save();
 		
 		$message = 'SUCCESS';	
@@ -138,7 +139,10 @@ class HSKPController extends Controller
 	public function storeng(Request $request)
     {
     	$input = $request->except('id');
-			
+		foreach ($input as $key => $value) {
+			if($value === null) $input[$key] = "";
+		}
+		
 		$model = HskpStatus::create($input);
 		
 		return Response::json($model);			

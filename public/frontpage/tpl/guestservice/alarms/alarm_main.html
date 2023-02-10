@@ -1,0 +1,188 @@
+<style>
+    .boxed {
+    border: 2px solid black ;
+  }
+  .test {
+    border: 2px solid rgb(255, 255, 255) ;
+  }
+      .room_status td {
+          text-align: center;
+          font-weight: bold;
+          color: #fcfcfc;  
+              
+      }
+  
+      .room_status td.group {
+          width: 300px;
+          background: #bd8082;
+          border: 1px solid #555;
+      }
+  
+      .room_status td.floor {
+          width: 210px;
+          /* background: #8c8cbd; */
+          border-right: 2px solid rgb(255, 255, 255);
+          border-left: 2px solid rgb(255, 255, 255);
+      }
+      .room_status td.status {
+          width: 210px;
+          /* background: #4848b6; */
+          border-right: 2px solid rgb(255, 255, 255);
+          border-left: 2px solid rgb(255, 255, 255);
+          border-top: 2px solid rgb(255, 255, 255);
+      }
+      .room_status td.noclass {
+          width: 210px;
+          /* background: #4848b6; */
+          border: 1px solid #4E4E4E;
+      }
+  
+      .room_status td.room {
+          width: 200px;
+          border: 1px solid #cecece;
+          background: #6a1c8f;
+          cursor: pointer;
+      }
+  
+      .room_status td.room.dirty {
+          color: white;
+          background: rgb(94,36,136);
+      }
+  
+      .room_status td.room.completed {
+          color: white;
+          background: rgb(112,172,72);
+      }
+  
+      .room_status td.room.declined {
+          color: white;
+          background: rgb(166,166,166);
+      }
+      .room_status td.room.unassigned {
+          color: white;
+          background: rgb(255,191,5);
+      }
+  
+      .room_status td.room.postponed {
+          color: white;
+          background: rgb(237,125,29);
+      }
+  
+      .room_status td.room.dnd {
+          color: white;
+          background: rgb(254,0,0);
+      }
+  
+      .room_status td.room.progress {
+          color: white;
+          background: rgb(68,114,199);
+      }
+     .pending {
+          color: #4b1564;
+      }
+      .cleaning {
+          color: #115ab9;
+      }
+      .dnd {
+          color: #f44336;
+      }
+      .refuse {
+          color: #607d8b;
+      }
+      .delay {
+          color: #ff9800;
+      }
+      .unassigned {
+          color: #e6c50e;
+      }
+      .finished {
+          color: #86c789;
+
+      }
+  </style>
+<div ng-controller="AlarmMainController"  style="{{full_height}}">
+    <div class="wrapper-md1 bg-light b-b">
+        <h1 class="m-n font-thin h3">Alarm</h1>
+        <button style='margin-top: -30px' class="pull-right btn btn-default" ng-click='onClickCustom()'>&nbsp;<i class="fa fa-plus-circle" aria-hidden="true"></i>&nbsp;Custom&nbsp;</button>
+    </div>
+    
+
+          <!-- <div class="wrapper-md1" > -->
+      
+      
+      <div style="margin-top: 20px">
+        
+            <!--<div ng-repeat="item in alarmlist" class="col-lg-2-4"
+                            style="display: table; padding-left: 2px; padding-right: 2px" ng-click="onClick(item)">
+                              <div class="btn w-ms btn btn-info text-center text-xs font-bold">
+                                  <a><i class="{{item.fa_icon}}" aria-hidden="true"></i><span class="text-warning" title="{{item.group}}">
+                                      {{item.group_name}}
+                                      </span>
+                                  </a>
+                            </div><br><br>
+                        </div>-->
+        
+            <div ng-repeat="item in alarmlist" class="col-lg-2-4" style="display: table; padding-left: 2px; padding-right: 2px;" ng-click="onClick(item)">
+                    <div style="padding-bottom: 10px">
+                <div style="background: linear-gradient(to right, #283048, #859398); padding: 50px 0px 50px 0px;">
+                    <a>
+                        <label style="display: block; text-align: center;line-height: 150%; color: white; font-size: 1.5em; font-weight: bold; letter-spacing: 3px;">
+                        <i class="{{item.fa_icon}}" aria-hidden="true"></i> {{item.group_name}}</label>
+                    </a>
+                </div>
+            </div>
+                
+            
+         
+      </div>
+      
+      
+          <!-- </div> -->
+          <div><br></div>
+    
+            <div class="panel panel-default" style="padding-top: 280px">
+                <div class="panel-heading font-bold">Alarm Group</div>
+                <div class="panel-body">
+                    <form class="form-horizontal form-validation">
+                        <div class="form-group">
+                            <label class="col-lg-2 control-label">Alarm Group</label>
+                            <div class="col-lg-10">
+                                <input type="text" ng-model="alarm_group_name" class="form-control input-sm" style="width: 200px"
+                                       uib-popover="Please input alarm group" popover-trigger="mouseenter" popover-placement="right"
+                                       uib-typeahead="alarmgroup.name for alarmgroup in getAlarmGroupList($viewValue)"
+                                       typeahead-min-length="0"
+                                       typeahead-on-select="onGroupSelect($item, $model, $label)" required>
+
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-lg-2 control-label">Message</label>
+                            <div class="col-lg-10">
+                                <input type="text" ng-model="alarm_group.description" class="form-control input-sm" disabled>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-lg-2 control-label">Members</label>
+                            <div class="col-lg-10" >
+                                <tags-input ng-model="users" disabled="true" placeholder=""></tags-input>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-lg-2 control-label">Comment</label>
+                            <div class="col-lg-10">
+                                <textarea class="form-control input-sm" rows="1" ng-model="comment" style="resize:none"></textarea>
+                            </div>
+                        </div>
+                        <div class="line line-dashed b-b line-lg pull-in"></div>
+                        <div class="form-group">
+                            <div class="pull-right" style="margin-right: 20px">
+                                <button type="submit" class="btn btn-primary" ng-click="onSendAlarm()">&nbsp;&nbsp;&nbsp;&nbsp;Send&nbsp;&nbsp;&nbsp;&nbsp;</button>
+                                <button type="submit" class="btn btn-default">Cancel</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+       
+     
+</div>

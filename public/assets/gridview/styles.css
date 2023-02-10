@@ -1,0 +1,172 @@
+.grid-view-loading
+{
+	background:url(loading.gif) no-repeat;
+}
+
+.grid-view
+{
+	//padding: 10px;
+}
+
+.grid-view table.items
+{
+        -webkit-background-clip: border-box;
+	background: url(bg.gif) repeat-x top;
+	border: 1px solid #e4e4e4;
+	-moz-border-radius: 6px 6px 0 0;
+	-webkit-border-radius: 6px 6px 0 0;
+	border-radius: 6px 6px 0 0;
+        border-spacing: 0px;
+        border-collapse:separate;
+        width: 100%;
+        margin-bottom:0px;
+}
+
+.grid-view table.items tfoot tr
+{
+    background: url(bg.gif) repeat scroll 0 -6px #F5F5F5;
+    //background: url(bg.gif) repeat-x top;
+}
+
+.grid-view table.items tfoot td
+{
+    height: 33px;
+    border-bottom: 0px;
+}
+
+.grid-view table.items thead th, .grid-view table.items thead td
+{
+    background: none;
+}
+
+.grid-view table.items th, .grid-view table.items td
+{
+	font-size: 0.9em;
+	//border: 1px white solid;
+	//padding: 0.3em;
+        height: 40px;
+        padding: 0px 5px 0px 5px;
+        
+        //border:1px solid #000;
+}
+
+.grid-view table.items td
+{     
+        border-top:1px solid #e4e4e4;
+        //border-bottom:1px solid #000;
+}
+
+.grid-view table.items th
+{
+        //height:40px;
+	color: black;
+	//background: url("bg.gif") repeat-x scroll left top white;
+	//text-align: center;
+}
+
+.grid-view table.items th a
+{
+	color: #000;
+	font-weight: bold;
+        font-size:13px;
+	text-decoration: none;
+}
+
+.grid-view table.items th a:hover
+{
+	color: #00F;
+}
+
+.grid-view table.items th a.asc
+{
+	background:url(up.gif) right center no-repeat;
+	padding-right: 10px;
+}
+
+.grid-view table.items th a.desc
+{
+	background:url(down.gif) right center no-repeat;
+	padding-right: 10px;
+}
+
+.grid-view table.items tr.even
+{
+	background: #F8F8F8;
+}
+
+.grid-view table.items tr.odd
+{
+	//background: #E5F1F4;
+        background: #FFFFFF;
+}
+
+/*
+.grid-view table.items tr.selected
+{
+	background: #BCE774;
+}
+
+.grid-view table.items tr:hover.selected
+{
+	background: #CCFF66;
+}*/
+
+.grid-view table.items tbody tr:hover
+{
+	background: #DDF3FA;//#ECFBD4;
+}
+
+.grid-view .link-column img
+{
+	border: 0;
+}
+
+.grid-view .button-column
+{
+	//text-align: center;
+	width: 60px;
+}
+
+.grid-view .button-column img
+{
+	border: 0;
+}
+
+.grid-view .checkbox-column
+{
+	width: 15px;
+}
+
+.grid-view table.items th.checkbox-column
+{
+	padding:0 15px 0 15px;
+}
+
+.grid-view table.items td.checkbox-column
+{
+	padding:0 15px 0 15px;
+}
+
+.grid-view .summary
+{
+	margin: 0 0 5px 0;
+	text-align: right;
+}
+
+.grid-view .pager
+{
+	margin: 5px 0 0 0;
+	text-align: right;
+}
+
+.grid-view .empty
+{
+	font-style: italic;
+}
+
+.grid-view .filters input,
+.grid-view .filters select
+{
+	width: 100%;
+	border: 1px solid #ccc;
+}

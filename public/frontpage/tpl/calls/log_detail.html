@@ -1,0 +1,173 @@
+<div style="{{full_height}} padding-bottom:150px">
+	<div class="wrapper">
+		
+		<fieldset>
+			<legend>
+			     <label style="font-size:1vw">&nbsp;&nbsp;<i class="fa fa-user"></i>&nbsp;Agent Information</label>
+			</legend>
+		    
+		  <div class=" ">
+		    <form class="form-horizontal form-validation">
+		      <div class="form-group">
+		        <label class="col-sm-2 control-label">Agent Name</label>
+		        <div class="col-sm-4">
+		          <input type="text" ng-model="log.wholename" class="form-control input-sm" disabled>
+		        </div>
+		          
+		        <label class="col-sm-2 control-label">Status </label>
+		        	<div class="col-sm-4">
+		            <input type="text" ng-model="log.dial_status" class="form-control input-sm" disabled>
+		          </div>
+		      </div>
+		    </form>
+		        
+				<form class="form-horizontal form-validation">
+		      <div class="form-group">
+		        <label class="col-sm-2 control-label">Extension No</label>
+		        <div class="col-sm-4">
+		          <input type="text" ng-model="log.ext" class="form-control input-sm" disabled>
+		        </div>
+		        <label class="col-sm-2 control-label">Duration </label>
+		        <div class="col-sm-4">
+		          <input class="form-control input-sm" placeholder="Guest Name" ng-model="log.duration" disabled>
+		        </div>
+		      </div>
+		    </form>
+			</div>
+		</fieldset>
+		
+	</div>
+
+<div class="wrapper">
+  <fieldset>
+    <legend>
+        <label style="font-size:1vw">&nbsp;&nbsp;<i class="fa fa-info"></i>&nbsp;Call Information</label>
+    </legend>
+    
+    <form class="form-horizontal form-validation" >
+        <div class="form-group">
+        <label class="col-sm-2 control-label" >Channel</label>
+        <div class="col-sm-4">
+          <input type="text" ng-model="log.channel" class="form-control input-sm" disabled>
+        </div>
+	    <div class="text-right" style="margin-top: -10px">
+				<a href="{{log.filepath+log.filename}}"><i class="fa fa-download" style="font-size: 20px"></i></a>
+				<div class="btn">
+					<audio src="{{log.filepath+log.filename}}" controls> </audio>
+        </div>
+      </div>
+			</div>
+
+      <div class="form-group">
+        <label class="col-sm-2 control-label">Caller ID </label>
+        <div class="col-sm-4">
+          <input type="text" ng-model="log.callerid" class="form-control input-sm" disabled>
+        </div>
+        <label class="col-sm-2 control-label">Reference No</label>
+        <div class="col-sm-4">
+          <input class="form-control input-sm" ng-model="log.id" disabled required>
+        </div>
+      </div>
+    </form>
+    
+          <form class="form-horizontal form-validation">
+            <div class="form-group">
+              <label class="col-sm-2 control-label">Caller's Name</label>
+              <div class="col-sm-4">
+                <input type="text" ng-model="log.caller_name" class="form-control input-sm" disabled>
+              </div>
+              <label class="col-sm-2 control-label">Email</label>
+              <div class="col-sm-4">
+                <input class="form-control input-sm" ng-model="log.email" disabled required>
+              </div>
+            </div>
+          </form>
+          <form class="form-horizontal form-validation">
+            <div class="form-group">
+              <label class="col-sm-2 control-label">Classification</label>
+              <div class="col-sm-4">
+                <select class='input-sm' ng-model="log.type" ng-change="onChangeClassification()"
+                      ng-options="value for value in classification_list">
+                </select>
+                <input style="margin-top: 3px" ng-show="classification == 'Others'" class="form-control input-sm" ng-model="log.guest_name" required>
+              </div>
+              <label class="col-sm-2 control-label">Company Name</label>
+              <div class="col-sm-4">
+                <input class="form-control input-sm" ng-model="log.companyname" disabled required>
+              </div>
+            </div>
+          </form>
+          <form class="form-horizontal form-validation">
+            <div class="form-group">
+              <label class="col-sm-2 control-label">Comment</label>
+              <div class="col-sm-10">
+                <textarea class="form-control input-sm" rows="3" ng-model="log.comment" style="resize: none" disabled></textarea>
+              </div>
+            </div>
+          </form>
+          <form class="form-horizontal">
+            <div class="form-group">
+              <label class="col-sm-2 control-label">Call History</label>
+              <div class="col-sm-10">
+                <table  st-table="datalist"  st-pipe="getDataList" class="table ticket" style="font-size: .7vw">
+                  <thead class="tblhead-sm">
+                  <tr style="font-size: .7vw">
+                    <th st-sort="id" st-sort-default="reverse"><b>&nbsp;DATE</b></th>
+                    <th st-sort="room"><b>TIME</b></th>
+                    <th st-sort="username"><b>DURATION </b></th>
+                    <th st-sort="ivr_code"><b>STATUS</b></th>
+                    <th st-sort="pms_code"><b>AGENT </b></th>
+                  </tr>
+                  </thead>
+                  <tbody ng-hide="isLoading">
+                    <tr class="" ng-repeat="row in callhistory">
+                      <td>{{row.date}}</td>
+                      <td>{{row.time}}</td>
+                      <td>{{row.duration}}</td>
+                      <td>{{row.status}}</td>
+                      <td>{{row.wholename}}</td>
+                    </tr>
+                  </tbody>
+                  <tbody ng-show="isLoading">
+                  <tr>
+                    <td colspan="9" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+                  </tr>
+                  </tbody>
+                  <tfoot ng-hide="isLoading">
+                  <tr ng-show="paginationOptions.totalItems > paginationOptions.pageSize">
+                    <td colspan="9" class="text-center">
+                      <div st-pagination="" st-items-by-page="paginationOptions.pageSize" st-displayed-pages="7" class="no-margin"></div>
+                    </td>
+                  </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          </form>
+
+          <form class="form-horizontal form-validation">
+            <div class="">
+              <label class="col-sm-2 control-label">Email To</label>
+              <div class="input-group col-sm-6">
+                <input type="text" class="form-control input-sm" ng-model="log.email" placeholder="Email" required="" disabled>
+                <span class="input-group-btn">
+                  <button class="btn btn-sm btn-default" type="button" ng-click="sendEmail()" disabled>Send</button>
+                </span>
+              </div>
+            </div>
+          </form>
+  </fieldset>
+</div>
+
+  </div>
+  <!--
+  <div class="wrapper-md1">
+    <div class="col-sm-12 input-group text-right">
+      <button class="btn m-b-xs w-xs btn-primary">&nbsp;&nbsp;&nbsp;OK&nbsp;&nbsp;&nbsp;</button>
+      <button class="btn m-b-xs w-xs btn-default" style="margin-left: 5px">Cancel</button>
+    </div>
+  </div>
+  -->
+</fieldset>
+</div>
+</div>

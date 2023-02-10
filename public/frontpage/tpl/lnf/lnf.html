@@ -1,0 +1,314 @@
+<link rel="stylesheet" href="css/multi.css">
+<style>
+    button, a {
+        cursor: pointer;
+    }
+
+    input[type=file] {
+        width: 150px;
+        height: 20px;
+    }
+
+    .dropdown-menu.columns-2 {
+        min-width: 400px;
+    }
+
+    .multi-column-dropdown {
+        list-style: none;
+    }
+
+    .dropdown-menu li a {
+        padding: 5px 15px;
+        font-weight: 300;
+    }
+
+    .dropdown-menu {
+        min-width: 200px;
+    }
+
+    .lost_lb {
+        background-color: #d72e3d !important;
+        color: #ffffff;
+    }
+
+    .found_lb {
+        background-color: #ffb80c !important;
+    }
+
+    .available_lb {
+        background-color: #3db349 !important;
+    <!-- Green -->
+    }
+
+    .matched_lb {
+        background-color: #6a0dad !important;
+    <!-- Purple -->
+    }
+
+    .discarded_lb {
+        background-color: #e5e500 !important;
+    <!-- Yellow -->
+    }
+
+    .disposed_lb {
+        background-color: #808080 !important;
+    <!-- Grey -->
+    }
+
+    .return_to_guest_lb {
+        background-color: #0000cc !important;
+    <!-- Blue -->
+    }
+
+    .surrendered_lb {
+        background-color: #808080 !important;
+    <!-- Grey -->
+    }
+
+    .guest_will_collect_lb {
+        background-color: #ff245b !important;
+    }
+
+
+    .lost_bc {
+        background-color: #ffb2ff !important;
+        color: #ffffff;
+    }
+
+    .found_bc {
+        background-color: #dc3545 !important;
+        color: #000000;
+    }
+
+    .return_to_guest_bc {
+        background: #ffefc1 !important;
+        color: #000000;
+    }
+
+    .guest_will_collect_bc {
+        background-color: #ff2850 !important;
+        color: #000000;
+    }
+
+    .disposed_bc {
+        background-color: #e0c1ff !important;
+        color: #000000;
+    }
+
+    .lost_left {
+        border-left: 25px solid #d72e3d !important;
+    }
+
+    .found_left {
+        border-left: 25px solid #ffb80c !important;
+    }
+
+    .return_to_guest_left {
+        border-left: 25px solid #ffcd3a !important;
+    }
+
+    .guest_will_collect_left {
+        border-left: 25px solid #ff245b !important;
+    }
+
+    .disposed_left {
+        border-left: 25px solid #9c3aff !important;
+    }
+
+    .custom_container {
+        margin: 30px 0;
+    }
+
+    @media (max-width: 767px) {
+        .dropdown-menu.multi-column {
+            min-width: 240px !important;
+            overflow-x: hidden;
+        }
+    }
+
+    .no-margin {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+
+    .panel-body-detail {
+        padding: 5px 0 10px !important;
+    }
+
+</style>
+<div ng-controller="LNFController" style="overflow:hidden;" class="ng-scope">
+    <!-- header -->
+    <script type="text/ng-template" id="lnf_create_found_dialog.html">
+        <div ng-include="'tpl/lnf/lnf_create_found_dialog.html'"></div>
+    </script>
+    <script type="text/ng-template" id="lnf_create_inquiry_dialog.html">
+        <div ng-include="'tpl/lnf/lnf_create_inquiry_dialog.html'"></div>
+    </script>
+    <script type="text/ng-template" id="lnf_status_change.html">
+        <div ng-include="'tpl/lnf/lnf_status_change.html'"></div>
+    </script>
+    <script type="text/ng-template" id="lnf_status_to_return_change.html">
+        <div ng-include="'tpl/lnf/lnf_status_to_return_change.html'"></div>
+    </script>
+    <script type="text/ng-template" id="lnf_status_to_matched_change.html">
+        <div ng-include="'tpl/lnf/lnf_status_to_matched_change.html'"></div>
+    </script>
+    <script type="text/ng-template" id="lnf_status_to_surrendered_change.html">
+        <div ng-include="'tpl/lnf/lnf_status_to_surrendered_change.html'"></div>
+    </script>
+    <script type="text/ng-template" id="lnf_status_to_discarded_change.html">
+        <div ng-include="'tpl/lnf/lnf_status_to_discarded_change.html'"></div>
+    </script>
+
+    <script type="text/ng-template" id="locationTypeahead.html">
+        <a>
+            <span ng-bind="match.model.name"></span><br>
+            <span style="font-size: 10px" ng-bind="match.model.type"></span>-<span style="font-size: 10px"
+                                                                                   ng-bind="match.model.property"></span><br>
+        </a>
+    </script>
+    <script type="text/ng-template" id="userTypeahead.html">
+        <a>
+            <span ng-bind="match.model.fullname"></span>
+        </a>
+    </script>
+    <script type="text/ng-template" id="guestTypeahead.html">
+        <a>
+            <span ng-bind="match.model.guest_name"></span> (<span ng-bind="match.model.arrival"></span> - <span
+                ng-bind="match.model.departure"></span>)<br>
+        </a>
+    </script>
+    <script type="text/ng-template" id="storedLocTypeahead.html">
+        <a>
+            <span ng-bind="match.model.stored_loc"></span>
+        </a>
+    </script>
+    <script type="text/ng-template" id="itemtypeTypeahead.html">
+        <a>
+            <span ng-bind="match.model.type"></span>
+        </a>
+    </script>
+    <script type="text/ng-template" id="itembrandTypeahead.html">
+        <a>
+            <span ng-bind="match.model.brand"></span>
+        </a>
+    </script>
+    <script type="text/ng-template" id="lnf_storedlocation.html">
+        <div ng-include="'tpl/lnf/lnf_storedlocation.html'"></div>
+    </script>
+    <script type="text/ng-template" id="lnf_itemtype.html">
+        <div ng-include="'tpl/lnf/lnf_itemtype.html'"></div>
+    </script>
+    <script type="text/ng-template" id="lnf_itemcolor.html">
+        <div ng-include="'tpl/lnf/lnf_itemcolor.html'"></div>
+    </script>
+    <script type="text/ng-template" id="lnf_itembrand.html">
+        <div ng-include="'tpl/lnf/lnf_itembrand.html'"></div>
+    </script>
+    <script type="text/ng-template" id="lnf_item_category.html">
+        <div ng-include="'tpl/lnf/lnf_item_category.html'"></div>
+    </script>
+    <script type="text/ng-template" id="lnf_itemcustomuser.html">
+        <div ng-include="'tpl/lnf/lnf_itemcustomuser.html'"></div>
+    </script>
+    <script type="text/ng-template" id="lnf_newguest.html">
+        <div ng-include="'tpl/lnf/lnf_newguest.html'"></div>
+    </script>
+    <script type="text/ng-template" id="modalImage.html">
+        <div ng-include="'tpl/lnf/modalImage.html'"></div>
+    </script>
+
+    <script type="text/ng-template" id="tpl.html">
+        <div class="popover-content" style="padding:10px 5px;">
+            <div>
+                <label class="text-xs" style="text-align:center;font-weight: bold;">{{row.status_name}} -
+                    {{row.item_id}}</label><br>
+                <div ng-repeat="item in row.details">
+                    <span class="text-xs text-muted">{{item}}</span>
+                </div>
+            </div>
+        </div>
+    </script>
+
+    <div class="row bg-light lt" style="padding: 5px; margin-left: -10px;background-color: #141414">
+        <div class="col-sm-6"><h1 class="m-n font-thin h5 text-black" style="color:#337ab7">
+            <label style="font-size: 25px; margin-bottom: 0"><i class="fa fa-binoculars"></i>
+                Lost&nbsp;&&nbsp;Found</label></h1>
+        </div>
+        <div ng-if="0" class="input-group col-xs-2 pull-right" style="padding-right: 15px">
+			<span ng-show="filter_value" class="input-group-btn">
+                <button type="submit" class="btn btn-sm " ng-click="clearLostfound()"><i
+                        class="fa fa-close"></i></button>
+            </span>
+            <input  type="text" class="form-control input-sm no-border padder"
+                   ng-keyup="$event.keyCode == 13 && searchLostfound(filter_value)" ng-model="filter_value"
+                   placeholder="Lost/Found">
+            <span class="input-group-btn">
+                <button type="submit" class="btn btn-sm " ng-click="searchLostfound(filter_value)"><i
+                        class="fa fa-search"></i></button>
+            </span>
+        </div>
+
+    </div>
+
+    <div class="hbox">
+        <div class="col" style="width: 100%"
+             ng-style="{'height': full_height,'overflow-y':'hidden','overflow-x':'hidden'}">
+
+            <div ng-if="!navflags" ng-cloak style="height: 44px">
+                <md-content>
+                    <md-tabs md-autoselect md-dynamic-height md-border-bottom style="margin-left: -7px; height:40px;">
+                        <md-tab style="margin:8px -5px 0;">
+                            <md-tab-label>
+                                <i class="fa fa-list"></i>&nbsp;&nbsp;Items
+                            </md-tab-label>
+
+                            <md-tab-body>
+                                <div fill-height additional-padding="50" debounce-wait="5"
+                                     ng-include="'tpl/lnf/lnf_list.html'"></div>
+                            </md-tab-body>
+                        </md-tab>
+
+                        <md-tab style="margin:8px -5px 0;">
+                            <md-tab-label>
+                                <i class="fa fa-list"></i>&nbsp;&nbsp;Inquiry
+                            </md-tab-label>
+                            <md-tab-body>
+                                <div fill-height additional-padding="50" debounce-wait="5"
+                                     ng-include="'tpl/lnf/lnf_list_inquiry.html'"
+                                     ng-controller="LNFInquiryListController"></div>
+                            </md-tab-body>
+                        </md-tab>
+
+                        <md-tab style="margin:8px -5px 0;">
+                            <md-tab-label>
+                                <i class="fa fa-list"></i>&nbsp;&nbsp;Matching
+                            </md-tab-label>
+                            <md-tab-body>
+                                <div fill-height additional-padding="50" style="margin-left:8px" debounce-wait="5"
+                                     ng-include="'tpl/lnf/lnf_list_matching.html'"
+                                     ng-controller="LNFMatchingListController"></div>
+                            </md-tab-body>
+                        </md-tab>
+
+
+                        <md-tab ng-repeat="tab in selectedTickets" style="margin:8px -5px 0;">
+                            <md-tab-label>&nbsp;{{getTicketNumber(tab)}}
+                                <i class="fa fa-times" style="margin-left: 5px; color:#FF0000"
+                                   ng-click="onSelectTicket(tab)"></i>
+                            </md-tab-label>
+                            <md-tab-body>
+                                <div fill-height additional-padding="50" debounce-wait="10"
+                                     ng-controller="LNFDetailController" ng-include="'tpl/lnf/lnf_detail.html'"
+                                     ng-init="init(tab)">
+                                </div>
+                            </md-tab-body>
+                        </md-tab>
+                    </md-tabs>
+
+                </md-content>
+            </div>
+        </div>
+
+    </div>
+</div>

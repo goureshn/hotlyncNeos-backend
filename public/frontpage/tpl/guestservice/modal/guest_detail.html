@@ -1,0 +1,373 @@
+<div class="modal-body wrapper-lg">
+  <h3 class="m-t-none m-b font-thin pull-left"  >Guest Detail</h3>
+  <button class="btn btn-default pull-right btn-success" style="margin-top: -13px;" ng-click="sendSMS()">&nbsp;<i class="fa fa-plus-circle" aria-hidden="true"></i>&nbsp;Send welcome SMS&nbsp;</button>
+  <hr/>
+  <div class ="row">
+    <div class="col-sm-2">
+      <h5 class="text-muted">ID :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.id}}</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">Checkout State :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.checkout_flag}}</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">Guest ID :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.guest_id}}</h5>
+    </div>
+  </div>
+  <div class ="row">
+    <div class="col-sm-2">
+      <h5 class="text-muted">Guest Group :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.guest_group}}</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">Guest Name :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.guest_name}}</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">Room Number :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.room}}</h5>
+    </div>
+  </div>
+
+  <div class ="row">
+    <div class="col-sm-2">
+      <h5 class="text-muted">Mobile :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.mobile}}</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">Email :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.email}}</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">Arrival Date :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.arrival}}</h5>
+    </div>
+  </div>
+  <div class ="row">
+    <div class="col-sm-2">
+      <h5 class="text-muted">Departure Date :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.departure}}</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">Share :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.share == 1 ? 'Shared' : 'Alone'}}</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">VIP :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.vip == 1 ? 'VIP' : ''}}</h5>
+    </div>
+  </div>
+  <div class ="row">
+    <div class="col-sm-2">
+      <h5 class="text-muted">Language :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.language}}</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">Pre Checkin :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.pre_checkin == 1 ? 'Yes' : 'No'}}</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">Arrived :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.is_arrived == 1 ? 'Yes' : 'No'}}</h5>
+    </div>
+  </div>
+  <div class ="row">
+    <div class="col-sm-2">
+      <h5 class="text-muted">Do not disturb :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.dnd == 1 ? 'Yes' : 'No'}}</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">Class of service :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.cos}}</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">Message Lamp :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.ml == 1 ? 'Yes' : 'No'}}</h5>
+    </div>
+  </div>
+
+  <div class ="row">
+    <div class="col-sm-2">
+      <h5 class="text-muted">Unique ID :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.uuid}}</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">Room Type :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.room_type}}</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">No of Adult :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.audit_no}}</h5>
+    </div>
+  </div>
+
+  <div class ="row">
+    <div class="col-sm-2">
+      <h5 class="text-muted">Rate Code :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.rate_code}}</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">No of Children :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.children}}</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">Company :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.company}}</h5>
+    </div>
+  </div>
+
+  <div class ="row">
+    <div class="col-sm-2">
+      <h5 class="text-muted">Occupation :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.occupation}}</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">DOB :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.dob}}</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">Country :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.country}}</h5>
+    </div>
+  </div>
+
+  <div class ="row">
+    <div class="col-sm-2">
+      <h5 class="text-muted">Nationality :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.nationality}}</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">Membership No :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.membership}}</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">Passport No :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.passport}}</h5>
+    </div>
+  </div>
+
+  <div class ="row">
+    <div class="col-sm-2">
+      <h5 class="text-muted">Checkin time :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.checkin | mydate}}</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">Checkout time :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.checkout}}</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">Street1 :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.street1}}</h5>
+    </div>
+  </div>
+
+  <div class ="row">
+    <div class="col-sm-2">
+      <h5 class="text-muted">Street2 :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.street2}}</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">City :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.city}}</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">State :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.state}}</h5>
+    </div>
+  </div>
+
+  <div class ="row">
+    <div class="col-sm-2">
+      <h5 class="text-muted">Country :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.country_town}}</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">Last Room :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.last_room}}</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">Preferred Room :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.preferred_room}}</h5>
+    </div>
+  </div>
+
+  <div class ="row">
+    <div class="col-sm-2">
+      <h5 class="text-muted">Luggage Tag U :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.luggage_tag}}</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">Car No :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.car_no}}</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">SPG/VIP Code :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.sip_vpg_code}}</h5>
+    </div>
+  </div>
+
+  <div class ="row">
+    <div class="col-sm-2">
+      <h5 class="text-muted">Car No :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.car_no}}</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">SPG/VIP Code :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.sip_vpg_code}}</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">Special Request :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.special_reqeust}}</h5>
+    </div>
+  </div>
+
+  <div class ="row">
+    <div class="col-sm-2">
+      <h5 class="text-muted">Amenities :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.amenity}}</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">Packages :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.package}}</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">Comments :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.comments}}</h5>
+    </div>
+  </div>
+
+  <div class ="row">
+    <div class="col-sm-2">
+      <h5 class="text-muted">def_ref8 :</h5>
+    </div>
+    <div class="col-sm-2">
+      <h5 class="text-muted">{{guest.def_ref8}}</h5>
+    </div>
+  </div>
+
+  <hr/>
+  <!---history list--->
+  <div class="table  table-responsive" additional-padding="40" style="margin-bottom: 10px;">
+    <table class="table table-striped ticket">
+      <thead class="tblhead-sm" style="background: #89898a;">
+      <tr>
+        <th class="text-center"  style="width: 30%">&nbsp;&nbsp;Date Time</th>
+        <th class="text-center"  style="width: 20%">&nbsp;&nbsp;Mobile</th>
+        <th class="text-center"  style="width: 20%">&nbsp;&nbsp;Status</th>
+        <th class="text-center"  style="width: 30%">&nbsp;&nbsp;User Name</th>
+      </tr>
+      </thead>
+      <tbody style="height: 100px; display:block;">
+      <tr class="" ng-repeat="row in history">
+        <td class="text-center" style="width: 30%">{{row.created_at | mydatetime}}</td>
+        <td class="text-center" style="width: 20%">{{row.number}}</td>
+        <td class="text-center" style="width: 20%">{{row.status == 0 ? 'No' : 'Yes'}}</td>
+        <td class="text-center" style="width: 30%">{{row.username}}</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+  <!------>
+  <div class="row">
+    <button type="button" class="btn btn-sm btn-success pull-right text-uc m-t-n-xs" ng-click="ok()"><strong>OK</strong></button>
+  </div>
+
+</div>

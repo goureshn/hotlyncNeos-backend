@@ -1,0 +1,44 @@
+<div class="modal-content">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">
+            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        </button>
+        <h3 class="modal-title" style="color:#2691d9" id="Heading">Upload CSV for Inventory/Parts</h3>
+    </div>
+    <br>
+    <div class="modal-body">
+        <button class="btn btn-icon btn-info" style="cursor: pointer"><i class="fa fa-paperclip"></i></button>
+        <div class="dropzone" excel-dropzone="[image/png, image/jpeg, image/gif]"
+             file="image"  file-name="imageFileName"  data-max-file-size="3" >
+        </div>
+        <div class="image-container" >
+            <!--<img ng-src={{image}}  />-->
+            <!--<span class="file-name" >{{imageFileName}}</span>-->
+        </div>
+        <form action>
+            <input type="file" excelfileread="uploadexcel.src" excelname="uploadexcel.name" exceltype="uploadexcel.type"
+                   style="opacity:0.001;width:35px;margin-top:-27px;max-height: 50px;" />
+        </form>
+        <div class="form-group" style="margin-top: 5px">
+            <div>
+                <label>{{ uploadexcel.name}}</label>
+            </div>
+            <div>
+                <a href="/uploads/part/sample.xlsx" style="font-size: 14px;text-decoration: underline" >Download Sample Templete</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer ">
+        <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal" ng-click="createExcel()">
+            <span class="glyphicon glyphicon-ok"></span>
+            <b> Create</b>
+        </button>
+        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal" ng-click="cancel()">
+            <span class="glyphicon glyphicon-remove"></span>
+            <b> Cancel</b>
+        </button>
+    </div>
+
+</div>
+

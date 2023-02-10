@@ -1,0 +1,110 @@
+<div ng-controller="ChatSettingController">
+	<style>
+		.chatsetting-wrapper {
+			padding: 20px;
+		}
+		.setting-row {
+			padding-top: 20px;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+		.job_roles_multiselect,.job_roles_multiselect .dropdown-multiselect, .job_roles_multiselect .dropdown-multiselect > div,
+		.job_roles_multiselect .dropdown-multiselect > div button, .job_roles_multiselect .dropdown-multiselect ul
+		{
+			width: 100%;
+		}
+
+	</style>
+
+	<div class="chatsetting-wrapper">
+		<div class="row">
+			<div class="col-lg-6 col-md-8 col-sm-12">
+				<div class="form-horizontal row setting-row">
+					<label class="col-sm-2">Waring Time</label>
+					<div class="col-sm-4">
+						<input type="number" min="0" step="1" class="form-control {{isLoading ? 'disabled' : ''}}" ng-model="setting.warning_time"
+							   ng-change="checkChanged()"
+						/>
+					</div>
+					<div class="col-sm-6">
+						Minutes(Color: Orange) To disabled, select 0
+					</div>
+				</div>
+				<div class="form-horizontal row setting-row">
+					<label class="col-sm-2">Critical Time</label>
+					<div class="col-sm-4">
+						<input type="number" min="0" step="1" class="form-control {{isLoading ? 'disabled' : ''}}" ng-model="setting.critical_time"
+							   ng-change="checkChanged()"
+						/>
+					</div>
+					<div class="col-sm-6">
+						Minutes(Color: Red) To disabled, select 0
+					</div>
+				</div>
+				<div class="form-horizontal row setting-row">
+					<label class="col-sm-2">Job Roles</label>
+					<div class="col-sm-4">
+						<div ng-dropdown-multiselect="" class="job_roles_multiselect {{isLoading ? 'disabled' : ''}}" events="job_roles_events" options="job_role_list" style="display: inline-block;" selected-model="setting.job_roles" extra-settings="job_roles_setting"
+							 translation-texts="job_roles_hint"></div>
+					</div>
+					<div class="col-sm-6"></div>
+				</div>
+
+				<div class="form-horizontal row setting-row">
+					<div class="col-sm-2">
+						<label style="font-size: 1.1em; font-weight: bold; margin: 0">
+							End Chat
+						</label>
+						<label style="font-size: 0.85em; font-style: italic; margin: 0">
+							(Ctrl + Shift + E)
+						</label>
+					</div>
+					<div class="col-sm-10">
+						<input type="text" class="form-control {{isLoading ? 'disabled' : ''}}" ng-model="setting.end_chat"
+							   ng-change="checkChanged()"
+						/>
+					</div>
+				</div>
+				<div class="form-horizontal row setting-row">
+					<div class="col-sm-2">
+						<label style="font-size: 1.1em; font-weight: bold; margin: 0">
+							No Answer
+						</label>
+						<label style="font-size: 0.85em; font-style: italic; margin: 0">
+							(Ctrl + Shift + L)
+						</label>
+					</div>
+					<div class="col-sm-10">
+						<input type="text" class="form-control {{isLoading ? 'disabled' : ''}}" ng-model="setting.no_answer"
+							   ng-change="checkChanged()"
+						/>
+					</div>
+				</div>
+				<div class="form-horizontal row setting-row">
+					<div class="col-sm-2">
+						<label style="font-size: 1.1em; font-weight: bold; margin: 0">
+							Accept Chat
+						</label>
+						<label style="font-size: 0.85em; font-style: italic; margin: 0">
+							(Ctrl + Shift + K)
+						</label>
+					</div>
+					<div class="col-sm-10">
+						<input type="text" class="form-control {{isLoading ? 'disabled' : ''}}" ng-model="setting.accept_chat"
+							   ng-change="checkChanged()"
+						/>
+					</div>
+				</div>
+				<div class="row" style="margin-top: 40px">
+					<div class="col-sm-12 text-center">
+						<button class="btn btn-success btn-sm {{bChanged == true && isLoading == false ? '' : 'disabled'}}" ng-click="onSaveChatSetting()" style="min-width: 100px"><i class="fa fa-save"></i>&nbsp; Save</button>
+						&nbsp;&nbsp;
+						<button class="btn btn-danger btn-sm {{bChanged == true && isLoading == false ? '' : 'disabled'}}" ng-click="onReset()" style="min-width: 100px"><i class="fa fa-refresh"></i>&nbsp; Reset</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+</div>

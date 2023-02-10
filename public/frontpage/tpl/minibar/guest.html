@@ -1,0 +1,113 @@
+<div ng-controller="MinibarGuestController" style="{{full_height}}">
+    <div class="">
+        <div>
+	        	<div class="form-horizontal col-md-12 wrapper" style="display: table; background-color: #141414; padding-top: 10px">
+								<div class="row col-md-3" style="">
+									<h3 class="m-n font-thin" style="white-space: nowrap; color: #337ab7"> <i class="fa fa-glass"></i>&nbsp;&nbsp;Minibar by Guest</h3>
+								</div>
+								<div class="btn-group pull-left" style="margin-bottom: 5px;margin-right: 5px;">
+                    <button id="dateranger" class="btn btn-sm btn-icon btn-default  pull-left" data-toggle="tooltip" title="Filter" data-placement="bottom"
+                            data-title="Refresh" ui-jq="daterangepicker" ui-options="dateRangeOption" class="form-control pull-right input-sm">
+                        <i class="glyphicon glyphicon-calendar"></i>
+                    </button>
+                </div>
+                <div class="input-group col-md-2 pull-left">
+                    <input type="text" ng-model="searchtext" ng-keyup="onSearch()" class="form-control input-sm bg-light no-border rounded padder" placeholder="Search">
+                      <span class="input-group-btn">
+                        <button type="submit" class="btn btn-sm bg-light rounded"><i class="fa fa-search"></i></button>
+                      </span>
+                </div>
+	        	</div>
+	        	
+	        	<!--
+            <div>
+                <div class="btn-group pull-left">
+                    <h3 class="m-n font-thin" style="color: #5fbae8;">Minibar By Guest &nbsp;&nbsp;</h3>
+                </div>
+                <div class="btn-group pull-left" style="margin-bottom: 5px;margin-right: 5px;">
+                    <button id="dateranger" class="btn btn-sm btn-icon btn-default  pull-left" data-toggle="tooltip" title="Filter" data-placement="bottom"
+                            data-title="Refresh" ui-jq="daterangepicker" ui-options="dateRangeOption" class="form-control pull-right input-sm">
+                        <i class="glyphicon glyphicon-calendar"></i>
+                    </button>
+                </div>
+                <div class="input-group col-md-2 pull-left">
+                    <input type="text" ng-model="searchtext" ng-keyup="onSearch()" class="form-control input-sm bg-light no-border rounded padder" placeholder="Search">
+                      <span class="input-group-btn">
+                        <button type="submit" class="btn btn-sm bg-light rounded"><i class="fa fa-search"></i></button>
+                      </span>
+                </div>
+            </div>-->
+            <div class="table table-responsive">
+                <table  st-table="guestlist"  st-pipe="getDataList" class="table table-striped ticket">
+                    <thead >
+                    <tr class="tblhead-sm">
+                        <th class="text-center" st-sort="id" st-sort-default="reverse" style="width: 5%"><b>&nbsp;ID</b></th>
+                        <th class="text-center" st-sort="guest_name" style="width: 15%"><b>Guest Name</b></th>
+                        <th class="text-center" style="width: 12%" st-sort="room"><b>Room</b></th>
+                        <th class="text-center" st-sort="checkin" style="width: 15%"><b>Checkin</b></th>
+                        <th class="text-center" st-sort="checkout" style="width: 10%"><b>Checkout</b></th>
+                        <th class="text-center" st-sort="wholename" style="width: 10%"><b>Total Amount</b></th>
+                        <th class="text-center" st-sort="created_at" style="width: 10%"><b>Download</b></th>
+                    </tr>
+                    </thead>
+                    <tbody ng-hide="isLoading">
+                    <tr class="" ng-repeat="row in datalist">
+                       <td colspan="7">
+                           <table style="width: 100%">
+                               <tr ng-click="getViewDetail(row,$index)">
+                                   <td class="text-center" style="width: 5%" >
+                                       <i class="fa fa-arrow-down"> </i>
+                                       <a>{{row.id}}</a>
+                                   </td>
+                                   <td class="text-center" style="width: 15%" >{{row.guest_name}}</td>
+                                   <td class="text-center" style="width: 12%">{{row.room}}</td>
+                                   <td class="text-center" style="width: 15%">{{getDateFormat(row.checkin)}}</td>
+                                   <td class="text-center" style="width: 10%">{{getDateFormat(row.checkout)}}</td>
+                                   <td class="text-center" style="width: 10%" >{{ currency }} {{row.total_amount | number :2 }}</td>
+                                   <td class="text-center" style="width: 10%" ng-click="onDownloadPDF(row);$event.stopPropagation();"><i class="fa fa-file-pdf-o"></i></td>
+                               </tr>
+                           </table>
+                           <table ng-show="row.view" style="width:80%" align="center"  class="table table-striped ticket">
+                               <tr>
+                                  <td>
+                                    <div style="background: #ececec;padding-top: 20px; padding-bottom: 20px;">
+                                       <div style="background:#e0dede" >
+                                           <label class="text-center" style="width: 15%"><b>&nbsp;Date</b></label>
+                                           <label class="text-center" style="width: 20%"><b>Quantity</b></label>
+                                           <label class="text-center" style="width: 15%"><b>Item</b></label>
+                                           <label class="text-center" style="width: 15%"><b>Amount</b></label>
+                                           <label class="text-center" style="width: 15%"><b>Total Amount</b></label>
+                                           <label class="text-center" style="width: 10%"><b>User Name</b></label>
+                                       </div>
+                                       <div style="border: solid 1px; border-color: #d6d8d8" ng-repeat="row1 in detaillist">
+                                           <label class="text-center" style="width: 15%">{{row1.key_name}}</label>
+                                           <label class="text-center" style="width: 20%">{{row1.quantity}}</label>
+                                           <label class="text-center" style="width: 15%">{{row1.item_name}}</label>
+                                           <label class="text-center" style="width: 15%">{{row1.price}}</label>
+                                           <label class="text-center" style="width: 15%">{{row1.mount}}</label>
+                                           <label class="text-center" style="width: 10%">{{row1.username}}</label>
+                                       </div>
+                                    </div>
+                                    </td>
+                               </tr>
+                           </table>
+                       </td>
+                    </tr>
+                    </tbody>
+                    <tbody ng-show="isLoading">
+                    <tr>
+                        <td colspan="9" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+                    </tr>
+                    </tbody>
+                    <tfoot ng-hide="isLoading">
+                    <tr ng-show="paginationOptions.totalItems > paginationOptions.pageSize">
+                        <td colspan="9" class="text-center">
+                            <div st-pagination="" st-items-by-page="paginationOptions.pageSize" st-displayed-pages="7" class="no-margin"></div>
+                        </td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

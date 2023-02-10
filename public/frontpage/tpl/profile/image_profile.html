@@ -1,0 +1,53 @@
+<style>
+    .modal {
+        text-align: center;
+        padding: 0!important;
+    }
+
+    .modal::before {
+        content: '';
+        display: inline-block;
+        height: 100%;
+        vertical-align: middle;
+        margin-right: -4px;
+    }
+
+    .modal-dialog {
+        display: inline-block;
+        text-align: left;
+        vertical-align: middle;
+    }
+</style>
+<div>
+    <div class="wrapper-md">
+        <div class="m-b">
+            <input type="file" id="fileInput_1" />
+        </div>
+        <div class="hbox hbox-auto-xs">
+            <div class="col" style="width: 220px;">
+                <div class="wrapper-sm b-a bg-white m-r-xs m-b-xs">
+                    <div class="bg-light" style="height:170px;width: 200px;">
+                        <img-crop
+                                image="myImage"
+                                result-image="image.myCroppedImage"
+                                result-image-size="160"
+                                area-type="{{cropType}}"
+                        ></img-crop>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="inline bg-white wrapper-sm b-a">
+                    <div class="bg-light" style="height: 150px;height:150px;">
+                        <img ng-src="{{image.myCroppedImage}}"  />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="btn-group m-t">
+            <label class="btn btn-default" ng-model="cropType" ng-click="onType('circle')">Circle</label>
+            <label class="btn btn-default" ng-model="cropType" ng-click="onType('square')">Square</label>
+            <label class="btn btn-default" ng-model="cropType" ng-click="onSaveImage()">Save</label>
+        </div>
+    </div>
+</div>

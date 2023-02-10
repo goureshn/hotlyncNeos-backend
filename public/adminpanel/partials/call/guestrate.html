@@ -1,0 +1,156 @@
+<input type="hidden" id="id" value="-1" ng-model="model_data.id"/>
+
+	<div class="panel panel-default"> 
+		<div class="panel-heading wrapper"> 
+			<button type="button" class="btn btn-success btn-sm" style="float:right; margin-top: -5px" data-toggle="modal" data-target="#addModal" ng-disabled="job_role!='SuperAdmin'&&edit_flag==0" ng-click="onShowEditRow(-1)">
+				<span class="glyphicon glyphicon-plus"></span>
+				<b> Add New </b>
+			</button>   
+			<button  type="button" class="btn btn-success btn-sm" style="float:right; margin-top: -5px; margin-right: 10px" data-target="#exportModal" data-toggle="modal" ng-disabled="job_role!='SuperAdmin'&&edit_flag==0" >
+				<b><i class="fa fa-download"></i> Export File </b>
+			</button>                          
+			<i class="fa fa-phone"></i>                           
+			<span class="font-bold">Guest Rate Mapping Management</span>
+		</div>                         
+		<div> 
+			<table id="table_grid" class="table table-hover table-bordered" style="text-align: center;width:100%" ng-model = "table_grid"> 
+				<thead> 
+					<tr> <!--
+						<th class="no-sort" style="text-align: center">
+							<input type="checkbox" id="checkall" />
+						</th>-->
+						<th style="text-align: center" ng-repeat = "field in fields">
+							<b>{{field}}</b>
+						</th>									
+						<th class="no-sort" style="text-align: center">Edit</th>
+						<th class="no-sort" style="text-align: center">Delete</th>
+					</tr>                                     
+				</thead>                    
+			</table>                             
+		</div>
+	</div>  
+
+	<div class="modal fade" id="exportModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"> 
+		<div class="modal-dialog" role="document"> 
+			<div class="panel"> 
+				<div class="modal-header bg"> 
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"> 
+						<span aria-hidden="true">&times;</span> 
+					</button>  
+					<h5 class="modal-title font-bold" style="color:#2691d9">
+							<i class="fa fa-download"></i>&nbsp;Export Report</h5>
+				</div>
+				<div class="modal-body"> 
+					<br>
+					<form class="form-horizontal form-validation">
+							<label class="control-label text-xs font-bold" style="margin-left: 15px;font-size: 10px">&nbsp;&nbsp;&nbsp;&nbsp;Do you want to export this table?</label><br><br>
+					</form>
+					<form class="form-horizontal form-validation">
+							<center>
+									<button type="button" class="btn btn-success btn-sm" ng-click="onDownloadExcel()" data-dismiss="modal">
+									<span class="font-bold"><i class="fa fa-check"></i>&nbsp;Ok</span></button>
+									<button type="button" class="btn btn-danger btn-sm" class="close" data-dismiss="modal">
+									<span class="font-bold"><i class="fa fa-times"></i>&nbsp;Cancel</span></button>           
+						  </center>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"> 
+	<div class="modal-dialog" role="document"> 
+		<div class="panel"> 
+			<div class="modal-header bg"> 
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"> 
+					<span aria-hidden="true">&times;</span> 
+				</button>                             
+				<h5 class="modal-title font-bold" style="color:#2691d9" ng-if="model_data.id<0">
+					<i class="fa fa-plus"></i>&nbsp;Add Guest Extension</h5>
+				<h5 class="modal-title font-bold" style="color:#2691d9" ng-if="model_data.id>=0">
+					<i class="fa fa-pencil"></i>&nbsp;Edit Guest Extension</h5>				
+			</div>                         
+			<div class="modal-body"> 
+				<br> 
+				<form class="form-horizontal"> 					
+					<div class="form-group">
+						<label class="control-label col-sm-4">Carrier Group :</label>
+						<div class="col-sm-5">
+							<select id='carrier_id' class='form-control' ng-model="model_data.carrier_group_id"
+								ng-options="value.id as value.name for (key, value) in carriergroups">		
+							</select>							
+						</div>
+					</div>
+					<text-item formlabel="Rate Map Name" modelname="model_data.name"></text-item>
+					<div class="form-group">
+						<label class="control-label col-sm-4">Carrier Charge :</label>
+						<div class="col-sm-5">
+							<select class='form-control' ng-model="model_data.carrier_charges"
+								ng-options="value.id as value.charge for (key, value) in carriercharges">		
+							</select>							
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label col-sm-4">Hotel Charge :</label>
+						<div class="col-sm-5">
+							<select class='form-control' ng-model="model_data.hotel_charges"
+								ng-options="value.id as value.name for (key, value) in propertycharges">		
+							</select>							
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label col-sm-4">Tax :</label>
+						<div class="col-sm-5">
+							<select class='form-control' ng-model="model_data.tax"
+								ng-options="value.id as value.name for (key, value) in taxes">		
+							</select>							
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label col-sm-4">Allowance :</label>
+						<div class="col-sm-5">
+							<select class='form-control' ng-model="model_data.call_allowance"
+								ng-options="value.id as value.Name for (key, value) in allowances">		
+							</select>							
+						</div>
+					</div>	
+					<div class="form-group">
+						<label class="control-label col-sm-4">Time Slab :</label>
+						<div class="col-sm-5">
+							<select class='form-control' ng-model="model_data.time_slab"
+								ng-options="value.id as value.name for (key, value) in timeslabs">		
+							</select>							
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Room Type:</label>
+						<!-- <div class="col-sm-5">
+												<select id='prpty_id' class='form-control' ng-model="model_data.location_group"
+													ng-options="value.id as value.name for (key, value) in loc_grps">		
+												</select>							
+											</div> -->
+						<div class="col-md-5">
+							<div ng-dropdown-multiselect="" options="room_types" selected-model="room_type" checkboxes="true" extra-settings="room_type_hint_setting"
+							 translation-texts="room_type_hint"></div>
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">VIP:</label>
+						<!-- <div class="col-sm-5">
+												<select id='prpty_id' class='form-control' ng-model="model_data.location_group"
+													ng-options="value.id as value.name for (key, value) in loc_grps">		
+												</select>							
+											</div> -->
+						<div class="col-md-5">
+							<div ng-dropdown-multiselect="" options="vips" selected-model="vip_type" checkboxes="true" extra-settings="vip_hint_setting"
+							 translation-texts="vip_hint"></div>
+						</div>
+					</div>						
+				</form>                             
+			</div>                
+			<submit-form id="model_data.id" updatedata="onUpdateRow()"></submit-form>						
+		</div>                     
+	</div>                 
+</div>             
+
+<dialog-delete title="Carrier Rate" modelname="model_data.name" deletedata="deleteRow()"></dialog-delete>

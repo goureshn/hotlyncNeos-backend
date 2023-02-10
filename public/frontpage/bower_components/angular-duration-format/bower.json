@@ -1,0 +1,31 @@
+{
+  "name": "angular-duration-format",
+  "version": "1.0.0",
+  "homepage": "https://github.com/erykpiast/angular-duration-format",
+  "authors": [
+    "Eryk Napierała <eryk.piast@gmail.com>"
+  ],
+  "description": "AngularJS filter for formatting duration",
+  "main": "dist/angular-duration-format.js",
+  "keywords": [
+    "angular",
+    "duration",
+    "format",
+    "time"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": ">=1.2"
+  },
+  "devDependencies": {
+    "angular-mocks": ">=1.2",
+    "jquery": "~2.1"
+  }
+}

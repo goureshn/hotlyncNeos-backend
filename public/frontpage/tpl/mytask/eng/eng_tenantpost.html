@@ -1,0 +1,303 @@
+<style>
+
+@media only screen and (max-width: 480px)	{
+	
+	.mobile-only
+		{
+			display: block;
+			margin-top: 10px;
+		}
+}
+
+</style>
+
+
+<div style="padding-left: 0px; padding-right: 0px; font-size: 15px" ng-controller="EngTenantPostController as ctrl" ng-init="init()">
+	<toaster-container toaster-options="{'position-class': 'toast-top-right', 'close-button':true}">
+	</toaster-container>
+
+	<script type="text/ng-template" id="locationTypeahead.html">
+		<a>
+		<span ng-bind="match.model.name"></span><br>
+		<span style="font-size: 10px" ng-bind="match.model.type"></span><br>
+		</a>
+	</script>
+
+	<script type="text/ng-template" id="userTypeahead.html">
+		<a>
+		<span ng-bind="match.model.tenant_name"></span><br>
+		<span style="font-size: 10px" ng-bind="match.model.email"></span><br>
+		<span style="font-size: 10px" ng-bind="match.model.contact"></span><br>
+		</a>
+	</script>
+	<script type="text/ng-template" id="equipmentTypeahead.html">
+		<a>
+			<span style="font-size: 12px" ng-bind="match.model.name"></span><br>
+			<span style="font-size: 10px" ng-bind="match.model.equip_id"></span><br>
+			<span style="font-size: 10px" ng-bind="match.model.location_name"></span>- <span style="font-size: 10px" ng-bind="match.model.location_type"></span><br>
+		</a>
+	</script>
+
+	<script type="text/ng-template" id="guestTypeahead.html">
+		<a>
+		<span>{{match.model.guest_name}}</span><br>  
+		<span style="font-size: 10px" ng-show="match.model.arrival && match.model.departure">
+			{{match.model.arrival}} ~ {{match.model.departure}}
+		</span><br ng-show="match.model.arrival && match.model.departure">
+		<span style="font-size: 10px" ng-hide="match.model.arrival && match.model.departure">
+			Email: {{match.model.email}}
+			</span><br ng-hide="match.model.arrival && match.model.departure">
+		<span style="font-size: 10px" ng-hide="match.model.arrival && match.model.departure">
+			Mobile: {{match.model.mobile}}
+		</span>
+		<br ng-hide="match.model.arrival && match.model.departure">
+		</a>
+  	</script>
+	<!-- - - - - - - - HEADER - - - - - - - -->
+	<div>
+		<div class="navbar-inverse box-shadow" style="vertical-align:middle;height: 40px">
+			<div class="navbar-header" style="height: 40px;">
+				<a ui-sref="app.guestservice.dashboard" class="navbar-brand text-lt">
+				<img src="img/complaint_header_logo.png" alt="HotLync" style="margin-left: -7px; width:250px; height: 30px">
+				</a>
+			</div>
+		</div>
+	</div>
+	<!-- - - - - - - - /HEADER - - - - - - - -->
+	<!--
+	<label>&nbsp;<i class="fa fa-exclamation-circle text-danger"></i>&nbsp;&nbsp;Complaint Details</label>
+	<div class="btn-group pull-right" data-toggle="buttons">
+		<label class="btn btn-primary" style="font-size: 13px">
+			<input type="radio" name="options" id="option1" autocomplete="off">Complaint No:&nbsp;&nbsp;{{complaint_id}}
+		</label>
+		<label class="btn btn-primary" style="font-size: 13px">
+			<input type="radio" name="options" id="option2" autocomplete="off"> Request Time:&nbsp;&nbsp;{{complaint.request_time}}
+		</label>
+	</div>
+     -->           
+	<div class="wrapper-md">
+		<!-- - - - - - - - EMPLOYEE DETAILS - - - - - - - -->
+		<div>
+			<center>
+				<button type="button" class="btn btn-sm m-b-xs w-sm btn-dark font-bold">
+					<span class="text-success">Request No:&nbsp;&nbsp;{{eng_id}}</span>
+				</button>                            
+				<button type="button" class="btn btn-sm m-b-xs w-sm btn-dark font-bold">
+					<span class="text-success">Request Time:&nbsp;&nbsp;{{repair_request.request_time}}</span>
+				</button>
+				<!--
+				<button  class ="pull-right" type="button" class="btn btn-dark btn-sm" ng-click="prevHist()">
+					<span class="text-success font-bold"><i class="fa fa-refresh"></i>&nbsp;History</span></button> 
+				-->
+			</center>
+			<right>
+				
+			</right>
+		</div>
+	  
+	  	<div class="panel panel-default" style="border-radius: 4px">
+		  	<div class="panel-heading">
+				<div class="pull-left">
+					<label class="font-bold text-sm"><i class="glyphicon glyphicon-user text-default"></i>&nbsp;&nbsp;Requestor Details</label>
+				</div>
+				<br>
+			</div>
+		  
+			<div class="panel-body" style="padding: 5px 0px">
+				<div class="form-horizontal form-validation" style="padding: 0px">
+					<div class="col-sm-6" style="padding: 5px 20px">
+						<label class="control-label text-xs text-muted">Requestor Search</label>
+						<div  class="input-group" >
+							<!--
+								<input type="text" minlength="3" ng-model="requester.tenant_name" class="form-control input-sm"
+									placeholder="Search Email ID or Name"									
+								typeahead-editable="false"
+								uib-typeahead="user.tenant_name for user in getTenantList($viewValue)"
+								typeahead-on-select="onRequesterSelect($item, $model, $label)"
+								typeahead-min-length="0"
+								typeahead-no-results="noResults"
+								
+								>  
+							-->  
+								<input type="text" ng-model="requester.tenant_email" ng-keypress="($event.which === 13) ? onRequesterSelect(requester.tenant_email):0" class=" form-control bg-light input-sm  padder"
+									   placeholder="Search Email ID">      
+									<span class="input-group-btn">
+										<button type="submit" class="btn btn-sm " ng-click="onRequesterSelect(requester.tenant_email)"><i class="fa fa-search"></i></button>
+									</span>       
+						</div>
+							
+					</div>
+					<!--
+					<div class="col-sm-1" style="padding-top : 30px;">
+						<i class="fa fa-plus-circle fa-2x text-info" style="cursor: pointer" title="Add New Requestor" ng-click="addrequestor()"  role="button" tabindex="0" aria-hidden="false"></i>
+					</div>
+				-->
+					<div class="col-sm-6" style="padding: 5px 20px" ng-hide = "show == 0">
+						<label class="control-label text-xs text-muted">Tenant Name</label>
+						<input type="text" class="form-control input-sm" ng-model="requester.tenant_name" ng-disabled = "flag == 1">
+					</div>
+					
+					<div class="col-sm-6" style="padding: 5px 20px">
+						<label class="control-label text-xs text-muted">Location<i class="text-danger">*</i></label>
+						<div class="scrollable-dropdown-menu">
+							<input type="text" ng-model="repair_request.location_name" class="form-control input-sm" placeholder="Enter location name"
+								uib-popover="Enter location name" popover-trigger="mouseenter"
+								uib-typeahead="item.name for item in location_list | filter:$viewValue | limitTo:10"
+								typeahead-min-length="0"
+								typeahead-editable="false"
+								typeahead-template-url="locationTypeahead.html"
+								typeahead-on-select="onLocationSelect($item, $model, $label)" required>
+						</div>
+					</div>  
+					    
+				</div>
+			</div>
+	  	</div>
+		<!-- - - - - - - - /EMPLOYEE DETAILS - - - - - - - -->
+	  
+	  	<!-- - - - - - - - GUEST DETAILS - - - - - - - -->
+		<div class="panel panel-default" style="border-radius: 4px">
+			<div class="panel-heading">
+				<div class="pull-left">
+					<label class="font-bold text-sm"><i class="fa fa-info-circle text-default"></i>&nbsp;&nbsp;Request Details</label>
+				</div>
+				<br>
+			</div>
+			  
+			<div class="panel-body" style="padding: 5px 0px">
+				<div class="form-horizontal form-validation" style="padding: 0px 20px 0px 20px">
+					<div class="form-group" >
+						<div class="col-sm-6">
+							<label class="control-label text-xs text-muted">Priority</label>
+							<div>
+								<select class='form-control input-sm' ng-model="repair_request.priority"
+									ng-options="value for value in prioritys" />
+							</div>
+						</div>  
+						<div class="col-sm-6">
+							<label class="control-label text-xs text-muted">Summary<i class="text-danger">*</i></label>
+							<div>
+								<textarea class="form-control input-sm" rows="1" ng-model="repair_request.repair"
+										style="resize:none" maxlength="160" required></textarea>
+							</div>
+						</div>    	
+					</div>	
+
+					<div class="form-group" >                 
+						<div class="col-sm-12">
+							<label class="control-label text-xs text-muted">Description<i class="text-danger">*</i></label>
+							<div>
+								<textarea class="form-control input-sm" rows="3" ng-model="repair_request.description"
+										style="resize:none" required></textarea>
+							</div>
+						</div>                    
+					</div>
+<!--
+					<div class="form-group">
+						<div class="col-sm-6">
+							<label class="control-label text-xs text-muted">Equipment<i class="text-danger">*</i></label>
+							<div class="scrollable-dropdown-menu">
+								<input class="form-control input-sm col-sm-11" type="text" ng-model="repair_request.equipment_name"
+										popover-trigger="mouseenter" placeholder="Enter Equipment Name, ID or Location"
+										uib-typeahead="group.name for group in equipment_list | filter:$viewValue | limitTo:10"
+										typeahead-min-length="0"
+										typeahead-on-select="onEquipmentSelect(repair_request, $item, $model, $label)"
+										typeahead-template-url="equipmentTypeahead.html" required>
+
+							</div>
+						</div> 
+						<div class="col-sm-6">
+							<label class="control-label text-xs text-muted">Equipment ID</label>
+							<div>
+								<input type="text" ng-model="repair_request.equip_id" class="form-control input-sm" disabled>
+							</div>
+						</div>       
+					</div>	
+					           
+				
+				
+					<div class="form-group">
+					<div class="col-sm-6" >
+						<label for="email" class="control-label text-xs text-muted">Property<i class="text-danger">*</i></label>
+						<div>
+						<select class='form-control input-sm' ng-model="repair_request.property_id" ng-change="onChangedProperty()"
+								ng-options="value.id as value.name for (key, value) in property_list">
+						</select>
+						</div>
+					</div>
+				
+						<div class="col-sm-3">
+							<label class="control-label text-xs text-muted">Location<i class="text-danger">*</i></label>
+							<div class="scrollable-dropdown-menu">
+								<input type="text" ng-model="repair_request.location_name" class="form-control input-sm" placeholder="Enter location name"
+									uib-popover="Enter location name" popover-trigger="mouseenter"
+									uib-typeahead="item.name for item in location_list | filter:$viewValue | limitTo:10"
+									typeahead-min-length="0"
+									typeahead-editable="false"
+									typeahead-template-url="locationTypeahead.html"
+									typeahead-on-select="onLocationSelect($item, $model, $label)" required>
+							</div>
+						</div>    
+						<div class="col-sm-3">
+							<label class="control-label text-xs text-muted">Location Type</label>
+							<div>
+								<input type="text" ng-model="repair_request.location_type" class="form-control input-sm" disabled>
+							</div>
+						</div>  
+					</div>    
+				-->
+					<div class="form-group">
+						<div class="col-sm-6">
+							<label class="control-label text-xs text-muted">Category</label>
+							<div>
+								<select  class='form-control' ng-change = "selectMainCategory()" ng-model="repair_request.category"
+											ng-options="type.id as type.category_name for type in category_list">
+								</select>								
+							</div>
+						</div>    
+
+						<div class="col-sm-6" ng-show="repair_request.category != undefined">
+							<label class="control-label text-xs text-muted">Sub Category</label>
+							<div>
+								<select  class='form-control' ng-model="repair_request.sub_category"
+									ng-options="type.id as type.subcategory_name for type in subcategory_list">
+								</select>								
+							</div>
+						</div>    
+					</div>
+
+					<div class="form-group" >
+						<div class="col-sm-3">
+							<label class="control-label text-xs text-muted">Attach</label>
+							<button class="btn btn-dark btn-xs" ng-if="repair_request.files.length < 1" ngf-select="uploadFiles($files)" multiple ngf-max-files="1" ngf-max-size="10MB"
+									ngf-accept="'image/*,application/pdf,application/docx'" ngf-pattern="'image/*,application/pdf,application/docx'">
+								<span class="text-success font-bold"><i class="fa fa-folder-open"></i>&nbsp;Add file</span>
+							</button>
+							<small class="text-muted">(png,jpg,docx,pdf : < 10MB)</small>
+						</div>
+						<div class="col-sm-9">
+
+							<label class="control-label text-xs text-muted"><i class="fa fa-file" aria-hidden="true"></i>&nbsp;Files</label><br/>
+							<div>
+								<div class = "col-sm-3" ng-repeat=" (key,f) in repair_request.files" class="text-xs" style="margin-bottom: 5px">
+									<img style = "width:85%;max-height: 217px;object-fit: cover;"  ng-src = "{{repair_request.thumbnails[key]}}" alt = "{{f.name}}" >
+									<span class="glyphicon icon-close" style="margin-top:3px; color: red"
+											ng-click="removeFile($index)"></span>
+								</div>
+							</div>
+
+						</div>
+					</div>
+				</div>
+
+		  	</div>
+		</div>	  
+
+		<center>
+			<button type="button " class="btn btn-dark btn-sm" ng-click="createRepairRequest()" ng-disabled="disable_create">
+			<span class="text-success font-bold"><i class="fa fa-check"></i>&nbsp;Create</span></button>
+			<button type="button" class="btn btn-dark btn-sm" ng-click="cancelEng()">
+			<span class="text-danger font-bold"><i class="fa fa-times"></i>&nbsp;Cancel</span></button>           
+		</center>
+  	</div>  
+</div>

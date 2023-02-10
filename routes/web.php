@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Backoffice\Property\PropertyWizardController;
 use App\Http\Controllers\FrontendController;
+use App\Http\Controllers\BackofficeController;
+use App\Http\Controllers\DataController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -25,3 +27,7 @@ Route::get('/', function () {
     
     //return view('welcome');
 });
+
+Route::get('/hotlyncBO', [BackofficeController::class, 'index']);
+Route::get('/hotlyncBO/signin', [BackofficeController::class, 'signin']);
+Route::post('project/setting', [DataController::class, 'getProjectSetting']);//add

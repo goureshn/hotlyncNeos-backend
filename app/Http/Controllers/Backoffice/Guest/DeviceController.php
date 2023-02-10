@@ -92,6 +92,7 @@ class DeviceController extends UploadController
 						<span class="glyphicon glyphicon-trash"></span>
 					</button></p>';
 				})
+				->rawColumns(['function', 'sec_function', 'loc_name', 'sec_loc_name', 'cb_name', 'checkbox', 'edit', 'delete'])
 				->make(true);
     }
 
@@ -129,6 +130,9 @@ class DeviceController extends UploadController
 	public function storeng(Request $request)
     {
     	$input = $request->except('id');
+		foreach ($input as $key => $value) {
+			if($value === null) $input[$key] = "";
+		}
 
 		$model = Device::create($input);
 

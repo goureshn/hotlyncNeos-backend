@@ -1,0 +1,31 @@
+<div class="form-field multimove">
+	<div class="row">
+		<div class="col-xs-5">
+			<select id='search' class='form-control' multiple='multiple' size='8'>		
+			</select>												
+		</div>
+		
+		<div class="col-xs-2">
+			<button type="button" id="search_rightAll" class="btn btn-block"><i class="glyphicon glyphicon-forward"></i></button>
+			<button type="button" id="search_rightSelected" class="btn btn-block"><i class="glyphicon glyphicon-chevron-right"></i></button>
+			<button type="button" id="search_leftSelected" class="btn btn-block"><i class="glyphicon glyphicon-chevron-left"></i></button>
+			<button type="button" id="search_leftAll" class="btn btn-block"><i class="glyphicon glyphicon-backward"></i></button>
+		</div>
+		
+		<div class="col-xs-5">
+			<select id='search_to' class='form-control' multiple='multiple' size='8'>		
+			</select>							
+		</div>
+	</div>	
+</div>
+
+<div class="modal-footer " id="createButton">
+	<button type="button" class="btn btn-success btn-sm" data-dismiss="modal" ng-click="onSubmitSelect()">
+		<span class="glyphicon glyphicon-ok"></span>
+		<b> Submit</b>
+	</button>
+	<button id="closeButton" type="button" class="btn btn-danger btn-sm" data-dismiss="modal">
+		<span class="glyphicon glyphicon-remove"></span>
+		<b> Cancel</b>
+	</button>
+</div>	

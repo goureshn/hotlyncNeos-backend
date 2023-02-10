@@ -1,0 +1,389 @@
+<div ng-controller="GroupChatController">
+	<script type="text/ng-template" id="modalImage.html">
+		<div ng-include="'tpl/guestservice/chat/modalImage.html'"></div>
+	</script>
+	<script type="text/ng-template" id="participantTypeahead.html">
+		<div class = "list-group-item">
+			<a herf class="pull-left thumb-sm avatar m-r">
+				<img ng-if="match.model.picture" ng-src="{{match.model.picture}}" alt="..." class="img-circle">
+				<i class="on b-white bottom" ng-class="{'on' : match.model.online_status == 1, 'off' : match.model.online_status != 1}"></i>
+			</a>
+			<!--<a herf class="pull-right">
+				<i class="fa fa-close" ></i>
+			</a>-->
+			<div class="clear">
+				<div><a onmouseover="this.style.textDecoration='underline';"
+						onmouseout="this.style.textDecoration='none';" href>{{match.model.wholename}}</a></div>
+			</div>
+		</div>
+	</script>
+	<div class="col-sm-3" style="padding: 0px">
+		<md-content class="call_menu navi clearfix">
+			<md-tabs md-selected="selected_md"  md-disable-animation md-autoselect md-dynamic-height md-border-bottom style="height:30px;">
+				<md-tab  md-disable-animation style="margin:8px -5px 0px;" class="{{active == 1 ? 'tab-current' : ''}}">
+					<md-tab-label>
+						&nbsp;&nbsp;Groups
+					</md-tab-label>
+					<md-tab-body>
+						<div class="panel-body" style="padding: 5px">
+							<form class="form-horizontal">
+								<div class="form-group">
+									<div class="col-sm-12">
+										<div class="input-group">
+											<input type="text" class="form-control" ng-model="filter.group_name" ng-keyup="$event.keyCode == 13 && onSearchGroup()" />
+											<span class="input-group-btn">
+												<button type="button" class="btn btn-default" ng-click="onSearchGroup()"><i class="fa fa-search"></i></button>
+											</span>
+										</div>
+									</div>
+								</div>
+							</form>
+							<div class="list-group" style="margin-bottom: 5px"
+								 fill-height additional-padding="180">
+								<ul class="list-group no-bg no-borders">
+									<li class="list-group-item" ng-repeat="item in groupchat_list" ng-class="{'active': item.id == selected_groupchat.id}" ng-click="onSelectGroup(item)">
+										<a herf class="pull-left thumb-sm avatar m-r">
+
+                                            <img ng-if="item.profile_image" style = "object-fit: cover;width:40px;height:40px;border-radius:50%;" ng-src="/{{item.profile_image}}" alt="..." class="img-circle">
+											<img ng-if="!item.profile_image" ng-src="/frontpage/img/default_photo.png" alt="..." class="img-circle">
+
+											<!--<i class="on b-white bottom" ng-class="{'on' : item.online_status == 1, 'off' : item.online_status != 1}"></i>-->
+										</a>
+										<a herf class="pull-right">
+											Created By : <small class="text-muted" style = "padding:5px;">{{item.created_name}}</small>
+
+										</a>
+										<div class="clear">
+											<div><a href>{{item.groupchat_name}}</a></div>
+											<small class="text-muted">{{item.description}}&nbsp;&nbsp;&nbsp;</small>
+										</div>
+									</li>
+								</ul>
+							</div>
+						</div>
+					</md-tab-body>
+				</md-tab>
+
+				<md-tab style="margin:8px -5px 0px;">
+					<md-tab-label>&nbsp;
+						<i class="fa fa-plus-square"></i> New Group
+					</md-tab-label>
+
+					<md-tab-body>
+						<form class="form-horizontal" style = "padding:15px;">
+							<div class="form-group">
+								<div class="col-sm-12">
+									<label class="control-label text-xs text-muted">Group Name</label>
+
+									<div class="">
+										<input type="text" class="input-sm form-control" ng-model="groupchat.group_name" />
+									</div>
+								</div>
+							</div>
+
+							<div class="form-group">
+								<div class="col-sm-12" style="padding-right: 0px">
+									<label class="control-label text-xs text-muted">Participants
+									</label>
+									<div class="scrollable-dropdown-menu">
+										<div class="col-lg-10" style = "padding:0;">
+											<input type="text" ng-model="participant.wholename" class="form-control input-sm" placeholder="Enter participant name"
+												   uib-popover="Enter participant name" popover-trigger="mouseenter"
+												   uib-typeahead="user.wholename for user in user_list | filter:$viewValue | limitTo:20"
+												   typeahead-min-length="0"
+												   typeahead-editable="false"
+												   typeahead-template-url="participantTypeahead.html"
+												   typeahead-on-select="onParticipantSelect($item, $model, $label)" required>
+
+										</div>
+										<div class="col-lg-2"  style = "margin:0px;">
+											<i ng-if = "participant.id" class="fa fa-plus-circle fa-2x text-info " style="cursor: pointer" title="Add New Participant" ng-click="addNewParticipant()"></i>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="col-sm-12" style="padding-right: 0px;max-height:350px;overflow-y:auto;">
+								<div class="list-group no-bg no-borders">
+									<div class="list-group-item" ng-repeat="item in participantListNewGroup">
+										<a herf class="pull-left thumb-sm avatar m-r">
+											<img ng-src="{{item.picture}}" alt="." class="img-circle">
+											<i class="on b-white bottom" ng-class="{'on' : item.online_status == 1, 'off' : item.online_status != 1}"></i>
+										</a>
+
+										<a herf class="pull-right">
+											<i class="fa fa-close" ng-click="removeNewParticipant(item)"></i>
+										</a>
+
+										<div class="clear">
+											<div><a href>{{item.wholename}}</a></div>
+											<small class="text-muted">{{item.job_role_name}}</small>
+										</div>
+
+									</div>
+								</div>
+							</div>
+
+							<div class="form-group">
+								<div class="col-lg-12">
+									<label class="control-label text-xs text-muted">Description</label>
+									<div>
+										<textarea ng-model="groupchat.description" rows = 4 class="form-control input-sm ng-pristine ng-untouched ng-valid ng-empty" style="resize: none;" maxlength="200" ng-trim="false"></textarea>
+									</div>
+								</div>
+							</div>
+							<div class="form-group">
+								<div class="col-lg-12" style = "padding-top:10px;">
+									<div class="col-sm-4">
+										<label class="control-label text-xs text-muted">Profile Picture</label>
+										<button class="btn btn-dark btn-xs"  ngf-select="uploadFiles($files)" multiple ngf-max-files="1" ngf-max-size="10MB"
+												ngf-accept="'image/*'" ngf-pattern="'image/*'">
+											<span class="text-success font-bold"><i class="fa fa-folder-open"></i>&nbsp;Add file</span>
+										</button>
+
+										<small class="text-muted text-xs">Maximum size of 10MB is allowed.</small>
+									</div>
+									<div class="col-sm-8">
+										<label class="control-label text-xs text-muted"><i class="fa fa-file" aria-hidden="true"></i>&nbsp;Files</label><br/>
+										<div>
+											<div class = "col-sm-12" class="text-xs" style="margin-bottom: 5px">
+												<img style = "width:85%;max-height: 217px;object-fit: cover;"  ng-src = "{{groupchat.profile_picture_thumbnail}}" ng-show="groupchat.profile_picture_thumbnail" alt = "{{groupchat.profile_picture.name}}" ng-click="openModalImage(groupchat.profile_picture_thumbnail, groupchat.profile_picture.name)" >
+												<span ng-if = "groupchat.profile_picture.name" class="glyphicon icon-close" style="margin-top:3px; color: red"
+													  ng-click="removeFile()"></span>
+											</div>
+										</div>
+										<div style = "padding:0px;" ng-if="0">
+                                                    <span class="progress" ng-show="upload_progress > 0">
+                                                    <div style="width:{{progress}}%" ng-bind="upload_progress + '%'"></div>
+                                                    </span>
+											{{errorUploadMsg}}
+										</div>
+									</div>
+								</div>
+
+							</div>
+
+							<div class="pull-right"  style="margin-right: 20px;">
+								<button type="button" class="btn btn-sm btn-dark text-uc m-t-n-xs" ng-click="createGroup()"><strong>
+									<span class="text-success ng-binding" >&nbsp;&nbsp;&nbsp;Create&nbsp;&nbsp;&nbsp;</span>
+								</strong></button>
+								<button type="button" class="btn btn-sm btn-dark text-uc m-t-n-xs" ng-click="cancelGroup()"><strong>
+									<span class="text-danger">&nbsp;&nbsp;Cancel&nbsp;&nbsp;</span></strong></button>
+							</div>
+						</form>
+
+					</md-tab-body>
+				</md-tab>
+			</md-tabs>
+		</md-content>
+
+	</div>  	
+	<div class="col-sm-6" style="padding: 0px">
+		<div class="panel panel-default">
+		    <div class="panel-heading">
+		    	<label class="text-sm font-bold"><i class="fa fa-comment text-default"></i>&nbsp;&nbsp;{{selected_groupchat.groupchat_name}}
+		    		<!--<span class="label m-l-sm"
+		    			ng-class="{
+		    				'bg-wakeup-success': agent.online_status==1,		    				
+		    				'bg-wakeup-canceled': agent.online_status!=1,		    				
+		    				}"
+		    			>
+		    	  		{{agent.online_status==1 ? 'Online' : 'Offline'}}
+		    	  	</span>-->
+				</label>
+				&nbsp;&nbsp;&nbsp;&nbsp;
+				<label  class="pull-right text-sm font-bold">
+					Created By:
+					<span class="label m-l-sm bg-wakeup-success" >
+		    	  		{{selected_groupchat.created_name}}
+		    	  	</span>
+		    	</label>
+		    	<div class="pull-right" style = "margin-right:20px;">
+		    		{{current_session.typing_flag == 0 ? 'Typing...' : ''}}
+		    	</div>  
+		    </div>
+		    <div class="panel-body" fill-height additional-padding="180" scroll-glue keep-scroll scrollytop="loadMore()">
+		      	
+				<div class="m-b" scroll-item ng-repeat="msg in messages">
+			        <a ng-if="msg.from_id != agent_id" herf class="pull-left thumb-sm avatar m-r" style="margin-top: 0px">
+	            		<img ng-src="{{msg.from_picture}}" alt="..." class="img-circle">
+	            	  	<i class="on b-white bottom" ng-class="{'on' : msg.online_status == 1, 'off' : msg.online_status != 1}"></i>
+	            	</a>
+
+			        <!-- incoming -->
+			        <div class="m-l-xxl" style="margin-left: 60px; max-width:90%" ng-if="msg.from_id != agent_id">
+			        	<!-- Text -->
+			        	<div class="pos-rlt wrapper b b-light bg-info r r-2x" ng-if="msg.type == 1"> 
+			        	  	<span class="arrow left pull-up arrow-info"></span>
+			        	  	<p class="m-b-none chat" dynamic="msg.text"></p>
+			        	</div>
+			        	<!-- Image -->
+			        	<div class="r r-2x" ng-if="msg.type == 2">	
+			        		<img ng-src="{{msg.path}}" img-orientation style="max-width: 200px; max-height: 200px" ng-click="onShowImage(msg)"/>		        	  				        	  	
+			        	</div>			        	
+			        	<p class="m-b-none chat" ng-if="msg.type > 1">
+			        		<a href="{{msg.path}}">
+			        			<i class="fa fa-file-pdf-o" style="font-size: 20px; color:red" title="Summary PDF download" ng-if="msg.type == 3"></i>&nbsp;{{msg.text}}
+			        		</a>
+			        	</p>
+			        	<small class="text-muted"><i class="fa fa-ok text-success"></i>{{ msg.created_at | mydate: "h:mm a" }}</small>
+			        </div>
+			        <!-- outgoing -->
+			        <div ng-if="msg.from_id == agent_id" style="margin-left:10%;">
+			        	<div style="text-align: right;">
+			        		<label class="font-bold">
+			        			<a class="text-sm ng-binding">
+			        			  	<i class="fa fa-user text-primary"></i>
+			        			  &nbsp;{{agent_id == msg.from_id ? 'Me' : msg.agent_name}}
+			        			</a>
+			        		</label>                  
+			        	</div>
+			        	<!-- Text -->
+			        	<div class="pos-rlt wrapper bg-primary r r-2x" ng-if="msg.type == 1">
+			        	  	<span class="arrow right pull-up arrow-primary"></span>
+			        	 	 <p class="m-b-none" dynamic="msg.text"></p>
+			        	</div>
+			        	<small class="text-muted" ng-if="msg.type == 1">{{ msg.created_at | mydate: "h:mm a" }}</small>
+			        	<!-- Image -->
+			        	<div class="r r-2x" ng-if="msg.type == 2" style="text-align: right">	
+			        		<img ng-src="{{msg.path}}" img-orientation style="max-width: 200px; max-height: 200px" ng-click="onShowImage(msg)"/>		        	  				        	  	
+			        	</div>
+			        	<p class="m-b-none chat" style="text-align: right" ng-if="msg.type > 1">
+			        		<a href="{{msg.path}}">
+			        			<i class="fa fa-file-pdf-o" style="font-size: 20px; color:red" title="Summary PDF download" ng-if="msg.type == 3"></i>&nbsp;{{msg.text}}
+			        		</a>
+			        	</p>
+			        	<p class="m-b-none chat" style="text-align: right" ng-if="msg.type > 1"><small class="text-muted">{{ msg.created_at | mydate: "h:mm a" }}</small></p>
+			        </div>
+		      	</div>	
+
+		    </div>
+		    <footer class="panel-footer">
+		     	<div>
+			        <form class="m-b-none">			        	
+			        	<div class="input-group" >
+				        	<span class="input-group-addon" ngf-select="onClickAttach($file)" ngf-max-size="10MB" ngf-accept="'image/*,application/pdf'" ngf-pattern="'image/*,application/pdf'">
+				        		<i class="fa fa-plus text-success" style="font-size:.7vw;"></i>
+				        	</span>	
+			        		<input type="text" class="form-control" ng-model="current_session.chat" placeholder="Write a message..." 
+			        		ng-keyup="$event.keyCode == 13 && onSendMessageGroup(current_session.chat)"
+			        		ng-change="onChangeChat(current_session.chat)"  ng-model-options="{debounce: 500}"
+			        		>
+			        		<span class="input-group-btn">
+			        			<button class="btn btn-default" type="button"  style="font-size: 12px" ng-click="onSendMessageGroup(current_session.chat)">Send</button>
+			        		</span>
+			        	</div>			        
+			        </form>
+			    </div>
+		    </footer>
+		</div>
+	</div>
+
+	<div class="col-sm-3" style="padding: 0px">
+
+		<form class="form-horizontal" style = "padding:15px;">
+			<div class="form-group">
+				<div class="col-sm-12">
+					<label class="control-label text-xs text-muted">Group Name</label>
+
+					<div class="">
+						<input type="text" class="input-sm form-control" ng-model="selected_groupchat.groupchat_name" />
+					</div>
+				</div>
+			</div>
+
+			<div class="form-group">
+				<div class="col-sm-12" style="padding-right: 0px">
+					<label class="control-label text-xs text-muted">Participants
+					</label>
+					<div class="scrollable-dropdown-menu">
+						<div class="col-lg-10" style = "padding:0;">
+							<input type="text" ng-model="participant_detail.wholename" class="form-control input-sm" placeholder="Enter participant name"
+								   uib-popover="Enter participant name" popover-trigger="mouseenter"
+								   uib-typeahead="user.wholename for user in user_list | filter:$viewValue | limitTo:20"
+								   typeahead-min-length="0"
+								   typeahead-editable="false"
+								   typeahead-template-url="participantTypeahead.html"
+								   typeahead-on-select="onParticipantDetailSelect($item, $model, $label)" required>
+
+						</div>
+						<div class="col-lg-2"  style = "margin:0px;">
+							<i ng-if = "participant_detail.id" class="fa fa-plus-circle fa-2x text-info " style="cursor: pointer" title="Add New Participant" ng-click="addNewParticipantDetail()"></i>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-sm-12" style="padding-right: 0px;max-height:350px;overflow-y:auto;">
+				<div class="list-group no-bg no-borders">
+					<div class="list-group-item" ng-repeat="item in participantListDetailGroup">
+						<a herf class="pull-left thumb-sm avatar m-r">
+                            <img  ng-src="{{item.picture}}" alt="." class="img-circle">
+							<i class="on b-white bottom" ng-class="{'on' : item.online_status == 1, 'off' : item.online_status != 1}"></i>
+						</a>
+
+						<a ng-if ="item.user_id != agent_id" herf class="pull-right">
+							<i class="fa fa-close" ng-click="removeNewParticipantDetail(item)"></i>
+						</a>
+
+						<div class="clear">
+							<div><a href>{{item.wholename}}</a></div>
+							<small class="text-muted">{{item.job_role_name}}</small>
+						</div>
+
+					</div>
+				</div>
+			</div>
+
+			<div class="form-group">
+				<div class="col-lg-12">
+					<label class="control-label text-xs text-muted">Description</label>
+					<div>
+						<textarea ng-model="selected_groupchat.description" rows = 4 class="form-control input-sm ng-pristine ng-untouched ng-valid ng-empty" style="resize: none;" maxlength="200" ng-trim="false"></textarea>
+					</div>
+				</div>
+			</div>
+			<div class="form-group">
+				<div class="col-lg-12" style = "padding-top:10px;">
+					<div class="col-sm-4">
+						<label class="control-label text-xs text-muted">Profile Picture</label>
+						<button class="btn btn-dark btn-xs"  ngf-select="uploadFilesDetail($files)" multiple ngf-max-files="1" ngf-max-size="10MB"
+								ngf-accept="'image/*'" ngf-pattern="'image/*'">
+							<span class="text-success font-bold"><i class="fa fa-folder-open"></i>&nbsp;Add file</span>
+						</button>
+
+						<small class="text-muted text-xs">Maximum size of 10MB is allowed.</small>
+					</div>
+					<div class="col-sm-8">
+						<label class="control-label text-xs text-muted"><i class="fa fa-file" aria-hidden="true"></i>&nbsp;Files</label><br/>
+						<div>
+							<div class = "col-sm-12" class="text-xs" style="margin-bottom: 5px">
+								<img ng-if = "!selected_groupchat.profile_picture_thumbnail" style = "width:85%;max-height: 217px;object-fit: cover;"   ng-src = "/{{selected_groupchat.profile_image}}" ng-click="openModalImage('/'+selected_groupchat.profile_image)" >
+								<img  ng-if = "selected_groupchat.profile_picture_thumbnail" style = "width:85%;max-height: 217px;object-fit: cover;"   ng-src = "{{selected_groupchat.profile_picture_thumbnail}}" ng-show="selected_groupchat.profile_picture_thumbnail" alt = "{{selected_groupchat.profile_picture.name}}" ng-click="openModalImage(selected_groupchat.profile_picture_thumbnail, selected_groupchat.profile_picture.name)" >
+								<span ng-if = "selected_groupchat.profile_picture.name" class="glyphicon icon-close" style="margin-top:3px; color: red"
+									  ng-click="removeFileDetail()"></span>
+							</div>
+						</div>
+						<div style = "padding:0px;" ng-if="0">
+                                                    <span class="progress" ng-show="upload_progress > 0">
+                                                    <div style="width:{{progress}}%" ng-bind="upload_progress + '%'"></div>
+                                                    </span>
+							{{errorUploadMsg}}
+						</div>
+					</div>
+				</div>
+
+			</div>
+
+			<div class="pull-right"  style="margin-right: 20px;">
+				<button type="button" class="btn btn-sm btn-dark text-uc m-t-n-xs" ng-click="updateGroup()"><strong>
+					<span class="text-success ng-binding" >&nbsp;&nbsp;&nbsp;Update&nbsp;&nbsp;&nbsp;</span>
+				</strong></button>
+				<button type="button" class="btn btn-sm btn-dark text-uc m-t-n-xs" ng-click="deleteGroup()"><strong>
+					<span class="text-danger">&nbsp;&nbsp;Delete&nbsp;&nbsp;</span></strong></button>
+			</div>
+		</form>
+
+
+	</div>
+</div>

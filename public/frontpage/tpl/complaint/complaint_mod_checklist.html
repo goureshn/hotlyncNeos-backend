@@ -1,0 +1,101 @@
+
+<div ng-controller="ChecklistModController" style="{{full_height}}">
+    <div class="form-horizontal col-md-12 wrapper" style="display: table; background-color: #141414; padding-top: 10px">
+        <div class="col-sm-6"><h1 class="m-n font-thin h5 text-black" style="color:#337ab7">
+                <label style="font-size: 25px; margin-bottom: 0px"><i class="glyphicon glyphicon-check"></i>
+            Manager on Duty</label></h1>
+        </div>
+        <div class="input-group col-xs-2 pull-right" style="padding-right: 15px">
+            <span ng-show="filter_value" class="input-group-btn">
+                    <button type="submit" class="btn btn-sm " ng-click="clearLog()"><i class="fa fa-close"></i></button>
+            </span>	
+            <input type="text" ng-model="filter_value" class="form-control input-sm no-border  padder" ng-keyup="$event.keyCode == 13 && searchLog(filter_value)" placeholder="Search">
+            <span class="input-group-btn">
+                <button type="submit" class="btn btn-sm " ng-click="searchLog(filter_value)"><i class="fa fa-search"></i></button>
+            </span>	          	
+        </div> 
+    </div>
+
+    <div class="table table-responsive">
+             <table  st-table="datalist"  st-pipe="getDataList" class="table ticket" >
+                    <thead class="tblhead-sm">
+                        <tr>
+                            <th class="text-center" st-sort="id" style="width: 5%"><b>ID</b></th>
+                            <th class="text-center" style="width: 15%"><b>Date & Time</b></th>
+                            <th class="text-center" style="width: 15%"><b>Name</b></th>
+                            
+                            <th class="text-center" style="width: 15%"><b>Created By</b></th>
+                            <th class="text-center" style="width: 15%"><b>Role</b></th>
+                            <th class="text-center" style="width: 15%"><b>Action</b></th>
+                        </tr>
+                    </thead>
+                    <tbody ng-hide="isLoading" >
+                        <tr class="" ng-repeat="row in datalist">
+                        <td colspan="6">
+                        <table style="width: 100%">
+                        <tr class="" ng-click="onClickRow(row, $index)" >
+                            <td class="text-center" style="width: 5%"><i class="fa fa-arrow-down"> </i>
+                                <a>{{row.id}}</a></td>
+                            <td class="text-center" style="width: 15%">{{row.created_at}}</td>
+                            <td class="text-center" style="width: 15%">{{row.name}}</td>
+                            <td class="text-center" style="width: 15%">{{row.wholename}}</td>
+                            <td class="text-center" style="width: 15%">{{row.job_role}}</td>
+                            <td  class="text-center" style="width: 15%" >
+                                
+                                <a ng-show = "!row.complete" class="btn default btn-xs green" ng-click="edit(row)">
+                                    <i class="fa fa-pencil"></i></a>
+                                <a ng-show = "row.complete" class="btn default btn-xs red" ng-click="onDownloadPDF(row);$event.stopPropagation();">
+                                        <i class="fa fa-file-pdf-o"></i></a>
+                       
+                            </td>
+                        </tr>
+                        </table>
+                        <table ng-show="row.view" style="width:80%" align="center"  class="table table-striped ticket">
+                                <tr>
+                                   <td>
+                                     <div style="background: #ececec;padding-top: 20px; padding-bottom: 20px;">
+                                        <div style="background:#e0dede" >
+                                            <label class="text-center"style="width: 20%" ><b>&nbsp;Category</b></label>
+                                            <label class="text-center" style="width: 20%"><b>Task</b></label>
+                                            <label class="text-center" style="width: 10%"><b>Yes</b></label>
+                                            <label class="text-center" style="width: 5%"><b>No</b></label>
+                                            <label class="text-center" style="width: 5%"><b>N/A</b></label>
+                                            <label class="text-center" style="width: 20%"><b>Comment</b></label>
+                                           
+                                        </div>
+                                        <div style="border: solid 1px; border-color: #d6d8d8" ng-repeat="row1 in detaillist">
+                                            <label class="text-center" style="width: 20%">{{row1.category}}</label>
+                                            <label class="text-center" style="width: 20%">{{row1.task}}</label>
+                                            <label class="text-center" style="width: 10%"  ng-if='row1.yes' ><i class="fa fa-check"></i></label>
+                                            <label class="text-center" style="width: 10%"  ng-if='!row1.yes' ></label>
+                                            <label class="text-center" style="width: 5%" ng-if='row1.no'><i class="fa fa-check"></i></label>
+                                            <label class="text-center" style="width: 5%"  ng-if='!row1.no' ></label>
+                                            <label class="text-center" style="width: 5%" ng-if='row1.na'><i class="fa fa-check"></i></label>
+                                            <label class="text-center" style="width: 5%"  ng-if='!row1.na' ></label>
+                                            <label class="text-center" style="width: 20%">{{row1.comment}}</label>
+                                            
+                                           
+                                        </div>
+                                     </div>
+                                     </td>
+                                </tr>
+                            </table>
+                       </td>
+                       </tr>
+                    </tbody>
+                    <tbody ng-show="isLoading">
+                        <tr>
+                            <td colspan="6" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+                        </tr>
+                    </tbody>
+                    <tfoot ng-hide="isLoading">
+                        <tr ng-show="paginationOptions.totalItems > paginationOptions.pageSize">
+                            <td colspan="6" class="text-center">
+                                <div st-pagination="" st-items-by-page="paginationOptions.pageSize" st-displayed-pages="7" class="no-margin"></div>
+                            </td>
+                        </tr>
+                    </tfoot>
+            </table>
+    </div>  
+</div>
+

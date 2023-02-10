@@ -1,0 +1,28 @@
+<div class="panel">
+    <div class="modal-header">
+        <button type="button" class="close" aria-hidden="true" ng-click="onCancel()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+        <h5 class="modal-title font-bold" style="color:#2691d9">
+            <i class="fa fa-trash"></i>&nbsp;Delete {{title}}
+        </h5>
+    </div>
+    <br>
+    <div class="modal-body">
+        <div class="alert alert-danger">
+            <span class="glyphicon glyphicon-warning-sign"></span> Are you sure you want to delete {{name}}?
+        </div>
+    </div>
+    <div class="modal-footer ">
+        <div class="modal-footer ">
+            <button type="button" class="btn btn-danger btn-sm" ng-click="onOk()">
+                <i class="fa fa-save"></i>
+                <b> Yes</b>
+            </button>
+            <button type="button" class="btn btn-default btn-sm" ng-click="onCancel()">
+                <i class="fa fa-times"></i>
+                <b> No</b>
+            </button>
+        </div>
+    </div>
+</div>

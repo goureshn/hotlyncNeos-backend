@@ -1,0 +1,40 @@
+/*@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Source Sans Pro Light'), local('Titillium-Light'), url('../fonts/titillium/Titillium-Light.woff') format('woff');
+}*/
+
+@font-face {
+  font-family: 'Titillium Web';
+  font-style: normal;
+  font-weight: 500;
+  src: local('Titillium Web'), local('TitilliumWeb-Regular'), url('../fonts/titillium/Titillium-Regular.woff')format('woff');
+  
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 300;
+  src: local('Roboto'), local('Roboto'), url('../fonts/roboto/Roboto-Regular.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Source Sans Pro';
+  font-style: normal;
+  font-weight: 300;
+  src: local('Source Sans Pro Light'), local('SourceSansPro-Light'), url('../fonts/sourcesanspro/sourcesanspro-light.woff') format('woff');
+}
+@font-face {
+  font-family: 'Source Sans Pro';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Source Sans Pro'), local('SourceSansPro-Regular'), url('../fonts/sourcesanspro/sourcesanspro.woff') format('woff');
+}
+@font-face {
+  font-family: 'Source Sans Pro';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Source Sans Pro Bold'), local('SourceSansPro-Bold'), url('../fonts/sourcesanspro/sourcesanspro-bold.woff') format('woff');
+}

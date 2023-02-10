@@ -1,0 +1,45 @@
+<style>
+    .datetime .popover {
+        max-width: 650px;
+    }
+</style>
+
+<!--<div class="row" style="margin-top: 20px; margin-right: 0px">-->
+    <!--<p class="pull-right">-->
+        <!--<label class="md-check" style="margin-right: 20px" ng-repeat="ext in filter.extensions">-->
+            <!--<input type="checkbox" ng-model="ext.selected" ng-click="onChangeExtension()">-->
+            <!--<i class="blue"></i>-->
+            <!--{{ext.extension}}-->
+        <!--</label>-->
+    <!--</p>-->
+<!--</div>-->
+<div style="width:94%; height: 100vh; overflow-y: auto">
+    <div class="row">
+        <label class="gen-header">PERSONAL VS. BUSINESS CALLS</label>
+    </div>
+    <div class="col-sm-12 input-group text-right">
+        <div class="btn-group">
+            <label class="btn btn-info btn-sm" ng-model="filter.dateFilter" uib-btn-radio="'Today'">Today</label>
+            <label class="btn  btn-info btn-sm" ng-model="filter.dateFilter" uib-btn-radio="'Weekly'">Weekly</label>
+            <label class="btn  btn-info btn-sm" ng-model="filter.dateFilter" uib-btn-radio="'Monthly'">Monthly</label>
+            <label class="btn  btn-info btn-sm" ng-model="filter.dateFilter" uib-btn-radio="'Yearly'">Yearly</label>
+            <label class="btn  btn-info btn-sm" ng-model="filter.dateFilter" uib-btn-radio="'Custom Days'">Custom Days</label>
+        </div>
+        <input style="width: 200px;" ng-disabled="filter.dateFilter != 'Custom Days'" ng-model="filter.daterange" ui-jq="daterangepicker" ui-options="dateRangeOption" class="form-control pull-right input-sm">
+    </div>
+
+    <div ui-chart="data" chart-options="chartOptions"></div>
+
+    <div class="row" style="margin-left: 20px; margin-right: 0px">
+        <label class="gen-header">CALL FREQUENCY</label>
+    </div>
+
+    <div>
+        <div class="col-md-6">
+            <div ui-chart="by_count" chart-options="by_count_option"></div>
+        </div>
+        <div class="col-md-6">
+            <div ui-chart="by_cost" chart-options="by_cost_option"></div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,137 @@
+<style>
+    .modal-dialog  {width:1000px;}
+</style>
+<div class="modal-body wrapper-lg"> 
+    <h3 class="m-t-none m-b font-thin"><i class="fa fa-info-circle" aria-hidden="true"></i>&nbsp;&nbsp;Call Classification (More Details)</h3>
+    <div class="row">
+        <div class="col-sm-12 b-r">
+            <div class="panel b-a">
+                <div class="panel-heading b-b b-light font-bold">Call Detail</div>
+                <div class="panel-body" style="height: 160px">
+                    <div>
+                        <!--<div class="col-sm-3">-->
+                            <!--<label class="label_title">Created Date:</label>-->
+                        <!--</div>-->
+                        <!--<div class="col-sm-3">-->
+                            <!--<label class="content">{{getDate(call)}}</label>-->
+                        <!--</div>-->
+                        <div class="col-sm-3" style="text-align: right">
+                            <label>Call Type :</label>
+                        </div>
+                        <div class="col-sm-3">
+                            <label class="font-bold">{{call.call_type}}</label>
+                        </div>
+                        <div class="col-sm-3" style="text-align: right">
+                            <label>Cost :</label>
+                        </div>
+                        <div class="col-sm-3">
+                            <label class="font-bold">AED {{call.carrier_charges | number :2}}</label>
+                        </div>
+                    </div>
+                    <div>
+                        <!--<div class="col-sm-3">-->
+                            <!--<label class="label_title">Time:</label>-->
+                        <!--</div>-->
+                        <!--<div class="col-sm-3">-->
+                            <!--<label class="content">{{getTime(call)}}</label>-->
+                        <!--</div>-->
+                        <!--<div class="col-sm-3">-->
+                            <!--<label class="label_title">Cost:</label>-->
+                        <!--</div>-->
+                        <!--<div class="col-sm-3">-->
+                            <!--<label class="content">{{call.carrier_charges}}</label>-->
+                        <!--</div>-->
+                    </div>
+                    <div>
+                        <div class="col-sm-3" style="text-align: right">
+                            <label>Phone# :</label>
+                        </div>
+                        <div class="col-sm-3">
+                            <label class="font-bold">{{call.called_no}}</label>
+                        </div>
+                        <div class="col-sm-3" style="text-align: right">
+                            <label>Classification :</label>
+                        </div>
+                        <div class="col-sm-3">
+                            <label class="font-bold">{{call.classify}}</label>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="col-sm-3" style="text-align: right">
+                            <label>Duration :</label>
+                        </div>
+                        <div class="col-sm-3">
+                            <label class="font-bold">{{getDurationInMinute(call.duration)}}</label>
+                        </div>
+                        <div class="col-sm-3" style="text-align: right">
+                            <label>Status :</label>
+                        </div>
+                        <div class="col-sm-3">
+                            <label class="font-bold">{{call.approval}}</label>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="col-sm-3" style="text-align: right">
+                            <label>Call Date :</label>
+                        </div>
+                        <div class="col-sm-3">
+                            <label class="font-bold">{{call.call_date | mydate}}</label>
+                        </div>
+                        <div class="col-sm-3" style="text-align: right">
+                            <label>Call Start Time :</label>
+                        </div>
+                        <div class="col-sm-3">
+                            <label class="font-bold">{{call.start_time}}</label>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="col-sm-3" style="text-align: right">
+                            <label>Call End Time :</label>
+                        </div>
+                        <div class="col-sm-3">
+                            <label class="font-bold">{{call.end_time}}</label>
+                        </div>
+                        <div class="col-sm-3" style="text-align: right">
+                            <label>Destination :</label>
+                        </div>
+                        <div class="col-sm-3">
+                            <label class="font-bold">{{destination.country}}</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="table table-responsive">
+			<label class="font-bold"><i class="fa fa-history" aria-hidden="true"></i>&nbsp;&nbsp;Call Approval History</label>
+			<table  st-table="ticketlist" class="table ticket table-striped b-t b-light">
+				<thead class="tblhead-sm" style="font-size: .7vw">
+					<tr>
+						<th class="text-center"><b>Date & Time</b></th>
+						<th class="text-center"><b>Status</b></th>
+						<th class="text-center"><b>Comment</b></th>
+						<th class="text-center"><b>User</b></th>
+						<th class="text-center"><b><i class="fa fa-download" aria-hidden="true"></i></b></th>
+					</tr>
+				</thead>
+				<tbody ng-hide="isLoading">
+					<tr ng-repeat="comment in comment_list">
+						<td><span>{{comment.date_time | mydatetime}}</span></td>
+						<td><span>{{comment.approval}}</span></td>
+						<td><span>{{comment.comment}}</span></td>
+						<td><span>{{comment.wholename}}</span></td>
+						<td>
+							<span>
+								<a href="{{comment.attachment}}" ng-if="comment.attachment != ''"><i class="fa fa-download" aria-hidden="true"></i></a>
+							</span>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+    <div class="row" style="margin-top: 20px">
+        <div class="pull-right">
+            <button type="submit" class="btn btn-sm btn-default text-uc m-t-n-xs" ng-click="cancel()"><strong>&nbsp;&nbsp;Cancel&nbsp;&nbsp;</strong></button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,189 @@
+<input type="hidden" id="id" value="-1" ng-model="model_data.id"/>
+
+	<div class="panel panel-default"> 
+		<div class="panel-heading wrapper"> 
+			<button type="button" class="btn btn-success btn-sm" style="float:right; margin-top: -5px" data-toggle="modal" data-target="#addModal" ng-disabled="job_role!='SuperAdmin'&&edit_flag==0" ng-click="onShowEditRow(-1)">
+				<span class="glyphicon glyphicon-plus"></span>
+				<b> Add New </b>
+			</button>                             
+			<i class="fa fa-cubes"></i>                            
+			<span class="font-bold">Channel Management</span>
+		</div>                         
+		<div class=""> 
+			<table id="table_grid" class="table table-hover table-bordered" style="text-align: center; width:100%" ng-model = "table_grid"> 
+				<thead> 
+					<tr> 
+						<tr><!--
+							<th class="no-sort" style="text-align: center">
+								<input type="checkbox" id="checkall"/>
+							</th>-->
+							<th style="text-align: center" ng-repeat = "field in fields">
+								<b>{{field}}</b>
+							</th>														
+							<th class="no-sort" style="text-align: center">Logs</th>
+							<th class="no-sort" style="text-align: center">Status</th>
+              				<th class="no-sort" style="text-align: center">Action</th>							
+							<th class="no-sort" style="text-align: center">Edit</th>
+							<th class="no-sort" style="text-align: center">Delete</th>
+						</tr>
+					</tr>                                     
+				</thead>                    
+			</table>                             
+		</div>                     
+	</div>
+	<div class="col-sm-offset-1 col-md-10" style="margin-bottom: 10px">
+		<div ng-include="'/adminpanel/partials/fragments/multimove.html'">
+		</div>
+	</div>
+	
+<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"> 
+	<div class="modal-dialog" role="document"> 
+		<div class="panel"> 
+			<div class="modal-header bg"> 
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"> 
+					<span aria-hidden="true">&times;</span> 
+				</button>                             
+				<h5 class="modal-title font-bold" style="color:#2691d9" ng-if="model_data.id<0">
+					<i class="fa fa-plus"></i>&nbsp;Add Channel</h5>
+				<h5 class="modal-title font-bold" style="color:#2691d9" ng-if="model_data.id>=0">
+					<i class="fa fa-pencil"></i>&nbsp;Edit Channel</h5>				
+			</div>                         
+			<div class="modal-body"> 
+				<br> 
+				<form class="form-horizontal"> 
+					<div class="form-group">
+						<label class="control-label col-sm-4">Property:</label>
+						<div class="col-sm-5">
+							<select class='form-control' ng-model="model_data.property_id"
+								ng-options="value.id as value.name for (key, value) in properties">		
+							</select>							
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="control-label col-sm-4">Building:</label>
+						<div class="col-sm-5">
+							<select class='form-control' ng-model="model_data.src_build_id"
+									ng-options="value.id as value.name for (key, value) in buildings">
+							</select>
+						</div>
+					</div>
+					
+					<text-item formlabel="Name" modelname="model_data.name"></text-item>					
+					
+					<!--<div class="form-group">-->
+						<!--<label class="control-label col-sm-4" for="Property">Type:</label>-->
+						<!--<div class="col-sm-5">-->
+							<!--<select class='form-control' ng-model="model_data.type"-->
+								<!--ng-options="value for value in types">		-->
+							<!--</select>							-->
+						<!--</div>-->
+					<!--</div>-->
+					<link href="/lib/angular/angular-toggle-switch-bootstrap-3.css" media="all" rel="stylesheet" type="text/css">
+					<div class="form-group">
+						<label class="control-label col-sm-4">Protocol:</label>
+						<div class="col-sm-5">
+							<select id='prpty_id' class='form-control' ng-model="model_data.protocol_id"
+								ng-options="value.id as value.name for (key, value) in protocols">		
+							</select>							
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label col-sm-4">Active:</label>
+						<div class="col-sm-5">
+							<div toggle-switch class="switch-primary" on-label="Yes" off-label="No" ng-model="chk_active"></div>						
+						</div>						
+					</div>
+					
+					<div class="form-group">
+						<label class="control-label col-sm-4">Alarm:</label>
+						<div class="col-sm-5">
+							<div toggle-switch class="switch-primary" on-label="Yes" off-label="No" ng-model="chk_alarm"></div>	
+						</div>						
+					</div>
+
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="client">Email : </label>
+						<div class="col-sm-5">
+							<input type="text" class="form-control" ng-disabled="!chk_alarm" ng-model="model_data.email">
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="client">Mobile : </label>
+						<div class="col-sm-5">
+							<input type="text" class="form-control" id="client" ng-disabled="!chk_alarm" ng-model="model_data.mobile">
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="control-label col-sm-4">Communication:</label>
+						<div class="col-sm-5">
+							<select class='form-control' ng-model="model_data.com_mode"
+								ng-options="value for value in comtypes">		
+							</select>							
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="control-label col-sm-4">Data End Type:</label>
+						<div class="col-sm-5">
+							<select class='form-control' ng-model="model_data.data_end"
+								ng-options="value for value in data_end_type_list">		
+							</select>							
+						</div>
+					</div>
+
+					<text-item formlabel="IP" modelname="model_data.tcpip"></text-item>
+
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Port" >Port : </label>
+						<div class="col-sm-5">
+							<input type="text" class="form-control" id="port" placeholder="Port" ng-model = "model_data.tcpport" ng-disabled="viewclass" >
+						</div>	
+						<div class="col-sm-2">							
+							<button class="btn btn-primary btn-xs" ng-click="onTestConnection()" style="margin-top: 4px" data-toggle="tooltip" title="Test Connection" data-placement="bottom">
+								<i class="fa fa-check"></i>
+							</button>
+						</div>
+					</div>
+		
+					<text-item formlabel="Duration" modelname="model_data.duration"></text-item>
+					<text-item formlabel="Restart" modelname="model_data.restart"></text-item>
+					<text-item formlabel="AlarmLevel" modelname="model_data.alarm_level"></text-item>
+
+					<div class="form-group" ng-show="model_data.protocol_id == 1">
+						<label class="control-label col-sm-4">Sanity Check:</label>
+						<div class="col-sm-5">
+							<div toggle-switch class="switch-primary" on-label="Yes" off-label="No" ng-model="chk_sanity"></div>
+						</div>						
+					</div>
+					
+					<text-item ng-show="model_data.protocol_id == 1" formlabel="LS Formatter" modelname="model_data.ls_formatter"></text-item>
+					<text-item ng-show="model_data.protocol_id == 1" formlabel="LA Parser" modelname="model_data.la_parser"></text-item>
+					<text-item ng-show="model_data.protocol_id == 1" formlabel="LE Parser" modelname="model_data.le_parser"></text-item>
+					<text-item ng-show="model_data.protocol_id == 1" formlabel="LE Formatter" modelname="model_data.le_formatter"></text-item>
+					<text-item ng-show="model_data.protocol_id == 1" formlabel="LS Duration" modelname="model_data.ls_duration"></text-item>
+					<text-item formlabel="Disconnect Timeout" modelname="model_data.disconnect_timeout"></text-item>
+
+					<text-item ng-show="model_data.name == 'Huawei'" formlabel="User Name" modelname="model_data.username"></text-item>
+					<text-item ng-show="model_data.name == 'Huawei'" formlabel="Password" modelname="model_data.password"></text-item>
+
+					<text-item ng-show="model_data.com_mode == 'SOAP'" formlabel="WSDL URL" modelname="model_data.wsdl"></text-item>
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Checksum Position" >Param : </label>
+						<div class="col-sm-8">
+							<textarea type="text" class="form-control" id="formatter" placeholder="" 
+							rows="10" cols="50"
+							ng-model = "model_data.param"/>
+						</div>
+					</div>
+					
+				</form>                             
+			</div>                         
+			<submit-form id="model_data.id" updatedata="onUpdateRow()"></submit-form>						
+		</div>                     
+	</div>                 
+</div>             
+
+<dialog-delete title="Channel" modelname="model_data.name" deletedata="deleteRow()"></dialog-delete>

@@ -1,0 +1,203 @@
+<style>
+	#scrollable-dropdown-menu .dropdown-menu {
+		max-height: 150px;
+		overflow-y: auto;
+	}
+</style>
+<input type="hidden" id="id" value="-1" ng-model="model_data.id"/>
+
+	<div class="panel panel-default"> 
+		<div class="panel-heading wrapper"> 
+			<button type="button" class="btn btn-success btn-sm" style="float:right; margin-top: -5px" data-toggle="modal" data-target="#addModal" ng-disabled="job_role!='SuperAdmin'&&edit_flag==0" ng-click="onShowEditRow(-1)">
+				<span class="glyphicon glyphicon-plus"></span>
+				<b> Add New </b>
+			</button>
+			<button  type="button" class="btn btn-success btn-sm" style="float:right; margin-top: -5px; margin-right: 10px" data-target="#exportModal" data-toggle="modal" ng-disabled="job_role!='SuperAdmin'&&edit_flag==0" >
+				<b><i class="fa fa-download"></i> Export File </b>
+			</button>
+			<i class="fa fa-street-view"></i>                            
+			<span class="font-bold">Department Function Management</span>
+		</div>                         
+		<div class=""> 
+			<table id="table_grid" class="table table-hover table-bordered" style="text-align: center;width:100%" ng-model = "table_grid"> 
+				<thead> 
+					<tr> <!--
+						<th no-sort style="text-align: center">
+							<input type="checkbox" id="checkall" />
+						</th>-->
+						<th style="text-align: center" ng-repeat = "field in fields">
+							<b>{{field}}</b>
+						</th>						
+						<th style="text-align: center">Edit</th>
+						<th style="text-align: center">Delete</th>
+					</tr>                                     
+				</thead>                    
+			</table>                             
+		</div>
+	</div> 
+
+	<div style="height:400px">	               
+		<form class="form-horizontal"> 
+			<div class="form-group" ng-repeat="row in selected_level_list">
+				<label class="control-label col-sm-1" for="Property">Level {{row.level}}:</label>
+				<div class="scrollable-dropdown-menu col-sm-3">
+					<input class="form-control input-sm col-sm-12" type="text" ng-model="row.job_role"
+						placeholder="Select Job Role..."
+						uib-typeahead="item.job_role for item in available_jobrole_list | filter:$viewValue | limitTo:10"
+						typeahead-min-length="0"
+						typeahead-on-select="onSelectJobroleForLevel(row, $item, $model, $label)" />					
+				</div>
+				<div class="col-sm-2">
+					<select class='form-control input-sm' ng-model="row.device_type" ng-options="value.id as value.name for (key, value) in device_types"
+						ng-change="onChangeDeviceType(row)">
+					</select>
+				</div>
+				<div class="col-sm-3">
+					<tags-input ng-model="row.notify_list" placeholder="Add Notify Mode" replace-spaces-with-dashes="false" style="margin-top: -5px"
+							on-tag-added="onNotifyChanged(row)" on-tag-removed="onNotifyChanged(row)">
+						<auto-complete source="loadFiltersNotify('Notify',$query)" min-length="0" debounce-delay="0" load-on-focus="true" load-on-empty="true"
+							max-results-to-show="100">
+						</auto-complete>
+					</tags-input>	
+				</div>
+				<div class="col-sm-2" style="padding-left: 5px">
+					<input class="form-control input-sm" style="display: inline; width: 50px" type="text" ng-model="row.max_time" ng-change="onChangeMaxtime(row)"/>
+					<button class="btn btn-primary btn-xs" style="margin-top:-2px" ng-click="onAddLevel(row)"
+						ng-show="row.id == 0">
+						<span class="fa fa-plus"></span>
+					</button>	
+					<button class="btn btn-primary btn-xs" style="margin-top:-2px" ng-click="onDeleteLevel(row)" ng-show="row.id > 0">
+						<span class="fa fa-minus"></span>
+					</button>	
+				</div>
+			</div>
+		</form>   
+	</div>	
+	
+	
+	<div class="modal fade" id="exportModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"> 
+		<div class="modal-dialog" role="document"> 
+			<div class="panel"> 
+				<div class="modal-header bg"> 
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"> 
+						<span aria-hidden="true">&times;</span> 
+					</button>  
+					<h5 class="modal-title font-bold" style="color:#2691d9">
+							<i class="fa fa-download"></i>&nbsp;Export Report</h5>
+				</div>
+				<div class="modal-body"> 
+					<br>
+					<form class="form-horizontal form-validation">
+							<label class="control-label text-xs font-bold" style="margin-left: 15px;font-size: 10px">&nbsp;&nbsp;&nbsp;&nbsp;Do you want to export this table?</label><br><br>
+					</form>
+					<form class="form-horizontal form-validation">
+							<center>
+									<button type="button" class="btn btn-success btn-sm" ng-click="onDownloadExcel()" data-dismiss="modal">
+									<span class="font-bold"><i class="fa fa-check"></i>&nbsp;Ok</span></button>
+									<button type="button" class="btn btn-danger btn-sm" class="close" data-dismiss="modal">
+									<span class="font-bold"><i class="fa fa-times"></i>&nbsp;Cancel</span></button>           
+						  </center>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"> 
+	<div class="modal-dialog" role="document"> 
+		<div class="panel"> 
+			<div class="modal-header bg"> 
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"> 
+					<span aria-hidden="true">&times;</span> 
+				</button>                             
+				<h5 class="modal-title font-bold" style="color:#2691d9" ng-if="model_data.id<0">
+					<i class="fa fa-plus"></i>&nbsp;Add Department Function</h5>
+				<h5 class="modal-title font-bold" style="color:#2691d9" ng-if="model_data.id>=0">
+					<i class="fa fa-pencil"></i>&nbsp;Edit Department Function</h5>				
+			</div>                         
+			<div class="modal-body"> 
+				<br> 
+				<form class="form-horizontal"> 
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Department:</label>
+						<div id="scrollable-dropdown-menu" class="col-sm-5">
+							<input class="form-control input-sm col-sm-5" type="text" ng-model="model_data.dept_name"
+								   uib-typeahead="department.department for department in getdepartment($viewValue)"
+								   typeahead-min-length="0"
+								   typeahead-on-select="ondepartment(department, $item, $model, $label)"
+								   required />
+						</div>
+					</div>
+				
+					<text-item formlabel="Function" modelname="model_data.function"></text-item>
+					<text-item formlabel="Short Code" modelname="model_data.short_code"></text-item>					
+					<textarea-item formlabel="Description" texthint="Description" modelname="model_data.description"></textarea-item>		
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Device Setting:</label>
+						<div class="col-sm-5">
+							<select id='prpty_id' class='form-control' ng-model="model_data.gs_device" 
+								ng-options="value.id as value.name for (key, value) in gs_device_types">
+							</select>
+						</div>
+					</div>
+
+					<div class="form-group" ng-show="model_data.gs_device == '0'">
+						<label class="control-label col-sm-4" for="Property">Default Assignee:</label>
+						<div class="scrollable-dropdown-menu col-sm-5">
+							<input class="form-control input-sm col-sm-12" type="text" ng-model="model_data.job_role"
+								placeholder="Select Job Role..."
+								uib-typeahead="item.job_role for item in jobroles | filter:$viewValue | limitTo:10"
+								typeahead-min-length="0"
+								typeahead-on-select="onSelectJobrole(model_data, $item, $model, $label)" />					
+						</div>
+					</div>
+
+					<div class="form-group" ng-show="model_data.gs_device == '0'">
+						<label class="control-label col-sm-4" for="Property">Secondary Default Assignee:</label>
+						<div class="scrollable-dropdown-menu col-sm-5">
+							<input class="form-control input-sm col-sm-12" type="text" ng-model="model_data.sec_job_role"
+								placeholder="Select Job Role..."
+								uib-typeahead="item.job_role for item in jobroles | filter:$viewValue | limitTo:10"
+								typeahead-min-length="0"
+								typeahead-on-select="onSelectSecJobrole(model_data, $item, $model, $label)" />					
+						</div>
+					</div>
+					
+					<link href="/lib/angular/angular-toggle-switch-bootstrap-3.css" media="all" rel="stylesheet" type="text/css">
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">All Department Setting:</label>
+						<div class="col-sm-5">
+							<div toggle-switch class="switch-primary" on-label="Yes" off-label="No" ng-model="all_dept_setting"></div>
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Escalation Setting:</label>
+						<div class="col-sm-5">
+							<div toggle-switch class="switch-primary" on-label="Yes" off-label="No" ng-model="escalation_setting"></div>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Housekeeping Role:</label>
+						<div class="col-sm-5">
+							<select id='prpty_id' class='form-control' ng-model="model_data.hskp_role" 
+								ng-options="item for item in hskp_role_list">
+							</select>
+						</div>
+					</div>
+
+					
+					<!--<div class="form-group" ng-include="'/adminpanel/partials/fragments/uploadcsv.html'"></div>-->			
+					
+				</form>                             
+			</div>     
+
+			<!--<div class="col-md-12" style="clear:both;margin-bottom: 20px" ng-include="'/adminpanel/partials/fragments/uploader.html'"></div>-->
+			<div style="clear:both">			
+				<submit-form id="model_data.id" updatedata="onUpdateRow()"></submit-form>						
+			</div>	
+		</div>                     
+	</div>                 
+</div>             
+
+<dialog-delete title="Department Function" modelname="model_data.function" deletedata="deleteRow()"></dialog-delete>

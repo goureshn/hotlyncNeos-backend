@@ -1,0 +1,30 @@
+<div class="modal-body wrapper-lg">
+    <h3 class="m-t-none m-b font-thin">Select Transfer</h3>
+
+    <hr style="margin-top: 0; margin-bottom: 15px"/>
+
+    <div class="wrapper">
+        <ul class="nav nav-pills nav-stacked nav-sm">
+            <li ng-repeat="item in agent_list" ng-class="{'active':item.id == selected_agent.id}"
+                ng-click="onSelectAgent(item)">
+                <a>
+                    {{item.agent_name}}
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <hr/>
+
+    <div class="row">
+        <div class="pull-right">
+            <button type="button" class="btn btn-sm btn-dark m-b-xs w-xs text-uc m-t-n-xs" ng-click="ok()">
+                <strong>Select</strong>
+            </button>
+            <button type="button" class="btn btn-sm btn-dark m-b-xs w-xs text-uc m-t-n-xs" ng-click="cancel()">
+                <strong>Cancel</strong>
+            </button>
+        </div>
+    </div>
+
+</div>

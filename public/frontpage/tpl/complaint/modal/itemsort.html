@@ -1,0 +1,49 @@
+<div class="modal-body wrapper-lg">
+    <div class="row">
+        <div class="col-sm-12 b-r">
+            <h3 class="m-t-none m-b font-thin">Group By Ticket</h3>
+
+            <form class="form-horizontal form-validation">
+                <div class="wrapper-md1 col-centered" style="width: 100%;">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">             
+                            <label class="text-sm font-bold"><i class="fa fa-sort text-default"></i>&nbsp;&nbsp; {{group_by}}</label>
+                        </div>
+                        <div class="panel-body multiDemo" >
+                            <div class="list-group" style="margin-bottom: 5px" 
+                                dnd-list dnd-drop="onDrop1(item_list, item, index)">
+                                <a href class="list-group-item" 
+                                    ng-repeat="item in item_list.items"
+                                    dnd-draggable="getSelectedItemsIncluding1(item_list, item)"
+                                    dnd-dragstart="onDragstart1(item_list, event)"
+                                    dnd-moved="onMoved1(item_list)"
+                                    dnd-dragend="item_list.dragging = false"
+                                    dnd-selected="item.selected = !item.selected"
+                                    ng-class="{'selected': item.selected}"
+                                    ng-hide="item_list.dragging && item.selected"
+                                    >                        
+                                    <i class="fa fa-exchange fa-fw m-r-xs"></i> {{item.name}}
+                                </a>
+                            </div>                             
+                            <div class="row" style="margin-top: 20px; margin-right: 7px">
+                                <div class="pull-right">
+                                    <button type="submit" class="btn btn-sm btn-dark text-uc m-t-n-xs" ng-click="onOrderApply()">
+                                        <strong>
+                                            <span class="text-success">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Apply&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                                        </strong>
+                                    </button>
+                                    <button type="submit" class="btn btn-sm btn-dark text-uc m-t-n-xs" ng-click="cancel()"><strong>
+                                        <span class="text-danger">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Cancel&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></strong></button>
+                                </div>
+                            </div>                      
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+
+

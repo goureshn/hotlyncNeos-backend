@@ -1,0 +1,95 @@
+<div class=" panel panel-default" style="border-color: #dee5e7">
+    <div class="panel-heading wrapper">
+        <div  style="float:right; margin-top: -5px; background: #efefef;padding:5px 10px 5px 10px;color: #868585;font-size: 16px; " >
+            <strong>{{message}}</strong>
+        </div>
+        <i class="fa fa-cog"></i>
+        <span class="font-bold"> &nbsp;&nbsp;Data Management</span>
+
+        <button  type="button" class="btn btn-success btn-sm" style="float:right; margin-top: -5px; margin-right: 10px" ng-click="onDownloadTemplate()">
+            <b><i class="fa fa-download"></i> Download Template </b>
+        </button>
+    </div>
+    <div class="" style="background-color: #eeeeee">        
+        <div class="col-sm-6">
+            <div>
+                <h5><strong> Mobile</strong></h5>
+            </div>
+
+            <div class="" style="{{full_height}}"> 
+                <form class="form-horizontal">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">Choose File:</label>
+                        <div class="col-sm-5">
+                            <input type="file" file-model="excel_file" style="margin-top: 6px" /> 
+                        </div>
+                    </div>  
+                        
+                    <div class="form-group">
+                        <div class="col-sm-offset-4 col-sm-8">
+                            <button type="button" class="btn btn-success btn-sm" style="width: 150px" ng-click="onUploadData()">
+                                <b> Upload Data </b>
+                            </button>                            
+                        </div>                        
+                    </div>
+
+                    <br/><br/><br/>
+                    <div class="form-group">
+						<label class="control-label col-sm-4" >Table* : </label>
+						<div class="col-sm-8">
+							<div ng-dropdown-multiselect="" options="table_list" selected-model="selected_table" checkboxes="true" extra-settings="hint_setting"
+							 translation-texts="table_hint"></div>
+						</div>
+					</div>
+
+                    <div class="form-group">
+                        <div class="col-sm-offset-4 col-sm-8">                           
+                             <button type="button" class="btn btn-danger btn-sm" style="width: 150px" data-toggle="modal" data-target="#confirmPurgeModal"  data-dismiss="modal">
+                                <span class="fa fa-remove"></span>
+                                <b> Purge Data</b>
+                            </button>
+                        </div>                        
+                    </div>
+
+                    <div class="form-group text-center" ng-show="success_message">
+                        <span class="m-b-none text-success text-center">{{success_message}}</span>
+                    </div>
+
+                    <div class="form-group text-center" ng-show="error_message">
+                        <span class="m-b-none text-danger">{{error_message}}</span>
+                    </div>
+
+                </form>    
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="confirmPurgeModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"> 
+	<div class="modal-dialog" role="document"> 
+		<div class="panel"> 
+			<div class="modal-header bg"> 
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"> 
+					<span aria-hidden="true">&times;</span> 
+				</button>  
+				<h5 class="modal-title font-bold" style="color:#2691d9">
+						<i class="fa fa-remove"></i>&nbsp;Confirm Purge</h5>
+			</div>
+			<div class="modal-body"> 
+				<br>
+				<form class="form-horizontal form-validation">
+					<label class="control-label text-xs font-bold" style="margin-left: 15px;font-size: 10px">&nbsp;&nbsp;&nbsp;&nbsp;Table's data will be erased, Do you want to purge these tables?</label><br><br>
+				</form>
+				<form class="form-horizontal form-validation">
+						<center>
+							<button type="button" class="btn btn-success btn-sm" ng-click="onDeleteData()" data-dismiss="modal">
+							<span class="font-bold"><i class="fa fa-check"></i>&nbsp;Confirm</span></button>
+							<button type="button" class="btn btn-danger btn-sm" class="close" data-dismiss="modal">
+							<span class="font-bold"><i class="fa fa-times"></i>&nbsp;Cancel</span></button>           
+					  </center>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+

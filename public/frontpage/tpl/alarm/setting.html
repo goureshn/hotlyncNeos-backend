@@ -1,0 +1,44 @@
+<div ng-controller="AlarmSettingController">
+    <div class="wrapper-md1 bg-light b-b" style="background-color: #141414">      
+        <h1 class="m-n font-thin h5 text-black" style="color:#337ab7">
+			<label style="font-size: 25px; margin-bottom: 0px">
+                <i class="fa fa-cog"></i>
+	    	    Setting
+            </label>
+        </h1>      
+    </div>  
+     <uib-tabset>
+        <uib-tab>
+            <uib-tab-heading>
+                <b style="color:#2691d9">Groups</b>
+            </uib-tab-heading>
+            <div ng-include="'tpl/alarm/group.html'" fill-height additional-padding="50">
+            </div>
+        </uib-tab>
+
+        <uib-tab>
+            <uib-tab-heading>
+                <b style="color:#2691d9" ng-click="tabDashClick()" >Dashboard</b>
+            </uib-tab-heading>
+            <div ng-include="'tpl/alarm/dashboard.html'" fill-height additional-padding="100">
+            </div>
+        </uib-tab>
+
+        <uib-tab>
+            <uib-tab-heading>
+                <b style="color:#2691d9">Alarms</b>
+            </uib-tab-heading>
+            <div ng-include="'tpl/alarm/alarm_alarms.html'" fill-height additional-padding="100">
+            </div>
+        </uib-tab>
+        
+        <uib-tab>
+            <uib-tab-heading>
+                <b style="color:#2691d9">Alarm Escalation</b>
+            </uib-tab-heading>
+            <div ng-include="'tpl/alarm/alarm_setting.html'" fill-height additional-padding="100">
+            </div>
+        </uib-tab>
+        
+    </uib-tabset>       
+</div>

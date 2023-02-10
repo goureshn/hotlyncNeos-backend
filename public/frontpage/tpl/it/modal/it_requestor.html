@@ -1,0 +1,168 @@
+<style>
+        button {
+            pointer: cursor;
+        }
+    
+        input[type=file] {
+            width: 150px;
+            height: 20px;
+        }
+        .tbl-sm {
+            font-size: .8vw;
+            padding: 1px 15px !important;
+            color: #67686a;
+        }
+        .search-filter .checkbox {
+            margin: 0px;
+        }
+
+    </style>
+    
+        <div class="modal-content">        
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">
+                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                </button>
+                <!--
+                <div class= 'pull-right'>
+                    <span ng-click="createRequestor()" ><i class=" text-success" style="cursor: pointer" title="Create Requestor"   aria-hidden="true"></i>&nbsp;Create New</span>
+                    </div>
+                
+                    <button type="button" class="col-sm-2 pull-right btn btn-sm m-b-xs w-xs btn-light font-bold" style="background-color:green;border-color:green" ng-click="createRequestor()">
+                        <span class="text-success">
+                            <i class="fa fa-plus" aria-hidden="true"></i>&nbsp;Create
+                        </span>
+                    </button>
+                -->
+                   
+
+                <h3 class="modal-title" style="color:#2691d9" id="Heading">Edit Requestor List</h3>
+                <!--
+                <button type="button " class="pull-right btn btn-dark btn-sm" ng-click="createRequestor()" >
+                        <span class="text-success font-bold">
+                            <i class="fa fa-plus"></i>&nbsp;Create New</span>
+                    </button>&nbsp;
+                -->
+
+                <div class="form-group">
+                    <div class="col-sm-10">              
+                        <div class="input-group pull-right" style="width: 300px;">
+                            <input type="text" ng-model="requester.searchtext" my-enter="onSearch()" class="form-control input-sm bg-light no-border rounded padder" placeholder="Search">
+                            <span class="input-group-btn">
+                                <button type="submit" ng-click = "onSearch()" class="btn btn-sm bg-light rounded"><i class="fa fa-search"></i></button>
+                            </span>
+                        </div>
+                    </div>   
+                    <div class="col-sm-2" style="padding-right: 0px">    
+                        <button type="button " class="pull-right btn btn-dark btn-sm" ng-click="createRequestor()" >
+                            <span class="text-success font-bold">
+                                <i class="fa fa-plus"></i>&nbsp;Create New</span>
+                        </button>&nbsp;                                          
+                    </div>   
+                </div> 
+          
+            </div>        
+            <div class="modal-body">    
+                <form class="form-horizontal form-validation" ng-show = "field">   
+                    <div class="form-group">
+                            <div class="col-sm-2">
+                                    <label class="control-label text-xs text-muted">First Name : </label>
+                                    <div class="scrollable-dropdown-menu">
+                                        <input type="text"  class="form-control input-sm" 
+                                            ng-model="requester.firstname"                                                                 
+                                            required
+                                            >
+                                    </div>
+                                </div>  
+                                <div class="col-sm-2">
+                                    <label class="control-label text-xs text-muted">Last Name: </label>
+                                    <div class="scrollable-dropdown-menu">
+                                        <input type="text" class="form-control input-sm" 
+                                            ng-model="requester.lastname"                                                                 
+                                            required
+                                            >
+                                    </div>
+                                </div>    
+                                <div class="col-sm-3">
+                                        <label class="control-label text-xs text-muted">Email : </label>
+                                        <div class="scrollable-dropdown-menu">
+                                            <input type="text"  class="form-control input-sm" 
+                                                ng-model="requester.email"                                                                 
+                                                required
+                                                >
+                                        </div>
+                                    </div>  
+                        <div class="col-sm-2">
+                            <label class="control-label text-xs text-muted">Department : </label>
+                            <div class="scrollable-dropdown-menu">
+                                <input type="text" class="form-control input-sm"                                 
+                                    ng-model="requester.department"                                 
+                                    placeholder="Search Department"                                
+                                    uib-typeahead="row.department for row in dept_list | filter:$viewValue | limitTo:10"
+                                    typeahead-on-select="onDepartmentSelect($item, $model, $label)" 
+                                    typeahead-min-length="0"                                                             
+                                    required
+                                    >       
+                            </div>
+                        </div>    
+                        <div class="col-sm-2">
+                                <label class="control-label text-xs text-muted">JobRole : </label>
+                                <div class="scrollable-dropdown-menu">
+                                    <input type="text" class="form-control input-sm"                                 
+                                        ng-model="requester.job_role"                                 
+                                        placeholder="Search Job Role"                                
+                                        uib-typeahead="row.job_role for row in job_list | filter:$viewValue | limitTo:10"
+                                        typeahead-on-select="onJobRoleSelect($item, $model, $label)" 
+                                        typeahead-min-length="0"                                                            
+                                        required
+                                        >
+                                         
+                                </div>
+                            </div>    
+                       
+                      
+                        <div class="col-sm-1">
+                            <label style="margin-top: 23px" ng-show = "create_flag" ng-click="onCreateRequestor(requester)">
+                                        <i class="fa fa-pencil fa-2x text-success " style="cursor: pointer" title="Create Requestor"></i>
+                            </label>
+                            <label style="margin-top: 23px" ng-show = "!create_flag" ng-click="onEditRequestor(requester)">
+                                <i class="fa fa-pencil fa-2x text-danger " style="cursor: pointer" title="Edit Requestor"></i>
+                            </label>
+                        </div>  
+                    </div>    
+                </form>
+    
+                <div style="margin: 5px 0px 0px 0px; height: 400px; overflow-y:auto">
+                    <table  st-table="ticketlist"   class="table ticket" >
+                        <thead class="tblhead-sm">
+                        <tr>
+                            <th><b>Name</b></th>
+                            <th><b>Email</b></th>
+                            <th><b>Department</b></th>
+                            <th><b>Jobrole</b></th>
+                            <th style="width: 80px"><b>Action</b></th>
+                        </tr>
+                        </thead>
+                        <tbody ng-repeat="row in requestor_list">
+                            <tr class="" >
+                                <td>
+                                    {{row.wholename}}
+                                </td>
+                                <td>{{row.email}}</td>
+                                <td>{{row.department}}</td>
+                                <td>{{row.job_role}}</td>
+                                <td>
+                                    <a class="btn default btn-xs green" ng-click="edit(row)">
+                                        <i class="fa fa-pencil"></i></a>
+                                    <a class="btn default btn-xs red" ng-click="delete(row)">
+                                        <i class="fa fa-times"></i></a>                            
+                                </td>
+                            </tr>
+                        </tbody>                
+                    </table>
+                </div>    
+            </div>
+    
+        </div>
+    </form>
+    

@@ -1,0 +1,149 @@
+<div ng-controller="MycallApprovalController" class="stretch" style="overflow-x: hidden">
+    <style>
+     .img_size {
+         height:20px;
+         width:20px;
+     }
+    </style>
+    <script type="text/ng-template" id="returnReasonModal.html">
+        <div ng-include="'tpl/mytask/call/return_reason.html'"></div>
+    </script>
+    <script type="text/ng-template" id="returnReplyfinanceModal.html">
+        <div ng-include="'tpl/mytask/call/return_reply_approval.html'"></div>
+    </script>
+    <script type="text/ng-template" id="MoreInfoModal.html">
+        <div ng-include="'tpl/mytask/call/call_inform.html'"></div>
+    </script>
+    <div class="row" style="margin-left: -10px; margin-right: -10px;{{table_container_height}};">
+        <div class="col-sm-3" style="padding-left: 10px;padding-right: 0px" >
+            <div style="padding: 4px; margin-bottom: 29px" ng-show="auth_svc.isValidModule('app.callaccounting.myapproval_edit')">
+                <a type="button" class="btn btn-sm btn-default w-xs pull-left" ng-click="onApproveReject('agent','Approved','')" >
+	                <i class="fa fa-thumbs-up"></i>&nbsp;Approve</a>
+                <!--<a type="button" class="btn btn-sm btn-danger w-xs pull-right" ng-click="onApproveReject('agent','Rejected')" >Reject</a>-->
+            </div>
+            <div class="table table-responsive" style="height:100%">
+                <table st-table="datalist" st-pipe="getDataList" class="table ticket" >
+                    <thead>
+                        <tr class="tblhead-sm">
+                            <th class="text-center" style="width:10px">
+	                            <input type="checkbox" ng-model="filter.depart_selected" ng-click="onChangeDepartTotalSelected()" />
+	                          </th>
+                            <th style="text-align:center;"><b>Name / Job Title</b></th>
+                            <!-- <th style="text-align:center;"><b></b></th>-->
+                            <!-- <th><b>Cost</b></th> -->
+                            <th style="text-align:center;"><b>Status</b></th>
+                        </tr>
+                    </thead>
+                    <tbody ng-hide="isLoading">
+                    <tr class="" ng-repeat="row in datalist" ng-show="row.cnt > 0 && row.cost > 0">
+                        <td class="text-center" style="white-space: nowrap;">
+                            <input type="checkbox"  ng-model="row.depart_selected"   />
+                        </td>
+                        <td style="white-space: nowrap;"><a ng-click="showUserCallList(row)">{{row.wholename}}<br/>{{row.job_role}}</a></td>
+                        <!-- <td style="text-align:center;">{{row.job_role}}</td> -->
+                        <!-- <td>AED {{row.cost}}</td> -->
+                        <td style="text-align:center;">
+                            <span style="white-space: nowrap;">{{row.cnt > 0 ? 'Pending for Approval' : 'OK'}}</span><br/>
+                            {{ currency }} {{row.cost}}
+                        </td>
+                    </tr>
+                    </tbody>
+                    <tbody ng-show="isLoading">
+                    <tr>
+                        <td colspan="4" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-sm-9" style="padding-left: 0px;padding-right: 5px;">
+          <div style="padding: 4px; margin-right: 5px; margin-bottom: 29px" ng-show="auth_svc.isValidModule('app.callaccounting.myapproval_edit')">
+            <a type="button" class="btn btn-sm btn-default w-xs pull-right" ng-click="onApproveReject('date','Approved','')">
+	            <i class="fa fa-thumbs-up"></i>&nbsp;Approve
+            </a>
+                <!--<a type="button" class="btn btn-sm btn-danger w-xs pull-right"-->
+                				<!--style="margin-right: 10px;" ng-click="onApproveReject('date','Rejected')">Reject</a>-->
+            </div>
+            <div class="table table-responsive" style="height:100%">
+                <table  st-table="datalist"  st-pipe="getDetailCallList" style="width: 100%" class="table ticket table-striped b-light" >
+                    <thead class="tblhead-sm">
+                    <!--    <tr>
+                            <th colspan="1">
+                                <select class='input-sm' ng-model="filter.approval_temp" ng-change="onChangeTotalApproval()" ng-show="selected_count > 0"
+                                        ng-options="type for type in approve_types">
+                                </select>
+                            </th>
+                        </tr> -->
+                        <tr class="tblhead-sm">
+                            <th style="width:10px"><input type="checkbox" ng-model="filter.total_selected" ng-click="onChangeTotalSelected()"></th>
+                            <th class="text-center"><b>Date</b></th>
+                            <th class="text-center"><b>Extension</b></th>
+                            <th class="text-center"><b>Phone #</b></th>
+                            <th class="text-center"><b>Call Type</b></th>
+                            <th><b>Cost</b></th>
+                            <th class="text-center"><b>Reason</b></th>
+                            <th class="text-center"><b>Status</b></th>
+                            <th class="text-center"><b ng-hide="selected_count > 1">Action</b>
+                                 <!--<select style="color:#212121" class='input-sm' ng-model="filter.approval_temp" ng-change="onChangeTotalApproval()" ng-show="selected_count >= 2"
+                                        ng-options="type for type in approve_types">
+                                </select>-->
+                            </th>
+                        </tr>
+                        <tr>
+                        </tr>
+                    </thead>
+                    <tbody ng-hide="isChildLoading">
+                    <tr class="" ng-repeat="row in detaillist">
+                        <th class="text-center" style="width:10px"><input type="checkbox"  ng-model="row.selected" ng-click="onChangeSelected()"></th>
+                        <td style="white-space: nowrap" valign="middle">{{row.call_date | mydate}}</td>
+                        <td class="text-center">{{row.extension}}</td>
+                        <td>{{row.called_no}}</td>
+                        <td class="text-center">{{row.call_type}}</td>
+                        <td>{{ currency }} {{row.carrier_charges | number:2}}</td>
+                        <td style="min-width:300px">{{row.comment}}</td>
+                        <td style="white-space: nowrap">{{row.approval}}</td>
+                        <td style="white-space: nowrap" ng-if="row.approval != 'Waiting For Approval'">
+                            {{row.approval}}
+                        </td>
+                        <td style="text-align:center;" ng-if="row.approval == 'Waiting For Approval'">
+                            <!--<select class='input-sm' ng-model="row.approval_temp" ng-change="onChangeApproval(row)" ng-disabled="selected_count > 1"
+                               ng-options="type for type in approve_types">
+                            </select>-->
+                          <i class="fa fa-thumbs-up" aria-hidden="true" style="font-size: 20px; cursor: pointer; color: #84b262"
+                          	ng-click="onApproveReject('date','Approved',row)" title="Approved" /></i>&nbsp;&nbsp;
+                          <i class="fa fa-mail-reply" aria-hidden="true" style="font-size: 20px; cursor: pointer; color: #f6846a"
+                          	style="cursor: pointer" ng-click="onApproveReturn('date','Returned',row)" title="Returned">&nbsp;</i>
+                          <i class="fa fa-info-circle text-warning" aria-hidden="true" style="font-size: 20px; cursor: pointer"
+                          	style="cursor: pointer" ng-click="onMoreInfo(row)" title="More Info"
+                          	ng-if="!row.approval == 'Rejected'"></i>
+                            <!--<img src="/images/big-finger-up.png" width="14" height="14" style="cursor: pointer" ng-click="onApproveReject('date','Approved')" title="Approved" />
+                            &nbsp;&nbsp;
+                            <!--<img src="/images/big-finger-down.png" width="14" height="14" style="cursor: pointer" ng-click="onApproveReject('date','Rejected')" title="Rejected" />
+                            
+                            <img src="/images/question.png" width="14" height="14" style="cursor: pointer" ng-click="onApproveReject('date','Returned')" title="Returned" />-->
+                        </td>
+                    </tr>
+                    </tbody>
+                    <tbody ng-show="isChildLoading">
+                    <tr>
+                        <td colspan="10" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+                    </tr>
+                    </tbody>
+                    <tfoot ng-hide="isChildLoading">
+                    <tr ng-show="paginationOptions.totalItems > paginationOptions.pageSize">
+                        <td colspan="4" class="text-center">
+                            <div st-pagination="" st-items-by-page="paginationOptions.pageSize" st-displayed-pages="7" class="no-margin"></div>
+                        </td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+		<!--
+    <div style="background-color: green; height: auto;">
+        <div class="btn-group pull-right">
+            <button type="button" class="btn btn-info" ng-click="approveCalls()">Approve Calls</button>
+        </div>
+    </div>-->
+</div>

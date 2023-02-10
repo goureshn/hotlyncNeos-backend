@@ -1,0 +1,5 @@
+<div style="background-color: #2a2a2a;margin-bottom: 10px; border-radius: 6px">
+	<a style="margin-right:10px; float: right" ng-click="onBack()" ng-show="sub_category_view"> <i class="fa fas fa-angle-left"></i> Back</a>
+	<nvd3 ng-hide="sub_category_view" options="location_type_options" data="location_type_count_data"></nvd3>							
+	<nvd3 ng-if="sub_category_view" options="location_type_subcategory_options" data="location_type_subcategory_count_data" api="locaton_type_subcategory_api"></nvd3>							
+</div>

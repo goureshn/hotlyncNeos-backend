@@ -1,0 +1,92 @@
+<form class="form-horizontal" ng-submit="onSave(event)">
+    <div class="panel">
+
+        <div class="modal-header bg">
+            <button type="button" class="close" ng-click="onCancel()">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <h5 class="modal-title font-bold" style="color:#2691d9">
+                <i class="fa fa-plus"></i>&nbsp;Add Task
+            </h5>
+        </div>
+        <div class="modal-body">
+            <br/>
+            <div class="form-group">
+                <label class="control-label col-sm-4">Task Group:</label>
+                <div class="col-sm-7">
+                    <input type="text" ng-model="taskgroup_name" class="form-control input-sm" placeholder="Select Task Group"
+                           uib-typeahead="tgroup.name for tgroup in taskgroups"
+                           typeahead-min-length="0"
+                           typeahead-editable="false"
+                           typeahead-on-select="onSelectTaskgroup($item, $model, $label)"
+                        required
+                    >
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-4">Task Category:</label>
+                <div class="col-sm-7">
+                    <input type="text" ng-model="taskcategory_name" class="form-control input-sm" placeholder="Task Category"
+                           uib-typeahead="tcategory.name for tcategory in taskcategories"
+                           typeahead-min-length="0"
+                           typeahead-editable="false"
+                           typeahead-on-select="onSelectTaskCategory($item, $model, $label)"
+                    >
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-4">Task Name</label>
+                <div class="col-sm-7">
+                    <input class="form-control" ng-model="model_data.tasklist_name"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-4">Selected by Guest:</label>
+                <div class="col-sm-7">
+                    <select class='form-control' ng-model="model_data.type_id">
+                        <option value="None">None</option>
+                        <option value="Amenities">Amenities</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group" ng-show="model_data.type_id != 'None'">
+                <label class="control-label col-sm-4">Cost:</label>
+                <div class="col-sm-7">
+                    <input type="number" class="form-control" ng-model="model_data.cost" typeahead-min-length="0">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-4">Languages:</label>
+            </div>
+            <div class="form-group">
+                <li ng-repeat="row in model_data.lang" class="list-group-item clearfix b-l-5x">
+                    <label class="control-label col-sm-4" for="status">{{row.lang}}</label>
+                    <div class="col-sm-5">
+                        <input class="form-control input-sm col-sm-5" ng-model="row.text"/>
+                    </div>
+                </li>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-4">Active:</label>
+                <div class="col-sm-7">
+                    <label class="i-switch m-t-xs m-r"  >
+                        <input type="checkbox" ng-model="model_data.status">
+                        <i></i>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="submit" class="btn btn-success btn-sm {{isLoading ? 'disabled': ''}}">
+                <i class="fa fa-save"></i>&nbsp;Save
+            </button>
+            <button type="button" class="btn btn-danger btn-sm {{isLoading ? 'disabled': ''}}" ng-click="onCancel()">
+                <i class="fa fa-times"></i>&nbsp;Cancel
+            </button>
+        </div>
+    </div>
+</form>
+
+

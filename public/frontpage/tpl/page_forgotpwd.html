@@ -1,0 +1,29 @@
+<div class="login-page" style="display: table-cell; vertical-align:middle; text-align: center;">
+    <div class="container w-xxl w-auto-xs"   ng-controller="ForgotFormController" ng-init="app.settings.container = false;">
+        <img class="navbar-brand block m-t" src="../frontpage/img/login_logo.png" alt=""
+             style="width: 330px; height: auto; padding: 90px 0px 40px 0px; "m align="middle">
+        <!--<a href class="navbar-brand block m-t">{{app.name}}</a>-->
+        <div class="m-b-lg">
+            <form name="form" class="form-validation">
+                <div class="list-group list-group-sm">
+                    <div style="color:#ffffff">
+                        <h4>Enter your Username</h4>
+                    </div>
+                    <div class="wrapper text-danger text-center"  >
+                        {{authError}}
+                    </div>
+                    <div class="list-group-item">
+                        <input type="text" placeholder="Username" class="form-control no-border" ng-model="user.username"
+                        ng-keypress="($event.which === 13)?sendMessage():0" >
+                    </div>
+                </div>
+                <button type="submit" class="login-button-forgot"  ng-click="gotoSignPage()" >Cancel</button>
+                <button type="submit" class="login-button-forgot"  ng-click="sendMessage()" >Reset</button>
+                <div class="line line-dashed"></div>
+            </form>
+        </div>
+        <div class="text-center" ng-include="'tpl/blocks/page_footer.html'">
+            {% include 'blocks/page_footer.html' %}
+        </div>
+    </div>
+</div>

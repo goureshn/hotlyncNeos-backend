@@ -1,0 +1,126 @@
+<style>
+
+	.custom-icon {
+		transition: 0.1s;
+	}
+	.custom-icon:hover {
+		color: red;
+		transform: scale(1.2);
+	}
+
+	.custom-icon.disabled {
+		pointer-events: none !important;
+	}
+</style>
+<div fill-height additional-padding="400">
+	<div class="table table-responsive" ng-style="chat_table_style">
+		<table  st-table="ticketlist" class="table ticket table-striped b-t b-light" style="width:100%; margin:auto">
+			<thead class="" style="font-size: .7vw">
+				<tr>
+					<th class="text-center"><b>ID</b></th>
+					<th class="text-center"><b>Guest Name</b></th>
+					<th class="text-center"><b>Room</b></th>
+					<th class="text-center"><b>Agent Name</b></th>
+					<th class="text-center"><b>Status</b></th>
+					<th class="text-center"><b>Duration</b></th>
+					<th class="text-center"><b>Wait Time</b></th>
+					<th class="text-center"><b>Start Time</b></th>
+					<th class="text-center"><b>Language</b></th>
+					<th class="text-center"><b>A</b></th>
+				</tr>
+		  	</thead>
+			<tbody>
+				<tr ng-repeat="row in chat_session_history_list" ng-class="{'selected' : row.id == history_chat_session.id}" ng-click="onSelectChatHistorySession(row)">
+					<td class="text-center"><span>{{row.id}}</span></td>
+					<td class="text-center"><span>{{row.guest_name}}</span></td>
+					<td class="text-center"><span>{{row.room}}</span></td>
+					<td class="text-center"><span>{{row.agent_name}}</span></td>
+					<td class="text-center"><span>{{row.status}} {{row.transfer_id > 0 ? ' -> ' + row.transfer_name : ''}}</span></td>
+					<td class="text-center"><span>{{row.duration}}</span></td>
+					<td class="text-center"><span>{{row.wait_time}}</span></td>
+					<td class="text-center"><span>{{row.start_time}}</span></td>
+					<td class="text-center"><span>{{row.language_name}}</span></td>
+					<td class="text-center"><span>{{row.ack}}</span></td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	<div class="panel panel-default">
+		<div class="panel-heading">
+	    	<label class="text-sm font-bold"><i class="fa fa-comment text-default"></i>&nbsp;&nbsp;History
+	    	</label>
+	    	<div class="pull-right">
+				<i ng-click="onDownloadPdf(history_chat_session.id, guest_history_messages)" ng-if="auth_svc.isValidModule('app.guestservice.downloadpdf') && guest_history_messages.length > 0" class="fa fa-file-pdf-o custom-icon {{is_downloading_pdf ? 'disabled' : ''}}" style="margin-right: 10px" aria-hidden="true"></i>
+				<i ng-click="onSendEmail(history_chat_session, guest_history_messages)" ng-if="auth_svc.isValidModule('app.guestservice.sendemail') && guest_history_messages.length > 0" class="fa fa-envelope-o custom-icon" style="margin-right: 10px" aria-hidden="true"></i>
+	    		<a ng-click="" class="custom-icon">
+	    			<i class="fa fa-window-minimize" ng-click="minimized = true" ng-show="!minimized"></i>
+				    <i class="fa fa-window-maximize" ng-click="minimized = false" ng-show="minimized"></i>
+				</a>
+	    	</div>
+	    </div>
+		<div class="panel-body" fill-height additional-padding="400" ng-show="!minimized">
+			<div class="m-b" ng-repeat="msg in guest_history_messages">
+		        <a ng-if="msg.direction == 0" href class="pull-left" ng-style="{'margin-top': msg.language == 'en' || !msg.text_trans ? '0px' : '20px'}">
+		          	<button class="btn btn-rounded btn-lg btn-icon btn-default">G</button>
+		        </a>
+		        <!-- incoming -->
+		        <div class="m-l-xxl" style="margin-left: 60px" ng-if="msg.direction == 0">
+					<div ng-if="msg.chat_type == 'audio'">
+						<audio controls>
+							<source src="{{msg.attachment}}" type="audio/ogg">
+							<source src="{{msg.attachment}}" type="audio/mpeg">
+						</audio>
+					</div>
+					<div ng-if="msg.chat_type != 'audio'">
+						<div ng-show="msg.language != 'en' && msg.text_trans">
+							<label class="font-bold">
+								(
+								<a class="text-sm ng-binding" dynamic="msg.text_trans">
+								</a>
+								)
+							</label>
+						</div>
+						<div class="pos-rlt wrapper b b-light bg-info r r-2x">
+							<span class="arrow left pull-up arrow-info"></span>
+							<div ng-if="msg.chat_type == 'image'" class="chat-image">
+								<img ng-src="{{msg.attachment}}" alt="" ng-click="onShowFullImage(msg.attachment)"/>
+							</div>
+							<p class="m-b-none chat" dynamic="msg.text"></p>
+						</div>
+					</div>
+
+		        	<small class="text-muted"><i class="fa fa-ok text-success"></i>{{ msg.created_at | mydate: "h:mm a" }}</small>
+		        </div>
+		        <!-- outgoing -->
+		        <div ng-if="msg.direction == 1">
+		        	<div style="text-align: right">
+		        		<label class="font-bold">
+		        			<a class="text-sm ng-binding">
+		        			  	<i class="fa fa-user text-primary"></i>
+		        			  &nbsp;{{agent_id == msg.agent_id ? 'Me' : msg.agent_name}}
+		        			</a>
+		        		</label>
+		        	</div>
+					<div ng-if="msg.chat_type == 'audio'" style="text-align: right">
+						<audio controls>
+							<source src="{{msg.attachment}}" type="audio/ogg">
+							<source src="{{msg.attachment}}" type="audio/mpeg">
+						</audio>
+					</div>
+					<div ng-if="msg.chat_type != 'audio'">
+						<div class="pos-rlt wrapper bg-primary r r-2x">
+							<span class="arrow right pull-up arrow-primary"></span>
+							<div ng-if="msg.chat_type == 'image'" class="chat-image">
+								<img ng-src="{{msg.attachment}}" alt="" ng-click="onShowFullImage(msg.attachment)"/>
+							</div>
+							<p class="m-b-none">{{msg.text}}</p>
+						</div>
+					</div>
+
+		        	<small class="text-muted">{{ msg.created_at | mydate: "h:mm a" }}</small>
+		        </div>
+	      	</div>
+
+	    </div>
+	</div>
+</div>

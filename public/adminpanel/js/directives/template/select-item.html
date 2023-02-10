@@ -1,0 +1,8 @@
+<div class="form-group">
+	<label class="control-label col-sm-4" for="{{formlabel}}">{{formlabel}} :</label>
+	<div class="col-sm-5">
+		<select id='carrier_id' class='form-control' ng-model="modelname"
+			ng-options="value.id as value.carrier for (key, value) in carriers">		
+		</select>							
+	</div>
+</div>

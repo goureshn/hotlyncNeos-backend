@@ -1,0 +1,15 @@
+<div class="wrapper" style="margin-top: 7px">
+    <div class="panel panel-default" style="border-radius: 4px">
+        <div class="panel-body">
+            <form class="form-horizontal form-validation">
+                <div class="form-group" style="margin-top: 5px"  ng-repeat="row in equipment.part_group" >
+                    <label ng-if="row.type == 'group'" class="col-sm-3 text-right">Part Group</label>
+                    <label ng-if="row.type == 'no group'" class="col-sm-3 text-right">Part</label>
+                    <label class="col-sm-9">{{$index+1}}, {{row.name}} </label>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+

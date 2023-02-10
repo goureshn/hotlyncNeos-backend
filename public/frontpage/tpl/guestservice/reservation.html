@@ -1,0 +1,33 @@
+<div ng-controller="ReservationController">
+    <uib-tabset class="tab-container">
+      <uib-tab>
+        <uib-tab-heading>
+          <tab-heading><b style="color:#01579B">Dashboard</b>
+          </tab-heading>
+        </uib-tab-heading>
+
+        <div style="{{tab_full_height}}" ng-include="'tpl/guestservice/reservation/dashboard.html'">
+        </div>
+
+      </uib-tab>
+      <uib-tab>
+        <uib-tab-heading>
+          <span>
+              <b style="color:#01579B">Reserve</b>
+          </span>
+        </uib-tab-heading>
+        <div style="{{tab_full_height}}" ng-include="'tpl/guestservice/reservation/reservation_new.html'">
+        </div>
+      </uib-tab>
+      <uib-tab ng-repeat="tab in selectedTickets" active="tab.active" disabled="tab.disabled">
+        <uib-tab-heading>
+          <tab-heading><b style="color:#01579B">{{gs.getTicketNumber(tab)}}</b>
+            <span ng-click="removeSelectTicket(tab, $index)"><i class="fa fa-times" style="color:#FF0000"></i></span>
+          </tab-heading>
+        </uib-tab-heading>
+
+        <div style="{{tab_full_height}}" ng-controller="ReservationEditController" ng-include="'tpl/guestservice/reservation/reservation_edit.html'" ng-init="init(tab)">
+        </div>
+      </uib-tab>
+    </uib-tabset>
+</div>

@@ -1,0 +1,25 @@
+<div class="modal-body wrapper-lg">
+    <div class="row">
+        <div class="col-sm-12 b-r">
+            <h3 class="m-t-none m-b font-thin">Reject Comment</h3>
+            <hr style="margin-top: 0px; margin-bottom: 15px" />
+            <form role="form">
+	            
+                <div class="form-group">
+                    <label>Comment</label>
+                    <textarea class="form-control input-sm" rows="2" ng-model="reject" style="resize:none"></textarea>
+                </div>
+                 <div class="row">
+    <div class="col-sm-7 pull-right">  
+      <button type="button" class="btn btn-dark btn-sm" ng-click="onSend()">
+        <strong><span class="font-bold text-success">Send</span></strong>
+      </button>
+      <button type="button" class="btn btn-dark btn-sm" ng-click="cancel()">
+        <strong><span class="font-bold text-danger">Cancel</span></strong>
+      </button>
+    </div>  
+  </div>
+            </form>
+        </div>
+    </div>
+</div>

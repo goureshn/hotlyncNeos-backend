@@ -1,0 +1,212 @@
+<div ng-controller="LNFReportController">
+    <style>
+        .form-horizontal .control-label {
+            padding-top: 0px;
+        }
+        .datetime .popover {
+            max-width: 650px;
+        }
+    </style>
+    <script type="text/ng-template" id="datetime_ranger.html">
+        <div style="width: 700px">
+            <div rg-range-picker="myDatetimeRange" labels="myDatetimeLabels"></div>
+        </div>
+    </script>
+    <script type="text/ng-template" id="tag-template">
+        <div class="tag-template">
+            <div class="right-panel">
+                <span>{{data.key}}</span>
+                <a class="remove-button" ng-click="$removeTag()">&#10006;</a>
+            </div>
+        </div>
+    </script>
+    <script type="text/ng-template" id="autocomplete-template">
+        <div class="autocomplete-template">
+            <div class="right-panel">
+                <span ng-bind-html="$highlight($getDisplayText())"></span><br>
+                <span style="font-size: 10px">{{data.type}}</span>
+            </div>
+        </div>
+    </script>
+    <!---------------------------------->
+    <div class="col-lg-12 col-centered">
+        <div class="panel-default">
+            <div class="form-horizontal" ng-show="!data.isHidden" style="`width:100%; margin: auto;">
+                <div class="row form-group" style="width:100%; margin:auto;">
+                    <div class="form-horizontal form-validation" style="float:left; width:100%; height:20%; display:inline-block;">
+                        <div class="fieldset1 panel panel-default" style="border-radius: 4px">
+                            <div class="panel-heading">
+                                <div>
+                                    <label class="font-bold text-sm"><i class="fa fa-columns text-default"></i>&nbsp;&nbsp;Grouping</label>&nbsp;&nbsp;
+                                </div>
+                            </div>
+
+                            <div style="padding-top: 15px">
+                                <form class="form-horizontal form-validation">
+                                    <div class="col-sm-12">
+                                        <label class="control-label text-xs text-muted">Report Type : </label>
+                                        <select class='form-control' ng-model="report_type" ng-change="onChangeReportType()"
+                                                ng-options="type for type in reporttypes">
+                                        </select>
+                                    </div>
+                                    <div class="col-sm-12">
+                                        <label class="control-label text-xs text-muted">Report By : </label>
+                                        <select class='form-control' ng-model="report_by" ng-change="onChangeReportBy()"
+                                                ng-options="type for type in reportby_list" >
+                                        </select>
+                                    </div>
+                                    <div class="col-sm-12">
+                                        <label class="control-label text-xs text-muted">Group By : </label>
+                                        <select class='form-control' ng-model="group_by" ng-change="onChangeGroupBy()"
+                                                ng-options="type for type in groupby_list" >
+                                        </select>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                       
+                        <div class="fieldset2 panel panel-default" style="border-radius: 4px; width: 80%">
+                            <div class="panel-heading">
+                                <div>
+
+                                    <button type="submit" class="btn btn-sm btn-info pull-right" onclick="loadBlockingUi();" ng-click="onGenerateReport()" style="margin-top: -5px">
+                                        <i class="fa fa-file-text"></i>&nbsp;&nbsp;Generate Report&nbsp;</button>
+
+                                    <button type="submit" class="btn btn-sm btn-default pull-right" style="color: white; background-color:#a9a9a9; margin-top: -5px; margin-right: 2px" ng-if="!auth_svc.isValidModule('app.reports.schedule')">
+                                        <i class="glyphicon glyphicon-calendar"></i>&nbsp;&nbsp;Schedule Report</button>
+
+                                    <button type="submit" class="btn btn-sm btn-info pull-right" ng-if="auth_svc.isValidModule('app.reports.schedule')" ng-click="onShowSchedule()" style="margin-top: -5px; margin-right: 2px">
+                                        <i class="glyphicon glyphicon-calendar"></i>&nbsp;&nbsp;Schedule Report</button>
+
+
+                                </div>
+                                <div>
+                                    <label class="font-bold text-sm"><i class="fa fa-columns text-default"></i>&nbsp;&nbsp;Apply Filters</label>&nbsp;&nbsp;
+
+                                </div>
+                            </div>
+
+                            <div class="panel-body">
+                                <form class="form-horizontal form-validation">
+                                    <div class="row form-horizontal">
+                                        <div class="btn-group col-sm-12" style="margin-top: -2px">
+                                            <label class="btn btn-info btn-sm" ng-click="dateShort('Today')" >Today</label>
+                                            <label class="btn btn-info btn-sm" ng-click="dateShort('Yesterday')">Yesterday</label>
+                                            <label class="btn  btn-info btn-sm" ng-click="dateShort('This Week')">This Week</label>
+                                            <label class="btn  btn-info btn-sm" ng-click="dateShort('Last Week')">Last Week</label>
+                                            <label class="btn  btn-info btn-sm" ng-click="dateShort('This Month')">This Month</label>
+                                            <label class="btn  btn-info btn-sm" ng-click="dateShort('Last Month')">Last Month</label>
+                                            <label class="btn  btn-info btn-sm" ng-click="dateShort('This Year')">This Year</label>
+                                            <label class="btn  btn-info btn-sm" ng-click="dateShort('Custom')">Custom</label>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <label class="control-label text-xs text-muted">Period :</label>
+                                            <div class="datetime">
+                                                <input type="text" ng-model="time_range" ng-disabled="date_short!='Custom'" ui-jq="daterangepicker" ui-options="dateRangeOption" class="form-control input-sm">
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <label class="control-label text-xs text-muted">Status :</label>
+                                            <div class="text-xs" ng-dropdown-multiselect="" options="status_tags" selected-model="status" checkboxes="true" extra-settings="status_tags_hint_setting" translation-texts="status_tags_hint" ng-multiselect-disabled="status_flag"></div>
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <label class="control-label text-xs text-muted">Guest Type :</label>
+                                            <div class="text-xs" ng-dropdown-multiselect="" options="guest_type_tags" selected-model="guest_type" checkboxes="true" extra-settings="guest_type_tags_hint_setting" translation-texts="guest_type_tags_hint"></div>
+                                        </div>
+                                    </div>
+                                    <div class="row form-horizontal">
+                                        <div class="col-sm-6">
+                                            <label class="control-label text-xs text-muted">Property :</label>
+                                            <tags-input ng-model="property_tags" placeholder="Property" replace-spaces-with-dashes="false" style="margin-top: -5px">
+                                                <auto-complete source="loadFiltersValue($query, 'Property')"
+                                                               min-length="0"
+                                                               debounce-delay="0"
+                                                               load-on-focus="true"
+                                                               load-on-empty="true"
+                                                               max-results-to-show="20"></auto-complete>
+                                            </tags-input>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <label class="control-label text-xs text-muted">Location :</label>
+                                            <tags-input ng-model="location_tags" display-property="name" style="margin-top: -5px"
+                                                        replace-spaces-with-dashes="false" placeholder="Location"
+                                                        style="margin-top: "
+                                                        min-length="0"
+                                                        template="tag-template" >
+                                                <auto-complete source="getLocationList($query)"
+                                                               min-length="0"
+                                                               debounce-delay="0"
+                                                               load-on-focus="true"
+                                                               load-on-empty="true"
+                                                               max-results-to-show="100"
+                                                               template="autocomplete-template">
+                                                </auto-complete>
+                                            </tags-input>
+                                        </div>
+                                    </div>
+                                    <div class="row form-horizontal">
+                                        <div class="col-sm-6" ng-show="category_view" >
+                                            <label class="control-label text-xs text-muted">Department :</label>
+                                            <tags-input ng-model="department_tags" placeholder="Department" replace-spaces-with-dashes="false" style="margin-top: -5px">
+                                                <auto-complete source="loadFiltersValue($query, 'Departments')"
+                                                               min-length="0"
+                                                               debounce-delay="0"
+                                                               load-on-focus="true"
+                                                               load-on-empty="true"
+                                                               max-results-to-show="100"></auto-complete>
+                                            </tags-input>
+                                        </div>
+                                        <div class="col-sm-6" ng-show="category_view">
+                                            <label class="control-label text-xs text-muted">Category:</label>
+                                            <tags-input ng-model="category_tags" placeholder="Category" replace-spaces-with-dashes="false" style="margin-top: -5px">
+                                                <auto-complete source="loadFiltersValue($query, 'Category')"
+                                                               min-length="0"
+                                                               debounce-delay="0"
+                                                               load-on-focus="true"
+                                                               load-on-empty="true"
+                                                               max-results-to-show="100"></auto-complete>
+                                            </tags-input>
+                                        </div>
+                                    </div>
+                                    <div class="row form-horizontal">
+                                        <div class="col-sm-6" ng-hide="report_by == 'Sub-complaint'" style="margin-top: -3px">
+                                            <label class="control-label text-xs text-muted">Main Category:</label>
+                                            <tags-input ng-model="main_category_tags" placeholder="Main Category" min-length="0" replace-spaces-with-dashes="false" style="margin-top: -5px">
+                                                <auto-complete source="loadFiltersValue($query, 'MainCategory')"
+                                                               min-length="0"
+                                                               debounce-delay="0"
+                                                               load-on-focus="true"
+                                                               load-on-empty="true"
+                                                               max-results-to-show="20"></auto-complete>
+                                            </tags-input>
+                                        </div>
+                                        <div class="col-sm-6" ng-show="category_view" style="margin-top: -3px">
+                                            <label class="control-label text-xs text-muted">Sub-category:</label>
+                                            <tags-input ng-model="sub_category_tags" placeholder="Sub Category" replace-spaces-with-dashes="false" style="margin-top: -5px">
+                                                <auto-complete source="loadFiltersValue($query, 'SubCategory')"
+                                                               min-length="0"
+                                                               debounce-delay="0"
+                                                               load-on-focus="true"
+                                                               load-on-empty="true"
+                                                               max-results-to-show="100"></auto-complete>
+                                            </tags-input>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Preview -->
+			<div ng-include="'tpl/reports/report_preview.html'">
+			</div>
+            
+        </div>
+    </div>
+
+</div>
+

@@ -1,0 +1,120 @@
+<style>
+    button {
+        pointer: cursor;
+    }
+
+    input[type=file] {
+        width: 150px;
+        height: 20px;
+    }
+    .tbl-sm {
+        font-size: .8vw;
+        padding: 1px 15px !important;
+        color: #67686a;
+    }
+</style>
+
+    <div class="modal-content">        
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">
+                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+            </button>
+            <h3 class="modal-title" style="color:#2691d9" id="Heading">{{checklist.name}} Check List</h3>
+        </div>        
+        <div class="modal-body">    
+            <form class="form-horizontal form-validation">    
+                <div class="form-group">
+                    <div class="col-sm-3">
+                        <label class="control-label text-xs text-muted">Category : </label>
+                        <div class="scrollable-dropdown-menu">
+                            <input type="text" class="form-control input-sm"                                 
+                                ng-model="item.category_name"                                 
+                                placeholder="Search Category"                                
+                                uib-typeahead="row.name for row in category_list | filter:$viewValue | limitTo:10"
+                                typeahead-on-select="onCategorySelect($item, $model, $label)" 
+                                typeahead-min-length="0" 
+                                typeahead-no-results="item.noCategoryResults"                                                               
+                                required
+                                >
+                             <span ng-if="item.noCategoryResults" uib-dropdown uib-dropdown-toggle auto-close="disabled" is-open="true">
+                                <ul class="dropdown-menu" >
+                                    <li><a href ng-click="onAddCategory(item.category_name)">{{item.category_name}} (Add New Category)</a></li>                                    
+                                </ul>
+                            </span>       
+                        </div>
+                    </div>    
+                    <div class="col-sm-2">
+                        <label class="control-label text-xs text-muted">Order : </label>
+                        <div class="scrollable-dropdown-menu">
+                            <input type="number" min="1" class="form-control input-sm" 
+                                ng-model="item.order_id"                                                                 
+                                required
+                                >
+                        </div>
+                    </div>    
+                    <div class="col-sm-3">
+                        <label class="control-label text-xs text-muted">Name : </label>
+                        <div class="scrollable-dropdown-menu">
+                            <input type="text" class="form-control input-sm" 
+                                ng-model="item.name"                                                                 
+                                required
+                                >
+                        </div>
+                    </div>    
+                    <div class="col-sm-3">
+                        <label class="control-label text-xs text-muted">Answer Type : </label>
+                        <div>
+                            <select  class='form-control' ng-model="item.type"
+                                        ng-options="type for type in type_list" required>
+                            </select>
+                        </div>
+                    </div>  
+                    <div class="col-sm-1">
+                        <label style="margin-top: 23px" ng-click="onCreateCheckListItem()">
+                            <i ng-show="!(item.id > 0)" class="fa fa-plus-circle fa-2x text-danger " style="cursor: pointer" title="Create Item"></i>
+                            <i ng-show="item.id > 0" class="fa fa-pencil fa-2x text-danger " style="cursor: pointer" title="Create Item"></i>
+                        </label>
+                    </div>  
+                </div>    
+            </form>
+
+            <div style="margin: 5px 0px 0px 0px; height: 400px; overflow-y:auto">
+
+                <table  st-table="datalist"  st-pipe="pageChanged()" class="table ticket" >
+                    <thead class="tblhead-sm">
+                    <tr>
+                        <th><b>Category</b></th>
+                        <th><b>Name</b></th>
+                        <th><b>Answer Type</b></th>
+                        <th><b>Created At</b></th>
+                        <th style="width: 80px"><b>Action</b></th>
+                    </tr>
+                    </thead>
+                    <tbody ng-repeat="row in item_list">
+                        <tr class="" >
+                            <td>
+                                {{row.category_name}} - {{row.order_id}}
+                            </td>
+                            <td>{{row.name}}</td>
+                            <td>{{row.type}}</td>
+                            <td>{{row.created_at}}</td>
+                            <td>
+                                <a class="btn default btn-xs green" ng-click="edit(row)">
+                                    <i class="fa fa-pencil"></i></a>
+                                <a class="btn default btn-xs red" ng-click="delete(row)">
+                                    <i class="fa fa-times"></i></a>                            
+                            </td>
+                        </tr>
+                    </tbody>                
+                </table>
+            </div>    
+        </div>
+
+        <div class="modal-footer ">                    
+            <button type="button" class="btn btn-default btn-sm w-xs" data-dismiss="modal" ng-click="clear()">
+                <span class="glyphicon glyphicon-remove"></span>
+                <b> Clear</b>
+            </button>
+        </div>
+
+    </div>

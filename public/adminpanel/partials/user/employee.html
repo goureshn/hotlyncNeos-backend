@@ -1,0 +1,232 @@
+<style>
+	#scrollable-dropdown-menu .dropdown-menu {
+		max-height: 150px;
+		overflow-y: auto;
+	}
+</style>
+
+<input type="hidden" id="id" value="-1" ng-model="model_data.id"/>
+
+	<div class="panel panel-default">
+		<div class="panel-heading wrapper">
+			<i class="fa fa-user-circle-o"></i>                           
+			<span class="font-bold">Employee Management</span>
+
+			<link href="/lib/angular/angular-toggle-switch-bootstrap-3.css" media="all" rel="stylesheet" type="text/css">
+	
+			<div class="pull-right">
+				<button type="button" class="btn btn-info btn-sm" style="margin-top: -5px;margin-right: 20px;" data-toggle="modal" data-target="#sync-setting-modal">
+					<b> Setting </b>
+				</button>
+
+				<button type="button" class="btn btn-info btn-sm" style="margin-top: -5px;margin-right: 20px;"   ng-click="onMigrate()">
+					<b> Migrate From User List </b>
+				</button>
+
+				<button type="button" class="btn btn-success btn-sm" style="margin-top: -5px" data-toggle="modal" data-target="#addModal" ng-disabled="viewclass" ng-click="onShowEditRow(-1)">
+					<span class="glyphicon glyphicon-plus"></span>
+					<b> Add New </b>
+				</button>                             
+			</div>	
+		</div>                         
+		<div class=""> 
+			<table id="table_grid" class="table table-hover table-bordered" style="text-align: center;width:100%" ng-model = "table_grid">
+				<thead> 
+					<tr> 
+						<tr><!--
+							<th class="no-sort" style="text-align: center">
+								<input type="checkbox" id="checkall" />
+							</th>-->
+							<th style="text-align: center" ng-repeat = "field in fields">
+								<b>{{field}}</b>
+							</th>															
+							<th class="no-sort" style="text-align: center">Edit</th>
+							<th class="no-sort" style="text-align: center">Delete</th>
+						</tr>
+					</tr>                                     
+				</thead>                    
+			</table>                             
+		</div>                     
+	</div>
+	
+<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"> 
+	<div class="modal-dialog" role="document">
+		<div class="panel"> 
+			<div class="modal-header bg"> 
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"> 
+					<span aria-hidden="true">&times;</span> 
+				</button>                             
+				<h5 class="modal-title font-bold" style="color:#2691d9" ng-if="model_data.id<0">
+					<i class="fa fa-plus"></i>&nbsp;Add Employee</h5>
+				<h5 class="modal-title font-bold" style="color:#2691d9" ng-if="model_data.id>=0">
+					<i class="fa fa-pencil"></i>&nbsp;Edit Employee</h5>				
+			</div>                         
+			<div class="modal-body">
+				<br>
+				<form class="form-horizontal">
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Property:</label>
+						<div class="col-sm-5">
+							<select id='prpty_id' class='form-control' ng-model="model_data.property_id" ng-change="onChangeProperty()"
+								ng-options="value.id as value.name for (key, value) in properties">		
+							</select>							
+						</div>
+					</div>
+
+					<!-- User -->
+					<div class="form-group">												
+						<label class="control-label col-sm-4" >User:</label>
+						<div id="scrollable-dropdown-menu" class="col-sm-5">
+							<input class="form-control" type="text" ng-model="wholename"
+								   uib-typeahead="user.wholename for user in staff_list | filter:$viewValue | limitTo:10"
+								   typeahead-min-length="0"
+								   typeahead-editable="false"
+								   typeahead-on-select="onSelectUser(user, $item, $model, $label)"
+								   required />
+						</div>
+					</div>
+					
+					<!-- Department -->
+					<div class="form-group">												
+						<label class="control-label col-sm-4" >Department:</label>
+						<div id="scrollable-dropdown-menu" class="col-sm-5">
+							<input class="form-control" type="text" ng-model="model_data.dept"
+								   uib-typeahead="department.department for department in dept_list | filter:$viewValue | limitTo:10"
+								   typeahead-min-length="0"
+								   typeahead-editable="false"
+								   typeahead-on-select="onSelectDepartment(department, $item, $model, $label)"
+								   required />
+						</div>
+					</div>
+		
+					<text-item formlabel="First Name" modelname="model_data.fname"></text-item>
+					<text-item formlabel="Last Name" modelname="model_data.lname"></text-item>					
+
+					<!-- Sex -->
+					<div class="form-group">
+						<label class="control-label col-sm-4">Sex:</label>
+						<div class="col-sm-5">
+							<select class='form-control' ng-model="model_data.sex"
+								ng-options="value for value in sex_list">		
+							</select>							
+						</div>
+					</div>
+
+					<!-- Married Status -->
+					<div class="form-group">
+						<label class="control-label col-sm-4">Married Status:</label>
+						<div class="col-sm-5">
+							<select class='form-control' ng-model="model_data.mstatus"
+								ng-options="value for value in mstatus_list">		
+							</select>							
+						</div>
+					</div>
+
+					<!-- Date of Birthday -->
+					<date-item formlabel="Date of Birthday" modelname="model_data.dob" dateoptions="{{dateOptions}}"></date-item>
+					
+					<!-- Nationality -->
+					<div class="form-group">												
+						<label class="control-label col-sm-4" >Nationality:</label>
+						<div id="scrollable-dropdown-menu" class="col-sm-5">
+							<input class="form-control" type="text" ng-model="model_data.nationality"
+								   uib-typeahead="national.name for national in national_list | filter:$viewValue | limitTo:10"
+								   typeahead-min-length="0"
+								   typeahead-editable="false"								   
+								   required />
+						</div>
+					</div>
+
+					<text-item formlabel="Tel" modelname="model_data.tel"></text-item>
+					<text-item formlabel="Mobile" modelname="model_data.mobile"></text-item>
+
+					<!-- Country -->
+					<div class="form-group">												
+						<label class="control-label col-sm-4" >Country:</label>
+						<div id="scrollable-dropdown-menu" class="col-sm-5">
+							<input class="form-control" type="text" ng-model="model_data.country"
+								   uib-typeahead="country.name for country in country_list | filter:$viewValue | limitTo:10"
+								   typeahead-min-length="0"
+								   typeahead-editable="false"								   
+								   required />
+						</div>
+					</div>
+
+					<text-item formlabel="Divsn" modelname="model_data.divsn"></text-item>
+
+					<!-- Sub Department -->
+					<div class="form-group">												
+						<label class="control-label col-sm-4" >Sub Department:</label>
+						<div id="scrollable-dropdown-menu" class="col-sm-5">
+							<input class="form-control" type="text" ng-model="model_data.sdept"
+								   uib-typeahead="department.department for department in dept_list | filter:$viewValue | limitTo:10"
+								   typeahead-min-length="0"
+								   typeahead-editable="false"								   
+								   required />
+						</div>
+					</div>
+
+					<date-item formlabel="Date of Joining" modelname="model_data.doj" dateoptions="{{dateOptions}}"></date-item>		
+					<text-item formlabel="Passport Number" modelname="model_data.psnum"></text-item>
+					<date-item formlabel="Passport Expiry" modelname="model_data.psexp" dateoptions="{{dateOptions}}"></date-item>
+					<date-item formlabel="Visa Expiry" modelname="model_data.vsexp" dateoptions="{{dateOptions}}"></date-item>
+					<div class="form-group" ng-include="'/adminpanel/partials/fragments/uploadcsv.html'"></div>
+
+				</form>
+				
+			</div>
+			<div class="col-md-12" style="clear:both;margin-bottom: 20px" ng-include="'/adminpanel/partials/fragments/uploader.html'"></div>
+			<submit-form id="model_data.id" updatedata="onUpdateRow()"></submit-form>						
+		</div>                     
+	</div>                 
+</div>             
+
+<dialog-delete title="User" modelname="model_data.fname" deletedata="deleteRow()"></dialog-delete>
+
+<div class="modal fade" id="sync-setting-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"> 
+	<div class="modal-dialog" role="document">
+		<div class="panel"> 
+			<div class="modal-header bg"> 
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"> 
+					<span aria-hidden="true">&times;</span> 
+				</button>                             
+				<h5 class="modal-title font-bold" style="color:#2691d9">
+					<i class="fa fa-refresh"></i>&nbsp;Setting</h5>				
+			</div>                         
+			<div class="modal-body">
+				<br>
+				<form class="form-horizontal">
+					<div class="form-group">
+						<label class="control-label col-sm-4" for="Property">Auto Sync :</label>
+						<div class="col-sm-5">
+							<div toggle-switch class="switch-primary" ng-model="sync_setting.auto_sync_employee"></div>
+						</div>
+					</div>
+
+					<text-item formlabel="Sync Time" modelname="sync_setting.auto_sync_employee_time"></text-item>					
+
+					<!-- Employee DB Type -->
+					<div class="form-group">
+						<label class="control-label col-sm-4">DB Type:</label>
+						<div class="col-sm-5">
+							<select class='form-control' ng-model="sync_setting.employee_db_type"
+								ng-options="value for value in dbtype_list">		
+							</select>							
+						</div>
+					</div>
+
+					<text-item formlabel="Server Address" modelname="sync_setting.employee_db_address"></text-item>
+					<text-item formlabel="Username" modelname="sync_setting.employee_db_username"></text-item>
+					<text-item formlabel="Password" modelname="sync_setting.employee_db_password"></text-item>
+					<text-item formlabel="DB Name" modelname="sync_setting.employee_db_name"></text-item>					
+				</form>
+			</div>
+			
+			<div class="modal-footer">
+				<button type="button" class="btn btn-warning btn-lg" style="width: 100%;"  data-dismiss="modal" data-ng-click="onUpdateSetting()">
+					<span class="glyphicon glyphicon-ok-sign"></span> Update
+				</button>
+			</div>
+		</div>                     
+	</div>                 
+</div>             

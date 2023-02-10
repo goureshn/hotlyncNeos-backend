@@ -1,0 +1,291 @@
+<style>
+	#room-dropdown-menu .dropdown-menu {
+		max-height: 300px;
+		overflow-y: auto;
+	}
+	#complaint-dropdown-menu .dropdown-menu {
+		max-height: 300px;
+		overflow-y: auto;
+	}
+</style>
+<div class="col-centered wrapper-sm" style="{{full_height}}">
+	<div class="col-centered">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<label class="font-bold"><i class="fa fa-warning" aria-hidden="true"></i>&nbsp;&nbsp;Create New Complaint</label>
+				<div class="pull-right">
+					<div class="pull-right">
+            <button type="button" class="btn btn-dark btn-sm" ng-click="createComplaint(0)">
+             	<span class="text-success font-bold">Save</span>
+            </button>
+        		<button type="button" class="btn btn-dark btn-sm" ng-click="removeNewSelectTicket(tab)">
+        			<span class="text-danger font-bold">Cancel</span>
+        		</button>
+          </div>
+		    </div>
+			</div>
+			<div class="panel-body">
+				<form class="form-horizontal">
+					<div class="form-group label-group">
+						<div class="col-sm-2 control-label text-muted">Request ID</div>
+						<div class="col-sm-4 control-label font-bold" style="text-align: left">
+							{{ticket_id}}
+						</div>
+						<div class="col-sm-2 control-label text-muted">Request Time</div>
+						<div class="col-sm-4 control-label font-bold" style="text-align: left">
+							{{guest.request_time}}
+						</div>
+					</div>
+					<div class="form-group label-group">
+						<div class="col-sm-2 control-label text-muted">Room</div>
+						<div class="col-sm-4 control-label" style="text-align: left">
+							<input type="text" ng-model="selected_room.room" class="form-control input-sm" placeholder="Enter room number"
+                uib-popover="Enter room number" popover-trigger="mouseenter" popover-placement="right"
+                uib-typeahead="room.room for room in getRoomList($viewValue)"
+                typeahead-min-length="1"
+                typeahead-on-select="onRoomSelect($item, $model, $label)" required>
+						</div>
+						<div class="col-sm-2 control-label text-muted">Guest Name</div>
+						<div class="col-sm-4 control-label" style="text-align: left">
+							{{guest.guest_name}}
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+		<div class="col-centered" ng-show="guest.room_id > 0 && guest.guest_id > 0">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<label class="font-bold"><i class="fa fa-exclamation-circle" aria-hidden="true"></i>&nbsp;&nbsp;Complaint Details</label>
+				</div>
+				<div class="panel-body">
+					<form class="form-horizontal">
+						<div class="form-group label-group">
+							<div class="col-sm-2 control-label text-muted">Complaint</div>
+							<div class="col-sm-4 control-label" style="text-align: left">
+								<input ng-model="complaint.complaint_name" class="form-control  input-sm"
+		              focus-me="true"
+		              ng-focus="onFocus($event)" empty-typeahead
+		              uib-typeahead="item.complaint for item in complaint_list | filter:$viewValue:stateComparator"
+		              typeahead-min-length="0"
+		              typeahead-on-select="onComplaintSelect($item, $model, $label)"
+		              typeahead-no-results="selected_room.noResults"/>
+							</div>
+							<div class="col-sm-2 control-label text-muted">Type</div>
+							<div class="col-sm-3 control-label" style="text-align: left">
+								<select class='form-control input-sm' ng-model="complaint.type_id" ng-change="onChangeComplaintType()"
+	                    ng-options="value.id as value.type for (key, value) in complaint_types" ng-disabled="!selected_room.noResults"/>
+							</div>
+							<div class="col-sm-1">
+	            	<button type="button" class="btn btn-default btn-xs" style="margin-top: 3px" ng-click="addComplaintItem()"
+	            	ng-show="selected_room.noResults && complaint.complaint_name.length > 0">
+	            	Add
+	            	</button>
+	          	</div>
+						</div>
+						<div class="form-group label-group">
+							<div class="col-sm-2 control-label text-muted">Assignee</div>
+							<div class="col-sm-4 control-label" style="text-align: left">
+								<input type="text" ng-model="assignee.wholename" class="form-control input-sm" disabled>
+							</div>
+							<div class="col-sm-2 control-label text-muted">Department</div>
+							<div class="col-sm-4 control-label" style="text-align: left">
+								<select class='form-control input-sm' ng-model="complaint.dept_id"
+	                    ng-options="value.id as value.department for (key, value) in departments">
+	            	</select>
+							</div>
+						</div>
+						<div class="form-group label-group">
+							<div class="col-sm-2 control-label text-muted">Comment</div>
+							<div class="col-sm-4 control-label" style="text-align: left">
+								<textarea class="form-control input-sm" rows="3" ng-model="complaint.custom_message" style="resize:none"></textarea>
+							</div>
+							<div class="col-sm-2 control-label text-muted">Compensation</div>
+							<div class="col-sm-4 control-label" style="text-align: left">
+								<label class="i-switch m-t-xs m-r">
+									<input type="checkbox" ng-model="complaint.compensation_enable" checked>
+										<i></i>
+								</label>
+							</div>
+						</div>
+					</form>
+	      </div>				
+			</div>
+		</div>
+	
+		<div class="col-centered" ng-show="complaint.compensation_enable && !selected_room.noResults && complaint.complaint.length > 0">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<label class="font-bold"><i class="fa fa-exclamation-circle" aria-hidden="true"></i>&nbsp;&nbsp;Compensation</label>
+				</div>
+				<div class="panel-body">
+					<form class="form-horizontal">
+						<div class="form-group label-group">
+							<div class="col-sm-2 control-label text-muted">Complaint</div>
+							<div class="col-sm-4 control-label" style="text-align: left">
+								<select class='form-control input-sm m-b' ng-model="complaint.compensation_id" ng-change="onChangeCompensationType()"
+                    ng-options="value.id as value.compensation for (key, value) in compensations"/>
+							</div>
+							<div class="col-sm-2 control-label text-muted">Complaint</div>
+							<div class="col-sm-4 control-label" style="text-align: left">
+								<input type="text" ng-model="complaint.compensation.cost" class="form-control  input-sm" disabled>
+							</div>
+						</div>
+						<div class="form-group label-group">
+							<div class="col-sm-2 control-label text-muted">Comment</div>
+							<div class="col-sm-4 control-label" style="text-align: left">
+								<textarea class="form-control input-sm" rows="3" ng-model="complaint.compensation.comment"
+									style="resize:none"></textarea>
+							</div>
+							<div class="col-sm-2 control-label text-muted">Need to approve</div>
+							<div class="col-sm-4 control-label" style="text-align: left">
+								<label class="i-switch m-t-xs m-r">
+									<input type="checkbox" ng-model="complaint.compensation.approve_flag" disabled checked>
+									<i></i>
+								</label>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!--
+<fieldset>
+     <legend>
+          <div style="width: 95%;" class="col-centered wrapper-xs">
+               <form class="bs-example form-horizontal ng-pristine ng-valid">
+                    <div class="row form-horizontal">
+                         <label style="font-size:15px;">&nbsp;<i class="icon-user"></i>&nbsp;&nbsp;Guest Information</label>
+                         <div class="pull-right">
+                              <div class="btn-group" dropdown is-open="status.isopen">
+							<button type="button" class="btn btn-success btn-sm" ng-click="createComplaint(0)">Save</button>
+        					</div>
+                              <button type="button" class="btn btn-danger btn-sm" ng-click="removeNewSelectTicket(tab)">Cancel</button>
+                          </div>
+                     </div>
+               </form>
+          </div>
+     </legend>
+     <div class ="row-md">
+          <label class="control-label text-right col-sm-2" style="white-space: nowrap">Request number </label>
+          <div class="col-sm-4">
+               <p class="field_result">{{ticket_id}}</p>
+          </div>
+          <label class="control-label text-right col-sm-2" style="white-space:nowrap">Request time </label>
+          <div class="col-sm-4">
+               <p class="field_result">{{guest.request_time}}</p>
+          </div>
+     </div>
+     <div class="row-md form-group form-horizontal">
+	      <label class="control-label text-right col-sm-2">Room</label>
+          <div class="col-sm-4" id="room-dropdown-menu" >
+               <input type="text" ng-model="selected_room.room" class="form-control input-sm" placeholder="Enter room number"
+                    uib-popover="Enter room number" popover-trigger="mouseenter" popover-placement="right"
+                    uib-typeahead="room.room for room in getRoomList($viewValue)"
+                    typeahead-min-length="1"
+                    typeahead-on-select="onRoomSelect($item, $model, $label)" required>
+          </div>
+          <label class="control-label text-right col-sm-2" style="white-space: nowrap">Guest name </label>
+          <div class="col-sm-4">
+               <input class="form-control input-sm" placeholder="Guest Name" ng-model="guest.guest_name" disabled required>
+          </div>
+     </div>
+</fieldset>
+
+<div class="col-centered" ng-show="guest.room_id > 0 && guest.guest_id > 0">
+<fieldset>
+	<legend>
+		<label style="font-size:15px;">&nbsp;<i class="fa fa-exclamation-circle"></i>&nbsp;&nbsp;Complaint Details</label>
+	</legend>
+     <form class="form-horizontal form-validation">
+        	<div class="row-md form-horizontal">
+	          <label class="col-sm-2 text-right control-label">Complaint</label>
+	          <div class="col-sm-4" id="complaint-dropdown-menu">
+		          <input ng-model="complaint.complaint_name" class="form-control  input-sm"
+		               focus-me="true"
+		               ng-focus="onFocus($event)" empty-typeahead
+		               uib-typeahead="item.complaint for item in complaint_list | filter:$viewValue:stateComparator"
+		               typeahead-min-length="0"
+		               typeahead-on-select="onComplaintSelect($item, $model, $label)"
+		               typeahead-no-results="selected_room.noResults"/>
+	          </div>
+	          <label class="col-sm-2 text-right control-label">Type</label>
+	          <div class="col-sm-3">
+	            	<select class='form-control input-sm' ng-model="complaint.type_id" ng-change="onChangeComplaintType()"
+	                    ng-options="value.id as value.type for (key, value) in complaint_types" ng-disabled="!selected_room.noResults"/>
+	          </div>
+	          <div class="col-sm-1">
+	            	<button type="button" class="btn btn-default btn-xs" style="margin-top: 3px" ng-click="addComplaintItem()" ng-show="selected_room.noResults && complaint.complaint_name.length > 0">Add</button>
+	          </div>
+        	</div>
+	   	<div class="row-md form-horizontal" ng-show="!selected_room.noResults && complaint.complaint.length > 0">
+	          <label class="col-sm-2 text-right control-label">Assignee</label>
+	          <div class="col-sm-4">
+	          	<input type="text" ng-model="assignee.wholename" class="form-control input-sm" disabled>
+	          </div>
+	          <label class="col-sm-2 text-right control-label">Department</label>
+	          <div class="col-sm-4">
+	          	<select class='form-control input-sm' ng-model="complaint.dept_id"
+	                    ng-options="value.id as value.department for (key, value) in departments">
+	            	</select>
+	          </div>
+        	</div>
+
+	   	<div class="row-md form-horizontal" ng-show="!selected_room.noResults && complaint.complaint.length > 0">
+          	<label class="col-sm-2 text-right control-label">Comment</label>
+	          <div class="col-sm-4">
+	            	<textarea class="form-control input-sm" rows="3" ng-model="complaint.custom_message" style="resize:none"></textarea>
+	          </div>
+	          <div class="form-group" ng-show="!selected_room.noResults && complaint.complaint.length > 0">
+	          <label class="col-sm-2 control-label">Compensation</label>
+	          <div class="col-sm-2">
+	          	<label class="i-switch m-t-xs m-r">
+					<input type="checkbox" ng-model="complaint.compensation_enable" checked>
+					<i></i>
+				</label>
+	          </div>
+        	</div>
+     </div>
+	   	
+     </form>
+</fieldset>
+</div>
+
+<div class="col-centered" ng-show="complaint.compensation_enable && !selected_room.noResults && complaint.complaint.length > 0">
+<fieldset>
+	<legend>
+		<label style="font-size:15px;">&nbsp;<i class="fa fa-dollar"></i>&nbsp;&nbsp;Compensation Panel
+		</label>
+	</legend>
+     <form class="form-horizontal form-validation">
+     	<div class="row-md form-horizontal col-sm-12">
+          	<label class="col-sm-2 text-right control-label" style="white-space: pre-wrap">Compensation Type</label>
+			<div class="col-sm-4">
+				<select class='form-control input-sm m-b' ng-model="complaint.compensation_id" ng-change="onChangeCompensationType()"
+                    ng-options="value.id as value.compensation for (key, value) in compensations"/>
+          	</div>
+          	<label class="col-sm-2 text-right control-label">Cost</label>
+	          <div class="col-sm-2">
+	            	<input type="text" ng-model="complaint.compensation.cost" class="form-control  input-sm" disabled>
+	          </div>
+        	</div>
+	   	<div class="row-md form-horizontal">
+          	<label class="col-sm-2 control-label">Comment</label>
+			<div class="col-sm-4">
+				<textarea class="form-control input-sm" rows="3" ng-model="complaint.compensation.comment" style="resize:none"></textarea>
+         		</div>
+		</div>
+		<div class="row-md form-horizontal">
+	          <label class="col-sm-2 control-label">Need to Approve</label>
+			<div class="col-sm-4">
+			<label class="i-switch m-t-xs m-r">
+				<input type="checkbox" ng-model="complaint.compensation.approve_flag" disabled checked>
+				<i></i>
+			</label>
+          </div>
+     </form>
+</fieldset> 
+</div>

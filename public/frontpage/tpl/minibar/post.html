@@ -1,0 +1,371 @@
+<style>
+    .minibar_post_item {
+        position:relative;
+        padding-top:20px;
+        display:inline-block;
+        height:120px;
+    }
+    .notify-badge{
+        position: absolute;
+        right:5px;
+        top:10px;
+        background:#e79e4a;
+        text-align: center;
+        border-radius: 0px 7px 0px 7px;
+        color:white;
+        padding:5px 10px;
+        font-size:15px;
+    }
+</style>
+
+
+<script type="text/ng-template" id="roomserviceTypeahead.html">
+    <div class = "list-group-item">
+        <a herf class="pull-left thumb-sm avatar m-r">
+            <img ng-src="{{match.model.img_path}}" alt="..." class="img-circle">
+        </a>
+        <!--<a herf class="pull-right">
+            <i class="fa fa-close" ></i>
+        </a>-->
+        <div class="clear">
+            <div><a onmouseover="this.style.textDecoration='underline';"
+                    onmouseout="this.style.textDecoration='none';" href>{{match.model.item_name}}</a></div>
+        </div>
+    </div>
+</script>
+
+<div ng-controller="MinibarPostController" class="">
+     <div class="wrapper-md1 bg-light b-b">
+        <h1 class="m-n font-thin h3">Minibar Post</h1>
+    </div>
+
+    <div class="wrapper-md1">
+        <div style="margin-bottom: 0px">
+            <!-- <div class="panel-heading">
+               <center><label class="text-sm font-bold">
+                    Create Roster</label></center>
+               
+            </div> -->
+            <div style="padding: 0px 5px 0px 5px">
+
+                <div class="row" style="margin-right: 0px">
+                    <div ng-if = "0" class="col-sm-3">
+                        <div class="panel panel-default" style="margin-bottom: 5px">
+                            <div class="panel-heading" style="background-color:#38678B">
+                                <label class="text-sm font-bold" style="color:white">
+                                    <i class="fa fa-mobile"></i>&nbsp;&nbsp;Devices</label>
+                            </div>
+                            <div class="panel-body" style="padding:0px">
+                                <form class="form-horizontal">
+                                    <div class="form-group" style="margin-top: 15px; margin-right: 0px">
+                                        <label class="col-sm-3 control-label text-sm font-bold">Name</label>
+                                        <div class="col-sm-9">
+                                            <div class="input-group">
+                                                <input type="text" class="form-control input-sm" ng-model="device_name" ng-keyup="$event.keyCode == 13 && searchDevice()"/>
+                                                <span class="input-group-btn">
+                                                    <button type="button" class="btn btn-sm" ng-click="searchDevice()">
+                                                        <i class="fa fa-search"></i>
+                                                    </button>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                                <div class="list-group" style="margin-bottom: 5px" fill-height additional-padding="200" debounce-wait="300">
+                                    <a href class="list-group-item" ng-class="{'selected': row.selected}" ng-repeat="row in devicelist" ng-click="onSelectDevice(row)">
+                                        <span style="margin-top: 0" class="pull-right">
+                                            <span class="badge" style="background-color: goldenrod" title="Credits">{{row.total_credits}}</span>
+                                            <span class="badge bg-success" title="Rooms">{{row.room_count}}</span>
+                                            <i class="fa fa-chevron-right text-muted"></i>
+                                        </span>
+                                        <span class="avatar thumb-xs m-r-xs" style="width:27px">
+                                            <img src="{{row.picture}}" alt="..." onError="this.onerror=null;this.src='/frontpage/img/default_photo.png';">
+                                            <!-- <i ng-if="!row.online_status" class="fa fa-user fa-2x"></i> -->
+                                            <i class="bg-success b-white bottom" ng-if="row.online_status==1"></i>
+                                            <i class="bg-default b-white bottom" ng-if="!row.online_status"></i>
+                                            <!-- <span class="hidden-xs hidden-sm status-view text-xs" style="cursor: pointer">&nbsp;&nbsp;&nbsp;&nbsp;{{row.wholename}}</span> -->
+                                        </span>
+                                        <label class="text-sm">{{row.name}}</label>
+                                        <span class="bg-success text-xs font-bold b-white bottom" style="border-radius:10px" ng-if="row.online_status==1">&nbsp;&nbsp;{{row.wholename}}&nbsp;&nbsp;</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6 " style="padding-left: 8px; padding-right: 8px">
+                        <div class="panel panel-default" style="margin-bottom: 5px;">
+                            <div class="panel-heading" style="background-color:#38678B">
+                                <label class="text-sm font-bold" style="color:white">
+                                    <i class="fa fa-location-arrow"></i>&nbsp;&nbsp;Rooms </label>
+                            </div>
+                            <div class="panel-body" style="padding:8px;">
+                                <form class="form-horizontal" style="padding:0px;" >
+
+                                    <div class="form-group" style="display: flex; justify-content: center; align-items: flex-end">
+                                        <div class="col-sm-4" >
+                                            <div class="input-group">
+                                                <input type="text" class="form-control input-sm" placeholder="Search Rooms" ng-keyup="$event.keyCode == 13 && filterList()"
+                                                       ng-model="query_name" />
+                                                <span class="input-group-btn">
+                                                    <button type="button" class="btn btn-sm"  ng-click="filterList()">
+                                                        <i class="fa fa-search"></i>
+                                                    </button>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <label class="control-label text-xs text-muted">Occupancy</label>
+                                            <div class="scrollable-dropdown-menu">
+                                                <div ng-dropdown-multiselect="" options="occupy_filter_list" selected-model="occupy_filter_list_ids" checkboxes="true" extra-settings="filterlist_hint_setting"
+                                                     translation-texts="filterlist_hint" events="occupy_multiuserevents">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-sm-4">
+                                            <label class="control-label text-xs text-muted">Posting Status</label>
+                                            <div class="scrollable-dropdown-menu">
+                                                <div ng-dropdown-multiselect="" options="postingstatus_filter_list" selected-model="postingstatus_filter_list_ids" checkboxes="true" extra-settings="filterlist_hint_setting"
+                                                     translation-texts="filterlist_hint" events="postingstatus_multiuserevents">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                                <div class="list-group" style="margin-bottom: 0px;" dnd-list  fill-height additional-padding="120" debounce-wait="300" scroll-glue keep-scroll scrollybottom="loadMore()">
+
+                                    <a href class=" col-sm-12 list-group-item"  style="padding:6px">
+                                        <div style = "padding:0px;" class = "col-sm-2">
+                                            <label class="text-sm font-bold" style="margin-bottom:0px"> Room </label>
+                                           </div>
+                                        <div style = "padding:0px;" class = "col-sm-2 text-center">
+                                            <label class="text-sm font-bold" style="margin-bottom:0px"> Guest Name</label>
+                                        </div>
+                                        <div style = "padding:0px;" class = "col-sm-2 text-center">
+                                            <label class="text-sm font-bold" style="margin-bottom:0px"> Post Status</label>
+                                        </div>
+
+
+                                        <div style = "padding:0px; text-align: center" class = "col-sm-2">
+                                            <label class="text-sm font-bold" style="margin-bottom:0px"> Posted By</label>
+                                        </div>
+                                        <div style = "padding:0px;" class = "col-sm-2 text-center">
+                                            <label class="text-sm font-bold" style="margin-bottom:0px"> Last Post</label>
+                                        </div>
+                                        <div style = "padding:0px; text-align: end" class = "col-sm-2">
+                                            <label class="text-sm font-bold" style="margin-bottom:0px"> Occupancy </label>
+                                        </div>
+                                    </a>
+
+                                        <div ng-if = "device.isLoading" class="col-sm-12 text-center">
+                                            <i class="fa fa-spin fa-refresh"></i>
+                                        </div>
+
+                                    <a ng-hide = "device.isLoading" href class=" col-sm-12 list-group-item"
+                                        ng-repeat="item in assign_rooms" dnd-draggable=""  dnd-selected="selection(item)" ng-class="{'selected': item.selected}"   style="padding:6px">
+                                        <!-- <i class="fa fa-user-circle fa-fw m-r-xs"></i> {{item.staff[0]}} -->
+                                        <!--<span class="badge" style="background-color: goldenrod" title="Credits">{{item.credits}}</span>-->
+                                        <div style = "padding:0px;" class = "col-sm-2">
+                                            <i class="fa fa-bed fa-fw m-r-xs"></i>
+                                            <label class="text-sm" style="margin-bottom:0px">{{item.room}}&nbsp;&nbsp;</label>
+                                            <!--
+                                            <i ng-show="item.pref" class="fa fa-cogs fa-fw m-r-xs" style="font-size:1em"></i>
+                                            <span title="Preferences" class="text-sm" ng-show="item.pref">{{item.pref}}</span>&nbsp;&nbsp;
+                                            <i ng-show="item.adult" class="fa fa-users fa-fw m-r-xs" style="font-size:1em"></i>
+                                            <span title="Adults" class="text-sm" ng-show="item.adult">{{item.adult}}</span>&nbsp;&nbsp;
+                                            <i ng-show="item.chld" class="fa fa-child fa-fw m-r-xs" style="font-size:1em"></i>
+                                            <span title="Children" class="text-sm" ng-show="item.chld">{{item.chld}}&nbsp;&nbsp;</span>
+                                        -->
+                                        </div>
+                                        <div style = "padding:0px 0 0 0 ;" class = "col-sm-2 text-center">
+                                            {{item.guest_name}}
+                                        </div>
+                                        <div style = "padding:0px 5px;" class = "col-sm-2">
+                                            <!--<span class="badge" ng-class="{'bg-wakeup-pending':item.posting_status_name == 'Pending', 'bg-wakeup-success':item.posting_status_name == 'Posted', 'bg-wakeup-waiting':item.posting_status_name == 'DND'
+                                                    , 'bg-wakeup-in-progress':item.posting_status_name == 'No Post', 'bg-complaint-ack':item.posting_status_name == 'Clear'}">{{item.posting_status_name}}</span>
+                                              -->
+                                            <select ng-disabled = "item.post_id == null" class = "form-control selectpicker" ng-class="{'bg-wakeup-pending':item.posting_status_name == 'Pending',
+                                                'bg-wakeup-success':item.posting_status_name == 'Posted',
+                                                 'bg-wakeup-waiting':item.posting_status_name == 'DND',
+                                                  'bg-wakeup-in-progress':item.posting_status_name == 'No Post',
+                                                   'bg-complaint-ack':item.posting_status_name == 'Clear'}"
+                                                    style="padding:0px 5px 0 0;height:18px;border-radius:12px;border:1px solid #AAAAAA;" ng-options = "st.id as st.label for st in postingstatus_filter_list" ng-model = "item.posting_status_id" ng-change="changePostingStatus(item)" >
+                                            </select><!---->
+                                        </div>
+
+                                        <div style = "padding:0px 0 0 0 ;" class = "col-sm-2">
+                                            <span class="badge" style="padding-top:3px; background-color: goldenrod" title="Posted By">{{item.wholename}}</span>
+                                        </div>
+                                        <div style = "padding:0px 0 0 0 ;" class = "col-sm-2 text-center">
+                                            {{getLastPostName(item.last_post)}}
+                                        </div>
+                                        <div style = "padding:0px 0 0 0 ;" class = "col-sm-2">
+                                            <i style="padding-top:3px;" class="pull-right fa fa-chevron-right text-muted"></i>
+                                            <span style="padding-top:3px;" class="badge pull-right" ng-class="{'bg-warning':item.occupancy == 'Occupied', 'bg-success':item.occupancy == 'Vacant'}">{{item.occupancy}}</span>
+
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6" style="padding-left: 8px; padding-right: 8px">
+
+                        <div class="panel panel-default" style="margin-bottom: 5px;">
+                            <div class="panel-heading" style="background-color:#38678B">
+                                <label class="text-sm font-bold" style="color:white">
+                                    <i class="fa fa-user-plus"></i>&nbsp;&nbsp;Guest Detail</label>
+                            </div>
+                            <div class="panel-body" style="padding: 5px 0px">
+                                <div class="form-horizontal form-validation" style="padding: 0px">
+                                    <form class="form-horizontal form-validation">
+                                        <div class="col-sm-6">
+                                            <label class="control-label text-xs text-muted">Room Name</label>
+                                            <div class="scrollable-dropdown-menu">
+                                                <input type="text" ng-model="selected_room.room" class="form-control input-sm" placeholder="Enter room number"
+                                                       uib-typeahead="room.room for room in getRoomList($viewValue)"
+                                                       typeahead-min-length="1"
+                                                       typeahead-editable="false"
+                                                       typeahead-on-select="onRoomSelect($item, $model, $label)" required >
+                                                <tags-input ng-model="room_tags" ng-disabled="extension_tags.length > 0" replace-spaces-with-dashes="false" on-tag-added="onChangeRoom()" on-tag-removed="onChangeRoom()" placeholder="Add Room" style="margin-top: -5px" ng-hide="true">
+                                                    <auto-complete source="loadFilters($query, 'Room')"
+                                                                   min-length="0"
+                                                                   debounce-delay="0"
+                                                                   load-on-focus="true"
+                                                                   load-on-empty="true"
+                                                                   max-results="10">
+                                                    </auto-complete>
+                                                </tags-input>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <label class="control-label text-xs text-muted">Guest</label>
+                                            <div>
+                                                <input type="text" ng-model="selected_room.guest_name" class="form-control input-sm" disabled>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <label class="control-label text-xs text-muted">Arrival Date</label>
+                                            <div>
+                                                <input type="text" ng-model="selected_room.arrival" class="form-control input-sm" disabled>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <label class="control-label text-xs text-muted">Departure Date</label>
+                                            <div>
+                                                <input type="text" ng-model="selected_room.departure" class="form-control input-sm" disabled>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel panel-default" style="margin-bottom: 5px">
+                            <div class="panel-heading" style="background-color:#38678B">
+                                <label class="text-sm font-bold" style="color:white">
+                                    <i class="fa fa-user-plus"></i>&nbsp;&nbsp;Items </label>
+                                <div class = "form-group" style="float:right;margin-bottom:0px;">
+                                    <div class="col-sm-12 ">
+                                        <button style = "margin-left:15px;"  class=" pull-right btn btn-sm m-b-xs w-xs bg-danger  font-bold" ng-disabled = "minibarpost_list.length  == 0"  ng-click="clearServicePost()">
+                                            Clear
+                                        </button>
+                                        <button class="pull-right btn btn-sm m-b-xs w-xs btn-success text-success font-bold" ng-disabled = "minibarpost_list.length == 0 && postBtnName == 'Post'" ng-click="newServicePost()" >  {{postBtnName}} </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div ng-if = "selected_room.id" class="panel-body" style="padding: 5px">
+
+
+                                <div class = "form-group" style="margin-top: 20px;margin-bottom:0px;">
+                                    <div class="col-sm-6" style="padding-right: 0px">
+                                        <label class="control-label text-xs text-muted">Category
+                                        </label>
+                                        <div class="scrollable-dropdown-menu">
+                                            <div class="col-lg-12" style = "padding:0;">
+                                                <select class = "form-control" style="" ng-options = "item.id as item.name for item in servicecategory_list" ng-change="changedServiceCategory()"  ng-model = "service.category_id">
+                                                </select>
+
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6" style="padding-right: 0px">
+                                        <label class="control-label text-xs text-muted">Item
+                                        </label>
+                                        <div class="scrollable-dropdown-menu">
+                                            <div class="col-lg-10" style = "padding:0;">
+                                                <input type="text" ng-model="service.item_name" class="form-control input-sm" placeholder="Enter service name"
+                                                       uib-popover="Enter service name" popover-trigger="mouseenter"
+                                                       uib-typeahead="item.item_name for item in roomservice_list | filter:$viewValue | limitTo:20"
+                                                       typeahead-min-length="0"
+                                                       typeahead-editable="false"
+                                                       typeahead-template-url="roomserviceTypeahead.html"
+                                                       typeahead-on-select="onServiceSelect($item, $model, $label)" required>
+
+                                            </div>
+                                            <div class="col-lg-2"  style = "margin:0px;">
+                                                <i ng-if = "service.id" class="fa fa-plus-circle fa-2x text-info " style="cursor: pointer" title="Add Service" ng-click="addService()"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <div class = "col-sm-12" style="margin-top: 20px;margin-bottom:0px;"  fill-height additional-padding="200" debounce-wait="300">
+
+                                    <div class="col-sm-3" ng-repeat = "post in minibarpost_list" style = "padding:5px;">
+                                        <div class = "panel panel-default text-center" >
+                                            <span style = "padding:5px;cursor: pointer;" class = "pull-right" ><i class = "fa fa-close" ng-click="removePostItem(post)"></i></span>
+
+                                            <span style = "margin-top:15px;display:block;"><label class = "text-sm font-bold text-center" style = "color:#787878;">{{post.item_name}}</label></span>
+                                            <div class="minibar_post_item">
+                                                    <a href="">
+                                                        <span class="notify-badge">{{post.quantity}}</span>
+                                                         <img style="width:40%;" src="{{post.img_path}}" alt="...">
+                                                    </a>
+                                            </div>
+                                            <span style = "margin-top:15px;display:block;">
+                                                <label class = "text-sm font-bold text-center" style = "color:#787878;">{{post.charge * post.quantity}} {{currency}}</label></span>
+                                            <div class="bootstrap-touchspin" style="width: 40%;">
+                                                <input ui-jq="TouchSpin" type="text" class="form-control text-center" data-min="1"
+                                                       data-max="32" style="display: block"  buttondown_class =  "btn" buttonup_class = "btn btn-info"
+                                                       ng-model="post.quantity"
+                                                       ng-change="saveGeneral('password_minimum_length', password_minimum_length, 'password_setting')"/>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                                <table  class="table ticket table-striped b-t b-light" style="width:97%; margin:auto">
+                                    <thead class="tblhead-sm" style="font-size: .7vw">
+                                        <tr>
+                                            <th class="text-center" width="25%">
+                                                <b>Total Items</b>
+                                            </th>
+                                            <th class="text-center" width="25%">
+                                                <span>{{countTotalItems()}}</span>
+                                            </th>
+                                            <th class="text-center" width="25%">
+                                                <b>Total AED</b>
+                                            </th>
+                                            <th class="text-center" width="25%">
+                                                <span>{{aedTotal()}}</span>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                                <hr style="margin-top: 5px; margin-bottom: 5px">
+
+
+                            </div>
+                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,28 @@
+<div class="aside hbox" style="height: 100%" tabindex="-1" role="dialog">
+  <div class="col bg-light dk b-r bg-auto">
+    <div class="wrapper b-b bg">
+      <a href="" class="font-bold">Filters</a>
+    </div>
+    <div class="wrapper">
+      <ul class="nav nav-pills nav-stacked nav-sm">
+        <li ng-repeat="filter in guestservices" ng-class="{'active':filter.name == currentFilter.name}" ng-click="onSelectFilter(filter)">
+          <a>
+            <b class="badge bg-info pull-right">{{filter.badge}}</b>
+            {{filter.name}}
+          </a>
+        </li>
+      </ul>
+      <div class="wrapper">
+        <form name="label">
+          <div class="input-group">
+            <input type="text" class="form-control input-sm" ng-model="newLabel.name" placeholder="New Filter" required>
+            <span class="input-group-btn">
+              <button class="btn btn-sm btn-default" type="button" ng-click="addLabel()" ng-disabled="label.$invalid">Add</button>
+            </span>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>

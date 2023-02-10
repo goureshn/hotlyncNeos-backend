@@ -1,0 +1,53 @@
+<script type="text/ng-template" id="locationTypeahead.html">
+    <a>
+        <span ng-bind="match.model.name"></span><br>
+        <span style="font-size: 10px" ng-bind="match.model.type"></span> - <span style="font-size: 10px" ng-bind="match.model.property"></span><br>
+    </a>
+</script>
+<form class="form-horizontal form-validation">
+    <style>
+        .search-filter .checkbox {
+            margin: 0px;
+        }
+        table tr.selected-row {
+            background-color: #3b8ef4;
+        }
+
+        table tr.selected-row td {
+            color: #fff;
+        }
+
+    </style>
+    <div class="modal-content">
+        <div class="modal-body">
+            <div class="row" ng-if="location_list.length > 0">
+                <div class="col-sm-12">
+                    <h3 style="margin-top: 0">Select Location</h3>
+                </div>
+                <div class="col-sm-12" style="margin: 0; padding-top: 10px">
+                    <input style="max-width: 300px"  type="text" ng-model="task.location_name" class="form-control input-sm" placeholder="Enter location name"
+                           uib-popover="Enter location name" popover-trigger="mouseenter"
+                           uib-typeahead="room.name for room in location_list | filter:$viewValue | limitTo:10"
+                           typeahead-min-length="0"
+                           typeahead-editable="false"
+                           typeahead-template-url="locationTypeahead.html"
+                           typeahead-on-select="onLocationSelectForAdd($item)"
+                    />
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer ">
+            <button type="button" class="btn btn-info btn-sm w-xs" ng-click="onOk()">
+                <span class="glyphicon glyphicon-ok"></span>
+                <b> Add</b>
+            </button>
+
+            <button type="button" class="btn btn-default btn-sm" data-dismiss="modal" ng-click="onCancel()">
+                <span class="glyphicon glyphicon-remove"></span>
+                <b> Cancel</b>
+            </button>
+        </div>
+
+    </div>
+
+</form>

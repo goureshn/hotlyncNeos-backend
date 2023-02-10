@@ -199,6 +199,7 @@ return [
          */
 
         Maatwebsite\Excel\ExcelServiceProvider::class,
+        Yajra\DataTables\DataTablesServiceProvider::class,
 
         /*
          * Application Service Providers...
@@ -208,7 +209,6 @@ return [
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
-
     ],
 
     /*
@@ -256,7 +256,8 @@ return [
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View'      => Illuminate\Support\Facades\View::class,
         'Excel' 	=> Maatwebsite\Excel\Facades\Excel::class,
-        'Datatables' => yajra\Datatables\Datatables::class,
+        // 'Datatables' => yajra\Datatables\Datatables::class,
+        'Datatables' => Yajra\DataTables\Facades\DataTables::class,
         'Curl'       => Ixudra\Curl\Facades\Curl::class,
     ])->toArray(),
 

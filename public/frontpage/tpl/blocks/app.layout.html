@@ -1,0 +1,33 @@
+	<div ng-init="app.settings.container = false;" class="md-navbar navbar" ng-hide="fullmode"
+		data-ng-include=" 'tpl/blocks/app.header.html' " style="position: fixed; width: 100%;">
+	</div>
+
+	<toaster-container toaster-options="{'position-class': 'toast-top-right', 'close-button':true}">
+	</toaster-container>
+
+	<div layout="row" ng-style="{'height': '100vh', 'width': '100%', 'position': 'fixed', 'margin-top': fullmode ? '0px' : '42px'}">
+	    <!-- menu -->
+		<div class="vertical_toolbar" ng-include="'tpl/toolbar/toolbar.aside.html'" ng-hide="fullmode"
+			style="height: 100vh;">
+		</div>
+
+		<!--<div flex class="bg-white md-whiteframe-z0 md-aside md-content hidden-xs" data-ng-include=" 'tpl/blocks/app.aside.html' ">-->
+		<!--</div>-->
+		<!-- / menu -->
+
+		<!-- view -->
+		<!--<div flex layout="column" class="bg-page">-->
+		<div flex layout="column" class="stretch">
+			<div ui-butterbar>
+		</div>
+			
+		<a href class="off-screen-toggle hide" ui-toggle-class="off-screen" data-target=".md-aside" ></a>
+		
+		<div class="md-content stretch" style="width: 100%" ui-view>
+
+		</div>
+	</div>
+		<!-- / view -->
+	<div class="bottom_right" style="z-index: 100" ng-include="'tpl/calls/call_event.html'">
+	</div>
+</div>

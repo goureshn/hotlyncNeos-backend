@@ -1,0 +1,206 @@
+<div class="modal-content" >    
+    <div class="modal-header">       
+        <h3 class="modal-title"><b>{{getTicketNumber(complaint)}}</b> <i class="fa fa-star pull-right" ng-style="{ 'color': complaint.flag ? 'orange' : '#888' }"  ng-click="flagComplaint()"></i></h3>
+    </div>
+
+	<div class="modal-body">
+		<form class="form-horizontal form-validation" ng-style="{'height': body_height, 'overflow-y': 'auto', overflow-x : 'hidden' }">
+			<div class="form-group" style="margin-left: 0px; margin-right: 0px">
+				<div class="panel panel-default" style="border-radius: 4px; margin-bottom: 0px">
+					<div class="panel-heading">
+						<label class="text-sm font-bold"><i class="glyphicon glyphicon-user text-default"></i>&nbsp;&nbsp;Guest Detail</label>				
+					</div>
+					<div class="panel-body panel-body-detail">
+						<div class ="row">
+							<div class="col-sm-3">
+								<h5 class="text-muted">Guest Name :</h5>
+							</div> 
+							<div class="col-sm-3">
+								<h5 class="text-muted">{{complaint.guest_name}}</h5> 
+							</div> 
+							<div class="col-sm-3">
+								<h5 class="text-muted">Guest Type :</h5>
+							</div>
+							<div class="col-sm-3">
+								<h5 class="text-muted">{{complaint.guest_type}}</h5>
+							</div>   
+						</div>
+
+						<div ng-show = "complaint.guest_type != 'Walk-in'" class ="row">
+							<div class="col-sm-3">
+								<h5 class="text-muted">Arrival :</h5>
+							</div>
+							<div class="col-sm-3">
+								<h5 class="text-muted">{{complaint.arrival | mydate}}</h5>
+							</div>
+							<div class="col-sm-3">
+								<h5 class="text-muted">Departure :</h5>
+							</div>
+							<div class="col-sm-3">
+								<h5 class="text-muted">{{complaint.departure | mydate}}</h5>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<hr/>
+				<div class="panel panel-default" style="border-radius: 4px">
+					<div class="panel-heading">
+						<label class="text-sm font-bold"><i class="fa fa-comment text-default"></i>&nbsp;&nbsp;Feedback Detail</label>				
+					</div>
+					<div class="panel-body panel-body-detail">
+						<div class ="row">
+							<div class="col-sm-3">
+								<h5 class="text-muted">Type :</h5>
+							</div>
+							<div class="col-sm-3">
+								<h5 class="text-muted">{{complaint.feedback_type}}</h5>
+							</div>
+							<div class="col-sm-3">
+								<h5 class="text-muted">Source :</h5>
+							</div>
+							<div class="col-sm-3">
+								<h5 class="text-muted">{{complaint.feedback_source}}</h5>
+							</div>
+						</div>
+						
+						<div class ="row">
+							<div class="col-sm-3">
+								<h5 class="text-muted">Requestor :</h5>
+							</div>
+							<div class="col-sm-3">
+								<h5 class="text-muted">{{complaint.wholename}}</h5>
+							</div>
+							<div class="col-sm-3">
+								<h5 class="text-muted">Job Role :</h5>
+							</div>
+							<div class="col-sm-3">
+								<h5 class="text-muted">{{complaint.job_role}}</h5>
+							</div>
+						</div>
+						<div class ="row">
+							<div class="col-sm-3">
+								<h5 class="text-muted">Complaint :</h5>
+							</div>
+							<div class="col-sm-9">
+								<h5 class="text-muted" highlight="complaint.feedback" keywords="complaint.comment_highlight"></h5>
+							</div>    
+						</div>
+			
+						<div class ="row">
+							<div class="col-sm-3">
+								<h5 class="text-muted">Initial Response :</h5>
+							</div>
+							<div class="col-sm-9">
+								<h5 class="text-muted" highlight="complaint.init_response" keywords="complaint.response_highlight"></h5>
+							</div>    
+						</div>
+
+						<div class ="row">
+							<div class="col-sm-3">
+								<h5 class="text-muted">Resolution :</h5>
+							</div>
+							<div class="col-sm-9">
+								<h5 class="text-muted">{{complaint.solution}} </h5>
+							</div>    
+						</div>
+					</div>
+				</div>
+				<hr/>
+
+				<div class="panel panel-default" style="border-radius: 4px">
+					<div class="panel-heading">
+						<label class="text-sm font-bold"><i  class="fa fa-dollar text-default"></i>&nbsp;&nbsp; Service Recovery</label>				
+					</div>
+					<div class="panel-body panel-body-detail">
+						<div class ="row">				
+							<div class="table table-responsive" ng-show = "complaint.compen_list.length > 0 || complaint.sub_compen.length > 0 " style="padding: 5px 0px; width: 100%">							  
+									<table  st-table="ticketlist" class="table ticket table-striped b-t b-light">
+										<thead class="tblhead-sm" style="font-size: 12px">
+											<tr>
+												<th class="text-center"><b>Date</b></th>
+												<th class="text-center"><b>Compensation</b></th>
+												<th class="text-center" ><b>Provided By</b></th>
+												<th class="text-center" ><b>Department</b></th>
+												<th class="text-center"><b>Cost</b></th> 
+											</tr>
+										</thead>
+										<tbody style="font-size: 12px">
+											<tr ng-repeat="row1 in complaint.compen_list">
+												<td class="text-center"><span>{{::row1.created_at}}</span></td>
+												<td class="text-center"><span>{{::row1.compensation}}</span></td>
+												<td class="text-center"><span>{{::row1.wholename}}</span></td>
+												<td class="text-center"><span>Main Complaint</span></td>
+												<td align="right"><span>AED {{::row1.cost}}</span></td>											
+											</tr>
+											<tr ng-repeat="row2 in complaint.sub_compen">
+												<td class="text-center"><span>{{::row2.created_at}}</span></td>
+												<td class="text-center"><span>{{::row2.compensation}}</span></td>
+												<td class="text-center"><span>{{::row2.wholename}}</span></td>
+												<td class="text-center"><span>{{::row2.department}}</span></td> 
+												<td align="right"><span>AED {{::row2.cost}}</span></td>
+											</tr>								
+										</tbody>
+										<tfoot  class="text-sm">
+											<tr>
+												<td colspan="4" align="right"><b>Total</b></td>
+												<td  colspan="1" align = "right"><span><b>&nbsp;&nbsp;AED {{complaint.total_comp}}</b></span></td>
+											</tr>
+										</tfoot>
+									</table>
+								</div>
+							</div>
+						</div>
+					</div>
+
+	
+
+																			<!--
+																			<div style="overflow-x: auto; overflow-y: auto">
+																				<div class="m-b b-l m-l-md streamline" >
+																					<div ng-repeat="row in comment_list" style="margin-bottom: 15px">
+																					<a class="pull-left thumb-sm avatar m-l-n-md">
+																						<img src="{{row.picture}}" width="30" height="30"> 
+																					</a>          
+																					<div class="m-l-lg panel b-a">
+																						<div class="panel-heading pos-rlt b-b b-light">
+																						<span class="arrow left"></span>                    
+																						<a href>{{row.wholename}}</a>
+																						<label class="label bg-success m-l-xs">{{row.job_role}}</label> 
+																						<span class="text-muted m-l-sm pull-right">
+																							<i class="fa fa-clock-o"></i>
+																							{{getTime(row)}}
+																						</span>
+																						</div>
+																						<div class="panel-body">
+																						<div ng-bind-html="row.comment"></div>
+																						</div>
+																					</div>
+																					</div>
+																				</div>
+																			</div>
+																			
+																			<hr/>
+																			<div class ="row">
+																				<div class="col-sm-3">
+																					<h5 class="text-muted">Download :</h5>
+																				</div>
+																				<div class="col-sm-9">
+																					<a ng-repeat="path in complaint.download_array" href="{{'/' + path}}" download><i class="fa fa-file-o" style="font-size: 20px; margin-right: 15px; margin-top: 7px"></i></a> 
+																				</div>    
+																				</div>
+																			
+																			<hr/>
+																			
+																			<div class="row">
+																				<button type="button" class="btn btn-sm btn-success pull-right text-uc m-t-n-xs" ng-click="ok()"><strong>Close</strong></button>
+																			</div>
+																			-->
+				</div>
+			</div>	
+		</form>
+	</div>
+	<div class="modal-footer ">   
+		<button type="button" class="btn btn-sm btn-success pull-right text-uc m-t-n-xs" data-dismiss="modal" ng-click="cancel()"><strong>Close</strong></button>    
+	</div>
+</div>

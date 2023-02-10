@@ -1,0 +1,463 @@
+<script type="text/ng-template" id="Preference.html">
+    <div>
+        <label  ng-if = "label" class="text-sm font-bold">{{::item.remark}}</label>
+        <i class="fa fa-pencil" title = "Edit" style="color: green" aria-hidden="true"  ng-click="onFieldHidden('remark',item)"></i>
+        <textarea ng-if="item.input" ng-pattern = "item.regex" type="text" style="height:100px;" size="20"  ng-model="item.remark" ng-keyup="$event.keyCode == 13 && onKeySave('remark',item)"    />
+        <i class="fa fa-trash-o" title = "Delete" style="color: #FF0000" title="Remove" style="cursor: pointer"  ng-click="deleteRemark(item)"></i>
+    </div>
+</script>
+
+<script type="text/ng-template" id="Remark.html">
+    <div>
+        <label  ng-if = "label" class="text-sm font-bold">{{::item.remark}}</label>     
+    </div>    
+</script>
+
+<script type="text/ng-template" id="unassignedTemplate.html">
+    <select ng-if="item.unassigned_count>0">
+	    <option  class="form-group" ng-repeat="row2 in item.unassigned_list">
+        {{row2.room}}</option>
+    </select>
+</script>
+
+<div ng-controller="RosterNewController" class="">
+    <style>
+        .no-padding {
+            padding: 4px;
+        }
+
+        .assigned-list .departure-warning .text-sm {
+            color: red;
+        }
+    </style>
+
+    <div class="wrapper-md1">
+        <div style="margin-bottom: 0px">
+            <div style="padding: 0px 5px 0px 5px">                
+                <div class="row">
+                    <div class="col-sm-3 no-padding">
+                        <div class="panel panel-default" style="margin-bottom: 5px">
+                            <div class="panel-heading" style="background-color:#38678B">
+                                <label class="text-sm font-bold" style="color:white">
+                                    <i class="fa fa-mobile"></i>&nbsp;&nbsp;Devices
+                                </label>
+                                <div class="pull-right" ng-if="roster.name">
+                                    <button class="btn btn-xs m-b-xs w-xs btn-warning font-bold" style="margin-top:4px" ng-if="devicelist.length>=0" title="Clear All"
+                                        style="cursor: pointer" ng-click="onTransferRoom(roster)">
+                                        <span class="">
+                                            <i class="fa fa-exchange"></i>&nbsp;&nbsp;Transfer
+                                        </span>
+                                    </button>     
+
+                                    <button class="btn btn-xs m-b-xs w-xs btn-danger font-bold" style="margin-top:4px" ng-if="devicelist.length>=0" title="Clear All"
+                                        style="cursor: pointer" ng-click="unAssignAllRosters(roster)">
+                                        <span class="">
+                                            <i class="fa fa-eraser"></i>&nbsp;&nbsp;Clear All
+                                        </span>
+                                    </button>     
+                                </div>
+                            </div>
+                            <div class="panel-body" style="padding:0px">
+                                <form class="form-horizontal">
+                                    <div class="form-group" style="margin: 5px 0px 0px 0px">
+                                        <label class="col-sm-3 control-label text-sm font-bold">&nbsp;Mode</label>
+                                        <div class="col-sm-4">
+                                            <select class='form-control input-xs' ng-model="assign_mode" ng-options="item for item in assign_mode_list"
+                                                ng-change="onChangeMode()">
+                                            </select>
+                                        </div>
+                                        <label class="col-sm-3 control-label text-sm font-bold">&nbsp;Active</label>
+                                        <div class="col-sm-2">
+                                            <label class="i-switch m-t-xs m-r" >
+                                                <input type="checkbox" ng-model="active_flag" ng-change="searchDevice()" checked>
+                                                <i></i> 
+                                            </label>
+                                        </div>
+                                    </div> 
+
+                                    <div class="form-group" style="margin: 5px 0px 0px 0px" ng-show="assign_mode == 'Device Based'">
+                                        <label class="col-sm-3 control-label text-sm font-bold">&nbsp;Function</label>
+                                        <div class="col-sm-9">
+                                            <select class='form-control input-xs' ng-model="dept_func_id" ng-options="value.dept_func_id as value.function for (key, value) in dept_func_list"
+                                                ng-change="onChangeDeptFunc()">
+                                            </select>
+                                        </div>
+                                    </div> 
+
+                                    <div class="form-group" style="margin: 5px 0px 0px 0px" ng-show="assign_mode == 'User Based'">
+                                        <label class="col-sm-3 control-label text-sm font-bold">&nbsp;Job Role</label>
+                                        <div class="col-sm-9">
+                                            <select class='form-control input-xs' ng-model="job_role_id" ng-options="value.id as value.job_role for (key, value) in job_role_list"
+                                                ng-change="onChangeJobRole()">
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group" style="margin: 5px 0px 5px 0px">
+                                        <label class="col-sm-3 control-label text-sm font-bold">Device</label>
+                                        <div class="col-sm-9">
+                                            <div class="input-group">
+                                                <input type="text" class="form-control input-sm" ng-model="device_name" ng-keyup="$event.keyCode == 13 && searchDevice()"
+                                                />
+                                                <span class="input-group-btn">
+                                                    <button type="button" class="btn btn-sm" ng-click="searchDevice()">
+                                                        <i class="fa fa-search"></i>
+                                                    </button>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+
+                                <div class="list-group" style="margin-bottom: 5px" fill-height additional-padding="110" debounce-wait="300" ng-if="assign_mode=='Device Based'">
+                                    <a href class="list-group-item" ng-class="{'selected': row.selected}" ng-repeat="row in devicelist" ng-click="onSelectDevice(row)">
+                                        <span style="margin-top: px" class="pull-right">
+                                            <span class="badge" style="background-color: goldenrod" title="Credits">{{row.total_credits}}</span>
+                                            <span class="badge bg-success" title="Rooms">{{row.room_count}}</span>
+                                            <i class="fa fa-chevron-right text-muted"></i>
+                                        </span>
+                                        <span class="avatar thumb-xs m-r-xs" style="width:27px">
+                                            <img src="{{row.picture}}" alt="..." onError="this.onerror=null;this.src='/frontpage/img/default_photo.png';">
+                                            <i class="bg-success b-white bottom" ng-if="row.active_status==1"></i>
+                                            <i class="bg-default b-white bottom" ng-if="!row.active_status"></i>                                        
+                                        </span>
+                                        <label class="text-sm">{{row.name}}</label>
+                                        <span class="bg-success text-xs font-bold b-white bottom" style="border-radius:10px" ng-if="row.active_status==1">&nbsp;&nbsp;{{row.wholename}}&nbsp;&nbsp;</span>
+                                    </a>
+                                </div>
+                                <div class="list-group" style="margin-bottom: 5px" fill-height additional-padding="110" debounce-wait="2000" ng-if="assign_mode=='User Based'">
+                                    <a href class="list-group-item" ng-class="{'selected': row.selected}" ng-repeat="row in user_list" ng-click="onSelectUser(row)">
+                                        <span style="margin-top: px" class="pull-right">
+                                            <span class="badge" style="background-color: goldenrod" title="Credits">{{row.total_credits}}</span>
+                                            <span class="badge bg-success" title="Rooms">{{row.room_count}}</span>
+                                            <i class="fa fa-chevron-right text-muted"></i>
+                                        </span>
+                                        <span class="avatar thumb-xs m-r-xs" style="width:27px">
+                                            <img src="{{row.picture}}" alt="..." onError="this.onerror=null;this.src='/frontpage/img/default_photo.png';">
+                                            <i class="bg-success b-white bottom" ng-if="row.active_status==1"></i>
+                                            <i class="bg-default b-white bottom" ng-if="!row.active_status"></i>                                        
+                                        </span>
+                                        <label class="text-sm">{{row.wholename}}</label>
+                                        <span class="bg-success text-xs font-bold b-white bottom" style="border-radius:10px" ng-if="row.active_status==1">&nbsp;&nbsp;{{row.wholename}}&nbsp;&nbsp;</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-4 no-padding">
+                        <div class="panel panel-default" style="margin-bottom: 5px">
+                            <div class="panel-heading" style="background-color:#38678B">
+                                <label class="text-sm font-bold" style="color:white">
+                                    <i class="fa fa-location-arrow"></i>&nbsp;&nbsp;Location</label>
+                            </div>
+                            <div class="panel-body" style="padding:0px">
+                                <form class="form-horizontal" style="margin-left: 10px">
+                                    <div class="form-group" style="margin-right: 0px; margin-top: 15px; margin-bottom: 5px;">
+                                        <label class="col-sm-2 control-label text-sm font-bold">Building</label>
+                                        <div class="col-sm-4">
+                                            <select class='form-control input-sm' ng-model="building_id" ng-options="value.id as value.name for (key, value) in build_list"
+                                                ng-change="onChangeBuilding(dept_func_id)">
+                                            </select>
+                                        </div>
+                                        <label class="col-sm-2 control-label text-sm font-bold">Location</label>
+                                        <div class="col-sm-4">
+                                            <select class='form-control input-sm' ng-model="choice" ng-options="value.id as value.label for (key, value) in locations"
+                                                ng-change="onChangeLocation(building_id,dept_func_id)">
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group" style="margin-right: 0px" ng-show="choice==1" style="margin-bottom: 5px;">
+                                        <label class="col-sm-2 control-label text-sm font-bold">Floor(s)</label>
+                                        <div class="col-sm-10">
+                                            <tags-input ng-model="floor_tags" display-property="floor_name" replace-spaces-with-dashes="false"
+                                                on-tag-added="searchRooms()" on-tag-removed="searchRooms()">
+                                                <auto-complete source="loadFloorFilters($query)" min-length="0" load-on-focus="true" load-on-empty="true" debounce-delay="0"
+                                                    max-results="6">
+                                                </auto-complete>
+                                            </tags-input>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" style="margin-top: 0px; margin-right: 2px; margin-bottom: 5px;">
+                                        <label class="col-sm-2 control-label text-sm font-bold" ng-show="choice==0">Floor</label>
+                                        <div class="col-sm-10" ng-show="choice==0">
+                                            <div class="input-group">
+                                                <input type="text" class="form-control input-sm" ng-keyup="$event.keyCode == 13 && searchFloors()"
+                                                    ng-model="query.floor_query_name" />
+                                                <span class="input-group-btn">
+                                                    <button type="button" class="btn btn-sm" ng-click="searchFloors()">
+                                                        <i class="fa fa-search"></i>
+                                                    </button>
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <label class="col-sm-2 control-label text-sm font-bold" ng-show="choice==1">Room</label>
+                                        <div class="col-sm-10" ng-show="choice==1">
+                                            <div class="input-group">
+                                                <input type="text" class="form-control input-sm" ng-keyup="$event.keyCode == 13 && searchRooms()"
+                                                    ng-model="query.query_name" />
+                                                <span class="input-group-btn">
+                                                    <button type="button" class="btn btn-sm" ng-click="searchRooms()">
+                                                        <i class="fa fa-search"></i>
+                                                    </button>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group label-group col-sm-14" style="display: flex; align-items: center">
+                                        <div class="{{choice != 0 && serviceStatus_filter_list.length > 0 ? 'col-sm-3' : 'col-sm-4'}} text-center control-label">
+                                            <button ng-model="select_all" style="width: 100%; min-height: 35px" class="btn btn-sm m-b-xs w-sm btn-success text-success font-bold" ng-disabled="models[0].items.length<=0 || devicelist.length<=0 "
+                                                ng-click="checkAll()">
+                                                {{select_all_text}}
+                                            </button>
+                                        </div>
+                                        <div class="{{choice != 0 && serviceStatus_filter_list.length > 0 ? 'col-sm-3' : 'col-sm-4'}} text-right">
+                                            <div ng-dropdown-multiselect="" options="filter_list" selected-model="filter_list_ids" checkboxes="true" extra-settings="filterlist_hint_setting"
+                                                translation-texts="filterlist_hint" events="multiuserevents">
+                                            </div>
+                                        </div>
+                                        <div class="{{choice != 0 && serviceStatus_filter_list.length > 0 ? 'col-sm-3 text-center' : 'col-sm-4'}} ">
+                                            <div ng-dropdown-multiselect="" options="occup_filter_list" selected-model="occup_filter_list_ids" checkboxes="true" extra-settings="occupfilterlist_hint_setting"
+                                                translation-texts="occupfilterlist_hint" events="occupmultiuserevents">
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-3 text-center" ng-if="choice != 0 && serviceStatus_filter_list.length > 0">
+                                            <div ng-dropdown-multiselect="" options="serviceStatus_filter_list" selected-model="serviceStatus_filter_list_ids" checkboxes="true" extra-settings="serviceStatusFilter_hint_setting"
+                                                 translation-texts="serviceStatusFilter_hint" events="serviceStatusFilterEvents">
+                                            </div>
+                                        </div>
+
+                                        <div class="col-sm-2 " hide>
+                                            <a ng-click="onLoadMore()" class="pull-right"><i class="fa fa-sort-desc" style="font-size: 20px; color:red" aria-hidden="true" title="Load More"></i>
+						                    </a>
+                                        </div>
+                                        
+                                    </div>
+                                </form>
+                                <div class="list-group" style="margin-bottom: px; max-height:600px;" dnd-list dnd-drop="onDrop(models[0], item, index,0)" fill-height additional-padding="110"
+                                    debounce-wait="300" directive-when-scrolled="onLoadMore()">
+                                    <a href uib-popover-template="'unassignedTemplate.html'" type="button" popover-placement="right" popover-title="Unassigned Rooms"
+                                        class="list-group-item" ng-repeat="item in models[0].items | limitTo:totalDisplayed" dnd-draggable="getSelectedItemsIncluding(models[0], item)" 
+                                        dnd-dragstart="onDragstart(models[0], event)" dnd-moved="onMoved(models[0])" dnd-dragend="models[0].dragging = false"
+                                        dnd-selected="selection(item)" ng-class="{'selected': item.selected}"
+                                        ng-hide="models[0].dragging && item.selected || choice==1" style="padding:6px">
+                                        <i class="fa fa-chevron-right text-muted"></i>
+                                        <span ng-if="item.unassigned_count>0" class="badge bg-success" title="Unassigned Rooms">{{::item.unassigned_count}}</span>
+                                        <span class="badge" style="background-color: goldenrod" title="Credits">{{::item.floor_credits}}</span>
+                                        <i class="fa fa-bed fa-fw m-r-xs"></i>
+                                        <label class="text-sm" style="margin-bottom:0px">{{::item.floor_name}}</label>
+                                    </a>
+                                    <a href uib-popover-template="'adminrateTemplate.html'" popover-placement="right" popover-title="Assigned To" class="list-group-item"
+                                        ng-repeat="item in models[0].items | limitTo:totalDisplayed" dnd-draggable="getSelectedItemsIncluding(models[0], item)"
+                                        dnd-dragstart="onDragstart(models[0], event)" dnd-moved="onMoved(models[0])" dnd-dragend="models[0].dragging = false"
+                                        dnd-selected="selection(item)" ng-class="{'selected': item.selected}"
+                                        ng-hide="models[0].dragging && item.selected || choice==0" style="padding:6px" ng-style="{color: item.myColor}">
+                                        <i class="fa fa-chevron-right text-muted"></i>                                        
+                                        <span class="badge" style="background-color: goldenrod" title="Credits">{{::item.credits}}</span>
+                                        <span class="badge" ng-if = "item.cleaning != 'No Service'" style="background-color: rgb(13, 175, 67)" title="Room Status">{{::item.occupancy}} {{::item.room_status}} </span>
+                                        <span class="badge" ng-if = "item.cleaning == 'No Service'" style="background-color: rgb(230, 86, 29)" title="Room Status">{{::item.occupancy}} {{::item.room_status}} </span>
+                                        <span ng-if="(current_date > item.expire_date) || (item.expire_date == null)" class="badge"  ng-click = "addPreference(item)" title="Add Preference"><i class="fa fa-edit"></i></span>
+                                        <span ng-if="current_date <= item.expire_date" class="badge"  title="Preference" style="background-color: rgb(13, 175, 67)" uib-popover-template="'Preference.html'" 
+                                            popover-placement="right" popover-is-open="item.isOpen" popover-title="Preference"><i class="fa fa-edit"></i></span>
+                                        <i class="fa fa-bed fa-fw m-r-xs"></i>
+                                         
+                                        <label class="text-sm" style="margin-bottom:0px; min-width: 34px">{{::item.room}}&nbsp;&nbsp;</label>
+                                        <label class="text-sm" style="margin-bottom:0px; color:red;" ng-if="item.service_state != 'Available'">{{::item.service_state}}&nbsp;&nbsp;</label>
+                                        <label ng-if="current_date == item.departure" class="text-sm" style="margin-bottom:0px;color:red;"><b>Due Out</b>&nbsp;&nbsp;</label>
+                                        <i ng-if="item.pref" class="fa fa-cogs fa-fw m-r-xs" style="font-size:1em"></i>
+                                        <span title="Preferences" class="text-sm" ng-if="item.pref">{{::item.pref}}</span>&nbsp;&nbsp;
+                                        <i ng-if="item.adult" class="fa fa-users fa-fw m-r-xs" style="font-size:1em"></i>
+                                        <span title="Adults" class="text-sm" ng-if="item.adult">{{::item.adult}}</span>&nbsp;&nbsp;
+                                        <i ng-if="item.chld" class="fa fa-child fa-fw m-r-xs" style="font-size:1em"></i>
+                                        <span title="Children" class="text-sm" ng-if="item.chld">{{::item.chld}}&nbsp;&nbsp;</span>
+                                        <label class="text-sm" style="margin-bottom:0px;color:rgb(230, 86, 29);"><b>{{::item.cleaning}}</b>&nbsp;</label>
+                                        <div ng-class="{'bg-priority-warning': (item.priority=='1')}"></div>                                     
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-5 no-padding"> 
+                        <div class="panel panel-default" style="margin-bottom: 5px">
+                            <div class="panel-heading row" style="background-color:#38678B; margin: 0px; padding-top: 5px; padding-bottom: 4px">
+                                <div class="col-sm-4" style="padding: 0px">
+                                    <label class="text-sm font-bold" style="color:white; margin-top: 5px">
+                                        <i class="fa fa-user-plus"></i>&nbsp;&nbsp;Room Assignment
+                                    </label>                                    
+                                    <button ng-show="models[1].items.length>0" class="btn btn-rounded btn-icon btn-danger btn-xs" 
+                                        title="Clear" style="cursor: pointer" ng-click="unAssignAll()">
+                                        <i class="fa fa-trash-o"></i>
+                                    </button>                                
+                                </div>
+
+                                <!--
+                              
+                                <div class="col-sm-4" style="padding: 0px">
+                                    <div ng-show="dept_func_id">
+                                        <label  class="pull-left control-label text-sm font-bold" style="color:white; padding-right: 5px; padding-top: 4px">Supr:</label>
+                                        <div class="pull-left col-sm-9">
+                                            <select ng-show="((!suprShort) || arrclick)" class='form-control input-xs' style="height: 25px" ng-model="supervisor" ng-options="value as value.supervisor for (key,value) in supervisor_list"
+                                            ng-change="onSelectSupr()">
+                                            </select>
+                                            <div ng-show='suprShort && (arrclick==false)'>
+                                                <label   class="control-label text-sm font-bold" style="color:white; padding: left 0px; padding-top: 4px">{{suprShort}}&nbsp;&nbsp;<span ng-click='arrclick=true'><i class="fa fa-chevron-circle-down"></i></span></label>                                                            
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>   
+                                -->
+
+                                <div class="col-sm-4" style="padding: 0px">             
+                                    <!--                               
+                                    <button   class="btn btn-sm text-success font-bold {{td_css}}" style="width: 45% !important" ng-disabled="(devicelist.length<=0) "
+                                        ng-click="onTurndown()">
+                                            Turn Down
+                                    </button>
+                                    -->
+                                    <button ng-show="update_flag==0" class="btn btn-sm btn-success text-success font-bold" style="width: 45% !important" ng-disabled="(models[1].items.length<=0) "
+                                        ng-click="onAssign()">
+                                        Assign
+                                    </button>
+                                    <button ng-show="(update_flag==1)" class="btn btn-sm btn-success text-success font-bold" style="width: 45% !important" 
+                                        ng-click="onUpdateRoomList()">
+                                        {{update}}
+                                    </button>                                                                             
+                                </div>                            
+                            </div>
+                            <div class="panel-body" style="padding: 5px">
+                                <div fill-height additional-padding="160" dnd-list dnd-drop="onDrop(models[1], item, index,1)"
+                                    directive-when-scrolled="onLoadMoreAssigne()">
+                                    <table st-table="assigned_list" st-pipe="creditTotal" class="table-condensed ticket table-striped b-t b-light assigned-list" style="width:100%; margin:auto">
+                                        <thead class="tblhead-sm" style="font-size: .7vw">
+                                            <tr>
+                                                <th class="text-center" width="10%">
+                                                    <b>Room</b>
+                                                </th>
+                                                <th class="text-center" width="10%">
+                                                    <b>Floor</b>
+                                                </th>
+                                                <th class="text-center" width="5%">
+                                                    <b>Pref</b>
+                                                </th>
+                                                <th class="text-center" width="5%">
+                                                    <b>Adults</b>
+                                                </th>
+                                                <th class="text-center" width="5%">
+                                                    <b>Kids</b>
+                                                </th>
+                                                <th class="text-center" width="5%">
+                                                    <b>Credits</b>
+                                                </th>
+                                                <th class="text-center" width="5%">
+                                                    <b>Type</b>
+                                                </th>
+                                                <th class="text-center" width="10%">
+                                                    <b>Status</b>
+                                                </th>
+                                                <th class="text-center" width="10%">
+                                                    <b>Type</b>
+                                                </th>
+                                                <th class="text-center" width="10%">
+                                                    <b>Cleaning</b>
+                                                </th>
+                                                <th class="text-center" width="10%">
+                                                    <b>Occupancy</b>
+                                                </th>
+                                                <th class="text-center" width="5%">
+                                                    <b>Remark</b>
+                                                </th>                                           
+                                            </tr>
+                                        </thead>
+                            
+                                        <tbody>
+                                            <tr ng-repeat="item in models[1].items | limitTo:totalAssignCount "  class="drag_table table ticket table-striped b-t b-light" style="width:100%;" ng-style="{color: item.myColor}" dnd-draggable="getSelectedItemsIncluding(models[1],
+                                                    item)" dnd-dragstart="onDragstart(models[1], event)" dnd-moved="onMoved(models[1])"
+                                                dnd-dragend="models[1].dragging = false" dnd-selected="item.selected = !item.selected" ng-hide="models[1].dragging && item.selected"
+                                                 ng-class="{'selected': item.selected, 'departure-warning': current_date == item.departure}">
+                                                <td class="text-center" width="10%">
+                                                    <span class="text-sm">{{::item.room}}</span>
+                                                </td>
+                                                <td class="text-center" width="5%">
+                                                    <span class="text-sm">{{::item.floor}}</span>
+                                                </td>
+                                                <td class="text-center" width="5%">
+                                                    <span class="text-sm">{{::item.pref}}</span>
+                                                </td>
+                                                <td class="text-center" width="5%">
+                                                    <span class="text-sm">{{::item.adult}}</span>
+                                                </td>
+                                                <td class="text-center" width="5%">
+                                                    <span class="text-sm">{{::item.chld}}</span>
+                                                </td>
+                                                <td class="text-center" width="10%">
+                                                    <span class="text-sm">{{::item.credits}}</span>
+                                                </td>
+                                                <td class="text-center" width="20%">
+                                                    <span class="text-sm">{{::item.room_type}}</span>
+                                                </td>
+                                                <td class="text-center" width="20%">
+                                                    <span class="text-sm">{{::item.room_status}}</span>
+                                                </td>
+                                                <td class="text-center" width="20%">
+                                                    <span class="text-sm">{{::item.cleaning}}</span>
+                                                </td>
+                                                <td class="text-center" width="20%">
+                                                    <span class="text-sm">{{::item.cleaning_state}}</span>
+                                                </td>
+                                                <td class="text-center" width="20%">
+                                                    <span class="text-sm">{{::item.occupancy}}</span>
+                                                </td>
+                                                <td class="text-center" width="20%">
+                                                   <span class="badge"  ng-click = "addPreference(item)" ng-style="{'background-color': item.remark ? 'rgb(13, 175, 67)' : ''}" title="Add Preference"><i class="fa fa-edit"></i></span>                                                   
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <table ng-if="models[1].items.length>0" st-table="assigned_list" class="table ticket table-striped b-t b-light" style="width:100%; margin:auto">
+                                    <thead class="tblhead-sm" style="font-size: .7vw">
+                                        <tr>
+                                            <th class="text-center" width="5%">
+                                                <b>OD</b>
+                                            </th>
+                                            <th class="text-center" width="3%">
+                                                <span>{{occupiedTotal()}}</span>
+                                            </th>
+                                            <th class="text-center" width="5%">
+                                                <b>VD</b>
+                                            </th>
+                                            <th class="text-center" width="3%">
+                                                <span>{{vacantTotal()}}</span>
+                                            </th>
+                                            <th class="text-center" width="10%">
+                                                    <b>Due Out</b>
+                                            </th>
+                                            <th class="text-center" width="2%">
+                                                    <span>{{dueOut()}}</span>
+                                            </th>
+                                            <th class="text-center" width="5%">
+                                                    <b>Credits</b>
+                                            </th>
+                                            <th class="text-center" width="5%">
+                                                    <span>{{creditTotal()}}</span>
+                                            </th>
+                                            <th class="text-center" width="5%">
+                                                <b>Total</b>
+                                            </th>
+                                            <th class="text-center" width="5%">
+                                                <span>{{models[1].items.length}}</span>
+                                            </th>                                    
+                                        </tr>
+                                    </thead>
+                                </table>
+                                <hr style="margin-top: 5px; margin-bottom: 5px">                          
+                            </div>
+                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,78 @@
+<style>
+	.md-content.bg-style {
+		display: none !important;
+	}
+	.first_header {
+			background-position:center center;
+			background-repeat: no-repeat;
+			-webkit-background-size: cover;
+		  -moz-background-size: cover;
+		  -o-background-size: cover;
+		  background-size: cover;
+		  background-size: 450px 200px;
+		}
+    .first_square {
+      /*text-align:center;
+      height:70px;
+      background: #2e3344;
+      background-image: url("img/chat.png");
+      font-size: 20px;
+      font-weight: bold;
+			padding-top:20px;*/
+      border-radius: 15px 50px 30px;
+      /*border: 2px solid #73AD21;*/
+			background-position:center center;
+			background-repeat: no-repeat;
+			background-size: 300px 150px;
+			color: #2e3344;
+			height: 300px;
+			-webkit-background-size: cover;
+		  -moz-background-size: cover;
+		  -o-background-size: cover;
+		  background-size: cover;
+		  margin-bottom: 15px;
+		  margin-right: 5px;
+		}
+    .first_title {
+	  	margin: 0;
+			/*background: yellow;*/
+			position: absolute;
+			top: 90%;
+			left: 50%;
+			margin-right: -50%;
+			transform: translate(-50%, -50%);
+			font-size: 16px;
+    }
+    .first_foot {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 1005;
+      background:#2e3344;
+      color: white;
+    }
+
+</style>
+
+<div ng-controller="FirstSimulatorController" >
+    <div class="wrapper-md" style="margin: auto; text-align: center; padding-top: 120px">
+        <form ng-submit="onGotoChat(event)">
+			<div class="form-group">
+				<label>Phone number: </label>
+				<input type="text" ng-model="phonenumber" required>
+			</div>
+			<div class="form-group">
+				<button type="submit" class="btn btn-success">
+					Start Chat
+				</button>
+			</div>
+		</form>
+    </div>
+
+	<footer id="footer" class="first_foot" role="footer" style="position: fixed">
+		<div class="wrapper font-bold text-center">
+			Powered by Ennovatech Solutions
+		</div>
+	</footer>
+</div>

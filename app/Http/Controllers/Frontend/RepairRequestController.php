@@ -12,6 +12,9 @@ use App\Models\Eng\EngRepairRequest;
 use App\Models\Eng\EngRepairStaff;
 use App\Models\Eng\EngRequest;
 use App\Modules\Functions;
+use App\Exports\CommonExport;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 use DateInterval;
 use Mail;
 use DateTime;
@@ -2475,7 +2478,7 @@ class RepairRequestController extends Controller
                 });
 
             }
-            $data_list = array_merge($data_list, array());
+            $data_list = is_array($data_list) ? array_merge($data_list, array()) : array_merge($data_list->toArray(), array());
 
 
         foreach( $data_list as $data){
@@ -2547,87 +2550,124 @@ class RepairRequestController extends Controller
 
 		$logo_path = $property->logo_path;
 
-		Excel::create($filename, function($excel) use ($logo_path, $data) {
+        $export_data = [];
+        $datalist = [];
+        $height = [];
+        $row_num = 2;
+        $style = [
+            1    => [
+                'font' => ['bold' => true],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
+            ],
+            2    => [
+                'font' => ['bold' => true],
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID, 
+                    'startColor' => ['argb' => 'ECEFF1']
+                ],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
+            ],
+        ];
 
-			$excel->sheet('Work Request Report', function($sheet) use ($data, $logo_path) {
-				$sheet->setOrientation('landscape');
+        foreach($data['datalist'] as $row)
+        {
+            $arr = [];
+            $com = '';
+            $row_num++;
+            $lfcr = chr(10);
 
-                $row_num = 1;
+            for($p=0; $p < count($row->comments) ;$p++) {
+                $com .= $row->comments[$p]->comment . ' - ' . $row->comments[$p]->wholename . ' - ' . $row->comments[$p]->created_at  . $lfcr;
 
-                $sheet->mergeCells('A' . $row_num . ':K' . $row_num);
-                $sheet->cell('A' . $row_num, function($cell) {
-				$cell->setValue('Work Request List');
-				$cell->setAlignment('center');
-				$cell->setFont(array(
-						'size'       => '11',
-						'bold'       =>  true
-				));
-			    });
+            }
+            $arr['ID'] = 'WR' . $this->getDailyId($row);
+            $arr['Scheduled Date'] =  $row->schedule_date;
+            $arr['Requestor'] =  $row->requestor_name;
+            $arr['Priority'] =  $row->priority;
+            $arr['Category'] =  $row->category_name;
+            $arr['Summary'] =  $row->repair;
+            $arr['Status'] =  $row->status_name;
+            $arr['Created Date'] =  $row->created_at;
+            $arr['Start Date'] =  $row->status_name=='In Progress' || $row->status_name=='Completed' ? $row->start_date : '';
+            $arr['End Date'] =  $row->status_name=='Completed' ? $row->end_date : '';
+            $arr['Asset'] =  "$row->equip_id - $row->equip_name";
+            $arr['Assignee'] =  $row->supplier_id > 0 ? $row->supplier : $row->assignee_name;
+            $arr['Comments'] =  $com;
 
-                $row_num += 1;
+            $style[$row_num] = ['alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER]];
+            $height[$row_num] = 30;
+            array_push($datalist, $arr);
+        } 
+        
+        $export_data['datalist'] = $datalist;
+        $export_data['height'] = $height;
+        $export_data['sub_title'] = "Work Request List";
 
-                $sheet->cell('A' . $row_num . ':M' . $row_num, function ($cell) {
-                    $cell->setFontColor('#212121');
-                    $cell->setBackground('#ECEFF1');
-                    $cell->setAlignment('center');
-                    $cell->setFont(array(
-                            'family'     => 'Tahoma',
-                            'bold'       =>  true
-                    ));
-                });
+        return Excel::download(new CommonExport('excel.common_export', $export_data, 'Work Request Report', $style), $filename . '.xlsx');
+        // return Response::json($ret);
+        
+		// Excel::create($filename, function($excel) use ($logo_path, $data) {
 
-                $header_list = ['ID', 'Scheduled Date', 'Requestor', 'Priority', 'Category', 'Summary', 'Status','Created Date', 'Start Date', 'End Date', 'Asset', 'Assignee', 'Comments'];
-                $sheet->row($row_num, $header_list);
-                foreach($data['datalist'] as $row)
-                {
-                    $row_num++;
+		// 	$excel->sheet('Work Request Report', function($sheet) use ($data, $logo_path) {
+		// 		$sheet->setOrientation('landscape');
 
-                    $com = '';
-                    $lfcr = chr(10);
+        //         $row_num = 1;
 
-                    for($p=0; $p < count($row->comments) ;$p++) {
-                        $com .= $row->comments[$p]->comment . ' - ' . $row->comments[$p]->wholename . ' - ' . $row->comments[$p]->created_at  . $lfcr;
+        //         $sheet->mergeCells('A' . $row_num . ':K' . $row_num);
+        //         $sheet->cell('A' . $row_num, function($cell) {
+		// 		$cell->setValue('Work Request List');
+		// 		$cell->setAlignment('center');
+		// 		$cell->setFont(array(
+		// 				'size'       => '11',
+		// 				'bold'       =>  true
+		// 		));
+		// 	    });
 
-                    }
-/*
-                    $row = [
-                        'WR' . $this->getDailyId($row),
-                        $row->schedule_date,
-                        $row->requestor_name,
-                        $row->priority,
-                        $row->category_name,
-                        $row->repair,
-                        $row->status_name,
-                        $row->created_at,
-                        $row->status_name=='In Progress' || $row->status_name=='Completed' ? $row->start_date : '',
-                        $row->status_name=='Completed' ? $row->end_date : '',
-                        "$row->equip_id - $row->equip_name",
-                        $row->supplier_id > 0 ? $row->supplier : $row->assignee_name,
-                        $com
-                    ];
+        //         $row_num += 1;
 
-                    $sheet->row($row_num, $row);
-                    */
+        //         $sheet->cell('A' . $row_num . ':M' . $row_num, function ($cell) {
+        //             $cell->setFontColor('#212121');
+        //             $cell->setBackground('#ECEFF1');
+        //             $cell->setAlignment('center');
+        //             $cell->setFont(array(
+        //                     'family'     => 'Tahoma',
+        //                     'bold'       =>  true
+        //             ));
+        //         });
 
-                    $this->setMergeRowText($sheet,'WR' . $this->getDailyId($row), $row_num, 'A', 0, 30, 30);
-                    $this->setMergeRowText($sheet, $row->schedule_date , $row_num, 'B', 0, 30, 30);
-                    $this->setMergeRowText($sheet, $row->requestor_name , $row_num, 'C', 0, 30, 30);
-                    $this->setMergeRowText($sheet, $row->priority , $row_num, 'D', 0, 30, 30);
-                    $this->setMergeRowText($sheet, $row->category_name , $row_num, 'E', 0, 30, 30);
-                    $this->setMergeRowText($sheet, $row->repair , $row_num, 'F', 0, 30, 30);
-                    $this->setMergeRowText($sheet, $row->status_name , $row_num, 'G', 0, 30, 30);
-                    $this->setMergeRowText($sheet, $row->created_at , $row_num, 'H', 0, 30, 30);
-                    $this->setMergeRowText($sheet, $row->status_name=='In Progress' || $row->status_name=='Completed' ? $row->start_date : '' , $row_num, 'I', 0, 30, 30);
-                    $this->setMergeRowText($sheet, $row->status_name=='Completed' ? $row->end_date : '' , $row_num, 'J', 0, 30, 30);
-                    $this->setMergeRowText($sheet, "$row->equip_id - $row->equip_name" , $row_num, 'K', 0, 30, 30);
-                    $this->setMergeRowText($sheet, $row->supplier_id > 0 ? $row->supplier : $row->assignee_name , $row_num, 'L', 0, 30, 30);
-                    $this->setMergeRowText($sheet, $com , $row_num, 'M', 0, 60, 40);
-                }
-		    });
+        //         $header_list = ['ID', 'Scheduled Date', 'Requestor', 'Priority', 'Category', 'Summary', 'Status','Created Date', 'Start Date', 'End Date', 'Asset', 'Assignee', 'Comments'];
+        //         $sheet->row($row_num, $header_list);
+        //         foreach($data['datalist'] as $row)
+        //         {
+        //             $row_num++;
 
-		})->export($excel_file_type);
+        //             $com = '';
+        //             $lfcr = chr(10);
 
-        return Response::json($ret);
+        //             for($p=0; $p < count($row->comments) ;$p++) {
+        //                 $com .= $row->comments[$p]->comment . ' - ' . $row->comments[$p]->wholename . ' - ' . $row->comments[$p]->created_at  . $lfcr;
+
+        //             }
+
+        //             $this->setMergeRowText($sheet,'WR' . $this->getDailyId($row), $row_num, 'A', 0, 30, 30);
+        //             $this->setMergeRowText($sheet, $row->schedule_date , $row_num, 'B', 0, 30, 30);
+        //             $this->setMergeRowText($sheet, $row->requestor_name , $row_num, 'C', 0, 30, 30);
+        //             $this->setMergeRowText($sheet, $row->priority , $row_num, 'D', 0, 30, 30);
+        //             $this->setMergeRowText($sheet, $row->category_name , $row_num, 'E', 0, 30, 30);
+        //             $this->setMergeRowText($sheet, $row->repair , $row_num, 'F', 0, 30, 30);
+        //             $this->setMergeRowText($sheet, $row->status_name , $row_num, 'G', 0, 30, 30);
+        //             $this->setMergeRowText($sheet, $row->created_at , $row_num, 'H', 0, 30, 30);
+        //             $this->setMergeRowText($sheet, $row->status_name=='In Progress' || $row->status_name=='Completed' ? $row->start_date : '' , $row_num, 'I', 0, 30, 30);
+        //             $this->setMergeRowText($sheet, $row->status_name=='Completed' ? $row->end_date : '' , $row_num, 'J', 0, 30, 30);
+        //             $this->setMergeRowText($sheet, "$row->equip_id - $row->equip_name" , $row_num, 'K', 0, 30, 30);
+        //             $this->setMergeRowText($sheet, $row->supplier_id > 0 ? $row->supplier : $row->assignee_name , $row_num, 'L', 0, 30, 30);
+        //             $this->setMergeRowText($sheet, $com , $row_num, 'M', 0, 60, 40);
+        //         }
+		//     });
+
+		// })->export($excel_file_type);
+
+        // return Response::json($ret);
     }
 
     private function setMergeRowText($sheet,$value1, $row_num, $col_num, $count, $width, $height) {

@@ -1,0 +1,149 @@
+<div ng-controller="EngineeringReportController">
+    <style>
+        .datetime .popover {
+            max-width: 650px;
+        }
+    </style>
+    <script type="text/ng-template" id="datetime_ranger.html">
+        <div style="width: 700px">
+            <div rg-range-picker="myDatetimeRange" labels="myDatetimeLabels"></div>
+        </div>
+    </script>
+
+    <div class="col-lg-12 col-centered">
+        <div class="panel-default">
+            <div class="form-horizontal" ng-show="!data.isHidden" style="width:100%; margin: auto;">
+                <div class="row form-group" style="width:100%; margin:auto;">
+                    <div class="form-horizontal form-validation" style="float:left; width:100%; height:20%; display:inline-block;">
+	                    <div class="fieldset1 panel panel-default" style="border-radius: 4px">
+							          <div class="panel-heading">
+													<div>
+														<label class="font-bold text-sm"><i class="fa fa-columns text-default"></i>&nbsp;&nbsp;Grouping</label>&nbsp;&nbsp;
+													</div>
+												</div>
+												<div style="padding-top: px">
+													<form class="form-horizontal form-validation">
+														<div class="col-sm-12">
+															<label class="control-label text-xs text-muted">Report Type : </label>
+					                    <select class='form-control' ng-model="report_type" ng-change="onChangeReportType()" ng-options="type for type in reporttypes">
+                              </select>
+					                  </div>
+														<div class="col-sm-12" >
+															<label class="control-label text-xs text-muted">Report By : </label>
+					                    <select class='form-control' ng-model="report_by" ng-disabled="!report_type" ng-change="onChangeReportBy()" ng-options="type for type in reportby_list" >
+                              </select>
+					                  </div>
+					                </form>
+												</div>
+						          </div>
+						          <div class="fieldset2 panel panel-default" style="border-radius: 4px; width: 80%">
+							          <div class="panel-heading">
+													<div>
+														<button type="submit" class="btn btn-sm btn-info pull-right" onclick="loadBlockingUi();" ng-click="onGenerateReport()" style="margin-top: -5px">
+					                      <i class="fa fa-file-text"></i>&nbsp;&nbsp;Generate Report
+					                    </button>
+					                    
+									            <button type="submit" class="btn btn-sm btn-default pull-right" style="color: white; background-color:#a9a9a9; margin-top: -5px; margin-right: 2px" ng-if="!auth_svc.isValidModule('app.reports.schedule')">
+					                      <i class="glyphicon glyphicon-calendar"></i>&nbsp;&nbsp;Schedule Report</button>
+									            <button type="submit" class="btn btn-sm btn-info pull-right" ng-if="auth_svc.isValidModule('app.reports.schedule')" ng-click="onShowSchedule()" style="margin-top: -5px; margin-right: 2px">
+					                      <i class="glyphicon glyphicon-calendar"></i>&nbsp;&nbsp;Schedule Report
+					                    </button>
+					                  
+														<label class="font-bold text-sm"><i class="fa fa-columns text-default"></i>&nbsp;&nbsp;Apply Filters</label>&nbsp;&nbsp;
+													</div>
+												</div>
+												<div style="padding-top: px">
+													<form class="form-horizontal form-validation" ng-hide="report_type == 'Stock'">
+                                                            <div class="btn-group col-sm-12" style="margin-top: -2px">
+                                                                    <label class="btn btn-info btn-sm" ng-click="dateShort('Today')" >Today</label>
+                                                                    <label class="btn btn-info btn-sm" ng-click="dateShort('Yesterday')">Yesterday</label>
+                                                                    <label class="btn  btn-info btn-sm" ng-click="dateShort('This Week')">This Week</label>
+                                                                    <label class="btn  btn-info btn-sm" ng-click="dateShort('Last Week')">Last Week</label>
+                                                                    <label class="btn  btn-info btn-sm" ng-click="dateShort('This Month')">This Month</label>
+                                                                    <label class="btn  btn-info btn-sm" ng-click="dateShort('Last Month')">Last Month</label>
+                                                                    <label class="btn  btn-info btn-sm" ng-click="dateShort('This Year')">This Year</label>
+                                                                    <label class="btn  btn-info btn-sm" ng-click="dateShort('Custom')">Custom</label>
+                                                                  </div>
+                                                        <div class="col-sm-6" style="margin-top: -2px">
+															<label class="control-label text-xs text-muted">Period : </label>
+					                    <input type="text" ng-model="time_range" ng-disabled="date_short!='Custom'" ui-jq="daterangepicker" ui-options="dateRangeOption" class="form-control input-sm">
+					                  </div>
+					                 
+					                  <div class="col-sm-6" style="margin-top: -2px">
+										<label class="control-label text-xs text-muted">Staff : </label>
+					                    <tags-input ng-model="staff_tags" placeholder="Add Staff" style="margin-top: -7px" replace-spaces-with-dashes="false">
+                                			<auto-complete source="loadFilters($query, 'Eng Staff')" min-length="0" debounce-delay="0" load-on-focus="true"
+                                  					load-on-empty="true" max-results-to-show="100">
+                                			</auto-complete>
+                              			</tags-input>
+					                  </div>
+					                  <div class="col-sm-6" ng-show = "report_by == 'Work Request'" style="margin-top: -2px">
+										<label class="control-label text-xs text-muted">WR Status : </label>
+					                    <tags-input ng-model="status_tags" display-property="name" key-property="id" placeholder="Add Status" style="margin-top: -7px" replace-spaces-with-dashes="false">
+                                			<auto-complete source="statusNameFilter($query)" min-length="0" debounce-delay="0" load-on-focus="true"
+                                  				load-on-empty="true" max-results-to-show="100">
+                                			</auto-complete>
+                              			</tags-input>
+									  </div>
+									  <div class="col-sm-6" ng-show = "report_by == 'Work Order'" style="margin-top: -2px">
+										<label class="control-label text-xs text-muted">WO Status : </label>
+					                    <tags-input ng-model="wo_status_tags" display-property="name" key-property="id" placeholder="Add WO Status" style="margin-top: -7px" replace-spaces-with-dashes="false">
+                                			<auto-complete source="wostatusNameFilter($query)" min-length="0" debounce-delay="0" load-on-focus="true"
+                                  				load-on-empty="true" max-results-to-show="100">
+                                			</auto-complete>
+                              			</tags-input>
+									  </div>
+									  <div class="col-sm-6" style="margin-top: -2px">
+										<label class="control-label text-xs text-muted">Equipment : </label>
+										<tags-input ng-model="equip_tags" display-property="name" key-property="id" placeholder="Add Equipment" style="margin-top: -7px" replace-spaces-with-dashes="false">
+											<auto-complete source="equipmentTagFilter($query)" min-length="0" debounce-delay="0" load-on-focus="true"
+			  									load-on-empty="true" max-results-to-show="100">
+											</auto-complete>
+		  								</tags-input>
+										</div>
+										<div class="col-sm-6" style="margin-top: -2px">
+											<label class="control-label text-xs text-muted">Equipment ID : </label>
+											<tags-input ng-model="equip_id_tags" display-property="equip_id" key-property="equip_id" placeholder="Add Equipment ID" style="margin-top: -7px" replace-spaces-with-dashes="false">
+												<auto-complete source="equipIdTagFilter($query)" min-length="0" debounce-delay="0" load-on-focus="true"
+													  load-on-empty="true" max-results-to-show="100">
+												</auto-complete>
+											  </tags-input>
+										</div>
+										<div class="col-sm-6" style="margin-top: -2px">
+											<label class="control-label text-xs text-muted">Location : </label>
+											<tags-input ng-model="location_tags" display-property="name" key-property="id" placeholder="Add Location" style="margin-top: -7px" replace-spaces-with-dashes="false">
+												<auto-complete source="locationTagFilter($query)" min-length="0" debounce-delay="0" load-on-focus="true"
+													  load-on-empty="true" max-results-to-show="100">
+												</auto-complete>
+											  </tags-input>
+										</div>
+										<div class="col-sm-6" ng-show = "report_by == 'Work Request'" style="margin-top: -2px">
+											<label class="control-label text-xs text-muted">Category : </label>
+											<tags-input ng-model="category_tags" display-property="category_name" key-property="id" placeholder="Add Category" style="margin-top: -7px" replace-spaces-with-dashes="false">
+												<auto-complete source="categoryTagFilter($query)" min-length="0" debounce-delay="0" load-on-focus="true"
+													  load-on-empty="true" max-results-to-show="100">
+												</auto-complete>
+											  </tags-input>
+										</div>
+										<div class="col-sm-2" style="margin: auto">
+											<label class="control-label text-xs text-muted">Work Order : </label>
+											<br>
+											<label class="i-switch m-t-xs m-r">
+												<input type="checkbox" ng-model="wo_flag" checked>
+												<i></i>
+											</label>
+										</div>
+													</form>
+												</div>
+						          </div>
+                        
+                    </div>
+                </div>
+            </div>
+            <!-- Preview -->
+			<div ng-include="'tpl/reports/report_preview.html'">
+			</div>
+            
+        </div>
+    </div>
+</div>

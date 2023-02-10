@@ -1,0 +1,94 @@
+<div ng-controller="GuestCallController">
+    <script type="text/ng-template" id="guestrateTemplate.html">
+        <div class="form-group">
+            <p>Carrier Rate: {{row.carrier_rate}}/min</p>
+            <p>Hotel charge Rate: {{row.hotel_rate / 100}}/min</p>
+            <p>Tax Rate: {{row.tax_rate / 100}}/min</p>
+            <p>Total Rate: {{row.carrier_rate + row.hotel_rate / 100 + row.tax_rate / 100}}/min</p>
+        </div>
+    </script>
+	 <script type="text/ng-template" id="CallType.html">
+       <label style="color:#000000">Call Type : </label>
+                                <select class='input-sm' ng-model="call_type" ng-change="onChangeCallType()"
+                                        ng-options="type for type in calltypes" style="color:#000000">
+                                </select>
+    </script>
+  <script type="text/ng-template" id="Date.html">
+      <div class="input-group">
+					<span class="input-group-btn">
+                      <button type="button" class="btn btn-default btn-sm" ng-click="open($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+                    </span>
+						 <input type="text" class="form-control input-sm" uib-datepicker-popup="dd-MMM-yyyy" ng-model="cur_date" is-open="opened" datepicker-options="dateOptions" date-disabled="disabled(date, mode)" close-text="Close" required  ng-change="select(cur_date)"/>
+                  
+                </div>
+    </script>
+            <div class="table table-responsive"> 
+                <table  st-table="guestlist"  st-pipe="getDataList" class="table ticket table-striped b-t b-light">
+                    <thead >
+					
+					
+                            
+							 
+                        <tr >
+						
+							<th ><a st-sort="call_date" st-sort-default="reverse">&nbsp;Time</a>&nbsp;<b class="fa fa-fw fa-filter" uib-popover-template="'Date.html'"  
+							popover-placement="right"</b></th>
+                            <th st-sort="room"><b>Room #</b></th>
+                            <th><b>Guest</b></th>
+                            <th><b>Extension</b></th>                        
+                            <th><b>Called #</b></th>
+                            <th ><a st-sort="call_type">Type</a><b class="fa fa-fw fa-filter" uib-popover-template="'CallType.html'"  
+							popover-placement="right"</b></th>
+                            <th><b>Trunk</b></th>
+                            <th st-sort="duration"><b>Duration</b></th>
+                            <th><b>Pulse</b></th>
+                            <th st-sort="country"><b>Destination</b></th>
+                            <th><b>Carrier</b></th>
+                            <th><b>Tax</b></th>
+                            <th><b>Hotel charges</b></th>
+                            <th><b>Total</b></th>
+                        </tr>
+                        <tr>
+                            
+                        </tr>
+                    </thead>
+                    <tbody ng-hide="isLoading">
+					
+                        <tr class="" ng-repeat="row in datalist">
+                            <td>{{row.start_time}}</td>
+                            <td>{{row.room}}</td>
+                            <td>{{row.guest_id}}</td>
+                            <td>{{row.extension}}</td>
+                            
+                            <td>{{row.called_no}}</td>
+                            <td>{{row.call_type}}</td>
+                            <td>{{row.trunk}}</td>
+                            
+                            
+                            <td>{{row.duration}}</td>
+                            <td>{{row.pulse}}</td>
+                            <td>
+                                <a  style="color:#5499C7;" uib-popover-template="'guestrateTemplate.html'" popover-trigger="mouseenter" popover-placement="right" popover-title="{{row.country}}">{{row.country}}</a>
+                            </td>
+                            <td>{{row.carrier_charges}}</td>
+                            <td>{{row.tax}}</td>
+                            <td>{{row.hotel_charges}}</td>
+                            <td>{{row.total_charges}}</td>
+                        </tr>
+                    </tbody>
+                    <tbody ng-show="isLoading">
+                    <tr>
+                        <td colspan="17" class="text-center"><i class="fa fa-spin fa-refresh"></i></td>
+                    </tr>
+                    </tbody>
+                    <tfoot ng-hide="isLoading">
+                        <tr ng-show="paginationOptions.totalItems > paginationOptions.pageSize">
+                            <td colspan="17" class="text-center">
+                                <div st-pagination="" st-items-by-page="paginationOptions.pageSize" st-displayed-pages="7" class="no-margin"></div>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+        
+    </div>
+</div>
