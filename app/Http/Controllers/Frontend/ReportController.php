@@ -22,6 +22,7 @@ use App\Exports\CommonExport;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
+use PhpOffice\PhpSpreadsheet\Style\Border;
 
 use App\Modules\Functions;
 use DateTime;
@@ -71,7 +72,7 @@ define("AWAY", 'Away');
 
 class ReportController extends Controller
 {
-	public $common_style = [
+	protected $common_style = [
 		6    => [
 			'font' => ['bold' => true],
 			'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
@@ -88,6 +89,16 @@ class ReportController extends Controller
 		'F3' => ['alignment' => ['horizontal' => Alignment::HORIZONTAL_RIGHT]],
 		'F4' => ['font' => ['bold' => true], 'alignment' => ['horizontal' => Alignment::HORIZONTAL_RIGHT]],
 		'H4' => ['font' => ['bold' => true]]
+	];
+
+	protected $row_style = [
+		'alignment' => [
+			'horizontal' => Alignment::HORIZONTAL_CENTER, 
+			'vertical' => Alignment::VERTICAL_CENTER
+		],
+		// 'borders' => [
+		// 	'right' => [ 'borderStyle' => Border::BORDER_THIN ]
+		// ],
 	];
 
 	public function getFilterList(Request $request) {

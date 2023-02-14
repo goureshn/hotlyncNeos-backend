@@ -13,6 +13,13 @@ use App\Http\Controllers\Backoffice\Property\RoomWizardController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\Intface\ChannelController;
+use App\Http\Controllers\Intface\LogController;
+use App\Http\Controllers\Intface\ProtocolController;
+use App\Http\Controllers\Intface\ParserController;
+use App\Http\Controllers\Intface\FormatterController;
+use App\Http\Controllers\Intface\AlarmController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -55,6 +62,16 @@ Route::any('hskp/publicAreaAddTask', [HSKPController::class, 'publicAreaAddTask'
 
 // Interface
 Route::group(['prefix' => 'interface/', 'middleware' => ['interface_auth_group']], function () {
+    Route::resource('channel', ChannelController::class);
+    Route::resource('log', LogController::class);
+    Route::resource('protocol', ProtocolController::class);
+    Route::resource('parser', ParserController::class);
+    Route::resource('formatter', FormatterController::class);
+    Route::resource('alarm', AlarmController::class);
+    Route::get('buildlist', [ChannelController::class, 'getAcceptBuildingList']);
+    Route::post('postbuildlist', [ChannelController::class, 'postBuildingList']);
+    Route::post('interfaceurl', [ChannelController::class, 'getInterfaceURL']);
+
     Route::any('process/{action}', [ProcessController::class, 'process']);
 });
 

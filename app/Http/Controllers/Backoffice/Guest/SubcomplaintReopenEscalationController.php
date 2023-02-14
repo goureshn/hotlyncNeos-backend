@@ -72,6 +72,7 @@ class SubcomplaintReopenEscalationController extends UploadController
 					
 					return $list->field;
 				})
+				->rawColumns(['levels', 'job_roles', 'maxtimes', 'notify_types'])
 				->make(true);
     }
 

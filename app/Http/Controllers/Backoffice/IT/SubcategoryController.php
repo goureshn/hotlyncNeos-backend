@@ -38,13 +38,14 @@ class SubcategoryController extends UploadController
 					return '<p data-placement="top" data-toggle="tooltip" title="Delete"><button class="btn btn-danger btn-xs" data-title="Delete" data-toggle="modal" data-target="#deleteModal" ng-disabled="job_role!=\'SuperAdmin\'" ng-click="onDeleteRow('.$data->id.')">
 						<span class="glyphicon glyphicon-trash"></span>
 					</button></p>';
-				})				
+				})
+				->rawColumns(['checkbox', 'edit', 'delete'])				
 				->make(true);
 	}
 	
 	public function getApprovalList(Request $request)
     {
-		$central_mode = $request->get('central_mode', 1);
+		$central_mode = $request->central_mode ?? 1;
 
 		$query = DB::table('services_it_subcategory as sub')
 			->join('services_it_category as ca', 'sub.cat_id', '=', 'ca.id');
@@ -59,12 +60,16 @@ class SubcategoryController extends UploadController
 		{
 			$datalist = $query
 				->join('common_department as cd', function($join) {
-					$join->on(DB::raw('cd.id > 0'),DB::raw(''),DB::raw(''));
+					// $join->on(DB::raw('cd.id > 0'),DB::raw(''),DB::raw(''));
+					$join->on(function ($q) {
+						$q->whereRaw('cd.id > 0');
+					});
 				})
 				->where('sub.approval_mode', 'Decentralized')	
 				->select(DB::raw('sub.*, ca.category, cd.id as dept_id, cd.department'));
+				// dd($datalist->toSql());		
 		}
-
+		
 		return Datatables::of($datalist)
 				->addColumn('levels', function ($data) {
 					$subcategory_id = $data->id;					
@@ -110,13 +115,16 @@ class SubcategoryController extends UploadController
 						->first();
 					
 					return $list->field;
-				})				
+				})
+				->rawColumns(['levels', 'job_roles', 'notify_types'])				
 				->make(true);
     }
 
 	public function store(Request $request)
     {
     	$input = $request->except(['id', 'category']);
+		if($input['sub_cat'] === null) $input['sub_cat'] = '';
+
 		$model = ITSubcategory::create($input);
 		
 		return Response::json($model);			

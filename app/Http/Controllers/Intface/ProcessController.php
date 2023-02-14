@@ -106,6 +106,12 @@ class ProcessController extends Controller
             case 'checkinnogvgg':
                 $this->checkin($request);
                 break;
+            case 'offline_checkin':
+                $this->offline_checkin($request);
+                break;
+            case 'offline_vacant':
+                $this->offline_vacant($request);
+                break;
             case 'checkin_adv':
                 $this->checkin_adv($request);
                 break;
@@ -4233,5 +4239,361 @@ $bc_call_list = BCCall::where('call_date', '>', $call_date)
         DB::table('common_guest_reservation')
 				->where('res_id', $guest_id)
 				->update($input);
+    }
+
+    private function offline_checkin($request){
+        //room number, fo_status, occupancy, room state ,adult, kid - 101|Checked In|OCC|DI|1|0
+        $params = explode('|', $this->getParam($request->input('param', ''))); 
+        $property_id = $request->input('property_id', '0');
+
+        $src_config = $request->input('src_config');
+        if( !empty($src_config) ){
+            $property_id_src = $src_config['src_property_id'];
+        }
+        if($property_id_src == $property_id){
+
+            $rm_info =  DB::table('common_room as r')
+                    ->leftJoin('services_room_status as srs', 'r.id', '=', 'srs.id')
+                    ->where('r.room','=', (int)$params[0])
+                    ->where('srs.property_id','=',$property_id)
+                    ->first();
+        
+            if (!empty($rm_info)) {
+
+                // services_hskp_log config
+                $update_hskp_log = DB::table('offline_interface_update_config')
+                    ->where('property_id', $property_id)
+                    ->where('incoming_property','ov_occupancy')
+                    ->where('table_name','services_hskp_log')
+                    ->where('incoming_value', $params[2])
+                    ->first();
+
+                $cur_time = date("Y-m-d H:i:s");
+            
+                $hskp_log = new HskpStatusLog();
+                $hskp_log->room_id = $rm_info->id;
+                $hskp_log->hskp_id = 0;
+                $hskp_log->user_id = 0;
+                $hskp_log->method = "offlinefiles";
+                if(!empty($update_hskp_log)){
+                    $hskp_log->state = $update_hskp_log->value;
+                }
+                $hskp_log->created_at = $cur_time;
+                $hskp_log->save();
+
+                // services_room_status config
+
+                $rm_status = HskpRoomStatus::where('id','=',$rm_info->id)
+                ->where('property_id',$property_id)->first();
+
+                //update rm_state
+                $update_rm_status = DB::table('offline_interface_update_config')
+                    ->where('property_id', $property_id)
+                    ->where('incoming_property','rm_state')
+                    ->where('table_name','services_room_status')
+                    ->where('column_name','rm_state')
+                    ->where('incoming_value', $params[3])
+                    ->first();
+
+                if(!empty($update_rm_status)){
+                    $rm_status->rm_state = $update_rm_status->value;
+                }
+
+                //update room_status
+                $update_room_status = DB::table('offline_interface_update_config')
+                    ->where('property_id', $property_id)
+                    ->where('incoming_property','rm_state')
+                    ->where('table_name','services_room_status')
+                    ->where('column_name','room_status')
+                    ->where('incoming_value', $params[3])
+                    ->first();
+
+                if(!empty($update_room_status)){
+                    $rm_status->room_status = $update_room_status->value;
+                }
+
+                //update ov_occupancy
+                $update_ov_occupancy = DB::table('offline_interface_update_config')
+                    ->where('property_id', $property_id)
+                    ->where('incoming_property','ov_occupancy')
+                    ->where('table_name','services_room_status')
+                    ->where('column_name','ov_occupancy')
+                    ->where('incoming_value', $params[2])
+                    ->first();
+
+                if(!empty($update_ov_occupancy)){
+                    $rm_status->ov_occupancy = $update_ov_occupancy->value;
+                }
+
+                // $update_service_state = DB::table('offline_interface_update_config')
+                //     ->where('property_id', $property_id)
+                //     ->where('incoming_property','rm_state')
+                //     ->where('table_name','services_room_status')
+                //     ->where('column_name','service_state')
+                //     ->where('incoming_value', $params[3])
+                //     ->first();
+                // if(!empty($update_service_state)){
+                //     $rm_status->service_state = $update_service_state->value;
+                // }
+                
+                // fo_state to fo_state
+                $update_fo_state = DB::table('offline_interface_update_config')
+                    ->where('property_id', $property_id)
+                    ->where('incoming_property','fo_state')
+                    ->where('table_name','services_room_status')
+                    ->where('column_name','fo_state')
+                    ->where('incoming_value', $params[1])
+                    ->first();
+
+                if(!empty($update_fo_state)){
+                    $rm_status->fo_state = $update_fo_state->value;
+                }
+
+                //exception for fo_state with occupancy
+                $update_ov_occupancy_fo = DB::table('offline_interface_update_config')
+                    ->where('property_id', $property_id)
+                    ->where('incoming_property','ov_occupancy')
+                    ->where('table_name','services_room_status')
+                    ->where('column_name','fo_state')
+                    ->where('incoming_value', $params[2])
+                    ->first();
+
+                if(!empty($update_ov_occupancy_fo)){
+                    $rm_status->fo_state = $update_ov_occupancy_fo->value;
+                }
+
+                // if($rm_status->ov_occupancy == 'Vacant'){
+                //     $rm_status->fo_state = 'Checked Out';
+                // }else{
+                //     $rm_status->fo_state = $params[1];
+                // }
+                // if($rm_status->rm_state = "Out of Service"){
+                //     $rm_status->service_state = "OOS";
+                // }
+                // if($rm_status->rm_state = "Out of Order"){
+                //     $rm_status->service_state = "OOO";
+                // }
+
+                //update service_state
+                $update_service_state = DB::table('offline_interface_update_config')
+                    ->where('property_id', $property_id)
+                    ->where('incoming_property','rm_state')
+                    ->where('table_name','services_room_status')
+                    ->where('column_name','service_state')
+                    ->where('incoming_value', $params[3])
+                    ->first();
+                if(!empty($update_service_state)){
+                    $rm_status->service_state = $update_service_state->value;
+                }
+
+                //update working_status
+                $update_working_status = DB::table('offline_interface_update_config')
+                    ->where('property_id', $property_id)
+                    ->where('incoming_property','rm_state')
+                    ->where('table_name','services_room_status')
+                    ->where('column_name','working_status')
+                    ->where('incoming_value', $params[3])
+                    ->first();
+
+                if(!empty($update_working_status)){
+                    if ($rm_status->working_status  == 0 || $rm_status->working_status  == 1 || $rm_status->working_status  == 2 || $rm_status->working_status  == 7)
+                    {
+                        $rm_status->working_status = $update_working_status->value;
+                    }
+                }
+
+                $rm_status->save();
+
+                $rules = array();
+
+		        $rules['offline_adult_kid'] = 0;
+
+                $rules = PropertySetting::getPropertySettings($property_id, $rules);
+                $cur_date = date("Y-m-d");
+
+                if ($rules['offline_adult_kid'] == 1){
+
+                    $guest = DB::table('common_guest as cg')
+				            ->join('common_room as cr', 'cg.room_id', '=', 'cr.id')
+				            ->join('common_floor as cf', 'cr.flr_id', '=', 'cf.id')	
+				            ->join('common_building as cb', 'cf.bldg_id', '=', 'cb.id')
+					        ->where('cg.room_id', $rm_info->id)
+					        ->where('cg.departure', '>=', $cur_date)
+					        ->where('cg.checkout_flag', 'checkin')
+					        ->where('cg.property_id',$property_id)
+					        ->where('cb.property_id',$property_id)
+					        ->first();
+
+                    if (!empty($guest)){
+
+                         DB::table('common_guest as cg')
+				            ->join('common_room as cr', 'cg.room_id', '=', 'cr.id')
+				            ->join('common_floor as cf', 'cr.flr_id', '=', 'cf.id')	
+				            ->join('common_building as cb', 'cf.bldg_id', '=', 'cb.id')
+					        ->where('cg.room_id', $rm_info->id)
+					        ->where('cg.departure', '>=', $cur_date)
+					        ->where('cg.checkout_flag', 'checkin')
+					        ->where('cg.property_id',$property_id)
+					        ->where('cb.property_id',$property_id)
+					        ->update(['cg.adult' => $params[4], 'cg.chld' => $params[5]]);
+                    }
+
+
+                }
+
+
+
+
+            }
+
+        }
+
+    }
+
+    private function offline_vacant($request){
+        //room number, occupancy, room state - 108|VAC|OS
+        $params = explode('|', $this->getParam($request->input('param', ''))); 
+        $property_id = $request->input('property_id', '0');
+
+        $src_config = $request->input('src_config');
+        if( !empty($src_config) ){
+            $property_id_src = $src_config['src_property_id'];
+        }
+        if($property_id_src == $property_id){
+
+            $rm_info =  DB::table('common_room as r')
+                    ->leftJoin('services_room_status as srs', 'r.id', '=', 'srs.id')
+                    ->where('r.room','=', (int)$params[0])
+                    ->where('srs.property_id','=',$property_id)
+                    ->first();
+        
+            if (!empty($rm_info)) {
+
+                // services_hskp_log config
+                $update_hskp_log = DB::table('offline_interface_update_config')
+                    ->where('property_id', $property_id)
+                    ->where('incoming_property','rm_state')
+                    ->where('table_name','services_hskp_log')
+                    ->where('incoming_value', $params[2])
+                    ->first();
+
+                $cur_time = date("Y-m-d H:i:s");
+                
+                $hskp_log = new HskpStatusLog();
+                $hskp_log->room_id = $rm_info->id;
+                $hskp_log->hskp_id = 0;
+                $hskp_log->user_id = 0;
+                $hskp_log->method = "offlinefiles";
+                if(!empty($update_hskp_log)){
+                    $hskp_log->state = $update_hskp_log->value;
+                }
+                $hskp_log->created_at = $cur_time;
+                $hskp_log->save();
+
+                // services_room_status config
+                $update_room_status = DB::table('offline_interface_update_config')
+                    ->where('property_id', $property_id)
+                    ->where('incoming_property','rm_state')
+                    ->where('table_name','services_room_status')
+                    ->where('column_name','working_status')
+                    ->where('incoming_value', $params[2])
+                    ->first();
+
+                $rm_status = HskpRoomStatus::where('id','=',$rm_info->id)
+                ->where('property_id',$property_id)->first();
+
+                //update rm_state
+                $update_rm_status = DB::table('offline_interface_update_config')
+                    ->where('property_id', $property_id)
+                    ->where('incoming_property','rm_state')
+                    ->where('table_name','services_room_status')
+                    ->where('column_name','rm_state')
+                    ->where('incoming_value', $params[2])
+                    ->first();
+
+                if(!empty($update_rm_status)){
+                    $rm_status->rm_state = $update_rm_status->value;
+                }
+
+                //update room_status
+                $update_room_status = DB::table('offline_interface_update_config')
+                    ->where('property_id', $property_id)
+                    ->where('incoming_property','rm_state')
+                    ->where('table_name','services_room_status')
+                    ->where('column_name','room_status')
+                    ->where('incoming_value', $params[2])
+                    ->first();
+
+                if(!empty($update_room_status)){
+                    $rm_status->room_status = $update_room_status->value;
+                }
+
+                //$rm_status->rm_state = $this->roomStateValue($params[2]);
+                //$rm_status->room_status = $this->roomStateValue($params[2]);
+
+                //update ov_occupancy
+                $update_ov_occupancy = DB::table('offline_interface_update_config')
+                    ->where('property_id', $property_id)
+                    ->where('incoming_property','ov_occupancy')
+                    ->where('table_name','services_room_status')
+                    ->where('column_name','ov_occupancy')
+                    ->where('incoming_value', $params[1])
+                    ->first();
+
+                if(!empty($update_ov_occupancy)){
+                    $rm_status->ov_occupancy = $update_ov_occupancy->value;
+                }
+
+                //exception for fo_state with occupancy
+                $update_ov_occupancy_fo = DB::table('offline_interface_update_config')
+                    ->where('property_id', $property_id)
+                    ->where('incoming_property','ov_occupancy')
+                    ->where('table_name','services_room_status')
+                    ->where('column_name','fo_state')
+                    ->where('incoming_value', $params[1])
+                    ->first();
+
+                if(!empty($update_ov_occupancy_fo)){
+                    $rm_status->fo_state = $update_ov_occupancy_fo->value;
+                }
+
+                //$rm_status->ov_occupancy = $this->occupancyValue($params[1]);
+                // if($rm_status->ov_occupancy == 'Vacant'){
+                //     $rm_status->fo_state = 'Checked Out';
+                // }
+                // if($rm_status->rm_state = "Out of Service"){
+                //     $rm_status->service_state = "OOS";
+                // }
+                // if($rm_status->rm_state = "Out of Order"){
+                //     $rm_status->service_state = "OOO";
+                // }
+                $update_service_state = DB::table('offline_interface_update_config')
+                    ->where('property_id', $property_id)
+                    ->where('incoming_property','rm_state')
+                    ->where('table_name','services_room_status')
+                    ->where('column_name','service_state')
+                    ->where('incoming_value', $params[2])
+                    ->first();
+                if(!empty($update_service_state)){
+                    $rm_status->service_state = $update_service_state->value;
+                }
+
+                $update_working_status = DB::table('offline_interface_update_config')
+                    ->where('property_id', $property_id)
+                    ->where('incoming_property','rm_state')
+                    ->where('table_name','services_room_status')
+                    ->where('column_name','working_status')
+                    ->where('incoming_value', $params[2])
+                    ->first();
+
+                if(!empty($update_working_status)){
+                    if ($rm_status->working_status  == 0 || $rm_status->working_status  == 1 || $rm_status->working_status  == 2 || $rm_status->working_status  == 7){
+                        $rm_status->working_status = $update_working_status->value;
+                    }
+                }
+                $rm_status->save();
+            }
+
+        }
     }
 }

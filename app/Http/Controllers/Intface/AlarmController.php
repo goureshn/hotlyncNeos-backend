@@ -1,26 +1,23 @@
 <?php
 
-namespace App\Http\Controllers\Backoffice\CallCenter;
+namespace App\Http\Controllers\Intface;
 
 use Illuminate\Http\Request;
 
-use App\Http\Requests;
 use App\Http\Controllers\Controller;
-
-use App\Models\CallCenter\CallCenterChannel;
-
-use Yajra\Datatables\Datatables;
+use App\Models\Common\Property;
+use App\Models\Intface\Alarm;
 
 use DB;
+use Datatables;
 use Response;
 
-class ChannelController extends Controller
-{
+class AlarmController extends Controller
+{	
     public function index(Request $request)
     {
-		$datalist = DB::table('ivr_channels')						
-						->select(DB::raw('*'));		
-						
+		$datalist = DB::connection('interface')->table('alarm')
+					->select(['*']);
 		return Datatables::of($datalist)
 				->addColumn('checkbox', function ($data) {
 					return '<input type="checkbox" class="checkthis" />';
@@ -34,55 +31,72 @@ class ChannelController extends Controller
 					return '<p data-placement="top" data-toggle="tooltip" title="Delete"><button class="btn btn-danger btn-xs" data-title="Delete" data-toggle="modal" data-target="#deleteModal" ng-disabled="job_role!=\'SuperAdmin\'" ng-click="onDeleteRow('.$data->id.')">
 						<span class="glyphicon glyphicon-trash"></span>
 					</button></p>';
+				})				
+				->addColumn('property', function ($data) {
+					$property_id = $data->property_id;
+					$property = Property::find($property_id);
+					return $property->name;
 				})
-				->rawColumns(['checkbox', 'edit', 'delete'])				
+				->rawColumns(['checkbox', 'edit', 'delete', 'property'])
 				->make(true);
     }
 	
+
     public function create()
     {
         //
     }
-	
-	
+
     public function store(Request $request)
     {
-		$input = $request->except('id');
-		if($input['label'] === null) $input['label'] = '';
-		
-		$model = CallCenterChannel::create($input);
-		
-		return Response::json($model);			
-    }
+    	$input = $request->except('id');
 
-	public function show($id)
-    {
-        $model = CallCenterChannel::find($id);	
+		$property_id = $request->get('property_id', '0');
+		$model = Alarm::where('property_id', $property_id)->first();
+		if( empty($model) )
+			$model = Alarm::create($input);
+		else
+			$model->update($input);
 		
-		return Response::json($model);
+		$message = 'SUCCESS';	
+		
+		if( empty($model) )
+			$message = 'Internal Server error';		
+		
+		if ($request->ajax()) 
+			return Response::json($model);
+		else	
+			return back()->with('error', $message)->withInput();	
+    }
+	
+    public function show($id)
+    {
+        //
     }
 
   
     public function edit(Request $request, $id)
     {
+        $model = Alarm::find($id);	
+		if( empty($model) )
+			$model = new Alarm();
 		
+		return $this->showIndexPage($request, $model);
     }
 
     public function update(Request $request, $id)
     {
-		$input = $request->all();
+		$model = Alarm::find($id);	
 		
-		$model = CallCenterChannel::find($id);
+        $input = $request->except('id');
+		$model->update($input);
 		
-		if( !empty($model) )
-			$model->update($input);
-		
-		return Response::json($input);			
+		return Response::json($model);
     }
 
     public function destroy(Request $request, $id)
     {
-        $model = CallCenterChannel::find($id);
+        $model = Alarm::find($id);
 		$model->delete();
 
 		return $this->index($request);

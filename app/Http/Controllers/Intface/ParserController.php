@@ -1,26 +1,24 @@
 <?php
 
-namespace App\Http\Controllers\Backoffice\CallCenter;
+namespace App\Http\Controllers\Intface;
 
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
-
-use App\Models\CallCenter\CallCenterChannel;
-
-use Yajra\Datatables\Datatables;
+use App\Models\Intface\Parser;
 
 use DB;
+use Datatables;
 use Response;
 
-class ChannelController extends Controller
-{
+class ParserController extends Controller
+{	
     public function index(Request $request)
     {
-		$datalist = DB::table('ivr_channels')						
-						->select(DB::raw('*'));		
-						
+		$datalist = DB::connection('interface')->table('parser as pa')
+					->leftJoin('protocol as pr', 'pa.protocol_id', '=', 'pr.id')
+					->select(['pa.*', 'pr.name as prname']);
 		return Datatables::of($datalist)
 				->addColumn('checkbox', function ($data) {
 					return '<input type="checkbox" class="checkthis" />';
@@ -35,54 +33,60 @@ class ChannelController extends Controller
 						<span class="glyphicon glyphicon-trash"></span>
 					</button></p>';
 				})
-				->rawColumns(['checkbox', 'edit', 'delete'])				
+				->rawColumns(['checkbox', 'edit', 'delete'])
 				->make(true);
     }
 	
+
     public function create()
     {
         //
     }
-	
-	
+
     public function store(Request $request)
     {
-		$input = $request->except('id');
-		if($input['label'] === null) $input['label'] = '';
+    	$input = $request->except('id');
+		$model = Parser::create($input);
 		
-		$model = CallCenterChannel::create($input);
+		$message = 'SUCCESS';	
 		
-		return Response::json($model);			
+		if( empty($model) )
+			$message = 'Internal Server error';		
+		
+		if ($request->ajax()) 
+			return Response::json($model);
+		else	
+			return back()->with('error', $message)->withInput();	
     }
-
-	public function show($id)
+	
+    public function show($id)
     {
-        $model = CallCenterChannel::find($id);	
-		
-		return Response::json($model);
+        //
     }
 
   
     public function edit(Request $request, $id)
     {
+        $model = Parser::find($id);	
+		if( empty($model) )
+			$model = new Parser();
 		
+		return $this->showIndexPage($request, $model);
     }
 
     public function update(Request $request, $id)
     {
-		$input = $request->all();
+		$model = Parser::find($id);	
 		
-		$model = CallCenterChannel::find($id);
+        $input = $request->except('id');
+		$model->update($input);
 		
-		if( !empty($model) )
-			$model->update($input);
-		
-		return Response::json($input);			
+		return Response::json($model);
     }
 
     public function destroy(Request $request, $id)
     {
-        $model = CallCenterChannel::find($id);
+        $model = Parser::find($id);
 		$model->delete();
 
 		return $this->index($request);

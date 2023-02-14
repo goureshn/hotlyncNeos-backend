@@ -213,4 +213,11 @@ class CallController extends Controller
 
 		return $caller;
 	}
+
+	public function getSkillGroup() {
+		$agentlist = DB::table('ivr_call_center_skill_group')
+				->select(DB::raw(' id, group_name as label '))
+				->get();
+		return Response::json($agentlist);
+	}
 }
