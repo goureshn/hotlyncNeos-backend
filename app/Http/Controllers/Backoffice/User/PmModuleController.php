@@ -67,6 +67,7 @@ class PmModuleController extends Controller
 							<span class="glyphicon glyphicon-trash"></span>
 						</button></p>';
                 })
+                ->rawColumns(['mname', 'checkbox', 'edit', 'delete'])
                 ->make(true);
         }
         else
@@ -85,6 +86,10 @@ class PmModuleController extends Controller
     public function store(Request $request)
     {
         $input = $request->except('id');
+        foreach ($input as $key => $value) {
+			if($value === null) $input[$key] = "";
+		}
+        
         $model = PermissionModule::create($input);
 
         $message = 'SUCCESS';

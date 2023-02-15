@@ -63,6 +63,19 @@ return [
             ]) : [],
         ],
 
+        'interface' => array(
+            'driver'    => 'mysql',
+            'host'      => env('DB_HOST', 'localhost'),
+            'database'  => env('DB_INTERFACE_DATABASE', 'ennovatech_interface'),
+            // 'username'  => base64_decode(base64_decode(env('DB_USERNAME', 'root'))),
+            // 'password'  => base64_decode(base64_decode(env('DB_PASSWORD', 'Admin@1234'))),
+            'username'  => env('DB_USERNAME', 'root'),
+            'password'  => env('DB_PASSWORD', 'Admin@1234'),
+            'charset'   => 'utf8',
+            'collation' => 'utf8_general_ci',
+            'prefix'    => '',
+        ),
+
         'pgsql' => [
             'driver' => 'pgsql',
             'url' => env('DATABASE_URL'),

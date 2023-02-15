@@ -760,10 +760,12 @@ class PropertyWizardController extends UploadController
     }
     public function updateLiveServer(Request $request)
     {
-        $action = $request->get('action', '');
-        $liveserver_directory = $request->get('liveserver_directory', '');
+        $action = $request->action ?? '';
+        $liveserver_directory = $request->liveserver_directory ?? '';
 
 		$terminalHost = $this->getWebTerminalHost();
+
+		if($terminalHost->count() === 0) return response(["message" => "Property setting key is not webterminal_host"], 500);
 
 		if($action == "start")
         {
@@ -812,10 +814,12 @@ class PropertyWizardController extends UploadController
     }
     public function updateInterfaceServer(Request $request)
     {
-        $action = $request->get('action', '');
-        $interface_directory = $request->get('interface_directory', '');
+        $action = $request->action ?? '';
+        $interface_directory = $request->interface_directory ?? '';
 
 		$terminalHost = $this->getWebTerminalHost();
+
+		if($terminalHost->count() === 0) return response(["message" => "Property setting key is not webterminal_host"], 500);
 
 		if($action == "start")
         {
@@ -865,10 +869,12 @@ class PropertyWizardController extends UploadController
     }
     public function updateMobileServer(Request $request)
     {
-        $action = $request->get('action', '');
-        $mobileserver_directory = $request->get('mobileserver_directory', '');
+        $action = $request->action ?? '';
+        $mobileserver_directory = $request->mobileserver_directory ?? '';
 
 		$terminalHost = $this->getWebTerminalHost();
+
+		if($terminalHost->count() === 0) return response(["message" => "Property setting key is not webterminal_host"], 500);
 
         if($action == "start")
         {

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
+use File;
 
 
 use Redirect;
@@ -26,6 +27,10 @@ class BackupController extends Controller
     public function getDaily()
     {
         $dir = public_path().'/backup/daily/';
+
+        if(!File::isDirectory($dir))
+            File::makeDirectory($dir, 0777, true, true);
+
         $dailyfiles = array();
         $files = array();
         $i = 0;
@@ -54,6 +59,10 @@ class BackupController extends Controller
     public function getWeekly()
     {
         $dir = public_path().'/backup/weekly/';
+        
+        if(!File::isDirectory($dir))
+            File::makeDirectory($dir, 0777, true, true);
+
         $dailyfiles = array();
         $files = array();
         $i = 0;
@@ -82,6 +91,10 @@ class BackupController extends Controller
     public function getMonthly()
     {
         $dir = public_path().'/backup/monthly/';
+
+        if(!File::isDirectory($dir))
+            File::makeDirectory($dir, 0777, true, true);
+
         $dailyfiles = array();
         $files = array();
         $i = 0;

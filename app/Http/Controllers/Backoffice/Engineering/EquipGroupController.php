@@ -85,6 +85,7 @@ class EquipGroupController extends Controller
 						<span class="glyphicon glyphicon-trash"></span>
 					</button></p>';
             })
+            ->rawColumns(['checkbox', 'edit', 'delete'])
             ->make(true);
     }
 

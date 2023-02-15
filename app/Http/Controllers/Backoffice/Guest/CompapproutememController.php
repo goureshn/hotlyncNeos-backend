@@ -65,6 +65,7 @@ class CompapproutememController extends UploadController
 							<span class="glyphicon glyphicon-trash"></span>
 						</button></p>';
                 })
+                ->rawColumns(['checkbox', 'edit', 'delete'])
                 ->make(true);
         }
         else
@@ -87,9 +88,9 @@ class CompapproutememController extends UploadController
     public function store(Request $request)
     {
         $step = '2';
-        $property_id = $request->get('property_id',0);
-        $approval_route_id = $request->get('approval_route_id' ,0);
-        $job_role_id = $request->get('job_role_id', 0);
+        $property_id = $request->property_id ?? 0;
+        $approval_route_id = $request->approval_route_id ?? 0;
+        $job_role_id = $request->job_role_id ?? 0;
 
         $query = DB::table('services_approval_route_members')
             ->where('property_id', $property_id)

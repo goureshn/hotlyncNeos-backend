@@ -41,6 +41,7 @@ class ShiftController extends Controller
 						<span class="glyphicon glyphicon-trash"></span>
 					</button></p>';
             })
+            ->rawColumns(['checkbox', 'edit', 'delete'])
             ->make(true);
     }
 
@@ -51,6 +52,8 @@ class ShiftController extends Controller
     public function store(Request $request)
     {
         $input = $request->except(['id']);
+        if($input['name'] === null) $input['name'] = '';
+
         $model = Shift::create($input);
 
         $message = 'SUCCESS';

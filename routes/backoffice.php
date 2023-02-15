@@ -58,6 +58,45 @@ use App\Http\Controllers\Backoffice\Guest\CompensationController;
 use App\Http\Controllers\Backoffice\Guest\CompapprouteController;
 use App\Http\Controllers\Backoffice\Guest\DeptdefaultassController;
 use App\Http\Controllers\Backoffice\Guest\ComplaintController;
+use App\Http\Controllers\Backoffice\Guest\ComplaintTypeController;
+use App\Http\Controllers\Backoffice\Guest\FeedbackSourceController;
+use App\Http\Controllers\Backoffice\Guest\FeedbackTypeController;
+use App\Http\Controllers\Backoffice\Guest\ComplaintdeptpivotController;
+use App\Http\Controllers\Backoffice\Guest\ComplaintescalationController;
+use App\Http\Controllers\Backoffice\Guest\ComplaintDivisionEscalationController;
+use App\Http\Controllers\Backoffice\Guest\SubcomplaintLocEscalationController;
+use App\Http\Controllers\Backoffice\User\PmModuleController;
+use App\Http\Controllers\Backoffice\User\PmGroupController;
+use App\Http\Controllers\Backoffice\User\PermissionController;
+use App\Http\Controllers\Backoffice\User\UserGroupController;
+use App\Http\Controllers\Backoffice\User\ShiftController as UserShiftController;
+use App\Http\Controllers\Backoffice\User\EmployeeController;
+use App\Http\Controllers\Backoffice\Engineering\PartGroupController;
+use App\Http\Controllers\Backoffice\Engineering\EquipGroupController;
+use App\Http\Controllers\Backoffice\Engineering\CategoryController;
+use App\Http\Controllers\Backoffice\Engineering\SubcategoryController;
+use App\Http\Controllers\Backoffice\Engineering\SupplierController;
+use App\Http\Controllers\Backoffice\Configuration\RequestController;
+use App\Http\Controllers\Backoffice\Configuration\WakeupController;
+use App\Http\Controllers\Backoffice\Configuration\CallAccountController;
+use App\Http\Controllers\Backoffice\Configuration\MinibarController as ConfigMinibarController;
+use App\Http\Controllers\Backoffice\Configuration\ConfigurationController;
+use App\Http\Controllers\Backoffice\Configuration\GuestServiceController as BoGuestServiceController;
+use App\Http\Controllers\Backoffice\Configuration\ComplaintController as ConfigComplaintController;
+use App\Http\Controllers\Backoffice\Configuration\HouseKeepingController;
+use App\Http\Controllers\Backoffice\Configuration\ReportController as ConfigReportController;
+use App\Http\Controllers\Backoffice\Configuration\CallCenterController;
+use App\Http\Controllers\Backoffice\Configuration\HelpdeskController;
+use App\Http\Controllers\Backoffice\CallCenter\ExtensionController;
+use App\Http\Controllers\Backoffice\CallCenter\ChannelController;
+use App\Http\Controllers\Backoffice\CallCenter\IVRCallTypeController;
+use App\Http\Controllers\Backoffice\CallCenter\SkillGroupController;
+use App\Http\Controllers\Backoffice\IT\CategoryController as BoItCategoryController;
+use App\Http\Controllers\Backoffice\IT\SubcategoryController as BoItSubcategoryController;
+use App\Http\Controllers\Backoffice\IT\TypeController;
+use App\Http\Controllers\Backoffice\Backup\BackupController;
+use App\Http\Controllers\Backoffice\Guest\CompapproutememController;
+use App\Http\Controllers\Backoffice\Guest\SubcomplaintReopenEscalationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -73,7 +112,7 @@ use App\Http\Controllers\Backoffice\Guest\ComplaintController;
 // prefix => backoffice, middleware used => ['web']
 
 Route::get('user/jobrole', [UserWizardController::class, 'getJobRoles']);
-Route::get('user/wizard/user/getimage', [UserWizardController::class, 'getImage']);
+// Route::get('user/wizard/user/getimage', [UserWizardController::class, 'getImage']);
 
 Route::get('serialtest', [LicenseWizardController::class, 'testDeviceSerial']);
 Route::get('sockettest', [LicenseWizardController::class, 'testSocket']);
@@ -243,6 +282,10 @@ Route::group(['prefix'=>'guestservice/wizard','as'=>'guestservice.wizard.'], fun
     Route::resource('compapproute', CompapprouteController::class);
     Route::post('compapproute/delete/{id?}', [CompapprouteController::class, 'destroy']);
 
+    // compension approval route
+    Route::resource('compapproutemem', CompapproutememController::class);
+    Route::post('compapproutemem/delete/{id?}', [CompapproutememController::class, 'destroy']);
+
     //department default assignee
     Route::resource('deptdefaultass', DeptdefaultassController::class);
     Route::post('deptdefaultass/delete/{id?}', [DeptdefaultassController::class, 'destroy']);
@@ -251,11 +294,153 @@ Route::group(['prefix'=>'guestservice/wizard','as'=>'guestservice.wizard.'], fun
     Route::resource('subcomplaint', ComplaintController::class);
     Route::post('subcomplaint/delete/{id?}', [ComplaintController::class, 'destroy']);
 
+    // complaint type
+    Route::post('complainttype/delete/{id?}', [ComplaintTypeController::class, 'destroy']);
+    Route::resource('complainttype', ComplaintTypeController::class);
+
+    // feedback source
+    Route::post('feedbacksource/delete/{id?}', [FeedbackSourceController::class, 'destroy']);
+    Route::resource('feedbacksource', FeedbackSourceController::class);
+
+    // feedback type
+    Route::resource('feedbacktype', FeedbackTypeController::class);
+    Route::post('feedbacktype/delete/{id?}', [FeedbackTypeController::class, 'destroy']);
+
+    // complaint department pivot
+    Route::resource('complaintdeptpivot', ComplaintdeptpivotController::class);
+    Route::post('complaintdeptpivot/delete/{id?}', [ComplaintdeptpivotController::class, 'destroy']);
+
+    // complaint escalation
+    Route::post('complaintescalation/selectitem', [ComplaintescalationController::class, 'selectItem']);
+    Route::post('complaintescalation/updateinfo', [ComplaintescalationController::class, 'updateEscalationInfo']);
+    Route::post('complaintescalation/deleteinfo', [ComplaintescalationController::class, 'deleteEscalationInfo']);
+    Route::resource('complaintescalation', ComplaintescalationController::class);
+
+    // complaint division escalation
+    Route::post('complaintdivisionescalation/selectitem', [ComplaintDivisionEscalationController::class, 'selectItem']);
+    Route::post('complaintdivisionescalation/updateinfo', [ComplaintDivisionEscalationController::class, 'updateEscalationInfo']);
+    Route::post('complaintdivisionescalation/deleteinfo', [ComplaintDivisionEscalationController::class, 'deleteEscalationInfo']);
+    Route::resource('complaintdivisionescalation', ComplaintDivisionEscalationController::class);
+
+    // sub complaint location escalation
+    Route::post('subcomplaintlocescalation/selectitem', [SubcomplaintLocEscalationController::class, 'selectItem']);
+    Route::post('subcomplaintlocescalation/updateinfo', [SubcomplaintLocEscalationController::class, 'updateEscalationInfo']);
+    Route::post('subcomplaintlocescalation/deleteinfo', [SubcomplaintLocEscalationController::class, 'deleteEscalationInfo']);
+    Route::resource('subcomplaintlocescalation', SubcomplaintLocEscalationController::class);
+
+    // sub complaint reopen escalation
+    Route::resource('subcomplaintreopenescalation', SubcomplaintReopenEscalationController::class);
+    Route::post('subcomplaintreopenescalation/selectitem', [SubcomplaintReopenEscalationController::class, 'selectItem']);
+    Route::post('subcomplaintreopenescalation/updateinfo', [SubcomplaintReopenEscalationController::class, 'updateEscalationInfo']);
+    Route::post('subcomplaintreopenescalation/deleteinfo', [SubcomplaintReopenEscalationController::class, 'deleteEscalationInfo']);
 });
 
 Route::prefix('configuration/wizard')->group(function () {
+    // General
     Route::post('general', [GeneralController::class, 'getGeneral']);
+    Route::post('savegeneral', [GeneralController::class, 'saveGeneral']);
+
+    // Request
+    Route::controller(RequestController::class)->group(function () {
+        Route::post('request', 'getRequestSettingInfo');
+        Route::post('saverequest', 'saveRequestSettingInfo');
+        Route::get('departmentlist', 'getDepartmentList');
+        Route::get('jobrolelist', 'getJobRoleList');
+        Route::post('sendrequestemail', 'sendRequestEmail');
+        Route::get('joblistforall', 'getJobListForAll');
+    });
+
+
+    // wakeup
+    Route::post('wakeup', [WakeupController::class, 'getWakeup']);
+    Route::post('savewakeup', [WakeupController::class, 'saveWakeup']);
+    // callaccount
+    Route::post('callaccount', [CallAccountController::class, 'getCallAccount']);
+    Route::post('savecallaccount', [CallAccountController::class, 'saveCallAccount']);
+    // minibar
+    Route::post('minibar', [ConfigMinibarController::class, 'getMinibar']);
+    Route::post('saveminibar', [ConfigMinibarController::class, 'saveMinibar']);
+
+    Route::post('getchatbotsettinginfo', [ConfigurationController::class, 'getChatbotSettingInfo']);
+    Route::post('savechatbotsettinginfo', [ConfigurationController::class, 'saveChatbotSettingInfo']);
+
+    // guestservice
+    Route::post('guestservice', [BoGuestServiceController::class, 'getGuestService']);
+    Route::post('saveguestservice', [BoGuestServiceController::class, 'saveGuestService']);
+
+    // complaint
+    Route::post('complaint', [ConfigComplaintController::class, 'getComplaint']);
+    Route::post('savesetting', [ConfigComplaintController::class, 'saveSetting']);
+
+    Route::post('getcomlaintdataforemail', [ConfigComplaintController::class, 'getComplaintDataForEmail']);
+    Route::post('savecomplaintdataforemail', [ConfigComplaintController::class, 'saveComplaintDataForEmail']);
+
+    Route::post('sendcomplaintemail', [ConfigComplaintController::class, 'sendComplaintEmail']);
+
+    // housekeeping
+    Route::post('housekeeping', [HouseKeepingController::class, 'getHouseKeeping']);
+    Route::post('savehousekeeping', [HouseKeepingController::class, 'saveHouseKeeping']);
+
+    // automated report
+    Route::post('report', [ConfigReportController::class, 'getReport']);
+    Route::post('saveusersetting', [ConfigReportController::class, 'saveUserSetting']);
+    Route::post('savereport', [ConfigReportController::class, 'saveReport']);
+    Route::get('userlist', [ConfigReportController::class, 'getUserList']);
+
+    // callcenter
+    Route::post('callcenter', [CallCenterController::class, 'getCallCenter']);
+    Route::post('savecallcenter', [CallCenterController::class, 'saveCallCenter']);
+
+    // config
+    Route::post('config', [ConfigurationController::class, 'getConfigValue']);
+    Route::post('saveconfig', [ConfigurationController::class, 'saveConfigValue']);
+
+    Route::post('updatemobileapp', [PropertyWizardController::class, 'updateMobileSetting']);
+    Route::post('getmobilesetting', [PropertyWizardController::class, 'getMobileSetting']);
+
+    Route::post('updateapppin', [PropertyWizardController::class, 'updatePinSetting']);
+    Route::post('getpinsetting', [PropertyWizardController::class, 'getPinSetting']);
+    Route::post('tunnelClientStart', [PropertyWizardController::class, 'tunnelClientStart']);
+
+    //stock notification for engineering
+    Route::post('getstocknotifigroup', [EngController::class, 'getStockNotifiGroup']);
+    Route::post('savestocknotifigroup', [EngController::class, 'saveStockNotifiGroup']);
+
+    // reminder of contract for engineering
+    Route::post('saveremindercontract', [EngController::class, 'saveReminderContract']);
+    Route::post('getremindercontract', [EngController::class, 'getReminderContract']);
+
+    // imap email for repair request
+    Route::post('saveimapconfig', [EngController::class, 'saveImapConfig']);
+    Route::post('getimapconfig', [EngController::class, 'getImapConfig']);
+
+    // it imap email for it
+    Route::post('saveitimapconfig', [HelpdeskController::class, 'saveItImapConfig']);
+    Route::post('getitimapconfig', [HelpdeskController::class, 'getItImapConfig']);
+
+    // repair request for engineering
+    Route::post('saverepairrequest', [EngController::class, 'saveRepairRequest']);
     Route::post('getrepairrequest', [EngController::class, 'getRepairRequest']);
+
+    // config for preventive
+    Route::post('savepreventive', [EngController::class, 'savePreventiveConfig']);
+    Route::post('getpreventive', [EngController::class, 'getPreventiveConfig']);
+
+    // config for work request
+    Route::post('saveworkrequestconfig', [EngController::class, 'saveWorkRequestConfig']);
+    Route::post('getworkrequestconfig', [EngController::class, 'getWorkRequestConfig']);
+
+
+    // Services on live server , interface server , mobile server , export server
+    Route::get('getliveserver', [PropertyWizardController::class, 'getLiveServerSetting']);
+    Route::get('getinterfaceserver', [PropertyWizardController::class, 'getInterfaceServerSetting']);
+    Route::get('getmobileserver', [PropertyWizardController::class, 'getMobileServerSetting']);
+    Route::get('getexportserver', [PropertyWizardController::class, 'getExportServerSetting']);
+
+    Route::post('updateliveserver', [PropertyWizardController::class, 'updateLiveServer']);
+    Route::post('updateinterfaceserver', [PropertyWizardController::class, 'updateInterfaceServer']);
+    Route::post('updatemobileserver', [PropertyWizardController::class, 'updateMobileServer']);
+    Route::post('updateexportserver', [PropertyWizardController::class, 'updateExportServer']);
 });
 
 Route::prefix('admin/wizard')->group(function () {
@@ -300,14 +485,21 @@ Route::prefix('admin/wizard')->group(function () {
 });
 
 Route::group(['prefix'=>'user/wizard','as'=>'user.wizard.', 'middleware' => ['api_auth_group']], function () {
+    // User
     Route::controller(UserWizardController::class)->group(function () {
         Route::get('user/getimage', 'getImage');
         Route::get('user/resetpassword/{id}', 'resetPassword');
         Route::get('user/gethistory/{id}', 'getHistory');
         Route::get('userindex', 'userIndex');
+        Route::get('user/delete/{id?}', 'destroy');
+        Route::get('usergrid/get', 'getGridData');
+        Route::post('user/sendCredential', 'sendCredential');
     });
-
     Route::resource('user', UserWizardController::class);
+
+    // User Group
+    Route::get('usergroup/delete/{id?}', [UserGroupController::class, 'destroy']);
+    Route::resource('usergroup', UserGroupController::class);
 
     Route::get('department', [DepartmentWizardController::class, 'getDepartList']);
     Route::get('departmentlist', [DepartmentWizardController::class, 'getDeptLists']);
@@ -323,6 +515,29 @@ Route::group(['prefix'=>'user/wizard','as'=>'user.wizard.', 'middleware' => ['ap
         Route::post('jobrole/postdeptlist', 'postDeptList');
     });
     Route::resource('createjob', CreateJobController::class);
+
+    //pm Module
+    Route::resource('pmmodule', PmModuleController::class);
+
+    // Permission Group
+    Route::controller(PmGroupController::class)->group(function () {
+        Route::post('pmgroup/pagelist', 'getPageList');
+        Route::post('pmgroup/copy', 'copyPmgroupMembers');
+        Route::get('pmgroup/delete/{id?}', 'destroy');
+        Route::post('pmgroup/postpagelist', 'postPageList');
+    });
+    Route::resource('pmgroup', PmGroupController::class);
+
+    Route::resource('permission', PermissionController::class);
+    Route::resource('shift', UserShiftController::class);
+
+    // Employee
+    Route::post('employee/upload', [EmployeeController::class, 'upload']);
+    Route::post('employee/migrate', [EmployeeController::class, 'migrate']);
+    Route::post('employee/getsyncsetting', [EmployeeController::class, 'getSyncSetting']);
+    Route::post('employee/updatesyncsetting', [EmployeeController::class, 'updateSyncSetting']);
+    Route::resource('employee', EmployeeController::class);
+
 });
 
 Route::group(['prefix'=>'call/wizard','as'=>'call.wizard.'], function () {
@@ -484,4 +699,59 @@ Route::group(['prefix'=>'call/wizard','as'=>'call.wizard.'], function () {
         Route::post('guestrate/updatedata', 'updateData');
     });
     Route::resource('guestrate', GuestrateController::class);
+});
+
+Route::group(['prefix'=>'engineering/wizard','as'=>'engineering.wizard.'], function () {
+    // partgroup
+    Route::get('partgroupnggrid/get', [PartGroupController::class, 'getGridNgData']);
+    Route::resource('partgroup', PartGroupController::class);
+
+    // quipgroup
+    Route::get('equipgroupnggrid/get', [EquipGroupController::class, 'getGridNgData']);
+    Route::resource('equipgroup', EquipGroupController::class);
+
+    // category
+    Route::get('categorynggrid/get', [CategoryController::class, 'getGridNgData']);
+    Route::resource('category', CategoryController::class);
+
+    // subcategory
+    Route::get('subcategorynggrid/get', [SubcategoryController::class, 'getGridNgData']);
+    Route::resource('subcategory', SubcategoryController::class);
+
+    // supplier
+    Route::get('suppliernggrid/get', [SupplierController::class, 'getGridNgData']);
+    Route::resource('supplier', SupplierController::class);
+});
+
+Route::group(['prefix'=>'callcenter/wizard','as'=>'callcenter.wizard.'], function () {
+    // Department
+    Route::resource('extension', ExtensionController::class);
+    Route::resource('channel', ChannelController::class);
+    Route::resource('ivrcalltype', IVRCallTypeController::class);
+    Route::resource('skillgroup', SkillGroupController::class);
+});
+
+Route::group(['prefix'=>'it/wizard','as'=>'it.wizard.'], function () {
+    // category
+    Route::post('category/selectitem', [BoItCategoryController::class, 'selectGroup']);
+    Route::post('category/updateinfo', [BoItCategoryController::class, 'updateEscalationInfo']);
+    Route::post('category/deleteinfo', [BoItCategoryController::class, 'deleteEscalationInfo']);
+    Route::resource('category', BoItCategoryController::class);
+
+    Route::controller(BoItSubcategoryController::class)->group(function () {
+        Route::get('approvallist', 'getApprovalList');
+        Route::post('selectitem', 'selectItem');
+        Route::post('updateinfo', 'updateEscalationInfo');
+        Route::post('deleteinfo', 'deleteEscalationInfo');
+    });
+    Route::resource('subcategory', BoItSubcategoryController::class);
+
+    Route::resource('type', TypeController::class);
+});
+
+Route::group(['prefix'=>'backup/wizard','as'=>'backup.wizard.'], function () {
+    // backup
+    Route::get('daily/get', [BackupController::class, 'getDaily']);
+    Route::get('weekly/get', [BackupController::class, 'getWeekly']);
+    Route::get('monthly/get', [BackupController::class, 'getMonthly']);
 });

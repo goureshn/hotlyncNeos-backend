@@ -100,7 +100,8 @@ class UserGroupController extends UploadController
 						return '<p data-placement="top" data-toggle="tooltip" title="Delete"><button class="btn btn-danger btn-xs" data-title="Delete" data-toggle="modal" data-target="#deleteModal" ng-disabled="viewclass" ng-click="onDeleteRow('.$data->id.')">
 							<span class="glyphicon glyphicon-trash"></span>
 						</button></p>';
-					})				
+					})
+					->rawColumns(['location_group', 'vip', 'checkbox', 'edit', 'delete'])				
 					->make(true);
         }
 		else
@@ -127,7 +128,10 @@ class UserGroupController extends UploadController
         $step = '2';
 	
 		$input = $request->except(['id']);
-
+		foreach ($input as $key => $value) {
+			if($value === null) $input[$key] = "";
+		}
+		
 		$model = UserGroup::create($input);
 		
 		$message = 'SUCCESS';	

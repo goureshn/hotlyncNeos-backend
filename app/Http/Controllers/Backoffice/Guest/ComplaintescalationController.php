@@ -80,6 +80,7 @@ class ComplaintescalationController extends UploadController
 							<span class="glyphicon glyphicon-pencil"></span>
 						</button></p>';
                 })
+				->rawColumns(['levels', 'job_roles', 'maxtimes', 'notify_types', 'edit'])
                 ->make(true);                
     }
     

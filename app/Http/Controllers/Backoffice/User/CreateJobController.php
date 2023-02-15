@@ -72,6 +72,7 @@ class CreateJobController extends UploadController
 							<span class="glyphicon glyphicon-trash"></span>
 						</button></p>';
                 })
+                ->rawColumns(['checkbox', 'edit', 'delete'])
                 ->make(true);
         }
         else
@@ -111,6 +112,7 @@ class CreateJobController extends UploadController
         $step = '2';
 
         $input = $request->except(['id']);
+        if($input['job_role'] === null) $input['job_role'] = '';
 
         // attendant/supervisor is only one
 		if( $input['hskp_role'] == 'Attendant')

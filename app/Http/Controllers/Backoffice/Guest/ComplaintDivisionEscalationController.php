@@ -20,12 +20,14 @@ class ComplaintDivisionEscalationController extends UploadController
    	
     public function index(Request $request)
     {
-		$datalist = DB::table('common_division as ci')							
+		$datalist = DB::table('common_division as ci')
 						->join('services_complaint_type as sct', function($join) {
-							$join->on(DB::raw('sct.id > 0'),DB::raw(''),DB::raw(''));
+							$join->on(function ($q) {
+								$q->whereRaw('sct.id > 0');
+							});
 						})						
-					->select(DB::raw('ci.*, sct.id as severity_id, sct.type as severity'));
-					
+						->select(DB::raw('ci.*, sct.id as severity_id, sct.type as severity'));
+
 		return Datatables::of($datalist)
 				->addColumn('levels', function ($data) {
 					$division_id = $data->id;
@@ -83,6 +85,7 @@ class ComplaintDivisionEscalationController extends UploadController
 					
 					return $list->field;
 				})
+				->rawColumns(['levels', 'job_roles', 'maxtimes', 'notify_types'])
 				->make(true);
     }
 

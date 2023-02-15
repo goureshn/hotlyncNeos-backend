@@ -61,6 +61,7 @@ class PermissionController extends Controller
 							<span class="glyphicon glyphicon-trash"></span>
 						</button></p>';
 					})
+					->rawColumns(['checkbox', 'edit', 'delete'])
 					->make(true);
 		}
 		else
@@ -79,7 +80,7 @@ class PermissionController extends Controller
 	public function store(Request $request)
 	{
 		$input = $request->except(['id','prname']);
-		$prname = $request->get('prname', '');
+		$prname = $request->prname ?? '';
 		$model = Permissions::create($input);
 		 
 		$query = DB::table('common_permission_members');
@@ -89,7 +90,6 @@ class PermissionController extends Controller
 					->where('name','like', $prname)
 					->first();
 		
-
 		$max_query=clone $query;
 		$id=$max_query->max('id');
 

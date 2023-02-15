@@ -35,6 +35,7 @@ use Illuminate\Support\Facades\Route;
 // prefix => frontend, middleware used => ['api', 'api_auth_group']
 
 Route::any('/call/agentstatus', [CallController::class, 'getAgentStatus']);
+Route::any('call/skillgroup', [CallController::class, 'getSkillGroup']);
 Route::any('/chat/unreadcount', [DataController::class, 'getChatUnreadCount']);
 Route::any('getfavouritemenu', [FrontendController::class, 'getFavouriteMenus']);
 Route::any('/report/filterlist', [ReportController::class, 'getFilterList']);
