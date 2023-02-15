@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\UploadController;
 use App\Models\Common\Building;
 use App\Models\Common\RoomType;
+use App\Imports\CommonImportExcel;
 
 use Excel;
 use DB;
@@ -149,15 +150,15 @@ class RoomtypeWizardController extends UploadController
 	
 	public function parseExcelFile($path)
 	{
-		Excel::selectSheets('Room Type')->load($path, function($reader) {
-			$rows = $reader->all()->toArray();
-			for($i = 0; $i < count($rows); $i++ )
+		$rows = Excel::toArray(new CommonImportExcel, $path);
+		$rows = [$rows[0]];
+
+		for($i = 0; $i < count($rows); $i++ )
+		{
+			foreach( $rows[$i] as $data )
 			{
-				foreach( $rows[$i] as $data )
-				{
-					RoomType::create($data);
-				}
-			}							
-		});
+				RoomType::create($data);
+			}
+		}
 	}
 }

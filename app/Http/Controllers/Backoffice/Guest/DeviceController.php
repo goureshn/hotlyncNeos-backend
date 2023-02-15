@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\UploadController;
 use App\Models\Service\DeftFunction;
 use App\Models\Service\Device;
+use App\Imports\CommonImportExcel;
 
 use DB;
 use Datatables;
@@ -206,20 +207,19 @@ class DeviceController extends UploadController
 
 	public function parseExcelFile($path)
 	{
-		Excel::selectSheets('device')->load($path, function($reader) {
-			$rows = $reader->all()->toArray();
-			for($i = 0; $i < count($rows); $i++ )
+		$rows = Excel::toArray(new CommonImportExcel, $path);
+		$rows = [$rows[0]];
+		for($i = 0; $i < count($rows); $i++ )
+		{
+			foreach( $rows[$i] as $data )
 			{
-				foreach( $rows[$i] as $data )
-				{
-					// $bldg_id = $data['bldg_id'];
-					// $floor = $data['floor'];
-					// if( Escalation::where('bldg_id', $bldg_id)->where('floor', $floor)->exists() )
-						// continue;
-					Device::create($data);
-				}
+				// $bldg_id = $data['bldg_id'];
+				// $floor = $data['floor'];
+				// if( Escalation::where('bldg_id', $bldg_id)->where('floor', $floor)->exists() )
+					// continue;
+				Device::create($data);
 			}
-		});
+		}
 	}
 	public function deviceIndex(Request $request)
 	{

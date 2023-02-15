@@ -194,6 +194,16 @@ Route::prefix('property/wizard')->group(function () {
         Route::get('auditdeptfunc_excelreport', 'downloadAuditExcelReportDeptFunc');
         Route::get('auditdevice_excelreport', 'downloadAuditExcelReportDevice');
         Route::get('audituser_excelreport', 'downloadAuditExcelReportUser');
+        Route::get('auditdpt_excelreport', 'downloadAuditExcelReportDepartment');
+        Route::get('auditadminarea_excelreport', 'downloadAuditExcelReportAdminArea');
+        Route::get('auditroom_excelreport', 'downloadAuditExcelReportRoom');
+        Route::get('auditsection_excelreport', 'downloadAuditExcelReportSection');
+        Route::get('auditadminext_excelreport', 'downloadAuditExcelReportAdminExt');
+        Route::get('auditguestext_excelreport', 'downloadAuditExcelReportGuestExt');
+        Route::get('auditguestrate_excelreport', 'downloadAuditExcelReportGuestRate');
+        Route::get('auditminibar_excelreport', 'downloadAuditExcelReportMinibar');
+        Route::get('auditcompensation_excelreport', 'downloadAuditExcelReportCompensation');
+        Route::get('auditjob_excelreport', 'downloadAuditExcelReportJobrole');
     });
 });
 
@@ -236,6 +246,7 @@ Route::group(['prefix'=>'guestservice/wizard','as'=>'guestservice.wizard.'], fun
         Route::get('devicelist', 'getDeviceList');
         Route::post('device/upload', 'upload');
         Route::post('device/storeng', 'storeng');
+        Route::post('device/checkprimarydeptfunc', 'checkPrimaryDeptFunc');
         Route::get('deviceindex', 'deviceIndex');
     });
 

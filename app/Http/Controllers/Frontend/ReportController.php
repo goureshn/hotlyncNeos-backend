@@ -1322,5 +1322,988 @@ class ReportController extends Controller
 
 		$ret['datalist'] = $data_list;
 	}
+
+	public function downloadAuditExcelReportDepartment(Request $request)
+	{
+		ini_set('memory_limit','-1');
+		ini_set('max_execution_time', 300);
+		set_time_limit(0);
+
+		$data = $this->makeAuditReportDataDepartment($request);
+		$property = DB::table('common_property as cp')->select(DB::raw('cp.id,cp.logo_path'))->get();
+
+		if (count($property) <= 1)
+		{
+			foreach ($property as $key => $value) {
+				$logo_path = $value->logo_path;
+			}
+
+		} else {
+			$logo_path = 'frontpage/img/logo_1490913790.png';
+		}
+
+		$param = $request->all();
+		$filename = 'Audit_Report_Department_' . date('d_M_Y_H_i');
+
+		//	$excel_file_type = 'csv';
+		//	if($param['excel_type'] == 'excel')
+		$excel_file_type = config('app.report_file_type');
+
+		$export_data = ['datalist' => []];
+		$row_num = 8;
+		$style = $this->common_style;
+		
+		if( !empty($data['data_list']) ) {
+			foreach ($data['data_list'] as   $obj) {
+				$style[$row_num] = ['alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER]];
+				$row_num++;
+			}
+		}
+
+		$export_data['logo'] = $this->outputExcelLogo($logo_path);;
+		$export_data['property'] = $data['property'];
+		$export_data['sub_title'] = "Department Audit Report";
+		$export_data['heading_list'] = [ 'ID', 'Property', 'Department', 'Short Code', 'Services', 'Description' ];
+		$export_data['datalist'] = $data['data_list']->toArray();
+		$this->sendNotifyDownloadCompleted($param);
+
+		return Excel::download(new CommonExport('excel.common_export', $export_data, 'Audit Report for Department', $style), $filename . '.xlsx');
+	}
+
+	public function makeAuditReportDataDepartment(Request $request) {
+		$property_id = $request->property_id ?? '4';
+		$ret = [];
+
+		$property = DB::table('common_property as cb')
+				->select(DB::raw('cb.name'))
+				->get();
+
+		$list = DB::table('common_department as cd')
+				->leftJoin('common_property as cp', 'cd.property_id', '=', 'cp.id')
+				->select(DB::raw('cd.id, cp.name, cd.department, cd.short_code,cd.services, cd.description' ))
+				->get();
+
+		$total = count($list);
+
+		if(count($property) > 0 )
+		{
+			$label = '';
+			for($i = 0; $i < count($property); $i++)
+			{
+				if( $i > 0 )
+					$label = $label . ', ';
+				$label = $label . $property[$i]->name;
+			}
+			$ret['property'] = $label;
+		}
+
+		$ret['Total'] = $total;
+		$ret['data_list'] = $list;
+
+		return $ret;
+	}
+
+	public function downloadAuditExcelReportAdminArea(Request $request)
+	{
+		ini_set('memory_limit','-1');
+		ini_set('max_execution_time', 300);
+		set_time_limit(0);
+
+
+		$data = $this->makeAuditReportDataAdminArea($request);
+		$property = DB::table('common_property as cp')->select(DB::raw('cp.id,cp.logo_path'))->get();
+
+		if (count($property) <= 1) {
+			foreach ($property as $key => $value) {
+				$logo_path = $value->logo_path;
+			}
+		} else {
+			$logo_path = 'frontpage/img/logo_1490913790.png';
+		}
+
+		$param = $request->all();
+		$filename = 'Audit_Report_Admin Area_' . date('d_M_Y_H_i');
+
+		//	$excel_file_type = 'csv';
+		//	if($param['excel_type'] == 'excel')
+		$excel_file_type = config('app.report_file_type');
+
+		$export_data = ['datalist' => []];
+		$row_num = 8;
+		$style = $this->common_style;
+		
+		if( !empty($data['data_list']) ) {
+			foreach ($data['data_list'] as   $obj) {
+				$style[$row_num] = ['alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER]];
+				$row_num++;
+			}
+		}
+
+		$export_data['logo'] = $this->outputExcelLogo($logo_path);;
+		$export_data['property'] = $data['property'];
+		$export_data['sub_title'] = "Admin Area Audit Report";
+		$export_data['heading_list'] = [ 'ID', 'Property', 'Building', 'Floor', 'Name' ];
+		$export_data['datalist'] = $data['data_list']->toArray();
+		$this->sendNotifyDownloadCompleted($param);
+
+		return Excel::download(new CommonExport('excel.common_export', $export_data, 'Audit Report for Admin Area', $style), $filename . '.xlsx');
+	}
+
+	public function makeAuditReportDataAdminArea(Request $request) {
+		$property_id = $request->property_id ?? '4';
+		$ret = [];
+
+		$property = DB::table('common_property as cb')
+				->select(DB::raw('cb.name'))
+				->get();
+
+		$area_list = DB::table('common_admin_area as ca')
+				->leftJoin('common_floor as cf','ca.floor_id','=','cf.id')
+				->leftJoin('common_building as cb','cf.bldg_id','=','cb.id')
+				->leftJoin('common_property as cp', 'cb.property_id', '=', 'cp.id')
+				//->where('cb.property_id', $property_id)
+				->select(DB::raw('ca.id,cp.name as property_name,cb.name as building ,cf.floor,ca.name' ))
+				->get();
+
+
+		$total = count($area_list);
+
+		if(count($property) > 0 ) {
+			$label = '';
+			for($i = 0; $i < count($property); $i++)
+			{
+				if( $i > 0 )
+					$label = $label . ', ';
+				$label = $label . $property[$i]->name;
+			}
+			$ret['property'] = $label;
+		}
+
+
+		$ret['Total'] = $total;
+		$ret['data_list'] = $area_list;
+
+		return $ret;
+	}
+
+	public function downloadAuditExcelReportRoom(Request $request) {
+		ini_set('memory_limit','-1');
+		ini_set('max_execution_time', 300);
+		set_time_limit(0);
+
+		$data = $this->makeAuditReportDataRoom($request);
+
+		$property = DB::table('common_property as cp')->select(DB::raw('cp.id,cp.logo_path'))->get();
+
+		if (count($property) <= 1) {
+			foreach ($property as $key => $value) {
+				$logo_path = $value->logo_path;
+			}
+
+		} else {
+			$logo_path = 'frontpage/img/logo_1490913790.png';
+		}
+
+		$param = $request->all();
+		$filename = 'Audit_Report_Room_' . date('d_M_Y_H_i');
+
+		//	$excel_file_type = 'csv';
+		//	if($param['excel_type'] == 'excel')
+		$excel_file_type = config('app.report_file_type');
+
+		$export_data = ['datalist' => []];
+		$row_num = 8;
+		$style = $this->common_style;
+		
+		if( !empty($data['data_list']) ) {
+			foreach ($data['data_list'] as   $obj) {
+				$style[$row_num] = ['alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER]];
+				$row_num++;
+			}
+		}
+
+		$export_data['logo'] = $this->outputExcelLogo($logo_path);;
+		$export_data['property'] = $data['property'];
+		$export_data['sub_title'] = "Room Audit Report";
+		$export_data['heading_list'] = [ 'ID', 'Building', 'Floor', 'Room Type', 'Room', 'Description', 'Credits' ];
+		$export_data['datalist'] = $data['data_list']->toArray();
+		$this->sendNotifyDownloadCompleted($param);
+
+		return Excel::download(new CommonExport('excel.common_export', $export_data, 'Audit Report for Room', $style), $filename . '.xlsx');
+	}
+
+	public function makeAuditReportDataRoom(Request $request) {
+
+		$property_id = $request->get('property_id','0');
+		$ret = [];
+		$property = DB::table('common_property as cb')
+				->select(DB::raw('cb.name'))
+				->get();
+
+		$query = DB::table('common_room as cr')
+				->leftjoin('common_floor as cf', 'cr.flr_id', '=', 'cf.id')
+				->leftJoin('common_building as cb', 'cf.bldg_id', '=', 'cb.id')
+				->leftjoin('common_room_type as ct', 'ct.id', '=', 'cr.type_id')
+				->leftJoin('common_property as cp', 'cb.property_id', '=', 'cp.id');
+				//->where('cb.property_id', $property_id);
+
+		$data_query = clone $query;
+
+		$data_list = $data_query
+			->select(DB::raw('cr.id,cb.name as building, cf.floor, ct.type as room_type, cr.room, cr.description,cr.credits'))
+			->get();
+
+		$total = count($data_list);
+
+		if(count($property) > 0 ) {
+				$label = '';
+				for($i = 0; $i < count($property); $i++)
+				{
+					if( $i > 0 )
+						$label = $label . ', ';
+					$label = $label . $property[$i]->name;
+				}
+				$ret['property'] = $label;
+		}
+
+		$ret['Total'] = $total;
+		$ret['data_list'] = $data_list;
+
+		return $ret;
+	}
+
+	public function downloadAuditExcelReportSection(Request $request)
+	{
+		ini_set('memory_limit','-1');
+		ini_set('max_execution_time', 300);
+		set_time_limit(0);
+
+		$data = $this->makeAuditReportDataSection($request);
+		$property = DB::table('common_property as cp')->select(DB::raw('cp.id,cp.logo_path'))->get();
+
+		if (count($property) <= 1)
+		{
+			foreach ($property as $key => $value) {
+				$logo_path = $value->logo_path;
+			}
+		} else {
+			$logo_path = 'frontpage/img/logo_1490913790.png';
+		}
+
+		$param = $request->all();
+		$filename = 'Audit_Report_Section_' . date('d_M_Y_H_i');
+
+		//	$excel_file_type = 'csv';
+		//	if($param['excel_type'] == 'excel')
+		$excel_file_type = config('app.report_file_type');
+
+		$export_data = ['datalist' => []];
+		$export_data['heading_list'] = [ 'ID', 'Property', 'Section', 'Department' ];
+		$row_num = 8;
+		$style = $this->common_style;
+		
+		if( !empty($data['data_list']) ) {
+			foreach ($data['data_list'] as   $obj) {
+				$style[$row_num] = $this->row_style;
+				// $style['A' . $row_num] = $this->row_style;
+				$row_num++;
+			}
+		}
+
+		$export_data['logo'] = $this->outputExcelLogo($logo_path);;
+		$export_data['property'] = $data['property'];
+		$export_data['sub_title'] = "Section Audit Report";
+		$export_data['datalist'] = $data['data_list']->toArray();
+		$this->sendNotifyDownloadCompleted($param);
+
+		return Excel::download(new CommonExport('excel.common_export', $export_data, 'Audit Report for Section', $style), $filename . '.xlsx');
+	}
+
+	public function makeAuditReportDataSection(Request $request) {
+		$property_id = $request->get('property_id','4');
+		$ret = [];
+
+		$property = DB::table('common_property as cb')
+				->select(DB::raw('cb.name'))
+				->get();
+
+		$section_list = DB::table('call_section as cs')
+				->leftjoin('common_department as cd', 'cs.dept_id', '=', 'cd.id')
+				->leftJoin('common_property as cp', 'cd.property_id', '=', 'cp.id')
+				//->where('cd.property_id', $property_id)
+				->select(DB::raw('cs.id, cp.name, cs.section,cd.department' ))
+				->get();
+
+		$total = count($section_list);
+
+		if(count($property) > 0 ) {
+			$label = '';
+			for($i = 0; $i < count($property); $i++)
+			{
+				if( $i > 0 )
+					$label = $label . ', ';
+				$label = $label . $property[$i]->name;
+			}
+			$ret['property'] = $label;
+		}
+
+		$ret['Total'] = $total;
+		$ret['data_list'] = $section_list;
+
+		return $ret;
+	}
+
+	public function downloadAuditExcelReportAdminExt(Request $request) {
+		ini_set('memory_limit','-1');
+		ini_set('max_execution_time', 300);
+		set_time_limit(0);
+
+		$data = $this->makeAuditReportDataAdminExt($request);
+
+		$property = DB::table('common_property as cp')->select(DB::raw('cp.id,cp.logo_path'))->get();
+
+		if (count($property) <= 1) {
+			foreach ($property as $key => $value) {
+				$logo_path = $value->logo_path;
+			}
+
+		}else {
+			$logo_path = 'frontpage/img/logo_1490913790.png';
+		}
+
+		$param = $request->all();
+		$filename = 'Audit_Report_Admin_Extension_' . date('d_M_Y_H_i');
+
+		//	$excel_file_type = 'csv';
+		//	if($param['excel_type'] == 'excel')
+		$excel_file_type = config('app.report_file_type');
+
+		$export_data = ['datalist' => []];
+		$export_data['heading_list'] = [ 'ID', 'Property', 'Building', 'Department', 'Section', 'Extension', 'User', 'User Group', 'Description', 'Status' ];
+		$row_num = 8;
+		$style = $this->common_style;
+		
+		if( !empty($data['data_list']) ) {
+			foreach ($data['data_list'] as   $obj) {
+				$style[$row_num] = $this->row_style;
+				$row_num++;
+			}
+		}
+
+		$export_data['logo'] = $this->outputExcelLogo($logo_path);;
+		$export_data['property'] = $data['property'];
+		$export_data['sub_title'] = "Admin Extension Audit Report";
+		$export_data['datalist'] = $data['data_list']->toArray();
+		$this->sendNotifyDownloadCompleted($param);
+
+		return Excel::download(new CommonExport('excel.common_export', $export_data, 'Audit Report for Admin Ext', $style), $filename . '.xlsx');
+	}
+
+	public function makeAuditReportDataAdminExt(Request $request) {
+		$property_id = $request->get('property_id','4');
+		$ret = [];
+
+		$property = DB::table('common_property as cb')
+					->select(DB::raw('cb.name'))
+					->get();
+
+
+		$adminlist = DB::table('call_staff_extn as ce')
+					->leftjoin('call_section as cs', 'ce.section_id', '=', 'cs.id')
+					->leftjoin('common_users as cu','ce.user_id','=','cu.id')
+					->leftjoin('common_department as cd', 'cs.dept_id', '=', 'cd.id')
+					->leftJoin('common_property as cp', 'cd.property_id', '=', 'cp.id')
+					->leftJoin('common_building as cb', 'ce.building_id', '=', 'cb.id')
+					//->where('cd.property_id', $property_id)
+					->orderBy('ce.id','asc')
+					->select(DB::raw('ce.id, cp.name, cb.name as building, cd.department, cs.section,ce.extension, cu.username,ce.user_group_name,ce.description, CASE WHEN ce.enable = 1 THEN "Active" ELSE "In-Active" END' ))
+					->get();
+
+		$total = count($adminlist);
+		if(count($property) > 0 ) {
+			$label = '';
+			for($i = 0; $i < count($property); $i++) {
+				if( $i > 0 )
+					$label = $label . ', ';
+				$label = $label . $property[$i]->name;
+			}
+			$ret['property'] = $label;
+		}
+
+		$ret['Total'] = $total;
+		$ret['data_list'] = $adminlist;
+
+		return $ret;
+	}
+
+	public function downloadAuditExcelReportGuestExt(Request $request) {
+		ini_set('memory_limit','-1');
+		ini_set('max_execution_time', 300);
+		set_time_limit(0);
+
+		$data = $this->makeAuditReportDataGuestExt($request);
+		$property = DB::table('common_property as cp')->select(DB::raw('cp.id,cp.logo_path'))->get();
+
+		if (count($property) <= 1)
+		{
+			foreach ($property as $key => $value) {
+				$logo_path = $value->logo_path;
+			}
+
+		} else {
+			$logo_path = 'frontpage/img/logo_1490913790.png';
+		}
+
+		$param = $request->all();
+		$filename = 'Audit_Report_Guest_Extension_' . date('d_M_Y_H_i');
+
+		//	$excel_file_type = 'csv';
+		//	if($param['excel_type'] == 'excel')
+        $excel_file_type = config('app.report_fle_type');
+
+		$export_data = ['datalist' => []];
+		$export_data['heading_list'] = [ 'ID', 'Property', 'Building', 'Room', 'Extension', 'Status' ];
+		$row_num = 8;
+		$style = $this->common_style;
+		
+		if( !empty($data['data_list']) ) {
+			foreach ($data['data_list'] as   $obj) {
+				$style[$row_num] = $this->row_style;
+				$row_num++;
+			}
+		}
+
+		$export_data['logo'] = $this->outputExcelLogo($logo_path);;
+		$export_data['property'] = $data['property'];
+		$export_data['sub_title'] = "Guest Extension Audit Report";
+		$export_data['datalist'] = $data['data_list']->toArray();
+		$this->sendNotifyDownloadCompleted($param);
+
+		return Excel::download(new CommonExport('excel.common_export', $export_data, 'Audit Report for Guest Ext', $style), $filename . '.xlsx');
+	}
+
+	public function makeAuditReportDataGuestExt(Request $request) {
+		$property_id = $request->get('property_id','4');
+		$ret = [];
+
+		$property = DB::table('common_property as cb')
+				->select(DB::raw('cb.name'))
+				->get();
+
+		$guestlist = DB::table('call_guest_extn as ce')
+				->leftjoin('common_building as cb','ce.bldg_id','=','cb.id')
+				->leftjoin('common_room as cr', 'ce.room_id', '=', 'cr.id')
+				->leftjoin('common_property as cp', 'cb.property_id', '=', 'cp.id')
+				//->where('cb.property_id', $property_id)
+				->orderBy('ce.extension','asc')
+				->select(DB::raw('ce.id, cp.name,cb.name as building, cr.room, ce.extension, CASE WHEN ce.enable = 1 THEN "Active" ELSE "In-Active" END' ))
+				->get();
+
+		$total = count($guestlist);
+
+		if(count($property) > 0 ) {
+			$label = '';
+			for($i = 0; $i < count($property); $i++) {
+				if( $i > 0 )
+					$label = $label . ', ';
+				$label = $label . $property[$i]->name;
+			}
+			$ret['property'] = $label;
+		}
+
+		$ret['Total'] = $total;
+		$ret['data_list'] = $guestlist;
+		//$ret['property'] = Property::find($property_id);
+		return $ret;
+	}
+
+	public function downloadAuditExcelReportGuestRate(Request $request) {
+		ini_set('memory_limit','-1');
+		ini_set('max_execution_time', 300);
+		set_time_limit(0);
+
+
+		$data = $this->makeAuditReportDataGuestRate($request);
+		$property = DB::table('common_property as cp')->select(DB::raw('cp.id,cp.logo_path'))->get();
+
+		if (count($property) <= 1) {
+			foreach ($property as $key => $value) {
+				$logo_path = $value->logo_path;
+			}
+
+		} else {
+			$logo_path = 'frontpage/img/logo_1490913790.png';
+		}
+
+		$param = $request->all();
+		$filename = 'Audit_Report_Guest Rate Mapping_' . date('d_M_Y_H_i');
+
+		//	$excel_file_type = 'csv';
+		//	if($param['excel_type'] == 'excel')
+		$excel_file_type = config('app.report_file_type');
+
+		$export_data = ['datalist' => []];
+		$export_data['heading_list_colspan'] = [
+			['value' => '', 'col' => 0],
+			['value' => '', 'col' => 0],
+			['value' => '', 'col' => 0],
+			['value' => '', 'col' => 0],
+			['value' => 'Morning Off Peak 00:00:00 - 06:59:59', 'col' => 3],
+			['value' => 'Daily Peak 07:00:00 - 20:59:59', 'col' => 3],
+			['value' => 'Night Off Peak 21:00:00 - 23:59:59', 'col' => 3],
+			['value' => 'All Day Off Peak 00:00:00 - 23:59:59', 'col' => 3]
+		];
+		$export_data['heading_list'] = ['Group', 'Country Code', 'Country','Allowance', 'Carrier', 'Property','Total','Carrier','Property', 'Total', 'Carrier','Property', 'Total','Carrier','Property','Total'];
+		$row_num = 8;
+		$style = $this->common_style;
+		$data_collection = collect($data['data_list'])->pipe(function ($coll) {
+			return collect([ '', '', '', 
+			'Total Count : ' . $coll->count(), 
+			$coll->sum('morning_carrier'), '',
+			$coll->sum('morning_total'),
+			$coll->sum('daily_carrier'), '',
+			$coll->sum('daily_total'),
+			$coll->sum('night_carrier'), '',
+			$coll->sum('night_total'),
+			$coll->sum('all_carrier'), '', 
+			$coll->sum('all_total')]);
+		})->toArray();
+
+		if( !empty($data['data_list']) ) {
+			foreach ($data['data_list'] as $key => $obj) {
+				if($row_num === 8){
+					$style[8] = [
+						'font' => ['bold' => true],
+						'fill' => [ 'fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'ECEFF1'] ],
+						'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
+					];
+				}else $style[$row_num] = $this->row_style;
+				$row_num++;
+			}
+		}
+		$row_num++;
+		$style["E$row_num:P$row_num"] = ['fill' => [ 'fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => '91afb2'] ]];
+		array_push($data['data_list'], $data_collection); 
+		$export_data['logo'] = $this->outputExcelLogo($logo_path);;
+		$export_data['property'] = $data['property'];
+		$export_data['sub_title'] = "Guest Extension Audit Report";
+		$export_data['datalist'] = $data['data_list'];
+		$this->sendNotifyDownloadCompleted($param);
+
+		return Excel::download(new CommonExport('excel.common_export', $export_data, 'Audit Report for Guest Ext', $style), $filename . '.xlsx');
+	}
+
+	public function makeAuditReportDataGuestRate(Request $request) {
+		$property_id = $request->get('property_id','4');
+		$ret = [];
+
+		$property = DB::table('common_property as cb')
+				->select(DB::raw('cb.name'))
+				->get();
+
+		$query = DB::table('call_guest_charge_map as cm')
+				->leftjoin('call_carrier_groups as cg', 'cm.carrier_group_id', '=', 'cg.id')
+				->leftjoin('call_group_destination as cd', 'cd.carrier_group_id','=','cg.id')
+				->leftJoin('call_destination as cds', 'cd.destination_id', '=', 'cds.id')
+				->leftJoin('call_allowance as ca', 'cm.call_allowance', '=', 'ca.id')
+				->leftjoin('call_time_slab as cs','cm.time_slab','=', 'cs.id')
+				->leftjoin('call_carrier_charges as cc' , 'cm.carrier_charges','=','cc.id')
+				->leftjoin('call_hotel_charges as chc' , 'cm.hotel_charges','=','chc.id')
+				->leftjoin('call_tax as ct' , 'cm.tax','=','ct.id')
+				->groupBy('cg.id')
+				//->groupBy('cds.id')
+				->groupBy('cds.country')
+				//->groupBy('ca.id')
+				->groupBy('cs.id')
+				->select(DB::raw('cg.name as group_name, cds.country as country , cds.code as country_code,
+				 ca.name as allowance, cs.name as slab_name, cs.start_time as slab_start_time,
+		   		 cs.end_time as slab_end_time, cs.days_of_week as slab_day, round(cc.charge,2) as charge, round(chc.charge,2) as hotel_charge, round(ct.value,2) as tax, chc.method  '))
+				->get();
+		$list = [];
+		foreach ($query as $row) {
+			$start_time = new DateTime($row->slab_start_time);
+			$end_time = new DateTime($row->slab_end_time);
+			$group_key = $row->group_name.$row->country_code;
+
+			if (isset($list[$group_key])) {
+			} else {
+				$list[$group_key] = [];
+			}
+
+			$list[$group_key]['group_name'] = $row->group_name;
+			$list[$group_key]['country'] = $row->country;
+			$list[$group_key]['country_code'] = $row->country_code;
+			$list[$group_key]['allowance'] = $row->allowance;
+			$hotel_charge = 0;
+				if($row->method == 'Duration' ) $hotel_charge = $row->charge*$row->hotel_charge;
+				if($row->method == 'Per Call' ) $hotel_charge = $row->hotel_charge;
+				if($row->method == 'Percentage' ) $hotel_charge = ($row->hotel_charge/100)*$row->charge;
+				if($row->method == 'Pulse' ) $hotel_charge = $row->charge*$row->hotel_charge;
+				$hotel_charge = round($hotel_charge,2);
+
+			if($row->slab_day != 'Friday' && $start_time >= new DateTime('00:00:00') && $end_time <= new DateTime('06:59:59')) {
+				$row->morning = $row->slab_name;
+				$row->daily = '';
+				$row->night = '';
+				$row->all = '';
+				$list[$group_key]['morning_carrier'] = $row->charge;
+
+				//$hotel_chrg = round(($row->hotel_charge * $row->charge)/100,2);
+				$list[$group_key]['hotel_1'] = $hotel_charge;
+				$list[$group_key]['morning_total'] = round($row->charge + $hotel_charge + $row->tax ,2);
+				$row->daily_carrier = '';
+				$row->daily_total = '';
+				$row->night_carrier = '';
+				$row->night_total = '';
+				$row->all_carrier = '';
+				$row->all_total = '';
+			}
+			if($row->slab_day != 'Friday' && $start_time >= new DateTime('07:00:00') && $end_time <= new DateTime('20:59:59')) {
+				$row->morning = '';
+				$row->daily = $row->slab_name;
+				$row->night = '';
+				$row->all = '';
+				$row->morning_carrier = '';
+				$row->morning_total = '';
+				$list[$group_key]['daily_carrier'] = $row->charge;
+				$list[$group_key]['hotel_2'] = $hotel_charge;
+				//$list[$group_key]['hotel_2'] =round(($row->hotel_charge * $row->charge)/100,2);
+				$list[$group_key]['daily_total'] = round($row->charge + $hotel_charge + $row->tax ,2);
+				$row->night_carrier = '';
+				$row->night_total = '';
+				$row->all_carrier = '';
+				$row->all_total = '';
+			}
+			if($row->slab_day != 'Friday' && $start_time >= new DateTime('21:00:00') && $end_time <= new DateTime('23:59:59')) {
+				$row->morning = '';
+				$row->daily = '';
+				$row->night = $row->slab_name;
+				$row->all = '';
+				$row->morning_carrier = '';
+				$row->morning_total = '';
+				$row->daily_carrier = '';
+				$row->daily_total = '';
+				$list[$group_key]['night_carrier'] = $row->charge;
+				$list[$group_key]['hotel_3'] = $hotel_charge;
+				//$list[$group_key]['hotel_3'] = round(($row->hotel_charge * $row->charge)/100,2);
+				$list[$group_key]['night_total'] = round($row->charge + $hotel_charge + $row->tax ,2);
+				$row->all_carrier = '';
+				$row->all_total = '';
+			}
+			if($row->slab_day == 'Friday' && $start_time >= new DateTime('00:00:00') && $end_time <= new DateTime('23:59:59')) {
+				$row->morning = '';
+				$row->daily = '';
+				$row->night = '';
+				$row->all = $row->slab_name;
+				$row->morning_carrier = '';
+				$row->morning_total = '';
+				$row->daily_carrier = '';
+				$row->daily_total = '';
+				$row->night_carrier = '';
+				$row->night_total = '';
+				$list[$group_key]['all_carrier'] = $row->charge;
+				$list[$group_key]['hotel_4'] = $hotel_charge;
+				//$list[$group_key]['hotel_4'] = round(($row->hotel_charge * $row->charge)/100,2);
+				$list[$group_key]['all_total'] = round($row->charge + $hotel_charge + $row->tax ,2);
+			}
+
+			if($start_time >= new DateTime('00:00:00') && $end_time <= new DateTime('23:59:59')) {
+				$row->morning = '';
+				$row->daily = '';
+				$row->night = '';
+				$row->all = $row->slab_name;
+				$row->morning_carrier = '';
+				$row->morning_total = '';
+				$row->daily_carrier = '';
+				$row->daily_total = '';
+				$row->night_carrier = '';
+				$row->night_total = '';
+				$list[$group_key]['morning_carrier'] = 0;
+				$list[$group_key]['morning_total'] = 0;
+				$list[$group_key]['daily_carrier'] = 0;
+				$list[$group_key]['daily_total'] = 0;
+				$list[$group_key]['night_carrier'] = 0;
+				$list[$group_key]['night_total'] = 0;
+				$list[$group_key]['hotel_1'] = 0;
+				$list[$group_key]['hotel_2'] = 0;
+				$list[$group_key]['hotel_3'] = 0;
+				$list[$group_key]['all_carrier'] = $row->charge;
+				$list[$group_key]['hotel_4'] = $hotel_charge;
+				//$list[$group_key]['hotel_4'] = round(($row->hotel_charge * $row->charge)/100,2);
+				$list[$group_key]['all_total'] = round($row->charge + $hotel_charge + $row->tax ,2);
+			}
+
+		}
+
+		if(count($property) > 0 ) {
+			$label = '';
+			for($i = 0; $i < count($property); $i++)
+			{
+				if( $i > 0 )
+					$label = $label . ', ';
+				$label = $label . $property[$i]->name;
+			}
+			$ret['property'] = $label;
+		}
+
+		//$ret['Total'] = $total;
+		$ret['data_list'] = $list;
+		//$ret['property'] = Property::find($property_id);
+		return $ret;
+	}
+
+	public function downloadAuditExcelReportMinibar(Request $request)
+	{
+		ini_set('memory_limit','-1');
+		ini_set('max_execution_time', 300);
+		set_time_limit(0);
+
+		$data = $this->makeAuditReportDataMinibar($request);
+		$property = DB::table('common_property as cp')->select(DB::raw('cp.id,cp.logo_path'))->get();
+
+		if (count($property) <= 1) {
+			foreach ($property as $key => $value) {
+				$logo_path = $value->logo_path;
+			}
+		} else {
+			$logo_path = 'frontpage/img/logo_1490913790.png';
+		}
+
+		$param = $request->all();
+		$filename = 'Audit_Report_Minibar Item_' . date('d_M_Y_H_i');
+
+		//	$excel_file_type = 'csv';
+		//	if($param['excel_type'] == 'excel')
+		$excel_file_type = config('app.report_file_type');
+
+		$export_data = ['datalist' => []];
+		$export_data['heading_list'] = [ 'ID', 'Item Name', 'Charge', 'PMS Code', 'IVR Code', 'Max Item', 'Item Status' ];
+		$row_num = 8;
+		$style = $this->common_style;
+		
+		if( !empty($data['data_list']) ) {
+			foreach ($data['data_list'] as   $obj) {
+				$style[$row_num] = $this->row_style;
+				$row_num++;
+			}
+		}
+
+		$export_data['logo'] = $this->outputExcelLogo($logo_path);;
+		$export_data['property'] = $data['property'];
+		$export_data['sub_title'] = "Minibar Audit Report";
+		$export_data['datalist'] = $data['data_list']->toArray();
+		$this->sendNotifyDownloadCompleted($param);
+
+		return Excel::download(new CommonExport('excel.common_export', $export_data, 'Audit Report for Minibar', $style), $filename . '.xlsx');
+	}
+
+	public function makeAuditReportDataMinibar(Request $request) {
+		$property_id = $request->get('property_id','4');
+		$ret = [];
+
+		$property = DB::table('common_property as cb')
+				->select(DB::raw('cb.name'))
+				->get();
+
+		$minibar_list = DB::table('services_rm_srv_itm as rsi')
+					->select(DB::raw('rsi.id, rsi.item_name, rsi.charge, rsi.pms_code, rsi.ivr_code, rsi.max_qty, CASE WHEN rsi.active_status = 1 THEN "Active" ELSE "In-Active" END'))
+					->get();
+
+
+		$total = count($minibar_list);
+
+		if(count($property) > 0 ) {
+			$label = '';
+			for($i = 0; $i < count($property); $i++)
+			{
+				if( $i > 0 )
+					$label = $label . ', ';
+				$label = $label . $property[$i]->name;
+			}
+			$ret['property'] = $label;
+		}
+
+		$ret['Total'] = $total;
+		$ret['data_list'] = $minibar_list;
+
+		return $ret;
+	}
+
+	public function downloadAuditExcelReportCompensation(Request $request)
+	{
+		ini_set('memory_limit','-1');
+		ini_set('max_execution_time', 300);
+		set_time_limit(0);
+
+
+		$data = $this->makeAuditReportDataCompensation($request);
+		$property = DB::table('common_property as cp')->select(DB::raw('cp.id,cp.logo_path'))->get();
+
+		if (count($property) <= 1) {
+			foreach ($property as $key => $value) {
+				$logo_path = $value->logo_path;
+			}
+
+		} else {
+			$logo_path = 'frontpage/img/logo_1490913790.png';
+		}
+
+		$param = $request->all();
+		$filename = 'Audit_Report_Compensation_' . date('d_M_Y_H_i');
+
+		//	$excel_file_type = 'csv';
+		//	if($param['excel_type'] == 'excel')
+		$excel_file_type = config('app.report_file_type');
+
+		$export_data = ['datalist' => []];
+		$export_data['heading_list'] = [ 'ID', 'Client', 'Property', 'Compensation', 'Cost', 'Approval Route' ];
+		$row_num = 8;
+		$style = $this->common_style;
+		
+		if( !empty($data['data_list']) ) {
+			foreach ($data['data_list'] as   $obj) {
+				$style[$row_num] = $this->row_style;
+				$row_num++;
+			}
+		}
+
+		$export_data['logo'] = $this->outputExcelLogo($logo_path);;
+		$export_data['property'] = $data['property'];
+		$export_data['sub_title'] = "Compensation Audit Report";
+		$export_data['datalist'] = $data['data_list']->toArray();
+		$this->sendNotifyDownloadCompleted($param);
+
+		return Excel::download(new CommonExport('excel.common_export', $export_data, 'Audit Report for Compensation', $style), $filename . '.xlsx');
+	}
+
+	public function makeAuditReportDataCompensation(Request $request) {
+		$property_id = $request->get('property_id','4');
+		$ret = [];
+
+		$property = DB::table('common_property as cb')
+				->select(DB::raw('cb.name'))
+				->get();
+
+		$comp_list = DB::table('services_compensation as sc')
+				->leftJoin('services_approval_route as sar', 'sc.approval_route_id', '=', 'sar.id')
+				->leftJoin('common_property as cp','sc.property_id','=','cp.id')
+				->leftJoin('common_chain as cc','sc.client_id', '=','cc.id')
+				->select(DB::raw('sc.id, cc.name, cp.name as property, sc.compensation, sc.cost, sar.approval ' ))
+				->get();
+
+
+		$total = count($comp_list);
+
+		if(count($property) > 0 ) {
+			$label = '';
+			for($i = 0; $i < count($property); $i++)
+			{
+				if( $i > 0 )
+					$label = $label . ', ';
+				$label = $label . $property[$i]->name;
+			}
+			$ret['property'] = $label;
+		}
+
+
+		$ret['Total'] = $total;
+		$ret['data_list'] = $comp_list;
+		//$ret['property'] = Property::find($property_id);
+		return $ret;
+	}
+
+	public function downloadAuditExcelReportJobrole(Request $request)
+	{
+		ini_set('memory_limit','-1');
+		ini_set('max_execution_time', 300);
+		set_time_limit(0);
+
+		$data = $this->makeAuditReportDataJobrole($request);
+		$property = DB::table('common_property as cp')->select(DB::raw('cp.id,cp.logo_path'))->get();
+
+		if (count($property) <= 1) {
+			foreach ($property as $key => $value) {
+				$logo_path = $value->logo_path;
+			}
+		} else {
+			$logo_path = 'frontpage/img/logo_1490913790.png';
+		}
+
+		$param = $request->all();
+		$filename = 'Audit_Report_Job Role_' . date('d_M_Y_H_i');
+
+		//	$excel_file_type = 'csv';
+		//	if($param['excel_type'] == 'excel')
+		$excel_file_type = config('app.report_file_type');
+
+		$export_data = ['datalist' => []];
+		$export_data['heading_list'] = [ 'ID', 'Property', 'Job Role', 'Department', 'Permission Group' ];
+		$row_num = 8;
+		$style = $this->common_style;
+		
+		if( !empty($data['data_list']) ) {
+			foreach ($data['data_list'] as   $obj) {
+				$style[$row_num] = $this->row_style;
+				$row_num++;
+			}
+		}
+
+		$export_data['logo'] = $this->outputExcelLogo($logo_path);;
+		$export_data['property'] = $data['property'];
+		$export_data['sub_title'] = "Job Role Audit Report";
+		$export_data['datalist'] = $data['data_list']->toArray();
+		$this->sendNotifyDownloadCompleted($param);
+
+		return Excel::download(new CommonExport('excel.common_export', $export_data, 'Audit Report for Job Role', $style), $filename . '.xlsx');
+
+		// $ret = Excel::create($filename, function ($excel) use ($data, $logo_path, $param) {
+		// 	$excel->sheet('Audit Report for Jobrole', function ($sheet) use ($data, $logo_path) {
+		// 		$sheet->setOrientation('landscape');
+
+		// 		$this->outputAuditLogo($sheet, $logo_path);
+
+		// 		$row_num = 1;
+		// 		$row_num = $this->outputAuditJobReport($sheet, $row_num, $data);
+		// 				$row_num += 2;
+		// 	});
+
+		// 	$this->sendNotifyDownloadCompleted($param);
+
+		// })->export($excel_file_type);
+	}
+
+	public function makeAuditReportDataJobrole(Request $request) {
+		$property_id = $request->get('property_id','4');
+		$ret = [];
+
+		$property = DB::table('common_property as cb')
+				->select(DB::raw('cb.name'))
+				->get();
+
+		$job_list = DB::table('common_job_role as cj')
+					->leftJoin('common_property as cp', 'cj.property_id', '=', 'cp.id')
+					->leftJoin('common_department as cd', 'cj.dept_id', '=', 'cd.id')
+					// ->leftJoin('common_property as cp', 'ug.property_id', '=', 'cp.id')
+					->leftJoin('common_perm_group as pg', 'cj.permission_group_id', '=', 'pg.id')
+					->select(DB::raw('cj.id, cp.name as property_name, cj.job_role, cd.department as department, pg.name as pgname'))
+					->get();
+
+		$total = count($job_list);
+		if(count($property) > 0 ) {
+			$label = '';
+			for($i = 0; $i < count($property); $i++)
+			{
+				if( $i > 0 )
+					$label = $label . ', ';
+				$label = $label . $property[$i]->name;
+			}
+			$ret['property'] = $label;
+		}
+
+		$ret['Total'] = $total;
+		$ret['data_list'] = $job_list;
+
+		return $ret;
+	}
 }
 
