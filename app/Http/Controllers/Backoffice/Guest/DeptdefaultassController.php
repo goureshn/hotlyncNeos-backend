@@ -109,7 +109,7 @@ class DeptdefaultassController extends UploadController
     public function store(Request $request)
     {
         $step = '2';
-        $id = $request->get('id',0);
+        $id = $request->id ?? 0;
         $input = $request->except(['location_list', 'location_type_list']);
         $data = DB::table('services_complaint_dept_default_assignee')->where('id', $id)->first();
         if(!empty($data)) {
@@ -124,7 +124,7 @@ class DeptdefaultassController extends UploadController
             $message = 'Internal Server error';
 
         // update location list
-        $location_list = $request->get('location_list', []);
+        $location_list = $request->location_list ?? [];
         $this->updateDeptLocPivot($id, $location_list);    
 
         // update location type list
@@ -160,6 +160,8 @@ class DeptdefaultassController extends UploadController
         DB::table('services_complaint_dept_location_pivot')
             ->where('dept_id', $dept_id)
             ->delete();
+        
+        if(is_string($location_list)) $location_list = json_decode($location_list);
 
         foreach($location_list as $row)
         {
@@ -189,7 +191,7 @@ class DeptdefaultassController extends UploadController
 
     public function update(Request $request, $id)
     {
-        $dept_id = $request->get('dept_id', 0);
+        $dept_id = $request->dept_id ?? 0;
         if( $id != $dept_id )
         {
             $data = DB::table('services_complaint_dept_default_assignee')->where('id', $dept_id)->first();
@@ -218,7 +220,7 @@ class DeptdefaultassController extends UploadController
             $message = 'Internal Server error';
 
         // update location list
-        $location_list = $request->get('location_list', []);
+        $location_list = $request->location_list ?? [];
         $this->updateDeptLocPivot($dept_id, $location_list);
 
         // update location type list

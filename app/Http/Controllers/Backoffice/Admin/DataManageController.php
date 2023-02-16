@@ -22,6 +22,7 @@ use App\Models\Service\TaskList;
 use App\Models\Service\TaskCategory;
 use App\Models\Service\Location;
 use App\Models\Service\LocationType;
+use App\Imports\CommonImportExcel;
 
 use Excel;
 use DB;
@@ -487,87 +488,79 @@ class DataManageController extends UploadController
 		// Building
 		$ret['Building'] = Building::createLocation();
 
-			
-		Excel::selectSheets('User')->load($path, function($reader) {
-			$rows = $reader->all()->toArray();
-			for($i = 0; $i < count($rows); $i++ )
+		$rows = Excel::toArray(new CommonImportExcel, $path);
+		$rows = [$rows[0]];
+		for($i = 0; $i < count($rows); $i++ )
+		{
+			foreach( $rows[$i] as $data )
 			{
-				foreach( $rows[$i] as $data )
-				{
-					//echo json_encode($data);				
-					$data = $this->addUserData($data);
-				}
-			}							
-		});
+				//echo json_encode($data);				
+				$data = $this->addUserData($data);
+			}
+		}
 
-		Excel::selectSheets('Floor')->load($path, function($reader) {
-			$rows = $reader->all()->toArray();
-			for($i = 0; $i < count($rows); $i++ )
+		$rows = Excel::toArray(new CommonImportExcel, $path);
+		$rows = [$rows[1]];
+		for($i = 0; $i < count($rows); $i++ )
+		{
+			foreach( $rows[$i] as $data )
 			{
-				foreach( $rows[$i] as $data )
-				{
-					//echo json_encode($data);				
-					$data = $this->addFloorRoomData($data, 2);
-				}
-			}							
-		});
+				//echo json_encode($data);				
+				$data = $this->addFloorRoomData($data, 2);
+			}
+		}
 		$ret['Floor'] = CommonFloor::createLocation();
 
-		Excel::selectSheets('Room')->load($path, function($reader) {
-			$rows = $reader->all()->toArray();
-			for($i = 0; $i < count($rows); $i++ )
+		$rows = Excel::toArray(new CommonImportExcel, $path);
+		$rows = [$rows[2]];
+		for($i = 0; $i < count($rows); $i++ )
+		{
+			foreach( $rows[$i] as $data )
 			{
-				foreach( $rows[$i] as $data )
-				{
-					$data = $this->addFloorRoomData($data, 3);
-				}
-			}							
-		});
+				$data = $this->addFloorRoomData($data, 3);
+			}
+		}
 		$ret['Room'] = Room::createLocation();
 
-		Excel::selectSheets('AdminExtension')->load($path, function($reader) {
-			$rows = $reader->all()->toArray();
-			for($i = 0; $i < count($rows); $i++ )
+		$rows = Excel::toArray(new CommonImportExcel, $path);
+		$rows = [$rows[3]];
+		for($i = 0; $i < count($rows); $i++ )
+		{
+			foreach( $rows[$i] as $data )
 			{
-				foreach( $rows[$i] as $data )
-				{
-					$data = $this->addAdminExtensionData($data);
-				}
-			}							
-		});
+				$data = $this->addAdminExtensionData($data);
+			}
+		}							
 
-		Excel::selectSheets('GuestExtension')->load($path, function($reader) {
-			$rows = $reader->all()->toArray();
-			for($i = 0; $i < count($rows); $i++ )
+		$rows = Excel::toArray(new CommonImportExcel, $path);
+		$rows = [$rows[4]];
+		for($i = 0; $i < count($rows); $i++ )
+		{
+			foreach( $rows[$i] as $data )
 			{
-				foreach( $rows[$i] as $data )
-				{
-					$data = $this->addGuestExtensionData($data);
-				}
-			}							
-		});
+				$data = $this->addGuestExtensionData($data);
+			}
+		}							
 
-		Excel::selectSheets('Task')->load($path, function($reader) {
-			$rows = $reader->all()->toArray();
-			for($i = 0; $i < count($rows); $i++ )
+		$rows = Excel::toArray(new CommonImportExcel, $path);
+		$rows = [$rows[5]];
+		for($i = 0; $i < count($rows); $i++ )
+		{
+			foreach( $rows[$i] as $data )
 			{
-				foreach( $rows[$i] as $data )
-				{
-					$data = $this->addTaskListData($data);
-				}
-			}							
-		});
-		
-		Excel::selectSheets('Location')->load($path, function($reader) {
-			$rows = $reader->all()->toArray();
-			for($i = 0; $i < count($rows); $i++ )
+				$data = $this->addTaskListData($data);
+			}
+		}							
+
+		$rows = Excel::toArray(new CommonImportExcel, $path);
+		$rows = [$rows[6]];
+		for($i = 0; $i < count($rows); $i++ )
+		{
+			foreach( $rows[$i] as $data )
 			{
-				foreach( $rows[$i] as $data )
-				{
-					$data = $this->addLocation($data);
-				}
-			}							
-		});
+				$data = $this->addLocation($data);
+			}
+		}
 	}
 
 	public function eraseTables(Request $request)

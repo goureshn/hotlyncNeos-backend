@@ -2,7 +2,6 @@
     @if(isset($data['logo'])) 
         <tr>
             <th rowspan="4" colspan="4">
-                {{-- test sdgfdfg sdf dsfjhdsg fjsdhf gdsfjgdfj dsf gdsf gdsjf --}}
                 {{-- <img src="{{public_path($data['logo'])}}" width="400px" alt=""> --}}
             </th>
         </tr>
@@ -19,11 +18,16 @@
     @if(isset($data['datalist'][0])) 
         <tr>
             @if(isset($data['heading_list']))
-                <th colspan="{{count($data['heading_list'])}}">{{ $data['sub_title'] }}</th>
+            <th colspan="{{count($data['heading_list'])}}">{{ $data['sub_title'] }}</th>
             @elseif(isset($data['datalist'][0]))
-                <th colspan="{{count($data['datalist'][0])}}">{{ $data['sub_title'] }}</th>
+            <th colspan="{{count($data['datalist'][0])}}">{{ $data['sub_title'] }}</th>
             @endif
         </tr>
+        @if(isset($data['heading_list_colspan']))
+            <tr>
+                @foreach($data['heading_list_colspan'] as $key => $value) <th colspan="{{$value['col']}}" >{{ $value['value'] }}</th> @endforeach
+            </tr>
+        @endif
         <tr>
             @if(isset($data['heading_list']))
                 @foreach($data['heading_list'] as $value) <th>{{ $value }}</th> @endforeach
