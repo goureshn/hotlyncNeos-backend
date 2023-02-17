@@ -13,9 +13,9 @@ return new class extends Migration
      */
     public function up()
     {
-        if(!Schema::hasColumn('services_linen_setting', 'qty')){
-            Schema::table('services_linen_setting', function (Blueprint $table) {
-                $table->integer('qty')->nullable();
+        if(!Schema::hasColumn('common_guest', 'guest_img')){
+            Schema::table('common_guest', function (Blueprint $table) {
+                $table->longText('guest_img')->nullable();
             });
         }
     }
@@ -27,9 +27,9 @@ return new class extends Migration
      */
     public function down()
     {
-        if(Schema::hasColumn('services_linen_setting', 'qty')){
-            Schema::table('services_linen_setting', function (Blueprint $table) {
-                $table->dropColumn('qty');
+        if(Schema::hasColumn('common_guest', 'guest_img')){
+            Schema::table('common_guest', function (Blueprint $table) {
+                $table->dropColumn('guest_img');
             });
         }
     }

@@ -132,6 +132,18 @@ if (!defined('VACANT')) {
 
 class GuestserviceController extends Controller
 {
+	public function uploadGuestImg(Request $request) {
+		$model = Guest::find($request->id);
+
+		if($model){
+			$model->guest_img = $request->guest_img;
+			$model->save();
+			return response(['url' => $request->guest_img]);
+		}
+
+		return response(["message" => "guest not found"], 500);
+	}
+
 	public function getTicketStatisticInfo(Request $request)
 	{
 		$period = $request->get('period', 'Today');
