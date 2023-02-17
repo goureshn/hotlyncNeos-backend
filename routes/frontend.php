@@ -151,6 +151,7 @@ Route::prefix('guestservice')->group(function () {
         Route::any('updaterosterdevice', 'updateRosterForDevice');
         Route::any('transferdevice', 'transferDevice');
         Route::any('clearallrosters', 'clearAllRosters');
+        Route::any('uploadguestimg', 'uploadGuestImg');
     });
     
     Route::any('manualpost', [ProcessController::class, 'postManual']);

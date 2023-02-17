@@ -14,8 +14,12 @@ return new class extends Migration
     public function up()
     {
         Schema::table('ivr_call_center_skill_group', function (Blueprint $table) {
-            $table->integer('duration')->nullable();
-            $table->integer('email')->nullable();
+            if(!Schema::hasColumn('ivr_call_center_skill_group', 'duration')){
+                $table->integer('duration')->nullable();
+            }
+            if(!Schema::hasColumn('ivr_call_center_skill_group', 'email')){
+                $table->integer('email')->nullable();
+            }
         });
     }
 
@@ -27,8 +31,12 @@ return new class extends Migration
     public function down()
     {
         Schema::table('ivr_call_center_skill_group', function (Blueprint $table) {
-            $table->dropColumn('duration');
-            $table->dropColumn('email');
+            if(Schema::hasColumn('ivr_call_center_skill_group', 'duration')){
+                $table->dropColumn('duration');
+            }
+            if(Schema::hasColumn('ivr_call_center_skill_group', 'email')){
+                $table->dropColumn('email');
+            }
         });
     }
 };
