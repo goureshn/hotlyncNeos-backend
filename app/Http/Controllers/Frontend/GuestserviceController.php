@@ -6572,7 +6572,7 @@ class GuestserviceController extends Controller
 				->join('common_floor as cf', 'cr.flr_id', '=', 'cf.id')
 				->join('common_building as cb', 'cf.bldg_id', '=', 'cb.id')
 				->join('common_vip_codes as vc', 'vc.vip_code', '=', 'cg.vip')
-				->leftJoin('common_guest_advanced_detail as gad', 'cg.id', '=', 'gad.id')
+				// ->leftJoin('common_guest_advanced_detail as gad', 'cg.id', '=', 'gad.id')
 				->where('cb.property_id', $property_id);
 		
 		if($vip !== 'show_all') $query->where('cg.vip', $vip);
@@ -6622,7 +6622,7 @@ class GuestserviceController extends Controller
 
 		$data_query = clone $query;
 
-		$detail = new GuestAdvancedDetail();
+		$detail = new Guest();
 		$attrs = array_slice($detail->getTableColumns(), 4, -2);
 
 		$column = '';
@@ -6630,7 +6630,7 @@ class GuestserviceController extends Controller
         {
         	if($i > 0)
         		$column .= ',';
-        	$column .=  'gad.' . $key;
+        	$column .=  'cg.' . $key;
         }
 
 		$alarm_list = $data_query
