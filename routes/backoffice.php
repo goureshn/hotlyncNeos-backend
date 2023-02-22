@@ -112,7 +112,6 @@ use App\Http\Controllers\Backoffice\Guest\SubcomplaintReopenEscalationController
 // prefix => backoffice, middleware used => ['web']
 
 Route::get('user/jobrole', [UserWizardController::class, 'getJobRoles']);
-// Route::get('user/wizard/user/getimage', [UserWizardController::class, 'getImage']);
 
 Route::get('serialtest', [LicenseWizardController::class, 'testDeviceSerial']);
 Route::get('sockettest', [LicenseWizardController::class, 'testSocket']);

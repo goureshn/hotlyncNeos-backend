@@ -6561,19 +6561,30 @@ class GuestserviceController extends Controller
 		$searchoption = $request->get('searchoption','');
 		$filter = $request->get('filter','');
 		$vip = $request->vip ?? 'show_all';
+		$flag = $request->get('request', 'guest_information') ?? 'guest_information';
 
 		if($pageSize < 0 )
 			$pageSize = 20;
 
 		$ret = array();
 
-		$query = DB::table('common_guest as cg')
+		if($flag === 'guest_information'){
+			$query = DB::table('common_guest as cg')
+				->join('common_room as cr', 'cg.room_id', '=', 'cr.id')
+				->join('common_floor as cf', 'cr.flr_id', '=', 'cf.id')
+				->join('common_building as cb', 'cf.bldg_id', '=', 'cb.id')
+				->join('common_vip_codes as vc', 'vc.vip_code', '=', 'cg.vip')
+				->leftJoin('common_guest_advanced_detail as gad', 'cg.id', '=', 'gad.id')
+				->where('cb.property_id', $property_id);
+		} else {
+			$query = DB::table('common_guest as cg')
 				->join('common_room as cr', 'cg.room_id', '=', 'cr.id')
 				->join('common_floor as cf', 'cr.flr_id', '=', 'cf.id')
 				->join('common_building as cb', 'cf.bldg_id', '=', 'cb.id')
 				->join('common_vip_codes as vc', 'vc.vip_code', '=', 'cg.vip')
 				// ->leftJoin('common_guest_advanced_detail as gad', 'cg.id', '=', 'gad.id')
 				->where('cb.property_id', $property_id);
+		}
 		
 		if($vip !== 'show_all') $query->where('cg.vip', $vip);
 
@@ -6622,7 +6633,9 @@ class GuestserviceController extends Controller
 
 		$data_query = clone $query;
 
-		$detail = new Guest();
+		if($flag === 'guest_information') $detail = new GuestAdvancedDetail();
+		else $detail = new Guest();
+
 		$attrs = array_slice($detail->getTableColumns(), 4, -2);
 
 		$column = '';
@@ -6630,7 +6643,8 @@ class GuestserviceController extends Controller
         {
         	if($i > 0)
         		$column .= ',';
-        	$column .=  'cg.' . $key;
+			if($flag === 'guest_information') $column .=  'gad.' . $key;
+        	else $column .=  'cg.' . $key;
         }
 
 		$alarm_list = $data_query

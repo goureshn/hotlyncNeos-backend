@@ -13,6 +13,16 @@ class Guest extends Model
 	protected 	$table = 'common_guest';
 	public 		$timestamps = false;
 
+	public function getTableColumns() {
+        $db = DB::connection()->getPdo();
+        $rs = $db->query("SELECT * FROM common_guest LIMIT 0");
+        for ($i = 0; $i < $rs->columnCount(); $i++) {
+            $col = $rs->getColumnMeta($i);
+            $columns[] = $col['name'];
+        }
+        return $columns;
+    }
+
 	public static function getGuestList(&$datalist, $filter = '') {
 		// get guest ids
 		$guest_ids = array();
