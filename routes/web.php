@@ -20,13 +20,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('sendlicreq', [PropertyWizardController::class, 'sendTestLicReq']);
 
-Route::any('/' . config('app.frontend_url'), [FrontendController::class, 'index']);
 
 Route::get('/', function () {
     return Redirect::to('/' . config('app.frontend_url'));
-    
-    //return view('welcome');
 });
+Route::any('/' . config('app.frontend_url'), [FrontendController::class, 'index']);
 
 Route::get('/hotlyncBO', [BackofficeController::class, 'index']);
 Route::get('/hotlyncBO/signin', [BackofficeController::class, 'signin']);
