@@ -6647,11 +6647,14 @@ class GuestserviceController extends Controller
         	else $column .=  'cg.' . $key;
         }
 
-		$alarm_list = $data_query
-				->orderBy($orderby, $sort)
-				->select(DB::raw('cg.*, vc.name as vip_name, cb.name as building, cr.room, ' . $column))
+		$alarm_list = $data_query->orderBy($orderby, $sort);
+		
+		if($flag === 'guest_vip') $alarm_list->orderBy('id', 'desc');
+				
+		$alarm_list = $alarm_list->select(DB::raw('cg.*, vc.name as vip_name, cb.name as building, cr.room, ' . $column))
 				->skip($skip)->take($pageSize)
 				->get();
+
 
 		foreach($alarm_list as $key => $row) {
 			$alarm_list[$key]->active_fac = GuestLog::activeList($row->id);
