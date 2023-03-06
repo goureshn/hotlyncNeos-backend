@@ -52,6 +52,7 @@ use App\Models\Service\LocationGroupMember;
 use App\Models\Common\CommonUserGroup;
 use App\Models\Service\ShiftUser;
 use App\Models\Service\ComplaintSublistCompensation;
+use App\Models\Service\Location;
 use Illuminate\Support\Facades\Config;
 
 use DateInterval;
@@ -192,6 +193,7 @@ class ComplaintController extends Controller
     	$query = DB::table('services_complaint_request as sc')
 				->leftJoin('common_room as cr', 'sc.room_id', '=', 'cr.id')
 				->leftJoin('common_employee as ce', 'sc.requestor_id', '=', 'ce.id')
+				->leftJoin('common_department as cd', 'sc.dept_id', '=', 'cd.id')
 				->leftJoin('common_users as cu', 'ce.user_id', '=', 'cu.id')
 				->leftJoin('common_job_role as jr', 'cu.job_role_id', '=', 'jr.id')
 				->leftJoin('common_guest_profile as gp', 'sc.guest_id', '=', 'gp.id')
@@ -200,6 +202,11 @@ class ComplaintController extends Controller
 				->leftJoin('common_guest as cg', function($join) {
 					$join->on('gp.guest_id', '=', 'cg.guest_id');
 					$join->on('sc.property_id', '=', 'cg.property_id');
+				})
+				//	->leftJoin('common_vip_codes as vc', 'vc.vip_code', '=', 'cg.vip')
+				->leftJoin('common_vip_codes as vc', function($join) {
+					$join->on('sc.property_id', '=', 'vc.property_id');
+					$join->on('cg.vip', '=', 'vc.vip_code');
 				})					
 				->leftJoin('common_vip_codes as vc', 'vc.vip_code', '=', 'cg.vip')
 				->leftJoin('common_property as cp', 'sc.property_id', '=', 'cp.id')			
@@ -494,7 +501,8 @@ class ComplaintController extends Controller
 				//})
 				->leftJoin('services_complaint_gr_occasion as gro', 'gr.occasion_id', '=', 'gro.id')
 				->leftJoin('common_employee as ce', 'gr.requestor_id', '=', 'ce.id')
-				->whereRaw($date_range);
+				->whereRaw($date_range)
+				->where('gr.property_id', $property_id);
 				
 		/*
 		if ('gr.category' == 'Room Inspection')
@@ -603,7 +611,7 @@ class ComplaintController extends Controller
 		
 		$data_list = $data_query
 				->orderBy($orderby, $sort)
-				->select(DB::raw('sc.*, gp.guest_name, cr.room, CONCAT_WS(" ", ce.fname, ce.lname) as wholename, ct.type as severity_name, hcc.name as house_complaint_name, ce.design,
+				->select(DB::raw('sc.*, cd.department, gp.guest_name, cr.room, CONCAT_WS(" ", ce.fname, ce.lname) as wholename, ct.type as severity_name, hcc.name as house_complaint_name, ce.design,
 					(select count(*) from services_complaint_updated where complaint_id = sc.id and user_id = ' . $user_id . ') as latest, 
 					DATEDIFF(CURTIME(), sc.incident_time) as age_days, sl.name as lgm_name, slt.type as lgm_type, sc.property_id as lg_property_id,
 					gp.mobile, gp.phone, cg.first_name as fname,gp.email, gp.address, gp.gender, gp.nationality, cc.name as nationality_name, cp.name as property_name, cp.shortcode,gp.guest_id as gs_guest_id, gp.passport, gp.comment as guest_comment, gp.pref, gp.check_flag,
@@ -735,10 +743,11 @@ class ComplaintController extends Controller
 		$data_list = $data_query
 				->orderBy($orderby, $sort)
 				->select(DB::raw('sc.*, cmc.name as category, cmsc.name as subcategory, gp.guest_name, cr.room, CONCAT_WS(" ", ce.fname, ce.lname) as wholename, ct.type as severity_name, hcc.name as house_complaint_name, ce.design,
-					(select 1 from services_complaint_updated where complaint_id = sc.id and user_id = ' . $user_id . ') as latest, group_concat(scs.dept_id) as dept_list,
-					gp.mobile, gp.phone, gp.email, gp.address, gp.gender, gp.nationality, cc.name as nationality_name, cp.name as property_name, cp.shortcode, gp.passport, gp.comment as guest_comment, gp.pref, gp.check_flag,
-					scr.reminder_ids, scr.reminder_flag, scr.reminder_time, scr.comment as reminder_comment,
-					sc.mark_flag as flag, cg.arrival, cg.departure, jr.job_role'))
+				(select 1 from services_complaint_updated where complaint_id = sc.id and user_id = ' . $user_id . ') as latest, group_concat(scs.dept_id) as dept_list,
+				gp.mobile, gp.phone, gp.email, gp.address, gp.gender, gp.nationality, cc.name as nationality_name, cp.name as property_name, cp.shortcode, gp.passport, gp.comment as guest_comment, gp.pref, gp.check_flag,
+				scr.reminder_ids, scr.reminder_flag, scr.reminder_time, scr.comment as reminder_comment,vc.name as vip,
+				cg.booking_rate, cg.booking_src,
+				sc.mark_flag as flag, cg.arrival, cg.departure, jr.job_role, cg.company, cmc.name as category_name'))
 				->skip($skip)->take($pageSize)
 				->get();
 
@@ -822,6 +831,118 @@ class ComplaintController extends Controller
 		return Response::json($ret);
 	}
 
+	public function getComplaintListForMobile(Request $request)
+	{
+		$start = microtime(true);
+		date_default_timezone_set(config('app.timezone'));
+		$cur_time = date("Y-m-d H:i:s");
+		$pageNumber = $request->get('pageNumber', 0);
+		$pageCount = $request->get('pageCount', 25);
+		$status = $request->get('status', '');
+		$searchKey = $request->get('searchKey', '');
+		$orderby = $request->get('field', 'id');
+		$sort = $request->get('sort', 'asc');
+		$property_id = $request->get('property_id', '0');
+		$start_date = $request->get('start_date', '');
+		$end_date = $request->get('end_date', '');
+		$user_id = $request->get('user_id', 0);
+		$property_ids_by_jobrole = $request->get('property_ids_by_jobrole', []);
+		$property_ids = array();
+		$property_ids[] = $property_id;
+		$last24 = date('Y-m-d H:i:s', strtotime("-1 days"));
+		$statusNames = ['Total', 'Pending', 'Resolved', 'Acknowledge', 'Rejected', 'Closed', 'Unresolved', 'Flagged'];
+		$countInfo['All'] = 0;
+		foreach($statusNames as $statusName) {
+			$tempQuery = $this->applyComplaintFilterfromMobile($user_id, $property_ids, $statusName, $searchKey, $start_date, $end_date);
+			$tempCount = count($tempQuery->get());
+			if ($tempCount < 1) {
+				continue;
+			}
+			$countInfo[$statusName] = $tempCount;
+			$countInfo['All'] += $tempCount;
+		}
+		$query = $this->applyComplaintFilterfromMobile($user_id, $property_ids, $status, $searchKey, $start_date, $end_date);
+		$data_query = clone $query;
+////
+		$data_list = $data_query
+				->orderBy($orderby, $sort)
+				->select(DB::raw('sc.*, cmc.name as category, cmsc.name as subcategory, gp.guest_name, cr.room, CONCAT_WS(" ", ce.fname, ce.lname) as wholename, ct.type as severity_name, hcc.name as house_complaint_name, ce.design,
+					(select 1 from services_complaint_updated where complaint_id = sc.id and user_id = ' . $user_id . ') as latest, group_concat(scs.dept_id) as dept_list,
+					gp.mobile, gp.phone, gp.email, gp.address, gp.gender, gp.nationality, cc.name as nationality_name, cp.name as property_name, cp.shortcode, gp.passport, gp.comment as guest_comment, gp.pref, gp.check_flag,
+					scr.reminder_ids, scr.reminder_flag, scr.reminder_time, scr.comment as reminder_comment,vc.name as vip,
+					cg.booking_rate, cg.booking_src,
+					sc.mark_flag as flag, cg.arrival, cg.departure, jr.job_role, cg.company, cmc.name as category_name'))
+				->skip($pageCount * $pageNumber)->take($pageCount)
+				->get();
+		// Guest::getGuestList($data_list);
+		ComplaintSublist::getCompleteInfo($data_list);
+		
+		$setting = PropertySetting::getComplaintSetting($property_id);
+		foreach($data_list as $key => $row) {
+			$info = app('App\Http\Controllers\Frontend\GuestserviceController')->getLocationInfo($row->loc_id);
+			if( !empty($info) )
+			{
+				$data_list[$key]->lgm_name = $info->name;
+				$data_list[$key]->lgm_type = $info->type;
+				$data_list[$key]->lg_property_id = $info->property_id;
+			}
+			$data_list[$key]->forward_flag = $setting['complaint_forward_flag'];
+			// get department list
+			if( empty($row->dept_list) )
+				$row->dept_list = [];
+			else
+			{
+				$dept_list = DB::table('common_department as cd')
+						->whereRaw('cd.id in (' . $row->dept_list . ')')
+						->get();
+				$data_list[$key]->dept_list = $dept_list;
+			}
+		}
+		$count_query = clone $query;
+		$currencyitem = DB::table('property_setting')->where('settings_key', 'currency')->where('property_id', $property_id)->first();
+		    if(!empty($currencyitem)){
+			    $currency = $currencyitem->value;
+		    }else{
+			    $currency = 'AED';
+		    }
+		$ret['code'] = 200;
+		$ret['message'] = '';
+		$ret['datalist'] = $data_list;
+		$ret['currency'] = $currency;
+		// $data_query = clone $query;
+		// $subcount = $data_query
+		// 		->select(DB::raw("
+		// 				count(*) as total,
+		// 				COALESCE(sum(sc.status = '". C_PENDING . "'), 0) as pending,
+		// 				COALESCE(sum(sc.status = '" . C_RESOLVED . "'), 0) as resolved,
+		// 				COALESCE(sum(sc.status = '" . C_REJECTED . "'), 0) as rejected,
+		// 				COALESCE(sum(sc.status = '". C_ACK . "'), 0) as ack,
+		// 				COALESCE(sum(sc.status = '". C_TIMEOUT . "'), 0) as timeout,
+		// 				COALESCE(sum(sc.status = '". C_ESCALATED . "'), 0) as escalated,
+		// 				COALESCE(sum(sc.discussed_flag = 1), 0) as discussed,
+		// 				COALESCE(sum(sc.mark_flag = 1), 0) as flag,
+		// 				COALESCE(sum(sc.status = '". C_CANCELED . "'), 0) as canceled
+		// 				"))
+		// 		->first();
+		$ret['countInfo'] = $countInfo;
+		$end = microtime(true);
+		// $ret['time'] = $end - $start;
+		$ret['property_ids'] = $property_ids;
+		// get dept list
+		$ret['dept_list'] = DB::table('common_department as cd')
+				// ->leftJoin('common_property_department_pivot as pdp', 'cd.id', '=', 'pdp.dept_id')
+				// ->where('pdp.property_id', $property_id)
+				->whereIn('cd.property_id', $property_ids)
+				// ->orWhere('cd.property_id', $property_id)
+				->select(DB::raw('cd.id, cd.department'))
+				->orderBy('cd.department')
+				->get();
+		// save filter
+		UserMeta::saveComplaintTicketFilter($user_id, $status);
+		return Response::json($ret);
+	}
+
+
 	private function applyComplaintFilterfromMobile($user_id, $property_ids, $filter, $filter_value, $start_date, $end_date) {
 		$query = DB::table('services_complaint_request as sc')
 				->leftJoin('common_room as cr', 'sc.room_id', '=', 'cr.id')
@@ -835,6 +956,12 @@ class ComplaintController extends Controller
 					$join->on('gp.guest_id', '=', 'cg.guest_id');
 					$join->on('sc.property_id', '=', 'cg.property_id');
 				})
+				//	->leftJoin('common_vip_codes as vc', 'vc.vip_code', '=', 'cg.vip')
+				->leftJoin('common_vip_codes as vc', function($join) {
+					$join->on('sc.property_id', '=', 'vc.property_id');
+					$join->on('cg.vip', '=', 'vc.vip_code');
+				})
+				->leftJoin('services_complaint_feedback_source as scfs', 'sc.feedback_source_id', '=', 'scfs.id')
 				->leftJoin('common_property as cp', 'sc.property_id', '=', 'cp.id')
 				->leftJoin('services_complaint_type as ct', 'sc.severity', '=', 'ct.id')
 				->leftJoin('common_house_complaints_category as hcc', 'sc.housecomplaint_id', '=', 'hcc.id')
@@ -882,35 +1009,39 @@ class ComplaintController extends Controller
 			});
 		}
 
-		// check status filter
-		$query->where(function ($subquery) use ($filter, $user_id) {
-			if( $filter == 'Pending' )
-				$subquery->where('sc.status', 'Pending');
+		if (!empty($filter)) {
+			$query->where('sc.status', $filter);
+		}
 
-			if( $filter == 'Resolved' )
-				$subquery->orWhere('sc.status', 'Resolved');
+		// // check status filter
+		// $query->where(function ($subquery) use ($filter, $user_id) {
+		// 	if( $filter == 'Pending' )
+		// 		$subquery->where('sc.status', 'Pending');
 
-			if( $filter == 'Acknowledge' )
-				$subquery->orWhere('sc.status', 'Acknowledge');
+		// 	if( $filter == 'Resolved' )
+		// 		$subquery->orWhere('sc.status', 'Resolved');
 
-			if( $filter == 'Rejected' )
-				$subquery->orWhere('sc.status', 'Rejected');
+		// 	if( $filter == 'Acknowledge' )
+		// 		$subquery->orWhere('sc.status', 'Acknowledge');
 
-			if( $filter == 'Closed' )
-				$subquery->orWhere('sc.closed_flag', 1);
+		// 	if( $filter == 'Rejected' )
+		// 		$subquery->orWhere('sc.status', 'Rejected');
 
-			if( $filter == 'Unresolved' )
-				$subquery->orWhere('sc.status', 'Unresolved');
+		// 	if( $filter == 'Closed' )
+		// 		$subquery->orWhere('sc.closed_flag', 1);
 
-			if( $filter == 'Flagged' )
-			{
-				$subquery->orWhere('sc.mark_flag', 1);
-			}
-			if( $filter == 'Total' )
-			{
-				$subquery->whereNotNull('sc.status');
-			}
-		});
+		// 	if( $filter == 'Unresolved' )
+		// 		$subquery->orWhere('sc.status', 'Unresolved');
+
+		// 	if( $filter == 'Flagged' )
+		// 	{
+		// 		$subquery->orWhere('sc.mark_flag', 1);
+		// 	}
+		// 	if( $filter == 'Total' )
+		// 	{
+		// 		$subquery->whereNotNull('sc.status');
+		// 	}
+		// });
 
 		// check severity filter
 		/*$query->where(function ($subquery) use ($filter, $user_id) {
@@ -1348,6 +1479,22 @@ class ComplaintController extends Controller
 
 		return Response::json($ret);
 	}
+
+	public function getComplaintLogsForMobile(Request $request)
+	{
+		$complaint_id = $request->get('complaint_id', '0');
+		$logs = DB::table('services_complaint_log as scl')
+			->leftJoin('common_users as cu', 'scl.user_id', '=', 'cu.id')
+			->where('scl.complaint_id', $complaint_id)
+			->where('scl.sub_id', 0)
+			->select(DB::raw('scl.*, CONCAT_WS(" ", cu.first_name, cu.last_name) as wholename'))
+			->get();
+		
+		$ret['content'] = $logs;
+		$ret['code'] = 200;
+		return Response::json($ret);
+	}
+
 
 	public function getSubcomplaintLogs(Request $request)
 	{
@@ -1814,6 +1961,37 @@ class ComplaintController extends Controller
 		return Response::json($guest_list);
 	}
 
+	public function getCheckoutGuestListForMobile(Request $request)
+	{
+		$property_id = $request->get('property_id', 0);
+		$room_id = $request->get('room_id', 0);
+		$other = $request->get('other', '');
+		date_default_timezone_set(config('app.timezone'));		
+		$cur_date = date("Y-m-d");
+		$query = DB::table('common_guest as cg')
+				// ->leftJoin('common_guest_profile as gp', 'cg.guest_id', '=', 'gp.guest_id')
+				->join('common_room as cr', 'cg.room_id', '=', 'cr.id')
+				->where('cg.property_id', $property_id)
+				->where('cg.departure', '<=', $cur_date)
+				->where('cg.checkout_flag', 'checkout');
+		$query->where('cg.room_id', $room_id);
+		
+		if( !empty($other) )
+			$query->whereRaw("(cg.guest_name like '%$other%' OR cg.mobile like '%$other%' OR cg.email like '%$other%')");			
+		
+		$guest_list = $query
+			->select(DB::raw('cg.*, cr.room'))
+			->get();	
+		// $query = DB::table('common_guest_profile as cg');		
+		// $guest_list = $query
+		// 	->select(DB::raw('cg.*'))
+		// 	->get();	
+		$ret = [];
+		$ret['code'] = 200;
+		$ret['content'] = $guest_list;
+		return Response::json($ret);
+	}
+
 	public function getID(Request $request) {
 		$max_id = DB::table('services_complaint_request')
 			->select(DB::raw('max(id) as max_id'))
@@ -1961,6 +2139,9 @@ class ComplaintController extends Controller
 		$path = $request->get('path', '');
 		$send_flag= $request->get('send_flag', 0);
 		$total = $request->get('total', 0);
+		$dept_id = $request->get('dept_id', 0);
+		$employee_name = $request->get('employee_name', '');
+		$employee_id = $request->get('employee_id', 0);
 		date_default_timezone_set(config('app.timezone'));
 		$cur_time = date("Y-m-d H:i:s");
 		$cur_date = date("Y-m-d");
@@ -1981,6 +2162,10 @@ class ComplaintController extends Controller
 		$complaint->severity = $severity;
 		$complaint->initial_response = $initial_response;
 		$complaint->compensation_type = $compensation_type;
+
+		$complaint->dept_id = $dept_id;
+		$complaint->employee_name = $employee_name;
+		$complaint->employee_id = $employee_id;
 
 		$complaint->comment = $comment;
 		$complaint->path = $path;
@@ -2596,6 +2781,49 @@ class ComplaintController extends Controller
 		return Response::json($ret);
 	}
 
+	public function sendDeptForMobile(Request $request) {
+		$id = $request->get('id', 0);
+		$user_id = $request->get('user_id', 0);
+		$dept_list = $request->get('depts_list',[]);
+		date_default_timezone_set(config('app.timezone'));
+		$cur_time = date("Y-m-d H:i:s");
+		$created_at = $cur_time;
+		if( is_array($dept_list) == false )
+		{
+			if( empty($dept_list) )
+				$dept_list = [];
+			else
+				$dept_list = explode(',', $dept_list);
+		}
+		$send_flag = count($dept_list) > 0 ? 1 : 0;
+		$complaint = ComplaintRequest::find($id);
+		//echo json_encode($id);
+		$send_ids = implode(',', $dept_list);
+		if($complaint->send_flag == 1)
+		{
+			$depts = explode(",", $complaint->sent_ids);
+			$dept_list = array_diff($dept_list, $depts);
+		}
+		$complaint->send_flag = $send_flag;		
+		$complaint->sent_ids = $send_ids;
+		$complaint->save();
+		ComplaintUpdated::modifyByUser($complaint->id, $user_id);
+		$id = $complaint->id;		
+		$ret['id'] = $complaint->id;
+		$ret['dept_list'] = $dept_list;
+		foreach($dept_list as $dept)
+		{
+			$ret['message'] = $this->sendNotifyForComplaintDept($id,$dept);
+		}
+		$complaint->selected_ids = ComplaintRequest::deptList($complaint->id);
+		$this->sendRefreshEvent($complaint->property_id, 'maincomplaint_dept_changed', $complaint, $user_id);			
+		
+		$ret = [];
+		$ret['code'] = 200;
+		$ret['content'] = $dept_list;
+		return Response::json($ret);
+	}
+
 	// http://192.168.1.253/test/notifycomplaint?id=190
 	public function testNotifyComplaint(Request $request) {
 		$id = $request->get('id', 22);
@@ -2686,7 +2914,7 @@ class ComplaintController extends Controller
 		$complaint->content = $message_content;
 		
 		try {
-			$user_group = CommonUserGroup::getComplaintNotify();
+			$user_group = CommonUserGroup::getComplaintNotify($complaint->property_id);
 			if(!empty($user_group))
 			{
 				foreach ($user_group as $key => $value) {					
@@ -2755,9 +2983,21 @@ class ComplaintController extends Controller
 					$info['approve_reject_flag'] = in_array($duty_manager->job_role_id, $job_role_list);
 					$info['comp_list'] = $com_list;
 					$info['currency'] = $currency->value;
+					$info['status'] = $complaint->status;
+					$info['resolution'] = $complaint->solution;
 					
 					$complaint->subject = sprintf('F%05d: New %s Complaint Raised', $complaint->id, $complaint->severitytype);
-					$complaint->email_content = view('emails.complaint_create', ['info' => $info])->render();				
+					$complaint->email_content = view('emails.complaint_create', ['info' => $info])->render();
+					
+					if ($complaint->status == C_RESOLVED && $complaint->closed_flag == 0){
+						$complaint->subject = sprintf('F%05d: Complaint %s', $complaint->id, $complaint->status);
+						$complaint->email_content = view('emails.complaint_resolved', ['info' => $info])->render();
+					}
+
+					if ($complaint->status == C_RESOLVED && $complaint->closed_flag == 1){
+						$complaint->subject = sprintf('F%05d: Complaint Closed', $complaint->id);
+						$complaint->email_content = view('emails.complaint_closed', ['info' => $info])->render();
+					}
 				}
 
 				$complaint->to = $duty_manager->user_id;
@@ -3086,7 +3326,7 @@ class ComplaintController extends Controller
 
 		$ret = array();
 		$ret['code'] = 200;
-		$ret['message'] = '';
+		$ret['message'] = $this->sendNotifyForComplaint($id);
 		$ret['content'] = $complaint;
 
 		$this->sendRefreshEvent($complaint->property_id, 'maincomplaint_status_changed', $complaint, $user_id);
@@ -3133,7 +3373,7 @@ class ComplaintController extends Controller
 
 		$ret = array();
 		$ret['code'] = 200;
-		$ret['message'] = '';
+		$ret['message'] = $this->sendNotifyForComplaint($id);
 		$ret['content'] = $complaint;
 
 		$this->sendRefreshEvent($complaint->property_id, 'maincomplaint_status_changed', $complaint, $user_id);
@@ -4066,6 +4306,32 @@ class ComplaintController extends Controller
 		return Response::json($ret);	
 	}
 
+	public function getComplaintConfigList(Request $request) {
+		$client_id = $request->get('client_id', 4);
+		$property_id = $request->get('property_id', 4);
+        $model['severity_list'] = DB::table('services_complaint_type')->get();
+        $model['division_list'] = DB::table('common_division')->get();
+        $model['feedback_type_list'] = DB::table('services_complaint_feedback_type')->get();
+        $model['feedback_source_list'] = DB::table('services_complaint_feedback_source')->get();
+        $model['category_list'] = DB::table('services_complaint_maincategory as scmc')
+            ->leftJoin('common_users as cu', 'scmc.user_id', '=', 'cu.id')
+            ->leftJoin('services_complaint_type as ct', 'scmc.severity', '=', 'ct.id')
+            ->leftJoin('common_property as cp', 'scmc.property_id', '=', 'cp.id')
+            ->leftJoin('common_division as ci', 'scmc.division_id', '=', 'ci.id')
+            ->where('cp.client_id', $client_id)
+            ->where('scmc.disabled', 0)
+            ->select(DB::raw('scmc.*, ct.type, CONCAT_WS(" ", cu.first_name, cu.last_name) as wholename, ci.division'))
+            ->orderBy('scmc.name', 'asc')
+            ->get();
+        $model['housecomplaint_list'] = DB::table('common_house_complaints_category')
+                    ->get();
+        $model['complaint_setting'] = PropertySetting::getComplaintSetting($property_id);
+        $ret = [];
+        $ret['code'] = 200;
+        $ret['content'] = $model;
+        return Response::json($ret);	
+	}
+
 	public function getComplaintDetailInfo(Request $request) {
 		$id = $request->get('id', 0);
 		$user_id = $request->get('user_id', 0);
@@ -4101,6 +4367,7 @@ class ComplaintController extends Controller
 			->where('scms.category_id', $category_id)
 			->select(DB::raw('scms.*, CONCAT_WS(" ", cu.first_name, cu.last_name) as wholename'))
 			->orderBy('scms.name', 'asc')
+			->where('scms.disabled', 0)
 			->get();	
 
 		$ret = array();
@@ -6075,6 +6342,8 @@ class ComplaintController extends Controller
 				$info['guest_type'] = $complaint->guest_type;
 				$info['id']=$complaint->id;
 				$info['intial_response'] = $complaint->initial_response;
+				$info['status'] = $complaint->status;
+				$info['resolution'] = $complaint->solution;
 				$complaint->subject = sprintf('F%05d: New %s Complaint Raised', $complaint->id, $complaint->severitytype);
 				$complaint->email_content = view('emails.complaint_create_dept', ['info' => $info])->render();
 
@@ -6100,6 +6369,8 @@ class ComplaintController extends Controller
 				$info['guest_type'] = $complaint->guest_type;
 				$info['id']=$complaint->id;
 				$info['intial_response'] = $complaint->initial_response;
+				$info['status'] = $complaint->status;
+				$info['resolution'] = $complaint->solution;
 				$complaint->subject = sprintf('F%05d: New %s Complaint Raised', $complaint->id, $complaint->severitytype);
 				$complaint->email_content = view('emails.complaint_create_dept', ['info' => $info])->render();
 
@@ -8215,6 +8486,7 @@ class ComplaintController extends Controller
 		$this->getComplaintSummaryDataList($query, $data);
 
 		$filename = 'Summary_Complaint_Report_Briefing' . '_' . date('d_M_Y_H_i');
+		$filename = str_replace(' ', '_', $filename);
 
 		$folder_path = public_path() . '/uploads/reports/';
 		$path = $folder_path . $filename . '.html';
@@ -8833,6 +9105,7 @@ class ComplaintController extends Controller
 		$during = $request->get('during', '');
 		$category_id = $request->get('category_id', 0);
 		$property_ids = $request->get('property_ids_by_jobrole', []);
+		$propertys_ids = $request->get('property_ids', []);
 
 		$filter = array();
 		$filter['category_id'] = $category_id;
@@ -8845,19 +9118,19 @@ class ComplaintController extends Controller
 
 		switch ($period) {
 			case 'Today';
-				$ret = $this->getStaticsticsByToday($property_ids, $filter);
+				$ret = $this->getStaticsticsByToday($propertys_ids, $property_ids, $filter, $property_id);
 				break;
 			case 'Weekly';
-				$ret = $this->getStaticsticsByDate($cur_time, 7, $property_ids, $filter);
+				$ret = $this->getStaticsticsByDate($cur_time, 7, $propertys_ids, $property_ids, $filter, $property_id);
 				break;
 			case 'Monthly';
-				$ret = $this->getStaticsticsByDate($cur_time, 30, $property_ids, $filter);
+				$ret = $this->getStaticsticsByDate($cur_time, 30, $propertys_ids, $property_ids, $filter, $property_id);
 				break;
 			case 'Custom Days';
-				$ret = $this->getStaticsticsByDate($end_date, $during, $property_ids, $filter);
+				$ret = $this->getStaticsticsByDate($end_date, $during, $propertys_ids, $property_ids, $filter, $property_id);
 				break;
 			case 'Yearly';
-				$ret = $this->getStaticsticsByYearly($cur_time, $property_ids, $filter);
+				$ret = $this->getStaticsticsByYearly($cur_time, $propertys_ids, $property_ids, $filter, $property_id);
 				break;
 		}
 
@@ -8866,6 +9139,9 @@ class ComplaintController extends Controller
 			->select(DB::raw('cp.id, cp.name'))
 			->get();
 
+		$ret['property_ids'] = $property_ids;
+		$ret['propertys_ids'] = explode(',',$propertys_ids);
+	
 		return Response::json($ret);
 	}
 
@@ -8908,7 +9184,7 @@ class ComplaintController extends Controller
 		return Response::json($ret);
 	}
 
-	public function getStaticsticsByToday($property_ids, $filter)
+	public function getStaticsticsByToday($propertys_ids,$property_ids, $filter, $property_id)
 	{
 		date_default_timezone_set(config('app.timezone'));
 		$cur_time = date("Y-m-d H:i:s");
@@ -8919,15 +9195,15 @@ class ComplaintController extends Controller
 
 		$time_range = sprintf("(scr.created_at >= '%s' && scr.created_at <= '%s')", $start_time, $cur_time);
 		$sub_time_range = sprintf("(scs.created_at >= '%s' && scs.created_at <= '%s')", $start_time, $cur_time);
-        $total_count = $this->getTotalCountStatistics($property_ids, $time_range, $filter);
-		$ret = $this->getStatisticValues($property_ids, $time_range, $sub_time_range, $filter, $start_time,  $cur_time);
+        $total_count = $this->getTotalCountStatistics($propertys_ids, $time_range, $filter, $property_id);
+		$ret = $this->getStatisticValues($propertys_ids, $property_ids, $time_range, $sub_time_range, $filter, $start_time,  $cur_time, $property_id);
 		
 		$ret['total'] = $total_count;
 		return $ret;
 	}
 
 
-	public function getStaticsticsByDate($end_date, $during, $property_ids, $filter)
+	public function getStaticsticsByDate($end_date, $during, $propertys_ids, $property_ids, $filter, $property_id)
 	{
 		date_default_timezone_set(config('app.timezone'));
 		
@@ -8938,13 +9214,13 @@ class ComplaintController extends Controller
 
 		$time_range = sprintf("(scr.created_at >= '%s' && scr.created_at <= '%s')", $start_time, $end_date);
 		$sub_time_range = sprintf("(scs.created_at >= '%s' && scs.created_at <= '%s')", $start_time, $end_date);
-        $total_count = $this->getTotalCountStatistics($property_ids, $time_range, $filter);
-		$ret = $this->getStatisticValues($property_ids, $time_range, $sub_time_range, $filter, $start_time,  $end_date);
+        $total_count =  $this->getTotalCountStatistics($propertys_ids, $time_range, $filter, $property_id);
+		$ret = $this->getStatisticValues($propertys_ids, $property_ids, $time_range, $sub_time_range, $filter, $start_time,  $end_date, $property_id);
 		$ret['total'] = $total_count;
 		return $ret;
 	}
 
-	public function getStaticsticsByYearly($end_date, $property_ids, $filter)
+	public function getStaticsticsByYearly($end_date,$propertys_ids, $property_ids, $filter, $property_id)
 	{
 		date_default_timezone_set(config('app.timezone'));
 		
@@ -8955,15 +9231,20 @@ class ComplaintController extends Controller
 
 		$time_range = sprintf("(scr.created_at >= '%s' && scr.created_at <= '%s')", $start_time, $end_date);
 		$sub_time_range = sprintf("(scs.created_at >= '%s' && scs.created_at <= '%s')", $start_time, $end_date);
-        $total_count = $this->getTotalCountStatistics($property_ids, $time_range, $filter);
-		$ret = $this->getStatisticValues($property_ids, $time_range, $sub_time_range, $filter, $start_time,  $end_date);
+        $total_count = $this->getTotalCountStatistics($propertys_ids, $time_range, $filter, $property_id);
+		$ret = $this->getStatisticValues($propertys_ids, $property_ids, $time_range, $sub_time_range, $filter, $start_time,  $end_date, $property_id);
 		$ret['total'] = $total_count;
 		return $ret;
 	}
 
-	private function getStatisticValues($property_ids, $time_range, $sub_time_range, $filter , $start_time, $end_date)
+	private function getStatisticValues($propertys_ids, $property_ids, $time_range, $sub_time_range, $filter , $start_time, $end_date, $property_id)
 	{
 		$ret = array();
+
+		if (!empty($propertys_ids))
+			$propertys = explode(",",$propertys_ids);
+		else
+			$propertys = [];
 
 		// get possible severity list
 		$severity_list = DB::table('services_complaint_type')->get();
@@ -8981,10 +9262,14 @@ class ComplaintController extends Controller
 		}
 
 		$query =  DB::table('services_complaint_request as scr')
-					->whereIn('scr.property_id', $property_ids)
+					// ->whereIn('scr.property_id', $property_ids)
 					->whereRaw($time_range)
 					->where('scr.delete_flag','=', 0);
 					
+		if (!empty($propertys))	
+			$query->whereIn('scr.property_id', $propertys);
+		else
+			$query->where('scr.property_id', $property_id);
 
 		if( $dept_id > 0 )
 		{
@@ -9251,13 +9536,23 @@ class ComplaintController extends Controller
 		return $ret;
 	}
 
-	private function getTotalCountStatistics($property_ids, $time_range, $filter) {	
+	private function getTotalCountStatistics($property_ids, $time_range, $filter, $property_id) {	
 		$ret = array();
 
+		if (!empty($property_ids))
+			$propertys_ids = explode(",",$property_ids);
+		else
+			$propertys_ids = [];
+
 		$query =  DB::table('services_complaint_request as scr')
-					->whereIn('scr.property_id', $property_ids)
+					// ->whereIn('scr.property_id', $property_ids)
 					->whereRaw($time_range)
 					->where('scr.delete_flag','=', 0);
+
+		if (!empty($propertys_ids))	
+			$query->whereIn('scr.property_id', $propertys_ids);
+		else
+			$query->where('scr.property_id', $property_id);
 
 		$select_sql = sprintf("COALESCE(sum(scr.closed_flag = 1), 0) as closed");
 		$select_sql .= sprintf(", COALESCE(sum(scr.closed_flag = 0 && scr.status != 'Rejected'), 0) as open");
@@ -9276,16 +9571,27 @@ class ComplaintController extends Controller
 		
 		$total_room = DB::table('common_room as cr')
 			->join('common_floor as cf', 'cr.flr_id', '=', 'cf.id')
-			->join('common_building as cb', 'cf.bldg_id', '=', 'cb.id')
-			->whereIn('cb.property_id', $property_ids)
-			->count();
+			->join('common_building as cb', 'cf.bldg_id', '=', 'cb.id');
+
+		if (!empty($propertys_ids))	
+			$total_room->whereIn('cb.property_id', $propertys_ids);
+		else
+			$total_room->where('cb.property_id', $property_id);
+		$data_query1 = clone $total_room;
+		$total_room = $data_query1->count();
 
 		$end_date = date("Y-m-d");	
-		$occupancy = DB::table('common_room_occupancy')
-							->whereIn('property_id', $property_ids)
-							->where('check_date', '<', $end_date)
-							->orderBy('check_date', 'desc')							
-							->first();	
+		$occupancy = DB::table('common_room_occupancy');	
+
+		if (!empty($propertys_ids))	
+			$occupancy->whereIn('property_id', $propertys_ids);
+		else
+			$occupancy->where('property_id', $property_id);
+		$data_query1 = clone $occupancy;
+		$occupancy = $data_query1				
+				->where('check_date', '<', $end_date)
+				->orderBy('check_date', 'desc')							
+				->first();
 		
 		$occupancy_percent = 0;
 		if( !empty($occupancy) > 0 )					
@@ -9742,7 +10048,7 @@ class ComplaintController extends Controller
 				->select(DB::raw('sc.*, 
 						gp.guest_name, cr.room, 
 						CONCAT_WS(" ", ce.fname, ce.lname) as wholename, ct.type as severity_name,	
-						gp.mobile, gp.phone, gp.email, gp.address, gp.gender, gp.nationality,
+						gp.mobile, gp.phone, gp.email, gp.address, gp.gender, gp.nationality, cd.department,
 						cmc.name as maincategory,cc.name as nationality_name, gp.passport, sl.name as lgm_name,slt.type as lgm_type,
 						cg.arrival, cg.departure, cg.vip,cg.booking_src,cg.booking_rate,cg.company, 
 						jr.job_role, scft.name as feedback_type, scfs.name as feedback_source,
@@ -9854,7 +10160,7 @@ class ComplaintController extends Controller
 				->select(DB::raw('sc.*, 
 						gp.guest_name, cr.room, 
 						CONCAT_WS(" ", ce.fname, ce.lname) as wholename, ct.type as severity_name,	
-						gp.mobile, gp.phone, gp.email, gp.address, gp.gender, gp.nationality,
+						gp.mobile, gp.phone, gp.email, gp.address, gp.gender, gp.nationality, cd.department,
 						cmc.name as maincategory,cc.name as nationality_name, gp.passport, sl.name as lgm_name,slt.type as lgm_type,
 						cg.arrival, cg.departure, cg.vip,cg.booking_src,cg.booking_rate,cg.company, 
 						jr.job_role, scft.name as feedback_type, scfs.name as feedback_source,
@@ -10005,6 +10311,7 @@ class ComplaintController extends Controller
 		$query = DB::table('services_complaint_request as sc')
 				->leftJoin('common_room as cr', 'sc.room_id', '=', 'cr.id')				
 				->leftJoin('common_employee as ce', 'sc.requestor_id', '=', 'ce.id')
+				->leftJoin('common_department as cd', 'sc.dept_id', '=', 'cd.id')
 				->leftJoin('common_users as cu', 'ce.user_id', '=', 'cu.id')
 				->leftJoin('common_job_role as jr', 'cu.job_role_id', '=', 'jr.id')
 				->leftJoin('common_guest_profile as gp', 'sc.guest_id', '=', 'gp.id')
@@ -10097,7 +10404,8 @@ class ComplaintController extends Controller
 				->leftJoin('common_property as cp', 'gr.property_id', '=', 'cp.id')
 				->leftJoin('services_complaint_gr_occasion as gro', 'gr.occasion_id', '=', 'gro.id')
 				->leftJoin('common_employee as ce', 'gr.requestor_id', '=', 'ce.id')
-				->whereRaw($date_range);	
+				->whereRaw($date_range)
+				->where('gr.property_id', $property_id);	
 		
 		
 		if( $filter != 'Total' && $filter != '')
@@ -10189,16 +10497,19 @@ class ComplaintController extends Controller
 	private function getKPISummary($report) {
 		$start_time = $report['start_time'];
 		$end_time = $report['end_time'];
+		$property_id = $report['property_id'];
 
 		$summary = array();
 
 		$summary['total_checkin_guest'] = DB::table('common_guest_log')
 					->whereBetween('arrival', array($start_time, $end_time))
+					->where('property_id', $property_id)
 					->count();
 		$summary['inhouse_complaint'] = DB::table('services_complaint_request')
 						->whereIn('guest_type', array('In-House', 'Arrival', 'Checkout'))
 						->whereBetween('created_at', array($start_time, $end_time))
 						->where('delete_flag', 0)
+						->where('property_id', $property_id)
 						->count();
 
 		$avg_inhouse_complaint = 0;
@@ -10211,15 +10522,18 @@ class ComplaintController extends Controller
 										->whereIn('guest_type', array('Walk-in'))
 										->whereBetween('created_at', array($start_time, $end_time))
 										->where('delete_flag', 0)
+										->where('property_id', $property_id)
 										->count();
 		$summary['total_complaint'] = DB::table('services_complaint_request')										
 										->whereBetween('created_at', array($start_time, $end_time))
 										->where('delete_flag', 0)
+										->where('property_id', $property_id)
 										->count();
 
 		$data = DB::table('services_complaint_request')										
 										->whereBetween('created_at', array($start_time, $end_time))
 										->where('delete_flag', 0)
+										->where('property_id', $property_id)
 										->select(DB::raw("COALESCE(AVG(TIME_TO_SEC(TIMEDIFF(closed_time, created_at))), 0) as avg_closure_time"))
 										->first();
 
@@ -10228,6 +10542,7 @@ class ComplaintController extends Controller
 		$data = DB::table('services_complaint_request')										
 										->whereBetween('created_at', array($start_time, $end_time))
 										->where('delete_flag', 0)
+										->where('property_id', $property_id)
 										->select(DB::raw("COALESCE(SUM(compensation_total + subcomp_total), 0) as total_comp"))
 										->first();
 		$summary['total_comp'] = $data->total_comp;	
@@ -10244,11 +10559,12 @@ class ComplaintController extends Controller
 	private function getComplaintSummaryBySource($report) {
 		$start_time = $report['start_time'];
 		$end_time = $report['end_time'];
+		$property_id = $report['property_id'];
 
 		$summary = array();
 
 		// get feedback source list
-		$feedback_source_list = DB::table('services_complaint_feedback_source')->get();
+		$feedback_source_list = DB::table('services_complaint_feedback_source')->where('property_id', $property_id)->get();
 		$summary['source_list'] = $feedback_source_list;
 		
 		$select_query = 'COALESCE(count(*), 0) as total_cnt ';
@@ -10260,6 +10576,7 @@ class ComplaintController extends Controller
 		$query = DB::table('services_complaint_request as sc')				
 			->leftJoin('services_complaint_feedback_source as scfs', 'sc.feedback_source_id', '=', 'scfs.id')
 			->where('sc.delete_flag', 0)
+			->where('sc.property_id', $property_id)
 			->whereBetween('sc.created_at', array($start_time, $end_time))			
 			->select(DB::raw($select_query));
 
@@ -10273,10 +10590,13 @@ class ComplaintController extends Controller
 	private function getConsolidateSummary($select_query, $report) {
 		$start_time = $report['start_time'];
 		$end_time = $report['end_time'];
+		$property_id = $report['property_id'];
+
 		$summary = array();
 
 		$query = DB::table('services_complaint_request as sc')				
 			->where('sc.delete_flag', 0)
+			->where('sc.property_id', $property_id)
 			->whereBetween('sc.created_at', array($start_time, $end_time))
 			->select(DB::raw($select_query));
 		
@@ -10326,7 +10646,7 @@ class ComplaintController extends Controller
 	private function getCategoryCompensationTypeData($report) {
 		$start_time = $report['start_time'];
 		$end_time = $report['end_time'];
-
+		$property_id = $report['property_id'];
 		$location_tags = $report['location_tags'];
 		$location_type_tags = $report['location_type_tags'];
 		$department_tags = $report['department_tags'];
@@ -10343,6 +10663,7 @@ class ComplaintController extends Controller
 						->leftJoin('services_location_type as slt', 'sl.type_id', '=', 'slt.id')
 						->where('sc.delete_flag', 0)
 						->where('scs.delete_flag', 0)
+						->where('sc.property_id', $property_id)
 						->whereBetween('sc.created_at', array($start_time, $end_time));
 
 		if(count($location_tags) > 0 ){
@@ -10393,6 +10714,7 @@ class ComplaintController extends Controller
 	private function getComplaintSummaryBySatisfaction($report) {
 		$start_time = $report['start_time'];
 		$end_time = $report['end_time'];
+		$property_id = $report['property_id'];
 
 		$summary = array();
 
@@ -10404,6 +10726,7 @@ class ComplaintController extends Controller
 
 		$query = DB::table('services_complaint_request as sc')				
 			->where('sc.delete_flag', 0)
+			->where('sc.property_id', $property_id)
 			->whereBetween('sc.created_at', array($start_time, $end_time))			
 			->select(DB::raw($select_query));
 
@@ -10461,11 +10784,13 @@ class ComplaintController extends Controller
 	private function getComplaintSummaryByHotIssue($report) {
 		$start_time = $report['start_time'];
 		$end_time = $report['end_time'];
+		$property_id = $report['property_id'];
 
 		$summary = array();
 
 		$query = DB::table('services_complaint_request as sc')				
 			->where('sc.delete_flag', 0)
+			->where('sc.property_id', $property_id)
 			->whereBetween('sc.created_at', array($start_time, $end_time))			
 			->select(DB::raw('count(*) as cnt, sc.hot_issue'))
 			->groupBy('sc.hot_issue')
@@ -10701,6 +11026,17 @@ class ComplaintController extends Controller
 		return Response::json($ret);
 	}
 
+	public function getDepartmentList(Request $request) {
+		$property_id = $request->get('property_id', 4);
+		$list = DB::table('common_department')
+					->where('property_id', $property_id)
+					->get();
+		$ret = [];
+		$ret['code'] = 200;
+		$ret['content'] = $list;
+		return Response::json($ret);
+	}
+
  	public function createMainCategory(Request $request) {
 		$id = $request->get('id', '');
 		$name = $request->get('name', '');
@@ -10730,6 +11066,7 @@ class ComplaintController extends Controller
 			->leftJoin('services_complaint_type as ct', 'scmc.severity', '=', 'ct.id')
 			->leftJoin('common_division as ci', 'scmc.division_id', '=', 'ci.id')	
 			->where('scmc.property_id', $property_id)
+			->where('scmc.disabled', 0)
 			->select(DB::raw('scmc.*, ct.type, CONCAT_WS(" ", cu.first_name, cu.last_name) as wholename, ci.division'))
 			->orderBy('scmc.name', 'asc')
 			->get();	
@@ -10741,12 +11078,14 @@ class ComplaintController extends Controller
 		$id = $request->get('id', '');
 		$property_id = $request->get('property_id', 0);
 		
-		ComplaintMainCategory::where('id', $id)->delete();
+		ComplaintMainCategory::where('id', $id)->update(['disabled' => 1]);
+		ComplaintMainSubCategory::where('category_id', $id)->update(['disabled' => 1]);
 		
 		$category_list = DB::table('services_complaint_maincategory as scmc')
 		   ->leftJoin('common_users as cu', 'scmc.user_id', '=', 'cu.id')
 		   ->leftJoin('services_complaint_type as ct', 'scmc.severity', '=', 'ct.id')
 		   ->where('scmc.property_id', $property_id)
+		   ->where('scmc.disabled', 0)
 		   ->select(DB::raw('scmc.*, ct.type, CONCAT_WS(" ", cu.first_name, cu.last_name) as wholename'))
 		   ->orderBy('scmc.name', 'asc')
 		   ->get();	
@@ -10794,8 +11133,9 @@ class ComplaintController extends Controller
 	 
 	public function deleteMainSubCategory(Request $request) {
 		$id = $request->get('id', '');
+		$category_id = $request->get('category_id', 0);
 		
-		ComplaintMainSubCategory::where('id', $id)->delete();
+		ComplaintMainSubCategory::where('id', $id)->update(['disabled' => 1]);
 		
 		return $this->getMainSubCategoryList($request);
 	}
@@ -11064,6 +11404,7 @@ class ComplaintController extends Controller
 
 		$ret = array();
 		$ret['code'] = 200;
+		$ret['content'] = $path;
 		
 		return Response::json($ret);
    	}
@@ -11263,6 +11604,7 @@ class ComplaintController extends Controller
 			$data['end_date'] = date('h:i A', strtotime($end_time));
 
 			$filename = 'Hotlync_Summary_Feedback_Report_' . date('d_m_hA', strtotime($end_time));
+			$filename = str_replace(' ', '_', $filename);
 
 			$folder_path = public_path() . '/uploads/reports/';
 			$path = $folder_path . $filename . '.html';
@@ -11950,6 +12292,7 @@ class ComplaintController extends Controller
 			ob_start();
 			
 			$filename = 'MOD Checklist_' . date('d_M_Y_H_i') . '_' . $name;
+			$filename = str_replace(' ', '_', $filename);
 			$folder_path = public_path() . '/uploads/reports/';
 			$path = $folder_path . $filename . '.html';
 			
@@ -12241,5 +12584,174 @@ class ComplaintController extends Controller
 		 $complaint_log->save();
 
 		return Response::json($complaint);
+	}
+
+	public function getPropertyColorCode(Request $request)
+	{
+		$property_id = $request->get('property_id', 0);
+
+		$color_code = Property::where('id', $property_id)
+			->select(DB::raw('color_code'))
+			->first();	
+
+		$ret = array();
+
+		$ret['code'] = 200;	
+		$ret['content'] = $color_code;	
+
+		return Response::json($ret);
+	}
+
+	public function getFeedbackTypeListforGuestApp(Request $request)
+	{
+
+		date_default_timezone_set(config('app.timezone'));
+        $cur_time = date("Y-m-d H:i:s");
+		$cur_date = date("Y-m-d");
+
+		$uri_arr = explode("/", $request->url());
+        $siteurl = $uri_arr[2];
+
+		$ret = array();
+
+		$property = Property::where('url', $siteurl)->first();
+		if (empty($property))
+		{
+			$ret['code'] = 201;
+			$ret['message'] = 'Invalid';
+			return Response::json($ret);
+		}
+
+		$list = DB::table('services_complaint_feedback_type')
+				->where('property_id',$property->id)
+				->select(DB::raw('id,name'))
+				->get();
+
+
+		if (!empty($list)){
+
+				$ret['code'] = 200;
+				$ret['typelist'] = $list;
+		}
+		else{
+				$ret['code'] = 201;
+				$ret['message'] = 'Invalid';
+		}
+
+		return Response::json($ret);
+	}
+
+	public function createFeedbackGuestApp(Request $request) {
+
+		date_default_timezone_set(config('app.timezone'));
+		$cur_time = date("Y-m-d H:i:s");
+		$cur_date = date("Y-m-d");
+
+		$uri_arr = explode("/", $request->url());
+        $siteurl = $uri_arr[2];
+
+		$property = Property::where('url', $siteurl)->first();
+		if (empty($property))
+		{
+			$ret['code'] = 201;
+			$ret['message'] = 'Invalid';
+			return Response::json($ret);
+		}
+		$room = $request->get('room_id', 0);
+
+		$roomid = Room::where('room', $room)->first();
+
+		$room_id = $roomid->id;
+
+		$guest = DB::table('common_guest as cg')
+				->leftJoin('common_room as cr', 'cg.room_id', '=', 'cr.id')
+					->where('cr.room', $room)
+					->where('cg.departure', '>=', $cur_date)
+					->where('cg.checkout_flag', 'checkin')
+					->where('cg.property_id',$property->id)
+					->first();
+
+		// $guest = Guest::where('room_id', $room_id)->where('departure', '>=', $cur_date)
+		// 		    	->where('checkout_flag', 'checkin')
+		// 		    	->first();
+
+		if (empty($guest))
+		{
+			$ret['code'] = 201;
+			$ret['message'] = 'No Guest Checkin';
+			return Response::json($ret);
+		}
+
+		$loc_info = Location::getLocationFromRoom($room_id);
+
+		
+		$property_id = $property->id;
+		$guest_type = 'In-House';
+		$comment = $request->get('feedback', '');
+		$feedback_type_id = $request->get('feedback_type_id', 0);
+		$created_at = $cur_time;
+		$incident_time = $cur_time;
+		$requestor_id = 0;
+
+		$complaint = new ComplaintRequest();
+
+		$complaint->property_id = $property_id;
+		$complaint->feedback_type_id = $feedback_type_id;
+		$complaint->loc_id = $loc_info->id;
+		$complaint->guest_type = $guest_type;
+		$complaint->room_id = $room_id;
+		$complaint->comment = $comment;
+		$complaint->incident_time = $incident_time;
+		$complaint->created_at = $created_at;
+		$complaint->requestor_id = 0;
+
+	
+		if (!empty($guest)){
+				
+			$profile = GuestProfile::where('guest_id', $guest->guest_id)->first();
+
+			if( empty($profile) )
+				$profile = new GuestProfile();
+
+			$profile->client_id = $property->client_id;
+			$profile->property_id = $property->id;
+			$profile->guest_id =  $guest->guest_id;
+			$profile->guest_name = $guest->guest_name;
+			$profile->fname = $guest->first_name;
+			$profile->mobile = $guest->mobile;
+			$profile->email = $guest->email;
+			$profile->profile_id = $guest->profile_id;
+			$profile->nationality = NULL;
+			$profile->created_at = $cur_time;
+			$profile->save();
+
+			$complaint->guest_id = $profile->id;
+		}
+
+		$complaint->save();
+
+		// add complaint state
+		ComplaintMainState::initState($complaint->id);
+		ComplaintDivisionMainState::initState($complaint->id);
+
+		$request->merge(['id' => $complaint->id]);
+	
+		
+		ComplaintUpdated::modifyByUser($complaint->id, Employee::getUserID($requestor_id));
+
+	
+		$id = $complaint->id;		
+
+		$this->sendRefreshEvent($property_id, 'main_complaint_create', $complaint, Employee::getUserID($requestor_id));
+
+		$ret = array();
+
+		$ret['code'] = 200;
+		$ret['id'] = $complaint->id;
+
+		$ret['message'] = $this->sendNotifyForComplaint($id);
+		$ret['content'] = $complaint;
+		
+		return Response::json($ret);
 	}
 }

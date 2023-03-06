@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Common\Property;
 use App\Models\Intface\Channel;
+use App\Models\Common\CommonUser;
 
 use DB;
 use Datatables;
@@ -17,11 +18,19 @@ class ChannelController extends Controller
     public function index(Request $request)
     {
 		// $datalist = Channel::all();
+
+		$user_id = $request->get('user_id', 0);
+		$client_id = $request->get('client_id', 0);
+		if ($user_id > 0)
+			$property_list = CommonUser::getPropertyIdsByJobroleids($user_id);
+		else
+			$property_list = CommonUser::getProertyIdsByClient($client_id);
 		
 		$datalist = DB::connection('interface')->table('channel as cn')
 					->leftJoin('protocol as cp', 'cn.protocol_id', '=', 'cp.id')
 					->select(['cn.*', 'cp.name as cpname', 'cp.type as cptype']);
-					
+				
+		$datalist->whereIn('cn.property_id', $property_list);
 		return Datatables::of($datalist)
 				->addColumn('checkbox', function ($data) {
 					return '<input type="checkbox" class="checkthis" />';
@@ -119,7 +128,8 @@ class ChannelController extends Controller
     }
 
 	public function getAcceptBuildingList(Request $request) {
-		$id = $request->get('id', 0);
+		$id = $request->get('id', 0) ?? 0;
+		$property_id = $request->get('property_id', 0) ?? 0;
 
 		$channel = DB::connection('interface')->table('channel as cn')
 				->where('id', $id)
@@ -129,11 +139,13 @@ class ChannelController extends Controller
 
 		$selected = DB::table('common_building')
 				->whereIn('id', $accept_build_ids)
+				->where('property_id', $property_id)
 				->get()
 				->toArray();
 
 		$unselected = DB::table('common_building')
 				->whereNotIn('id', $accept_build_ids)
+				->where('property_id', $property_id)
 				->get()
 				->toArray();
 

@@ -257,11 +257,17 @@ class EquipmentController extends Controller
     public function getEquipGroupList(Request $request)
     {
         $group_name = $request->get('group_name', '');
+        $property_id = $request->get('property_id', 0);
 
-        $grouplist = DB::table('eng_equip_group')
-            ->where('name', 'like', '%' . $group_name . '%')
-            ->select(DB::raw('*'))
-            ->get();
+        $query = DB::table('eng_equip_group')
+                ->where('name', 'like', '%' . $group_name . '%');
+
+        if ($property_id > 0)        
+            $query->where('property_id', $property_id);
+
+        $grouplist = $query->select(DB::raw('*'))
+                    ->get();
+
         return Response::json($grouplist);
     }
 
@@ -289,20 +295,49 @@ class EquipmentController extends Controller
 
     public function getEquipmentOrGroupList(Request $request)
     {
+        $property_id = $request->get('property_id', 0);
         $name = $request->get('name', '');
 
         $grouplist = DB::table('eng_equip_group')
             ->where('name', 'like', '%' . $name . '%')
+            ->where('property_id', $property_id)
             ->select(DB::raw('id, name, "group" as type '))
             ->get();
 
         $equiplist = DB::table('eng_equip_list')
             ->where('name', 'like', '%' . $name . '%')
+            ->where('property_id', $property_id)
             ->select(DB::raw('id, name, "single" as type '))
             ->get();
+
         $grouplist = array_merge($grouplist->toArray(),$equiplist->toArray());
 
         return Response::json($grouplist);
+    }
+
+    public function getEquipmentOrGroupListForMobile(Request $request)
+    {
+        $property_id = $request->get('property_id', 0);
+        $name = $request->get('name', '');
+
+        $grouplist = DB::table('eng_equip_group')
+            ->where('name', 'like', '%' . $name . '%')
+            ->where('property_id', $property_id)
+            ->select(DB::raw('id, name, "group" as type '))
+            ->get();
+
+        $equiplist = DB::table('eng_equip_list')
+            ->where('name', 'like', '%' . $name . '%')
+             ->where('property_id', $property_id)
+            ->select(DB::raw('id, name, "single" as type '))
+            ->get();
+
+        $grouplist = array_merge($grouplist,$equiplist);
+
+        return Response::json([
+            'code' => 200,
+            'content' => $grouplist
+        ]);
     }
 
     public function getWRIDList(Request $request)
@@ -325,6 +360,7 @@ class EquipmentController extends Controller
         $period = $request->get('period', 'Today');
         $end_date = $request->get('end_date', '');
         $during = $request->get('during', '');
+        $property_id = $request->get('property_id', '');
 
         $dateArr = explode(" ", $end_date);
         $end_date = $dateArr[0] . " 23:59:59";
@@ -337,19 +373,19 @@ class EquipmentController extends Controller
                 $end_date = date('Y-m-d');
                 $end_date .= " 23:59:59";
                 // $ret = $this->getTicketStaticsticsByToday($request);
-                $ret = $this->getTicketStaticsticsByDate($end_date, 1, $request);
+                $ret = $this->getTicketStaticsticsByDate($property_id, $end_date, 1, $request);
                 break;
             case 'Weekly';
-                $ret = $this->getTicketStaticsticsByDate($end_date, 7 ,  $request);
+                $ret = $this->getTicketStaticsticsByDate($property_id, $end_date, 7 ,  $request);
                 break;
             case 'Monthly';
-                $ret = $this->getTicketStaticsticsByDate($end_date, 30, $request);
+                $ret = $this->getTicketStaticsticsByDate($property_id, $end_date, 30, $request);
                 break;
             case 'Custom Days';
-                $ret = $this->getTicketStaticsticsByDate($end_date, $during, $request);
+                $ret = $this->getTicketStaticsticsByDate($property_id, $end_date, $during, $request);
                 break;
             case 'Yearly';
-                $ret = $this->getTicketStaticsticsByYearly($end_date, $request);
+                $ret = $this->getTicketStaticsticsByYearly($property_id, $end_date, $request);
                 break;
         }
 
@@ -359,6 +395,10 @@ class EquipmentController extends Controller
     public function getTicketStaticsticsByToday($request)
     {
         date_default_timezone_set(config('app.timezone'));
+        $cur_date = date('Y-m-d');
+        $tomorrow = date('Y-m-d',strtotime("1 days"));
+        $week = date('Y-m-d',strtotime("7 days"));
+        $month = date('Y-m-d',strtotime("30 days"));
         $cur_date_time = date('Y-m-d H:i:s');
         $before_date_time = date('Y-m-d H:i:s',strtotime("-1 days"));
 
@@ -471,6 +511,25 @@ class EquipmentController extends Controller
 
         $ret['number_of_workorder_completed'] = $number_of_workorder_completed;
 
+        //equipment status
+        $equipment = DB::table('eng_equip_list as eq')
+                    ->leftJoin('eng_equip_status as es', 'eq.status_id', '=', 'es.id')
+                    ->leftJoin('common_department as cd', 'eq.dept_id', '=', 'cd.id');
+        
+        $equipment_status = $equipment
+                            ->take(10)
+                            ->groupBy('eq.dept_id')
+                            ->select(DB::raw("count(*) as cnt,
+						            SUM(eq.status_id = 1) AS due,
+						            SUM(eq.status_id = 2) AS ok,
+						            SUM(eq.status_id = 3) AS retired,
+                                    SUM(eq.status_id = 4) AS faulty,
+                                    SUM(eq.status_id = 5) AS down,
+						            SUM(eq.status_id = 6) AS overdue, cd.department"))
+                            ->get();
+
+        $ret['equipment_status'] = $equipment_status;
+
         //priority
         $today_query = clone $query;
         $priority = $today_query
@@ -519,10 +578,15 @@ class EquipmentController extends Controller
     }
 
 
-    public function getTicketStaticsticsByDate($end_date, $during, $request)
+    public function getTicketStaticsticsByDate($property_id, $end_date, $during, $request)
     {
         $date = new DateTime($end_date);
         $date->sub(new DateInterval('P' . $during . 'D'));
+
+        $cur_date = date('Y-m-d');
+        $tomorrow = date('Y-m-d',strtotime("1 days"));
+        $week = date('Y-m-d',strtotime("7 days"));
+        $month = date('Y-m-d',strtotime("30 days"));
 
         $before_date_time =  $date->format('Y-m-d H:i:s');
         $cur_date_time = $end_date;
@@ -530,7 +594,7 @@ class EquipmentController extends Controller
         $ret = array();
         //out of stock and low stock valuw should be value of current date
         //get part_lsit
-        $part_query = DB::table('eng_part_list as epl');
+        $part_query = DB::table('eng_part_list as epl')->where('epl.property_id', $property_id);
 
         //out of stock()parts
         $today_query = clone $part_query;
@@ -549,9 +613,11 @@ class EquipmentController extends Controller
         $time_range1 = sprintf("'%s' < err.created_at AND err.created_at <= '%s'", $before_date_time, $cur_date_time);
         //get work order
         $query = DB::table('eng_workorder as ew')
+            ->where('ew.property_id', $property_id)
             ->whereRaw($time_range);
 
          $query1 = DB::table('eng_repair_request as err')
+            ->where('err.property_id', $property_id)
             ->whereRaw($time_range1);
 
         //pending
@@ -632,15 +698,70 @@ class EquipmentController extends Controller
 
         $ret['number_of_workorder_completed'] = $number_of_workorder_completed;
 
+        //equipment status
+        $equipment = DB::table('eng_equip_list as eq')
+                    ->leftJoin('eng_equip_status as es', 'eq.status_id', '=', 'es.id')
+                    ->leftJoin('common_department as cd', 'eq.dept_id', '=', 'cd.id')
+                    ->where('eq.property_id', $property_id);
+
+        $equipment_status = $equipment
+                            ->take(10)
+                            ->groupBy('eq.dept_id')
+                            ->select(DB::raw("count(*) as cnt,
+						            SUM(eq.status_id = 1) AS due,
+						            SUM(eq.status_id = 2) AS ok,
+						            SUM(eq.status_id = 3) AS retired,
+                                    SUM(eq.status_id = 4) AS faulty,
+                                    SUM(eq.status_id = 5) AS down,
+						            SUM(eq.status_id = 6) AS overdue, cd.department, cd.id as dept_id"))
+                            ->get();
+
+        $ret['equipment_status'] = $equipment_status;
+          
+        //ppm status
+        $ppm = DB::table('eng_preventive as ep')
+                ->join('eng_preventive_equip_status as es', 'ep.id', '=', 'es.preventive_id')
+                ->join('eng_equip_list as eq', 'eq.id', '=', 'es.equip_id')
+                ->where('ep.property_id', $property_id);
+
+        $ppm_query = clone $ppm;
+
+        $ppm_group = $ppm
+                //    ->take(10)
+                    ->groupBy('ep.id')
+                    ->orderBy('ep.id','desc')
+                    ->select(DB::raw("count(*) as cnt,
+                        SUM(es.next_date < '$cur_date') AS past_due,
+                        SUM(es.next_date = '$cur_date') AS today,
+                        SUM(es.next_date = '$tomorrow') AS tomorrow,
+                        COALESCE(SUM(es.next_date > '$cur_date' and es.next_date <= '$week'), 0) AS week,
+                        COALESCE(SUM(es.next_date > '$cur_date' and es.next_date <= '$month'), 0) AS month,
+                        ep.name, ep.id"))
+                    ->get();
+        
+        $ppm_group_total = $ppm_query
+                            ->select(DB::raw("count(*) as cnt,
+                                SUM(es.next_date < '$cur_date') AS past_due,
+                                SUM(es.next_date = '$cur_date') AS today,
+                                SUM(es.next_date = '$tomorrow') AS tomorrow,
+                                COALESCE(SUM(es.next_date > '$cur_date' and es.next_date <= '$week'), 0) AS week,
+                                COALESCE(SUM(es.next_date > '$cur_date' and es.next_date <= '$month'), 0) AS month"
+                            ))
+                            ->first();
+        
+        $ret['ppm_status'] = $ppm_group;
+        $ret['ppm_status_total'] = $ppm_group_total;
+
         //priority
         $today_query = clone $query;
         $priority = $today_query
-            ->select(DB::raw("
-						SUM(ew.priority =  'Low') AS low,
-						SUM(ew.priority =  'Medium') AS medium, 
-						SUM(ew.priority =  'High') AS high,
-						SUM(ew.priority =  'Urgent') AS urgent"))
-            ->first();
+                    ->select(DB::raw("
+                                SUM(ew.priority =  'Low') AS low,
+                                SUM(ew.priority =  'Medium') AS medium, 
+                                SUM(ew.priority =  'High') AS high,
+                                SUM(ew.priority =  'Urgent') AS urgent"))
+                    ->first();
+                    
         if(empty($priority)) {
             $priority['low'] = 0;
             $priority['medium'] = 0;
@@ -650,6 +771,7 @@ class EquipmentController extends Controller
         $ret['priority'] = $priority;
 
         $repair = DB::table('eng_repair_request as err')
+                    ->where('err.property_id', $property_id)
                     ->whereRaw($time_range1);
         //status
         $today_query = clone $repair;
@@ -679,10 +801,15 @@ class EquipmentController extends Controller
         return $ret;
     }
 
-    public function getTicketStaticsticsByYearly($end_date, $request)
+    public function getTicketStaticsticsByYearly($property_id, $end_date, $request)
     {
         $date = new DateTime($end_date);
         $date->sub(new DateInterval('P1Y'));
+
+        $cur_date = date('Y-m-d');
+        $tomorrow = date('Y-m-d',strtotime("1 days"));
+        $week = date('Y-m-d',strtotime("7 days"));
+        $month = date('Y-m-d',strtotime("30 days"));
 
         $before_date_time =  $date->format('Y-m-d H:i:s');
         $cur_date_time = $end_date;
@@ -690,7 +817,7 @@ class EquipmentController extends Controller
         $ret = array();
         //out of stock and low stock valuw should be value of current date
         //get part_lsit
-        $part_query = DB::table('eng_part_list as epl');
+        $part_query = DB::table('eng_part_list as epl')->where('epl.property_id', $property_id);
 
         //out of stock()parts
         $today_query = clone $part_query;
@@ -709,9 +836,11 @@ class EquipmentController extends Controller
         $time_range1 = sprintf("'%s' < err.created_at AND err.created_at <= '%s'", $before_date_time, $cur_date_time);
         //get work order
         $query = DB::table('eng_workorder as ew')
+            ->where('ew.property_id', $property_id)
             ->whereRaw($time_range);
 
         $query1 = DB::table('eng_repair_request as err')
+            ->where('err.property_id', $property_id)
             ->whereRaw($time_range1);
 
        //pending
@@ -791,6 +920,57 @@ class EquipmentController extends Controller
 
         $ret['number_of_workorder_completed'] = $number_of_workorder_completed;
 
+        //equipment status
+        $equipment = DB::table('eng_equip_list as eq')
+                    ->leftJoin('eng_equip_status as es', 'eq.status_id', '=', 'es.id')
+                    ->leftJoin('common_department as cd', 'eq.dept_id', '=', 'cd.id')
+                    ->where('eq.property_id', $property_id);
+        $equipment_status = $equipment
+                            ->take(10)
+                            ->groupBy('eq.dept_id')
+                            ->select(DB::raw("count(*) as cnt,
+						            SUM(eq.status_id = 1) AS due,
+						            SUM(eq.status_id = 2) AS ok,
+						            SUM(eq.status_id = 3) AS retired,
+                                    SUM(eq.status_id = 4) AS faulty,
+                                    SUM(eq.status_id = 5) AS down,
+						            SUM(eq.status_id = 6) AS overdue, cd.department, cd.id as dept_id"))
+                            ->get();
+        $ret['equipment_status'] = $equipment_status;
+
+        //ppm status
+        $ppm = DB::table('eng_preventive as ep')
+                    ->join('eng_preventive_equip_status as es', 'ep.id', '=', 'es.preventive_id')
+                    ->join('eng_equip_list as eq', 'eq.id', '=', 'es.equip_id')
+                    ->where('ep.property_id', $property_id);
+
+        $ppm_query = clone $ppm;
+
+        $ppm_status = $ppm
+                    //    ->take(10)
+                        ->groupBy('ep.id')
+                        ->orderBy('ep.id','desc')
+                        ->select(DB::raw("count(*) as cnt,
+                            SUM(es.next_date < '$cur_date') AS past_due,
+						    SUM(es.next_date = '$cur_date') AS today,
+						    SUM(es.next_date = '$tomorrow') AS tomorrow,
+						    COALESCE(SUM(es.next_date > '$cur_date' and es.next_date <= '$week'), 0) AS week,
+                            COALESCE(SUM(es.next_date > '$cur_date' and es.next_date <= '$month'), 0) AS month,
+                            ep.name, ep.id"))
+                        ->get();
+
+        $ppm_status_total = $ppm_query
+                            ->select(DB::raw("count(*) as cnt,
+                                SUM(es.next_date < '$cur_date') AS past_due,
+						        SUM(es.next_date = '$cur_date') AS today,
+						        SUM(es.next_date = '$tomorrow') AS tomorrow,
+						        COALESCE(SUM(es.next_date > '$cur_date' and es.next_date <= '$week'), 0) AS week,
+                                COALESCE(SUM(es.next_date > '$cur_date' and es.next_date <= '$month'), 0) AS month"
+                            ))
+                            ->first();
+        $ret['ppm_status'] = $ppm_status;
+        $ret['ppm_status_total'] = $ppm_status_total;
+
         //priority
         $today_query = clone $query;
         $priority = $today_query
@@ -810,6 +990,7 @@ class EquipmentController extends Controller
 
 
         $repair = DB::table('eng_repair_request as err')
+                    ->where('err.property_id', $property_id)
                     ->whereRaw($time_range1);
         //status
         $today_query = clone $repair;
@@ -836,6 +1017,26 @@ class EquipmentController extends Controller
         $ret['status'] = $status;
 
         return $ret;
+    }
+
+    public function changeAssetStatus(Request $request)
+    {
+        $id = $request->get('id', 0);
+        $status_id = $request->get('status_id', 0);
+        $equipment = EquipmentList::find($id);
+        $ret = [];
+
+        if ($equipment) {
+            $equipment->status_id = $status_id;
+            $equipment->save();
+        } else {
+            $ret['code'] = 201;
+            $ret['message'] = "There is no equipment";
+            return Response::json($ret);
+        }
+        
+        $ret['code'] = 200;
+        return Response::json($ret);
     }
 
     public function createEquipCheckList(Request $request)
@@ -1242,6 +1443,23 @@ class EquipmentController extends Controller
         return Response::json($_FILES[$filekey]);
     }
 
+    public function getEquipListForEngineering(Request $request)
+    {
+        $property_id = $request->get('property_id', 4);
+        // $list = $this->getEquipmentData('', '', $property_id, 0);
+        $query = DB::table('eng_equip_list as eg');
+        
+         if($property_id > 0  )
+            $query->where('eg.property_id', $property_id);
+        $list = $query
+            ->select(DB::raw('eg.id, eg.equip_id, eg.name'))
+            ->get();
+        return Response::json([
+            'code' => 200,
+            'content' => $list
+        ]);
+    }
+
     public function getEquipmentData($filter, $client_id, $property_id, $location_id)
     {
         $ret = array();
@@ -1276,14 +1494,65 @@ class EquipmentController extends Controller
     }
 
     public function getEquipmentNameList(Request $request)
-    {
+    {   
         $property_id = $request->get('property_id', 0);
 
-        $ret = array();
+        $searchKey = $request->get('searchKey', '');
+        $pageCount = $request->get('pageCount', 0);
+        $pageNumber = $request->get('pageNumber', 0);
+        $query = DB::table('eng_equip_list as eg');
+        
+        if($property_id > 0 ) {
+            $query->where('eg.property_id', $property_id);
+        }
+        
+        if (!empty($searchKey)) {
+            $query->where(function($q) use ($searchKey) {
+                $q->where('eg.name','like','%'.$searchKey.'%')
+                    ->orWhere('eg.equip_id','like','%'.$searchKey.'%');
+            });
+        }
+        
+        $totalCount = $query->count();
+        
+        if ($pageCount > 0) {
+            $query->skip($pageNumber * $pageCount)->take($pageCount);
+        }
+        
+        $list = $query
+            ->select(DB::raw('eg.id, eg.name, eg.equip_id'))
+            ->get();
+        
+        $ret = [];
         $ret['code'] = 200;
-        $ret['content'] = $this->getEquipmentData('', 0, $property_id, 0);
+        $ret['content'] = $list;
+        $ret['totalCount'] = $totalCount;
 
         return Response::json($ret);
+    }
+
+    public function getEquipmentCount(Request $request)
+    {
+        $property_id = $request->get('property_id', 0);
+        $ret = array();
+        $ret['code'] = 200;
+        $ret['content'] = $this->getEquipmentListCount($property_id);
+        return Response::json($ret);
+    }
+
+    public function getEquipmentListCount($property_id)
+    {
+        $ret = array();
+        $query = DB::table('eng_equip_list as eg');
+        if($property_id > 0  )
+            $query->where('eg.property_id', $property_id);
+        $query->leftJoin('services_location as sl', 'eg.location_group_member_id', '=', 'sl.id')
+            ->leftJoin('services_location_type as slt', 'sl.type_id', '=', 'slt.id');
+        $listCount = $query
+            ->select(DB::raw('eg.*, sl.id as loc_id, sl.name as location_name, slt.type as location_type'))
+            ->count();
+        $ret['totalcount'] = $listCount;
+        return $ret;
     }
 
     public function getMaintenanceList(Request $request)
@@ -1470,6 +1739,7 @@ class EquipmentController extends Controller
         $cur_time = date("Y-m-d H:i:s");
 
         $property_id = $request->get('property_id', 4);
+        $user_id = $request->get('user_id', 4);
 
         $page = $request->get('page', 0);
         $pageSize = $request->get('pagesize', 20);
@@ -1485,6 +1755,9 @@ class EquipmentController extends Controller
         $status_ids = $request->get('status_ids', '');
         $equip_group_ids = $request->get('equip_group_ids', '');
         $equip_ids = $request->get('equip_ids', '');
+        $property_ids = $request->get('property_ids', '');
+        $dept_id = $request->get('dept_id', 0);
+        $property_list = CommonUser::getPropertyIdsByJobroleids($user_id);
 
 
         if ($pageSize < 0)
@@ -1502,10 +1775,21 @@ class EquipmentController extends Controller
             ->leftJoin('services_location_type as slt', 'sl.type_id', '=', 'slt.id')
             ->leftJoin('services_location as sl2', 'el.sec_loc_id', '=', 'sl2.id')
             ->leftJoin('services_location_type as slt2', 'sl2.type_id', '=', 'slt2.id')
-            ->leftJoin('eng_supplier as es', 'el.supplier_id', '=', 'es.id');
+            ->leftJoin('common_property as cp', 'el.property_id', '=', 'cp.id')
+            ->leftJoin('eng_supplier as es', 'el.supplier_id', '=', 'es.id')
+            ->leftJoin('eng_equip_category as eec', 'el.category_id', '=', 'eec.id');
 
         // $query->whereRaw(sprintf("DATE(el.maintenance_date) >= '%s' and DATE(el.maintenance_date) <= '%s'", $start_date, $end_date));
-        $query->where('el.property_id',$property_id);
+        if (count($property_list) > 1)
+        {
+            if( !empty($property_ids) )
+            {
+                $property_ids = explode(',', $property_ids);
+                $query->whereIn('el.property_id', $property_ids);
+            }
+        } 
+        else    
+            $query->where('el.property_id',$property_id);
 
 
         if($searchtext != '') {
@@ -1520,8 +1804,12 @@ class EquipmentController extends Controller
                 $sub_query->orWhere('sl.name','like','%'.$searchtext.'%');
                 $sub_query->orWhere('slt.type','like','%'.$searchtext.'%');
                 $sub_query->orWhere('el.equip_id','like','%'.$searchtext.'%');
+                $sub_query->orWhere('eec.name','like','%'.$searchtext.'%');
             });
         }
+
+        if ($dept_id != 0)
+            $query->where('el.dept_id', $dept_id);
 
         if( !empty($location_ids) )
         {
@@ -1560,7 +1848,7 @@ class EquipmentController extends Controller
             ->orderBy($orderby, $sort)
             ->select(DB::raw("el.*,  slt.type as location_group_type, cd.department, eg.name as group_name, epg.name as part_group_name, 
                             es.supplier,em.email as maintenance_email, em.external_maintenance as external_maintenance_company, et.status,
-                            sl.name as location_name, slt.type as location_type,
+                            sl.name as location_name, slt.type as location_type, cp.name as property,eec.name as category_name, eec.deprec_type,
                             sl2.name as sec_location_name, slt2.type as sec_location_type"))
             ->skip($skip)->take($pageSize)
             ->get();
@@ -1603,13 +1891,57 @@ class EquipmentController extends Controller
         }
 
         $count_query = clone $query;
-        $totalcount = $count_query->count();
+        $totalcount = $count_query->groupBY('el.id')->get();
 
         $ret['datalist'] = $data_list;
-        $ret['totalcount'] = $totalcount;
+        $ret['totalcount'] = count($totalcount);
 
         return Response::json($ret);
     }
+
+    public function getEquipmentListonPPM(Request $request){
+
+        $cur_date = date('Y-m-d');
+        $tomorrow = date('Y-m-d',strtotime("1 days"));
+        $week = date('Y-m-d',strtotime("7 days"));
+        $month = date('Y-m-d',strtotime("30 days"));
+        $ppm_id = $request->get('ppm_id', 0);
+        $type = $request->get('type', '');
+        $property_id = $request->get('property_id', 0);
+        $ret = array();
+        
+        $query = DB::table('eng_preventive_equip_status as ep')
+                    ->join('eng_equip_list as eq', 'ep.equip_id', '=', 'eq.id')
+                    ->where('ep.preventive_id', $ppm_id);
+        
+        if ($type == 'past_due')
+            $query->where('ep.next_date','<', $cur_date);
+
+        if ($type == 'today')
+            $query->where('ep.next_date','=', $cur_date);
+
+        if ($type == 'tomorrow')
+            $query->where('ep.next_date','=', $tomorrow);
+
+        $time_range = sprintf("'%s' < ep.next_date AND ep.next_date <= '%s'", $cur_date, $week);
+
+        if ($type == 'week')
+            $query->whereRaw($time_range);
+
+        $time_range1 = sprintf("'%s' < ep.next_date AND ep.next_date <= '%s'", $cur_date, $month);
+
+        if ($type == 'month')
+            $query->whereRaw($time_range1);
+        
+        $equiplist = $query->select(DB::raw("eq.equip_id"))
+                            ->get();
+                            
+        $ret['datalist'] = $equiplist;
+        $ret['ppm_id'] = $ppm_id;
+
+        return Response::json($ret);
+    }
+
 
     public function getEquipmentInformList(Request $request){
         $equip_id = $request->get('equip_id', 0);
@@ -1620,6 +1952,18 @@ class EquipmentController extends Controller
             ->select(DB::raw("*"))
             ->get();
         $ret['filelist'] = $filelist;
+        return Response::json($ret);
+    }
+
+    public function getEquipmentInformListForMobile(Request $request){
+        $equip_id = $request->get('equip_id', 0);
+        $ret = [];
+        $filelist = DB::table('eng_equip_file')
+            ->where('equip_id', $equip_id)
+            ->select(DB::raw("*"))
+            ->get();
+        $ret['code'] = 200;
+        $ret['content'] = $filelist;
         return Response::json($ret);
     }
 
@@ -1691,6 +2035,183 @@ class EquipmentController extends Controller
         return Response::json($ret);
     }
 
+    public function updateEquipmentForMobile(Request $request) {
+        date_default_timezone_set(config('app.timezone'));
+        $cur_time = date('Y-m-d H:i:s');
+        $id = $request->get('id', 0);
+        $image_url = $request->get('image_url', null);
+
+        $equipment =  EquipmentList::find($id);
+
+        $equipment->name = $request->get('name', '');
+        $equipment->description = $request->get('description', '');
+        $equipment->critical_flag = $request->get('critical_flag', '0');
+        $equipment->equip_id = $request->get('equip_id','');
+        $equipment->external_maintenance = $request->get('external_maintenance', '');
+        $equipment->external_maintenance_id = $request->get('external_maintenance_id','0');
+        $equipment->dept_id = $request->get('dept_id', '0');
+        $equipment->life = $request->get('life', '0');
+        $equipment->life_unit = $request->get('life_unit', 'days');
+        $equipment->equip_group_id = $request->get('equip_group_id', '0');
+        $equipment->part_group_id = $request->get('part_group_id', '0');
+        $equipment->location_group_member_id = $request->get('location_group_member_id', '0');
+        $equipment->sec_loc_id = $request->get('sec_loc_id', '0');
+        $equipment->purchase_cost = $request->get('purchase_cost', '0');
+        $equipment->purchase_date = $request->get('purchase_date', '0000-00-00');
+        $equipment->manufacture = $request->get('manufacture', '');
+        $equipment->status_id = $request->get('status_id', '0');
+        $equipment->model = $request->get('model', '');
+        $equipment->barcode = $request->get('barcode', '0');
+        $equipment->warranty_start = $request->get('warranty_start', '0000-00-00');
+        $equipment->warranty_end = $request->get('warranty_end', '0000-00-00');
+        $equipment->supplier_id = $request->get('supplier_id', '');
+
+        if ($image_url) {
+            $equipment->image_url = $image_url;
+        }
+        $equipment->property_id = $request->get('property_id','0');
+        $equipment->maintenance_date = $cur_time;
+
+        $equipment->save();
+
+        $equip_id = $id;
+        $equipment_group = $request->get('equipment_group',[]);
+        DB::table('eng_equip_group_member')->where('equip_id', $equip_id)->delete();
+        DB::table('eng_equip_part_group_member')->where('equip_id', $equip_id)->delete();
+
+        for($i = 0 ; $i < count($equipment_group) ;$i++) {
+            $group_id = $equipment_group[$i]['equip_group_id'];
+            DB::table('eng_equip_group_member')->insert(['equip_id' => $equip_id, 'group_id' => $group_id]);
+        }
+        $part_group = $request->get('part_group',[]);
+        for($i = 0 ; $i < count($part_group) ;$i++) {
+            $part_group_id = $part_group[$i]['part_group_id'];
+            $type = $part_group[$i]['type'];
+            if (DB::table('eng_equip_part_group_member')
+                ->where('equip_id', $equip_id)
+                ->where('part_group_id', $part_group_id)
+                ->where('type', $type)
+                ->exists())
+                continue;
+            else
+                DB::table('eng_equip_part_group_member')->insert(['equip_id' => $equip_id,
+                    'part_group_id' => $part_group_id,
+                    'type' => $type]);
+        }
+        $ret =array();
+        $ret['code'] = 200;
+        $ret['id'] = $equipment->id;
+
+        return Response::json($ret);
+    }
+
+    public function CreateEquipmentForMobile(Request $request) {
+        date_default_timezone_set(config('app.timezone'));
+        $cur_time = date('Y-m-d H:i:s');
+        $image_url = $request->get('image_url','');
+        $output_file = $_SERVER["DOCUMENT_ROOT"] . '/uploads/equip/';
+        if(!file_exists($output_file)) {
+            mkdir($output_file, 0777);
+        }
+
+        if($image_url === '') {
+             $image_url = '/uploads/equip/default.png';
+        }
+        
+        $ret = [];
+        $ret['code'] = 200;
+
+        if(!EquipmentList::where('equip_id', $request->get('equip_id', ''))->exists() ) {
+            $equipment = new EquipmentList();
+            $equipment->property_id = $request->get('property_id','');
+            $equipment->name = $request->get('name', '');
+            //equip_id = 1001-RM-101-WM,  1001 = id, RM = Equipment Group Code
+            //101 = Room no, Wm = part group code
+            $equipment->equip_id = $request->get('equip_id','');
+            $equipment->description = $request->get('description', '');
+            $equipment->critical_flag = $request->get('critical_flag', '0');
+            $equipment->external_maintenance = $request->get('external_maintenance', '0');
+            $equipment->external_maintenance_id = $request->get('external_maintenance_id', '0');
+            $equipment->dept_id = $request->get('dept_id', '0');
+            $equipment->life = $request->get('life', '0');
+            $equipment->life_unit = $request->get('life_unit', 'days');
+            $equipment->equip_group_id = $request->get('equip_group_id', '0');
+            $equipment->part_group_id = $request->get('part_group_id', '0');
+            $equipment->location_group_member_id = $request->get('location_group_member_id', 0);
+            $equipment->sec_loc_id = $request->get('sec_loc_id', 0);
+            $equipment->purchase_cost = $request->get('purchase_cost', '0');
+            $equipment->purchase_date = $request->get('purchase_date', '0000-00-00');
+            $equipment->manufacture = $request->get('manufacture', '');
+            $equipment->status_id = $request->get('status_id', '0');
+            $equipment->model = $request->get('model', '');
+            $equipment->barcode = $request->get('barcode', '0');
+            $equipment->warranty_start = $request->get('warranty_start', '0000-00-00');
+            $equipment->warranty_end = $request->get('warranty_end', '0000-00-00');
+            $equipment->supplier_id = $request->get('supplier_id', '');
+            $equipment->image_url = $image_url;
+            $equipment->maintenance_date = $cur_time;
+
+            $equipment->save();
+            $equip_id = $equipment->id;
+
+            $liveServerURLQuery = DB::table('property_setting')
+            ->where('settings_key','live_host')
+            ->select('value')
+            ->first();
+
+            $taskIdData = json_encode(array(
+                'id' => $equip_id,
+                'equip_id' => $equipment->equip_id,
+                'name' => $equipment->name,
+                'description' => $equipment->description,
+                'property_id' => $equipment->property_id
+            ));
+            $taskIdEncrypt = base64_encode($taskIdData);
+    
+            $liveServerURL = $liveServerURLQuery->value . "generateQRCode?id=" . $taskIdEncrypt ;
+            $response_URI = file_get_contents($liveServerURL);
+
+            $equipment->qr_code = $response_URI;
+            $equipment->save();
+
+            $equipment_group = $request->get('equipment_group',[]);
+            for($i = 0 ; $i < count($equipment_group) ;$i++) {
+                $group_id = $equipment_group[$i]['equip_group_id'];
+                if (DB::table('eng_equip_group_member')->where('equip_id', $equip_id)->where('group_id', $group_id)->exists())
+                    continue;
+                else
+                    DB::table('eng_equip_group_member')->insert(['equip_id' => $equip_id, 'group_id' => $group_id]);
+            }
+
+            $part_group = $request->get('part_group',[]);
+            for($i = 0 ; $i < count($part_group) ;$i++) {
+                $part_group_id = $part_group[$i]['part_group_id'];
+                $type = $part_group[$i]['type'];
+                if (DB::table('eng_equip_part_group_member')
+                        ->where('equip_id', $equip_id)
+                        ->where('part_group_id', $part_group_id)
+                        ->where('type', $type)
+                        ->exists())
+                    continue;
+                else
+                    DB::table('eng_equip_part_group_member')->insert(['equip_id' => $equip_id,
+                                                                     'part_group_id' => $part_group_id,
+                                                                     'type' => $type]);
+            }
+            $ret['content'] = [
+                'success' => true,
+                'id' => $equipment->id
+            ];
+        } else {
+            $ret['content'] = [
+                'success' => false,
+                'message' => "Equipment ID already exist!"
+            ];
+        }
+
+        return Response::json($ret);
+    }
+
     public function CreateEquipment(Request $request) {
         date_default_timezone_set(config('app.timezone'));
         $cur_time = date('Y-m-d H:i:s');
@@ -1738,9 +2259,32 @@ class EquipmentController extends Controller
             $equipment->supplier_id = $request->get('supplier_id', '');
             $equipment->image_url = '/uploads/equip/' . $image_url;
             $equipment->maintenance_date = $cur_time;
+            $equipment->category_id = $request->get('category_id', 0);
+            $equipment->residual_value = $request->get('residual_value', '');
+            $deprec_type = $request->get('deprec_value', 0);
+            if ($deprec_type == 2)
+                $equipment->current_value = $request->get('current_value', 0);
 
             $equipment->save();
             $equip_id = $equipment->id;
+
+            $liveServerURLQuery = DB::table('property_setting')
+			->where('settings_key','live_host')
+			->select('value')
+			->first();
+            $taskIdData = json_encode(array(
+                'id' => $equip_id,
+                'equip_id' => $equipment->equip_id,
+                'name' => $equipment->name,
+                'description' => $equipment->description,
+                'property_id' => $equipment->property_id
+            ));
+            $taskIdEncrypt = base64_encode($taskIdData);
+    
+            $liveServerURL = $liveServerURLQuery->value . "generateQRCode?id=" . $taskIdEncrypt ;
+            $response_URI = file_get_contents($liveServerURL);
+            $equipment->qr_code = $response_URI;
+            $equipment->save();
 
             $equipment_group = $request->get('equipment_group',[]);
             for($i = 0 ; $i < count($equipment_group) ;$i++) {
@@ -1809,6 +2353,63 @@ class EquipmentController extends Controller
 
 
         $ret['id'] = $id;
+
+        return Response::json($ret);
+    }
+
+    public function createEquipmentFileForMobile(Request $request) {
+        $output_dir = $_SERVER["DOCUMENT_ROOT"] . '/uploads/equip/';
+
+        if(!file_exists($output_dir)) {
+            mkdir($output_dir, 0777);
+        }
+
+        $filekey = 'files';
+
+        $id = $request->get('equip_id', '');
+
+        $ret = array();
+
+        $strFileInfoArr = $request->get('fileInfoArr', "[]");
+
+        $fileInfoArr = json_decode($strFileInfoArr);
+
+        
+        $fileCount = count($_FILES[$filekey]["name"]);
+
+        for ($i = 0; $i < $fileCount; $i++)
+        {
+            $fileName = $_FILES[$filekey]["name"][$i];
+            $ext = pathinfo($fileName, PATHINFO_EXTENSION);
+            
+            $filename1 = "equip_file_" . $id . '_' . $i . '_' . date('Y-m-d-H-i-s.').$ext;
+
+            $dest_path = $output_dir . $filename1;
+
+
+            move_uploaded_file($_FILES[$filekey]["tmp_name"][$i], $dest_path);
+
+            $ret['dest_path'] = $_FILES[$filekey]["tmp_name"];
+
+            $file = new EquipmentFile();
+            $file->equip_id = $request->get('equip_id', '');
+
+            $name = '';
+            $description = '';
+
+            if (count($fileInfoArr) === $fileCount) {
+                $name = $fileInfoArr[$i]->fileName;
+                $description = $fileInfoArr[$i]->description;
+            }
+
+            $file->name = $name . '.' . $ext;
+            $file->description = $description;
+            
+            $file->save();
+        }
+
+        $ret['code'] = 200;
+        $ret['content'] = "success";
 
         return Response::json($ret);
     }
@@ -1945,6 +2546,8 @@ class EquipmentController extends Controller
         $equipment->image_url = '/uploads/equip/' . $image_url;
         $equipment->property_id = $request->get('property_id','0');
         $equipment->maintenance_date = $cur_time;
+        $equipment->category_id = $request->get('category_id', 0);
+        $equipment->residual_value = $request->get('residual_value', '');
 
         $equipment->save();
         $equip_id = $id;
@@ -2243,6 +2846,41 @@ class EquipmentController extends Controller
         }
     }
 
+    public function generateAssetQRS(Request $request) {
+        $property_id = $request->get('property_id');
+        $equipments = DB::table('eng_equip_list')
+            ->where('property_id', $property_id)
+            ->whereRaw('qr_code = "" OR qr_code IS NULL')
+            ->get();
+        $liveServerURLQuery = DB::table('property_setting')
+			->where('settings_key','live_host')
+			->select('value')
+			->first();
+            
+        if(!empty($equipments)){
+            foreach($equipments as $equipment){
+                $equip = EquipmentList::find($equipment->id);
+                
+                $taskIdData = json_encode(array(
+                    'id' => $equip->id,
+                    'equip_id' => $equip->equip_id,
+                    'name' => $equip->name,
+                    'description' => $equip->description,
+                    'property_id' => $equip->property_id
+                ));
+                $taskIdEncrypt = base64_encode($taskIdData);
+        
+                $liveServerURL = $liveServerURLQuery->value . "generateQRCode?id=" . $taskIdEncrypt ;
+                $response_URI = file_get_contents($liveServerURL);
+    
+                $equip->qr_code = $response_URI;
+                $equip->save();
+            }
+        }
+        return Response::json($equipments);
+    }
+
+
     public function importExcelPart(Request $request) {
         $base64_string = $request->get('src','') ;
         $image_url = $request->get('name','');
@@ -2423,8 +3061,7 @@ class EquipmentController extends Controller
                 ->where('lc.' . $field_name, 'like', $filter)
                 //->where('property_id', $pro_id)
                 ->select(['lgm.*', 'lg.id as lg_id', 'lc.' . $field_name . ' as name', $property_id . ' as property_id'])
-                ->first();
-                // ->get();
+                ->get();
                 
         if(!empty($locationlist))  return $locationlist->id;
         else return 0;
@@ -2666,6 +3303,26 @@ class EquipmentController extends Controller
         if( $work_order_type != 'All' )
             $query->where('ew.work_order_type', $work_order_type);
 
+        $building_ids = CommonUser::getBuildingIds($dispatcher);
+        $building_ids = explode(',', $building_ids);
+        $permission = DB::table('common_users as cu')
+                ->join('common_job_role as jr', 'cu.job_role_id', '=', 'jr.id')
+                ->join('common_perm_group as pg', 'jr.permission_group_id', '=', 'pg.id')
+                ->join('common_permission_members as cpm', 'pg.id', '=', 'cpm.perm_group_id')
+                ->join('common_page_route as pr', 'cpm.page_route_id', '=', 'pr.id')
+                ->where('cu.id', $dispatcher)
+                ->select(DB::raw('pr.name'))
+                ->get();
+        $perm = [];
+
+        foreach ($permission as $row){
+                $perm[] .= $row->name; 
+        }
+
+        if (in_array("mobile.guestservice.usergroup", $perm)){
+            $query->whereIn('sl.building_id', $building_ids);
+        }
+
         $data_query = clone $query;
         $data_list = $data_query
             ->orderBy($orderby, $sort)
@@ -2770,6 +3427,102 @@ class EquipmentController extends Controller
         return Response::json($ret);
     }
 
+    public function getEquipmentWorkorderListForMobile(Request $request) {
+        date_default_timezone_set(config('app.timezone'));
+        $cur_time = date("Y-m-d H:i:s");
+
+        $property_id = $request->get('property_id', 4);
+        $equipment_id = $request->get('equipment_id','0');
+        $part_id = $request->get('part_id','0');
+
+        $ret = array();
+        $query = DB::table('eng_workorder as ew')
+            ->leftJoin('eng_equip_list as eel', 'ew.equipment_id', '=', 'eel.id')
+            ->leftJoin('eng_checklist as ecl', 'ew.checklist_id', '=', 'ecl.id')
+            ->leftJoin('common_users as cu', 'ew.user_id', '=', 'cu.id');
+            // ->leftJoin('common_job_role as cr', 'cr.id', '=', 'cu.job_role_id');
+
+        if($equipment_id > 0)
+            $query->where('ew.equipment_id', $equipment_id) ;
+
+        if($part_id > 0) {
+            $query->leftJoin('eng_workorder_part as ewp', 'ew.id', '=', 'ewp.workorder_id')
+                    ->where('ewp.part_id', $part_id);
+        }
+
+        $query->where('ew.property_id', $property_id);
+
+        $data_query = clone $query;
+        $data_list = $data_query
+            ->orderBy('ew.end_date')
+            ->select(DB::raw("ew.*,  eel.name as equipment_name, eel.location_group_member_id, DATE(ew.start_date) as start_date, ecl.name as checklist_name,
+                                DATE(ew.end_date) as end_date, ew.staff_cost+ew.part_cost as staff_cost,
+                                CONCAT_WS(' ', cu.first_name, cu.last_name) as staff_name"))
+            ->get();
+        for($i = 0 ; $i < count($data_list) ; $i++) {
+            $location_group_member_id = $data_list[$i]->location_group_member_id;
+            $location = app('App\Http\Controllers\Frontend\GuestserviceController')->getLocationInfo($location_group_member_id);
+            $data_list[$i]->equipment_location = $location;
+            $part_group = DB::table('eng_workorder_part')
+                ->where('workorder_id',$data_list[$i]->id)
+                ->select(DB::raw("workorder_id, part_id, part_name, part_number, part_cost, part_stock, part_number as part_number_original"))
+                ->get();
+            $data_list[$i]->part_group = $part_group;
+        }
+
+        $count_query = clone $query;
+        $totalcount = $count_query->count();
+
+        $ret['code'] = 200;
+        $ret['totalcount'] = $totalcount;
+        $ret['content'] = $data_list;
+
+        return Response::json($ret);
+    }
+
+    public function getConfigListForMobile(Request $request) {
+
+    	// status list
+    	$statusList = DB::table('eng_equip_status')
+            ->select(DB::raw('*'))
+            ->get();
+
+        // group list
+    	$groupList = DB::table('eng_equip_group')
+            ->select(DB::raw('*'))
+            ->get();
+
+
+        // part group list
+        $list1 = DB::table('eng_part_group')
+            ->select(DB::raw('*, "group" as type'))
+            ->orderBy('name')
+            ->get();
+        $list2 = DB::table('eng_part_list')
+            ->select(DB::raw('id, name, "single" as type'))
+            ->orderBy('name')
+            ->get();
+
+
+            $supplier_list = DB::table('eng_supplier')
+            ->select(DB::raw('*'))
+            ->get();
+
+        $partGroupList = array_merge($list1,$list2);
+
+        $content = [
+        	'statusList' => $statusList,
+        	'groupList' => $groupList,
+        	'partGroupList' => $partGroupList,
+            'supplierList' => $supplier_list
+        ];
+
+    	$ret['code'] = 200;
+    	$ret['content'] = $content;
+
+    	return Response::json($ret);
+    }
+
     public function checkWorkorder(Request $request) {
         date_default_timezone_set(config('app.timezone'));
         $cur_date = date("Y-m-d");
@@ -2836,6 +3589,12 @@ class EquipmentController extends Controller
 
     public function getEquipListByGroupId(Request $request) {
         $group_id = $request->get("group_id", 0);
+        $preventive_id = $request->get("ppm_id", 0);
+        if (empty($preventive_id)) {
+            $ret['code'] = 201;
+            $ret['message'] = "There is no Preventive id";
+            return Response::json($ret);
+        }
         if (empty($group_id)) {
             $ret['code'] = 201;
             $ret['message'] = "There is no group id";
@@ -2844,8 +3603,10 @@ class EquipmentController extends Controller
 
         $equipList = DB::table('eng_equip_group_member as egm')
             ->join('eng_equip_list as eel', 'egm.equip_id', '=', 'eel.id')
+            ->leftJoin('eng_preventive_equip_status as es', 'eel.id', '=', 'es.equip_id')
             ->where('egm.group_id', $group_id)
-            ->select(DB::raw('eel.id, eel.name'))
+            ->where('es.preventive_id', $preventive_id)
+            ->select(DB::raw('eel.id, eel.name, es.last_date as ppm_last_date'))
             ->get();
 
         $ret['code'] = 200;
@@ -3235,7 +3996,7 @@ class EquipmentController extends Controller
 
         WorkOrder::getWorkorderDetailWithStaff($workorder, $staff_id);
         $this->setWorkOrderStatusLog($workorder->id, $workorder->name, $workorder->status, $workorder->user_id, $staff_id, 'start workorder', 'workorder', $method);
-        $this->updateRelatedEngineeringStatus($workorder, $prev_status);
+        $this->updateRelatedEngineeringStatus($workorder, $prev_status, $user_id, $method);
 
         $this->sendWorkorderRefreshEvent($workorder->property_id, 'refresh_workorder_page', $workorder, $staff_id);
 
@@ -3318,7 +4079,7 @@ class EquipmentController extends Controller
 
         WorkOrder::getWorkorderDetailWithStaff($workorder, $staff_id);
         $this->setWorkOrderStatusLog($workorder->id, $workorder->name, $workorder->status, $workorder->user_id, $staff_id, 'hold workorder', 'workorder', $method);
-        $this->updateRelatedEngineeringStatus($workorder, $prev_status);
+        $this->updateRelatedEngineeringStatus($workorder, $prev_status, $user_id, $method);
 
         $this->sendWorkorderRefreshEvent($workorder->property_id, 'refresh_workorder_page', $workorder, $staff_id);
 
@@ -3386,7 +4147,7 @@ class EquipmentController extends Controller
 
         WorkOrder::getWorkorderDetailWithStaff($workorder, $staff_id);
         $this->setWorkOrderStatusLog($workorder->id, $workorder->name, $workorder->status, $workorder->user_id, $staff_id, 'resume workorder', 'workorder', $method);
-        $this->updateRelatedEngineeringStatus($workorder, $prev_status);
+        $this->updateRelatedEngineeringStatus($workorder, $prev_status, $user_id, $method);
 
         $this->sendWorkorderRefreshEvent($workorder->property_id, 'refresh_workorder_page', $workorder, $staff_id);
 
@@ -3816,6 +4577,8 @@ class EquipmentController extends Controller
         ob_start();
 
         $filename = 'Workorder_Checklist_' . date('d_M_Y_H_i') . '_' . $data['name'];
+        $filename = str_replace(' ', '_', $filename);
+        $filename = str_replace(["/", ":", "*", "?", "<", ">", "|", "'"], "_", $filename);
         $folder_path = public_path() . '/uploads/reports/';
         $path = $folder_path . $filename . '.html';
         $pdf_path = $folder_path . $filename . '.pdf';
@@ -4119,13 +4882,127 @@ class EquipmentController extends Controller
 
         $workorder =  WorkOrder::find($id);
 
+        $property = DB::table('services_location as sl')
+            ->where('sl.id', $workorder->location_id)
+            ->select(DB::raw('sl.property_id'))
+            ->first();
+        
+        $property_id = 0;
+        if (!empty($property)) {
+            $property_id = $property->property_id;
+        }
+
         $workorder->estimated_duration = $estimated_duration;
         $workorder->description = $description;
+
+        $staff_group = $request->get('staff_group', []);
+        $staff_cost = 0;
+        for ($i = 0; $i < count($staff_group); $i++) {
+            $staff_cost += $staff_group[$i]['staff_cost'];
+        }
+        $workorder->staff_cost = $staff_cost;
+
         $workorder->save();
 
+        $this->createStaffFromWorkOrder($property_id, $id, $staff_group);
         $this->setWorkorderStaffStatusLog($workorder, 'update workorder', 'workorder', $method);
+        
+        $ret = array();
+        $ret['code'] = 200;
+
+        return Response::json($ret);
+    }
+
+    public function changeWorkorderStatusToComplete(Request $request) {
+        date_default_timezone_set(config('app.timezone'));
+        $cu_time = date("Y-m-d H:i:s");
+
+        $user_id = $request->get('user_id', 0);
+
+        $id = $request->get('id', 0);
+        $status = $request->get('status', 'Pending');
+        $property_id = CommonUser::getPropertyID($user_id);
+        $method = Functions::getRequestMethod($request->get('device_id', ''));
+
+        $signature_path = $request->get('signature_path', '');
+        $signature_width = $request->get('signature_width', 0);
+        $signature_height = $request->get('signature_height', 0);
+
+        $workorder =  WorkOrder::find($id);
+
+        $prev_status = $workorder->status . '';
+
+        $inspected = WorkOrder::isChecklistCompleted($workorder);
+
+        $complete_comment = $request->get('comment', '');
+        $request_id = $request->get('request_id', '');
+        $request_flag = $request->get('request_flag', '');
+
+
+        if($status == 'Completed' )
+        {
+            if( $workorder->checklist_id > 0 && $inspected == 0 )
+            {
+                $ret = array();
+                $ret['id'] = $workorder->id;
+                $ret['code'] = 201;
+                $ret['message'] = "You should confirm checklist";
+
+                return Response::json($ret);
+            }
+        }
+
+        // $workorder->inspected =  $inspected;
+        $workorder->end_date =  $cu_time;
+        $workorder->status = $status;
+
+        //get original status
+        $start_date = strtotime($workorder->purpose_start_date);
+        $end_date  = strtotime($cu_time);
+        $duration = $end_date - $start_date;
+
+        $workorder->duration = $duration;
+
+
+        if( empty($complete_comment) && $request_id > 0 && $request_flag == 1   )
+        {
+            $ret = array();
+            $ret['code'] = 202;
+            $ret['message'] = "You should provide complete comment";
+
+            return Response::json($ret);
+        }
+
+        if (!empty($complete_comment))
+        {
+            DB::table('eng_workorder_status_log')->insert(['user_id' => $user_id  ,'workorder_id' => $workorder->id ,'status' => 'Custom' ,'description' => $complete_comment , 'method' => $method]);
+        }
+
+        $workorder->signature_path = $signature_path;
+        $workorder->signature_width = $signature_width;
+        $workorder->signature_height = $signature_height;
+
+        $workorder->save();
+
+        $workorder->complete_comment = $complete_comment;
+        $workorder->attach = $request->get('attach', '');
+
+        EquipmentPreventiveEquipStatus::updateNextDate($workorder);
+        $this->sendWorkorderDetailToPreventiveUsergroup($workorder, 'Completed');
+        $this->sendWorkorderDetailToEngUsergroup($workorder, 'Completed');
+
+        //update eng_part_list 's stock.
+        $this->updatePartStockFromWorkOrder($workorder);
+        $this->updateRelatedEngineeringStatus($workorder, $prev_status, $user_id, $method );
+        $this->setWorkorderStaffStatusLog($workorder, 'workorder status', 'workorder', $method);
+
+        WorkOrder::getWorkorderDetailWithStaff($workorder, $user_id);
+
+        $this->sendWorkorderRefreshEvent($workorder->property_id, 'refresh_workorder_page', $workorder, 0);
 
         $ret = array();
+        $ret['id'] = $workorder->id;
+        $ret['content'] = $workorder;
         $ret['code'] = 200;
 
         return Response::json($ret);
@@ -4233,7 +5110,7 @@ class EquipmentController extends Controller
 
         //update eng_part_list 's stock.
         $this->updatePartStockFromWorkOrder($workorder);
-        $this->updateRelatedEngineeringStatus($workorder, $prev_status);
+        $this->updateRelatedEngineeringStatus($workorder, $prev_status, $user_id, $method);
         $this->setWorkorderStaffStatusLog($workorder, 'workorder status', 'workorder', $method);
 
         WorkOrder::getWorkorderDetailWithStaff($workorder, $user_id);
@@ -4323,7 +5200,7 @@ class EquipmentController extends Controller
         return Response::json($ret);
     }
 
-    private function updateRelatedEngineeringStatus($workorder, $prev_status)
+    private function updateRelatedEngineeringStatus($workorder, $prev_status, $user_id, $method)
     {
         if( empty($workorder) )
             return;
@@ -4344,6 +5221,8 @@ class EquipmentController extends Controller
             DB::table('eng_repair_request')
                 ->where('id', $request_id)
                 ->update(['updated_at' => $cu_time, 'status_name' =>  $status ]);
+
+            app('App\Http\Controllers\Frontend\RepairRequestController')->setRepairRequestStatusLog($request_id, $status, '', $user_id, $method);
 
             if( $status == 'In Progress' && $prev_status == 'Pending' )    // Pending => In Progress
             {
@@ -4862,9 +5741,10 @@ class EquipmentController extends Controller
             ->leftJoin('eng_preventive_status as eps', 'ep.preventive_status', '=', 'eps.id')
             ->leftJoin('eng_equip_group as eeg', 'ep.equip_id', '=', 'eeg.id')
             ->leftJoin('eng_equip_list as el', 'ep.equip_id', '=', 'el.id')
-            ->leftJoin('eng_preventive_staff as epst', 'ep.id', '=', 'epst.preventive_id');
+            ->leftJoin('eng_preventive_staff as epst', 'ep.id', '=', 'epst.preventive_id')
+            ->leftJoin('eng_preventive_equip_status as epes', 'ep.id', '=', 'epes.preventive_id');
 
-        $query->whereRaw(sprintf("DATE(ep.next_date_time) >= '%s' and DATE(ep.next_date_time) <= '%s'", $start_date, $end_date));
+        $query->whereRaw(sprintf("DATE(epes.next_date) >= '%s' and DATE(epes.next_date) <= '%s'", $start_date, $end_date));
         $query->where('ep.property_id', $property_id);
         $query->where('deleted_flag', 0);
 
@@ -4940,7 +5820,7 @@ class EquipmentController extends Controller
         $data_list = $data_query
             ->orderBy($orderby, $sort)
             ->groupBy('ep.id')
-            ->select(DB::raw("ep.*,  ec.name as checklist_name , eps.name as preventive_status_name, 
+            ->select(DB::raw("ep.*,  ec.name as checklist_name , eps.name as preventive_status_name, epes.next_date as next_date_time,
                                 (CASE WHEN ep.equip_type = 'group' THEN eeg.name ELSE el.name END) as equip_name"))
             ->skip($skip)->take($pageSize)
             ->get();
@@ -4999,6 +5879,9 @@ class EquipmentController extends Controller
    public function getPreventiveMaintenanceListForMobile(Request $request) {
 
         $property_id = $request->get('property_id', 4);
+        $searchKey = $request->get('searchKey', '');
+        $pageNumber = $request->get('pageNumber', 0);
+        $pageCount = $request->get('pageCount', 0);
 
         $orderby = $request->get('field', 'id');
         $sort = $request->get('sort', 'asc');
@@ -5020,13 +5903,22 @@ class EquipmentController extends Controller
         $query->where('ep.property_id', $property_id);
         $query->where('deleted_flag', 0);
 
+        if ($searchKey !== '') {
+            $query->where('ep.name', 'LIKE', '%' . $searchKey . '%');
+        }
+
         $data_query = clone $query;
-        $data_list = $data_query
-            ->orderBy($orderby, $sort)
-            ->groupBy('ep.id')
-            ->select(DB::raw("ep.*,  ec.name as checklist_name , eps.name as preventive_status_name, 
-                                (CASE WHEN ep.equip_type = 'group' THEN eeg.name ELSE el.name END) as equip_name"))
-            ->get();
+        $totalCount = $query->count();
+        $data_query
+        ->orderBy($orderby, $sort)
+        ->groupBy('ep.id')
+        ->select(DB::raw("ep.*,  ec.name as checklist_name , eps.name as preventive_status_name, 
+                            (CASE WHEN ep.equip_type = 'group' THEN eeg.name ELSE el.name END) as equip_name"));
+
+        if ($pageCount !== 0) {
+            $data_query->skip($pageCount * $pageNumber)->take($pageCount);
+        }
+        $data_list = $data_query->get();
 
         foreach($data_list as $row)
         {
@@ -5067,6 +5959,7 @@ class EquipmentController extends Controller
 
         $ret['code'] = 200;
         $ret['content'] = $data_list;
+        $ret['totalCount'] = $totalCount;
         $ret['sync_minibar'] = 0;
         $ret['message'] = '';
 
@@ -5179,6 +6072,28 @@ class EquipmentController extends Controller
         }
 
         return Response::json($preventive);
+
+    }
+
+    public function createWorkorderManualByAssetForMobile(Request $request) {
+        $preventive = $request->get('pms', array());
+        $method = Functions::getRequestMethod($request->get('device_id', ''));
+
+        for( $i = 0; $i < count($preventive); $i++ )
+        {
+            $pm = $preventive[$i];
+
+            $preventive_id =  PreventiveList::find($pm['id']);
+
+            $workorder = $this->generateWorkorderFromPreventive($preventive_id, $method);
+            $preventive_id->next_date_time = $workorder->purpose_end_date;
+        }
+
+        $ret['code'] = 200;
+        $ret['content'] = true;
+        $ret['message'] = '';
+
+        return Response::json($ret);
 
     }
 
@@ -5490,6 +6405,10 @@ class EquipmentController extends Controller
 
          $rules = PropertySetting::getPropertySettings($property_id, $rules);
          $user_group = $rules['eng_user_group_ids'];
+
+         if( empty($user_group) )
+            return;
+
     //     $user_list = CommonUser::getUserListByEmailFromUserGroup($rules['eng_user_group_ids']);
     //     $user_group_emails = implode(";", array_map(function($item) {
     //         return $item->email;
@@ -5547,6 +6466,8 @@ class EquipmentController extends Controller
         ob_start();
 
         $filename = 'Workorder_Checklist_' . date('d_M_Y_H_i') . '_' . $data['name'];
+        $filename = str_replace(' ', '_', $filename);
+        $filename = str_replace(["/", ":", "*", "?", "<", ">", "|", "'"], "_", $filename);
         $folder_path = public_path() . '/uploads/reports/';
         $path = $folder_path . $filename . '.html';
         $pdf_path = $folder_path . $filename . '.pdf';
@@ -5745,6 +6666,258 @@ class EquipmentController extends Controller
 
         $ret['code'] = 200;
         $ret['content'] = $list;
+
+        return Response::json($ret);
+    }
+
+    public function getMyWorkorderListForMobile(Request $request)
+    {
+        date_default_timezone_set(config('app.timezone'));
+
+        $date = $request->get('date', 'D');
+        $user_id = $request->get('user_id', 0);
+        $mine_flag = $request->get('mine_flag', 0);
+
+        $start_date = $request->get('start_date', '');
+        $end_date = $request->get('end_date', '');
+
+        if ($start_date === '' || $end_date === '') {
+            $this->getDateRange($date, $start_date, $end_date);
+        }
+
+        /////////
+        $assignee_ids = $request->get('assignee_ids', '');
+        $wr_ids = $request->get('wr_ids', '');
+        $location_ids = $request->get('location_ids', '');
+        $priority = $request->get('priority', 'All');
+        $equip_list = $request->get('equip_list', []);
+
+        $work_order_type = $request->get('work_order_type', 'All');
+
+        ///// 
+
+        $property_id = CommonUser::getPropertyID($user_id);
+
+        $orderby = $request->get('orderby', "me");
+
+        $ids = $request->get('ids', '0');
+
+        $pageNumber = $request->get('pageNumber', 0);
+        $pageCount = $request->get('pageCount', 25);
+
+        $status = $request->get('status', '');
+        $searchKey = $request->get('searchKey', '');
+
+        $favorite_flag = $request->get('favorite_flag', 0);
+
+        $ret = array();
+
+        $query = DB::table('eng_workorder as ew')
+            ->leftJoin('eng_equip_list as eel', 'ew.equipment_id', '=', 'eel.id')
+            ->leftJoin('eng_checklist as ecl', 'ew.checklist_id', '=', 'ecl.id')
+            // ->join('eng_workorder_staff_status as wss', 'ew.id', '=', 'wss.workorder_id')
+            ->leftJoin('eng_repair_request as err', 'ew.request_id', '=', 'err.id')
+            ->leftJoin('common_users as cua', 'err.assignee', '=', 'cua.id')
+            ->leftJoin('common_users as cur', 'err.requestor_id', '=', 'cur.id')
+            ->leftJoin('services_location as sl', 'ew.location_id', '=', 'sl.id')
+            ->leftJoin('services_location_type as slt', 'sl.type_id', '=', 'slt.id')
+            ->leftJoin('eng_workorder_staff_status as wss', function($join) use ($user_id) {
+                $join->on('ew.id', '=', 'wss.workorder_id');
+                $join->on('wss.staff_id','=', DB::raw($user_id));
+            })
+            ->whereRaw(sprintf(" ( DATE(ew.created_date) >= '%s' AND DATE(ew.created_date) <= '%s' )", $start_date, $end_date))
+            ->where('ew.property_id', $property_id);
+
+                //dont show delete flag
+        $query->where('ew.delete_flag','!=', intval("1"));
+
+        // location filter
+        if( !empty($location_ids) )
+        {
+            $location_id_list = explode(',', $location_ids);
+            $query->whereIn('ew.location_id', $location_id_list);
+        }
+
+        // wrid filter
+        if( !empty($wr_ids) )
+        {
+            $wr_id_list = explode(',', $wr_ids);
+            $query->whereIn('err.ref_id', $wr_id_list);
+        }
+
+        // priority filter
+        if( $priority != 'All' )
+            $query->where('ew.priority', $priority);
+
+         // type filter
+        if( $work_order_type != 'All' )
+            $query->where('ew.work_order_type', $work_order_type);
+
+        $is_supervisor = CommonUser::isValidModule($user_id, 'mobile.workorder.supervisor');
+
+        $status_list = [];
+
+        $countInfo = [
+            'All' => 0
+        ];
+
+        $status_names = [];
+
+        if( $is_supervisor )
+        {
+            // get possible status
+            $status_names = Functions::getFieldValueList('eng_workorder', 'status');
+            if (!empty($status_names)) {
+                foreach ($status_names as $status_name) {
+                    # code...
+                    $count_query = clone $query;
+                    $tempCount = $count_query->where('ew.status', $status_name)->count();
+                    if ($tempCount < 1) {
+                        continue;
+                    }   
+
+                    $countInfo[$status_name] = $tempCount;
+                    $countInfo['All'] += $tempCount;
+                }
+            } else {
+                $count_query = clone $query;
+                $tempCount = $count_query->count();
+                $countInfo['All'] = $tempCount;
+            }
+        }
+        else
+        {
+            // get possible status
+            $status_names = Functions::getFieldValueList('eng_workorder_staff_status', 'status');
+
+            if (!empty($status_names)) {
+                foreach ($status_names as $status_name) {
+                    # code...
+                    $count_query = clone $query;
+                    $tempCount = $count_query->where('wss.status', $status_name)->count();
+                    if ($tempCount < 1) {
+                        continue;
+                    }   
+
+                    $countInfo[$status_name] = $tempCount;
+                    $countInfo['All'] += $tempCount;
+                }
+            } else {
+                $count_query = clone $query;
+                $tempCount = $count_query->count();
+                $countInfo['All'] = $tempCount;
+            }
+        }
+
+
+        if (!empty($status)) {
+            if( $is_supervisor == true )
+                $query->where('ew.status', $status);
+            else
+                $query->where('wss.status', $status);
+        } else { // means all
+            if( $is_supervisor == true )
+                $query->whereIn('ew.status', $status_names);
+            else
+                $query->whereIn('wss.status', $status_names);
+        }
+
+        // // status filter
+        // if( !empty($status_list) )
+        // {
+        //     $status_array = explode(",", $status_list);
+        //     $is_supervisor = CommonUser::isValidModule($user_id, 'mobile.workorder.supervisor');
+        //     if( $is_supervisor == true )
+        //         $query->whereIn('ew.status', $status_array);
+        //     else
+        //         $query->whereIn('wss.status', $status_array);
+        // }
+
+        // if( $favorite_flag > 0 )
+        //     $query->where('ew.favorite_flag', $favorite_flag);
+
+        // if( $mine_flag == 1 )
+        // {
+        //     $query->where(function ($subquery) use ($user_id) {
+        //         $subquery->where('wss.staff_id', $user_id)
+        //                 ->orWhere('err.assignee', $user_id);
+        //     });
+        // }
+
+
+        // search filter
+        if( !empty($searchKey) )
+            $query->whereRaw("(ew.id = '$searchKey' OR ew.name like '%$searchKey%')");
+
+        $data_query = clone $query;
+
+        // // id list
+        // $id_list = explode(",", $ids);
+        // if( !empty($ids) )
+        //     $data_query->whereNotIn('ew.id', $id_list);
+
+
+        if( $is_supervisor == true ) {
+            $data_query->orderByRaw("FIELD(ew.status, 'In Progress', 'On Hold', 'Pending', 'Completed', 'Closed')");
+        }
+        else {
+            $data_query->orderByRaw("FIELD(wss.status, 'In Progress', 'On Hold', 'Pending', 'Completed', 'Closed')");
+        }
+
+        $orderby_priority = "FIELD(ew.priority,'Urgent','High','Medium','Low')";
+
+
+        switch($orderby)
+        {
+            case "due_date":
+                $data_query->orderBy('ew.due_date', 'desc');
+                $data_query->orderByRaw($orderby_priority);
+                break;
+            case "priority":
+                $data_query->orderByRaw($orderby_priority);
+                $data_query->orderBy('ew.due_date', 'desc');
+                break;
+        }
+
+        $data_query->orderBy('ew.id', 'desc');
+
+        $data_list = $data_query
+            ->select(DB::raw('ew.*,  eel.name as equipment_name, eel.equip_id as equip_id, ew.location_id, ecl.name as checklist_name,
+                                ew.staff_cost + ew.part_cost as staff_cost,
+                                DATEDIFF(CURTIME(), ew.start_date) as age_days,
+                                DATE(ew.end_date) as end_date, CONCAT_WS(" ", cua.first_name, cua.last_name) as assignee_name, 
+                                CONCAT_WS(" ", cur.first_name, cur.last_name) as requestor_name, 
+                                sl.name as location_name, slt.type as location_type, wss.staff_id
+                                ' ))
+            ->skip($pageCount * $pageNumber)->take($pageCount)
+            ->get();
+
+        for($i = 0 ; $i < count($data_list) ; $i++)
+        {
+            WorkOrder::getWorkorderDetail($data_list[$i]);
+        }
+
+        // get work order staff status
+        foreach($data_list as $row)
+        {
+            $staff_status = DB::table('eng_workorder_staff_status')
+                ->where('workorder_id', $row->id)
+                ->where('staff_id', $user_id)
+                ->first();
+
+            if( empty($staff_status) )
+                $row->staff_status = 'Not Assigned';
+            else
+                $row->staff_status = $staff_status->status;
+        }
+
+        $count_query = clone $query;
+        $totalcount = $count_query->count();
+
+        $ret['code'] = 200;
+        $ret['content'] = $data_list;
+        $ret['countInfo'] = $countInfo;
+        $ret['totalcount'] = $totalcount;
 
         return Response::json($ret);
     }
@@ -6162,6 +7335,8 @@ class EquipmentController extends Controller
 
         $ret['code'] = 200;
         $ret['name'] = sprintf("WO-%05d %s", $id, $workorder->name);
+        $ret['name'] = str_replace(' ', '_', $ret['name']);
+        $ret['name'] = str_replace(["/", ":", "*", "?", "<", ">", "|", "'"], "_", $ret['name']);
 		$ret['report_date'] = date('d M Y');
         $ret['checklist'] = WorkOrder::getChecklistResult($id);
 
@@ -6190,6 +7365,8 @@ class EquipmentController extends Controller
 
         $ret['code'] = 200;
         $ret['name'] = sprintf("WO-%05d %s", $id, $workorder->name);
+        $ret['name'] = str_replace(' ', '_', $ret['name']);
+        $ret['name'] = str_replace(["/", ":", "*", "?", "<", ">", "|", "'"], "_", $ret['name']);
 		$ret['report_date'] = date('d M Y');
         $ret['checklist'] = WorkOrder::getChecklistResult($id);
 
@@ -6298,6 +7475,40 @@ class EquipmentController extends Controller
         return Response::json($ret);
     }
 
+    public function uploadSignature(Request $request)
+    {
+        $output_dir = "uploads/order_signatures/";
+        $ret = array();
+        $filekey = 'myfile';
+        
+        if ($request->hasFile($filekey) === false) {
+            $ret['code'] = 201;
+            $ret['message'] = "No input file";
+            $ret['content'] = array();
+            return Response::json($ret);
+        }
+        
+        if ($request->file($filekey)->isValid() === false) {
+            $ret['code'] = 202;
+            $ret['message'] = "No valid file";
+            return Response::json($ret);
+        }
+        
+        $order_id = $request->get('order_id', 0);
+        
+        $fileName = $_FILES[$filekey]["name"];
+        $ext = pathinfo($fileName, PATHINFO_EXTENSION);
+        $filename1 = "pic_signature_" . $order_id . "." . strtolower($ext);
+        
+        $dest_path = $output_dir . $filename1;
+        
+        move_uploaded_file($_FILES[$filekey]["tmp_name"], $dest_path);
+        
+        $ret['code'] = 200;
+        $ret['content'] = $dest_path;
+        return Response::json($ret);
+    }
+
     public function uploadAttachForChecklist(Request $request)
     {
         $id = $request->get('id', 0);
@@ -6382,6 +7593,7 @@ class EquipmentController extends Controller
 
     public function updateChecklistBatchForWorkorder(Request $request)
     {
+        $workorder_id = $request->get('workorder_id', 0);
         $checklist_str = $request->get('checklist', '');
         $checklist = json_decode($checklist_str);
 
@@ -6420,9 +7632,17 @@ class EquipmentController extends Controller
                     ->update($input);
         }
 
+        $workorder =  WorkOrder::find($workorder_id);
+
+        // check inspected result
+        $inspected = WorkOrder::isChecklistCompleted($workorder);
+        $workorder->inspected = $inspected ? 1 : 0;
+
+
         $ret = array();
 
         $ret['code'] = 200;
+        $ret['content'] = $workorder;
 
         return Response::json($ret);
     }
@@ -6636,10 +7856,11 @@ class EquipmentController extends Controller
         } 
 
         $export_data['datalist'] = $datalist;
+        $export_data['heading_list'] = ['ID', 'Name', 'Description', 'Priority', 'Type', 'Status', 'Asset', 'Location', 'Start Date', 'End Date', 'Total Time', 'Actual Time', 'Assigned Staff', 'Comments' ];
         $export_data['height'] = $height;
         $export_data['sub_title'] = "Work Order List";
 
-        return Excel::download(new CommonExport('excel.common_export', $export_data, 'Work Order List', $style), 'Work_Order_Report.xlsx');
+        return Excel::download(new CommonExport('excel.common_export', $export_data, 'Work Order List', $style), $filename . '.xlsx');
 		// Excel::create($filename, function($excel) use ($logo_path, $data) {
 
 		// 	$excel->sheet('Workorder Report', function($sheet) use ($data, $logo_path) {
@@ -6860,5 +8081,500 @@ class EquipmentController extends Controller
         echo json_encode($list);
     }
 
+    public function getEquipListItem(Request $request) {
+        date_default_timezone_set(config('app.timezone'));
+        $cur_time = date("Y-m-d H:i:s");
+        $id = $request->get('id', 0);
+        $property_id = $request->get('property_id', 0);
+        if($property_id == 0){
+            $ret['code'] = 500;
+            $ret['content'] = 'Invalid Property';
+        }
+        else{
+            $orderby = $request->get('field', 'id');
+            $sort = $request->get('sort', 'desc');
+            $ret = array();
+            $query = DB::table('eng_equip_list as el')
+                ->leftJoin('eng_equip_group_member as eegm', 'el.id', '=', 'eegm.equip_id')
+                ->leftJoin('eng_equip_group as eg', 'eegm.group_id', '=', 'eg.id')
+                ->leftJoin('eng_part_group as epg', 'el.part_group_id', '=', 'epg.id')
+                ->leftJoin('common_department as cd', 'el.dept_id', '=', 'cd.id')
+                ->leftJoin('eng_equip_status as et', 'el.status_id', '=', 'et.id')
+                ->leftJoin('eng_external_maintenance as em', 'el.external_maintenance_id', '=', 'em.id')
+                ->leftJoin('services_location as sl', 'el.location_group_member_id', '=', 'sl.id')
+                ->leftJoin('services_location_type as slt', 'sl.type_id', '=', 'slt.id')
+                ->leftJoin('services_location as sl2', 'el.sec_loc_id', '=', 'sl2.id')
+                ->leftJoin('services_location_type as slt2', 'sl2.type_id', '=', 'slt2.id')
+                ->leftJoin('eng_supplier as es', 'el.supplier_id', '=', 'es.id');
+            $query->where('el.property_id',$property_id)->where('el.id',$id);
+            $data_query = clone $query;
+            $data_query
+                 ->groupBy('el.id')
+                ->orderBy($orderby, $sort)
+                ->select(DB::raw("el.id, el.equip_id, el.name, el.description, el.critical_flag, el.dept_id, el.equip_group_id, el.part_group_id, 
+                                el.location_group_member_id, el.sec_loc_id, el.status_id, el.image_url, el.property_id, el.barcode,
+                                el.life, el.life_unit, el.purchase_cost, el.purchase_date, el.manufacture, el.model, el.warranty_start,
+                                el.warranty_end, el.supplier_id, el.maintenance_date, el.external_maintenance, el.external_maintenance_id,
+                                slt.type as location_group_type, cd.department, eg.name as group_name, epg.name as part_group_name, 
+                                es.supplier,em.email as maintenance_email, em.external_maintenance as external_maintenance_company, et.status,
+                                sl.name as location_name, slt.type as location_type,
+                                sl2.name as sec_location_name, slt2.type as sec_location_type"));
+            $dataInfo = $data_query->first();
+            if (!empty($dataInfo)) {
+                $equip = DB::table('eng_equip_group_member as em')
+                    ->leftJoin('eng_equip_group as eg', 'em.group_id', '=', 'eg.id')
+                    ->where('em.equip_id',$dataInfo->id)
+                    ->select(DB::raw("em.group_id as equip_group_id, em.equip_id, eg.name"))
+                    ->get();
+                $dataInfo->equipment_group = $equip;
+                $equip_part = DB::table('eng_equip_part_group_member as em')
+                    ->where('em.equip_id',$dataInfo->id)
+                    ->select(DB::raw("em.part_group_id , em.equip_id, em.type"))
+                    ->get();
+                $equip_part_copy = array();
+                    for($j = 0 ; $j < count($equip_part) ; $j++ ) {
+                        $equip_part_copy[$j] = clone $equip_part[$j];
+                        $type = $equip_part[$j]->type;
+                        $group_id = $equip_part[$j]->part_group_id;
+                        if($type == 'group') {
+                            $data = DB::table('eng_part_group')
+                                ->where('id',$group_id)
+                                ->select(DB::raw("name"))
+                                ->first();
+                            $equip_part_copy[$j]->name = $data->name;
+                        }
+                        if($type == 'no group') {
+                            $data = DB::table('eng_part_list')
+                                ->where('id',$group_id)
+                                ->select(DB::raw("name"))
+                                ->first();
+                            $equip_part_copy[$j]->name = $data->name;
+                        }
+                    }
+                $dataInfo->part_group = $equip_part_copy;
+            }
+            $currencyitem = DB::table('property_setting')->where('settings_key', 'currency')->where('property_id', $property_id)->first();
+		    if(!empty($currencyitem)){
+			    $currency = $currencyitem->value;
+		    }else{
+			    $currency = 'AED';
+		    }
+            $ret['code'] = 200;
+            $ret['content'] = $dataInfo;
+            $ret['currency'] = $currency;
+        }
+        return Response::json($ret);
+    }
 
+    public function getEquipList(Request $request) {
+        date_default_timezone_set(config('app.timezone'));
+        $cur_time = date("Y-m-d H:i:s");
+        $status = $request->get('status', '');
+        $searchKey = $request->get('searchKey', '');
+        $pageNumber = $request->get('pageNumber', 0);
+        $pageCount = $request->get('pageCount', 0);
+
+        $property_id = $request->get('property_id', 0);
+        $dept_id = $request->get('dept_id', 0);
+       
+        $ret = array();
+
+        if($property_id == 0){
+            $ret['code'] = 500;
+            $ret['content'] = 'Invalid Property';
+        }
+        else{
+
+            $orderby = $request->get('field', 'id');
+            $sort = $request->get('sort', 'desc');
+
+            
+            $query = DB::table('eng_equip_list as el')
+                ->leftJoin('eng_equip_group_member as eegm', 'el.id', '=', 'eegm.equip_id')
+                ->leftJoin('eng_equip_group as eg', 'eegm.group_id', '=', 'eg.id')
+                ->leftJoin('eng_part_group as epg', 'el.part_group_id', '=', 'epg.id')
+                ->leftJoin('common_department as cd', 'el.dept_id', '=', 'cd.id')
+                ->leftJoin('eng_equip_status as et', 'el.status_id', '=', 'et.id')
+                ->leftJoin('eng_external_maintenance as em', 'el.external_maintenance_id', '=', 'em.id')
+                ->leftJoin('services_location as sl', 'el.location_group_member_id', '=', 'sl.id')
+                ->leftJoin('services_location_type as slt', 'sl.type_id', '=', 'slt.id')
+                ->leftJoin('services_location as sl2', 'el.sec_loc_id', '=', 'sl2.id')
+                ->leftJoin('services_location_type as slt2', 'sl2.type_id', '=', 'slt2.id')
+                ->leftJoin('eng_supplier as es', 'el.supplier_id', '=', 'es.id');
+
+            $query->where('el.property_id',$property_id);
+
+             if ($dept_id != 0)
+                $query->where('el.dept_id', $dept_id);
+
+            // get total count with each total count
+            $statusList = DB::table('eng_equip_status')
+            ->select(DB::raw('*'))
+            ->get();
+
+
+            $countInfo = [
+            	'All' => 0
+            ];
+
+            if (!empty($statusList)) {
+            	foreach ($statusList as $statusItem) {
+            		$count_query = clone $query;
+
+            		$tempStatus = $statusItem->status;
+            		$tempCount = $count_query->groupBy('el.id')->where('et.status', $tempStatus)->get();
+            		if (count($tempCount) < 1) {
+            			continue;
+            		}
+
+            		$countInfo[$tempStatus] = count($tempCount);
+            		$countInfo['All'] += count($tempCount);
+            	}
+            } else {
+            	$count_query = clone $query;
+
+        		$tempStatus = $statusItem->status;
+        		$countInfo['All'] = $count_query->count();
+            }
+
+            if (!empty($status)) {
+                $query->where('et.status', $status);
+            }
+
+            $data_query = clone $query;
+
+
+            $data_query
+                 ->groupBy('el.id')
+                ->orderBy($orderby, $sort)
+                ->select(DB::raw("el.id, el.equip_id, el.name, el.description, el.critical_flag, el.dept_id, el.equip_group_id, el.part_group_id, 
+                                el.location_group_member_id, el.sec_loc_id, el.status_id, el.image_url, el.property_id, el.barcode,
+                                el.life, el.life_unit, el.purchase_cost, el.purchase_date, el.manufacture, el.model, el.warranty_start,
+                                el.warranty_end, el.supplier_id, el.maintenance_date, el.external_maintenance, el.external_maintenance_id,
+                                slt.type as location_group_type, cd.department, eg.name as group_name, epg.name as part_group_name, 
+                                es.supplier,em.email as maintenance_email, em.external_maintenance as external_maintenance_company, et.status,
+                                sl.name as location_name, slt.type as location_type,
+                                sl2.name as sec_location_name, slt2.type as sec_location_type"));
+            if (!empty($searchKey)) {
+                $data_query->whereRaw("el.name like '%$searchKey%' OR sl.name LIKE '%$searchKey%' OR slt.type LIKE '%$searchKey%'");
+            }
+
+            if ($pageCount > 0) {
+                $skip = $pageCount * $pageNumber;
+                $data_query->skip($skip)->take($pageCount);
+            }
+
+            $data_list = $data_query->get();
+
+            foreach ($data_list as $data_list_item) {
+                # code...
+                $equip = DB::table('eng_equip_group_member as em')
+                    ->leftJoin('eng_equip_group as eg', 'em.group_id', '=', 'eg.id')
+                    ->where('em.equip_id',$data_list_item->id)
+                    ->select(DB::raw("em.group_id as equip_group_id, em.equip_id, eg.name"))
+                    ->get();
+
+                $data_list_item->equipment_group = $equip;
+                $equip_part = DB::table('eng_equip_part_group_member as em')
+                    ->where('em.equip_id',$data_list_item->id)
+                    ->select(DB::raw("em.part_group_id , em.equip_id, em.type"))
+                    ->get();
+
+                $equip_part_copy = array();
+
+                for($j = 0 ; $j < count($equip_part) ; $j++ ) {
+                    $equip_part_copy[$j] = clone $equip_part[$j];
+                    $type = $equip_part[$j]->type;
+                    $group_id = $equip_part[$j]->part_group_id;
+                    if($type == 'group') {
+                        $data = DB::table('eng_part_group')
+                            ->where('id',$group_id)
+                            ->select(DB::raw("name"))
+                            ->first();
+                        $equip_part_copy[$j]->name = $data->name;
+                    }
+                    if($type == 'no group') {
+                        $data = DB::table('eng_part_list')
+                            ->where('id',$group_id)
+                            ->select(DB::raw("name"))
+                            ->first();
+                        $equip_part_copy[$j]->name = $data->name;
+                    }
+                }
+
+                $data_list_item->part_group = $equip_part_copy;
+
+                /// QQQ  remove qrcod and barcode for mobile
+                /// it is too big and not necessary    
+                // unset($data_list_item->qr_code);
+                // unset($data_list_item->barcode);
+
+                /// 
+            }
+
+            $currencyitem = DB::table('property_setting')->where('settings_key', 'currency')->where('property_id', $property_id)->first();
+		    if(!empty($currencyitem)){
+			    $currency = $currencyitem->value;
+		    }else{
+			    $currency = 'AED';
+		    }
+
+            $ret['code'] = 200;
+            $ret['content'] = $data_list;
+            $ret['countInfo'] = $countInfo;
+            $ret['currency'] = $currency;
+        }
+
+        return Response::json($ret);
+    }
+
+    public function getPreventiveMaintenanceByEquipId(Request $request) {
+        
+        $property_id = $request->get('property_id', 0);
+        $equip_id = $request->get('equip_id', 0);
+        $searchKey = $request->get('searchKey', '');
+
+        if($property_id == 0){
+            $ret['code'] = 500;
+            $ret['content'] = 'Invalid Property';
+        }
+        else if($equip_id == 0){
+            $ret['code'] = 500;
+            $ret['content'] = 'Invalid Equipment';
+        }
+        else{
+
+            //single 
+            $pm_single_list = [];
+
+            $query1 = DB::table('eng_preventive')
+                ->where('property_id', $property_id)
+                ->where('equip_type','single')
+                ->where('equip_id', $equip_id);
+            if ($searchKey !== '') {
+                $query1->where('name', 'LIKE', '%' . $searchKey . '%');
+            }
+
+            $pm_single_list = $query1->get();
+
+            //group
+            $equip_group_ids = DB::table('eng_equip_group as eg')
+                ->join('eng_equip_group_member as eegm','eg.id','=','eegm.group_id')
+                ->where('eegm.equip_id', $equip_id)
+                ->pluck('eg.id');
+
+            $pm_group_list = [];
+            $query2 = DB::table('eng_preventive as ep')
+                ->where('ep.property_id', $property_id)
+                ->where('ep.equip_type','group')
+                ->whereIn('ep.equip_id',$equip_group_ids);
+            if ($searchKey !== '') {
+                $query2->where('ep.name', 'LIKE', '%' . $searchKey . '%');
+            }
+
+            $pm_group_list = $query2->get();
+
+            $resultArray = array_merge($pm_single_list,$pm_group_list);
+
+            $ret['code'] = 200;
+            $ret['totalCount'] = count($resultArray);
+            $ret['content'] = $resultArray;
+        }
+
+        return Response::json($ret);
+    }
+
+    public function makeAssetListReportData($report) {
+		$data = $report;
+
+		$property_id = $report['property_id']; 
+		// $start_date = $report['start_date'];
+		// $end_date = $report['end_date'];
+		$user_id = $report['user_id'];
+		// $filter_value = $report['filter_value'];
+
+		$property_ids_by_jobrole = CommonUser::getPropertyIdsByJobrole($user_id);
+		// $filter = UserMeta::getComplaintTicketFilter($user_id,$property_ids_by_jobrole);
+
+		$query = DB::table('eng_equip_list as el')
+            ->leftJoin('eng_equip_group_member as eegm', 'el.id', '=', 'eegm.equip_id')
+            ->leftJoin('eng_equip_group as eg', 'eegm.group_id', '=', 'eg.id')
+            ->leftJoin('eng_part_group as epg', 'el.part_group_id', '=', 'epg.id')
+            ->leftJoin('common_department as cd', 'el.dept_id', '=', 'cd.id')
+            ->leftJoin('eng_equip_status as et', 'el.status_id', '=', 'et.id')
+            ->leftJoin('eng_external_maintenance as em', 'el.external_maintenance_id', '=', 'em.id')
+            ->leftJoin('services_location as sl', 'el.location_group_member_id', '=', 'sl.id')
+            ->leftJoin('services_location_type as slt', 'sl.type_id', '=', 'slt.id')
+            ->leftJoin('services_location as sl2', 'el.sec_loc_id', '=', 'sl2.id')
+            ->leftJoin('services_location_type as slt2', 'sl2.type_id', '=', 'slt2.id')
+            ->leftJoin('eng_supplier as es', 'el.supplier_id', '=', 'es.id');
+
+            $query->whereIn('el.property_id',$property_ids_by_jobrole);
+
+        $data_query = clone $query;
+        $data_list = $data_query
+            ->groupBY('el.id')
+            // ->orderBy($orderby, $sort)
+            ->select(DB::raw("el.*,  slt.type as location_group_type, cd.department, eg.name as group_name, epg.name as part_group_name, 
+                            es.supplier,em.email as maintenance_email, em.external_maintenance as external_maintenance_company, et.status,
+                            sl.name as location_name, slt.type as location_type,
+                            sl2.name as sec_location_name, slt2.type as sec_location_type"))
+            // ->skip($skip)->take($pageSize)
+            ->get();
+
+		$data['datalist'] = $data_list;
+
+		return $data;
+	}
+
+    public function applyDepreciation(Request $request) {
+
+		date_default_timezone_set(config('app.timezone'));
+        $cur_time = date("Y-m-d H:i:s");
+        $cur_date = date("Y-m-d");
+
+        // get property list
+        $property_list = DB::table('common_property')->get();
+        foreach($property_list as $pro)
+        {
+            $property_id = $pro->id;
+           
+            $rules = array();
+            $rules['allow_asset_depreciation'] = 1;
+
+            $rules = PropertySetting::getPropertySettings($property_id, $rules);
+            if ( $rules['allow_asset_depreciation'] == 1)
+            {
+                $eng_category = DB::table('eng_equip_category')
+                                ->where('property_id', $property_id)
+                                ->get();
+                foreach ($eng_category as $category){
+                    $equips = DB::table('eng_equip_list as el')
+                        ->leftJoin('eng_equip_category as eec', 'el.category_id', '=', 'eec.id')
+                        ->where('el.property_id',$property_id)
+                        ->where('el.category_id',$category->id)
+                        ->select('el.*')
+                        ->get();
+
+                    foreach($equips as $equip){
+
+                        if ($equip->life_unit == 'years')
+                            $life = $equip->life*12;
+                        if ($equip->life_unit == 'months')
+                            $life = $equip->life;
+
+                        if ($category->deprec_type == 1){
+                            $depreciation = ($equip->purchase_cost - $equip->residual_value)/($life);
+
+                            if ($depreciation > 0)
+                                $current_value = $equip->current_value - $depreciation;
+                            else
+                                $current_value = $equip->residual_value;
+                        }else{
+                            $depreciation = ($equip->current_value * $category->deprec_rate)/100;
+                            $current_value = $equip->current_value - $depreciation;
+                        }
+
+                        DB::table('eng_equip_list as el')
+                                ->where('el.property_id',$property_id)
+                                ->where('el.category_id',$category->id)
+                                ->where('el.id',$equip->id)
+                                ->update(['el.current_value'=> $current_value]);
+
+                    }
+                     DB::table('eng_equip_category')
+                                ->where('property_id', $property_id)
+                                ->where('id', $category->id)
+                                ->update(['last_deprec_date'=> $cur_date]);
+                }
+             echo json_encode($eng_category);
+             
+            }   
+            echo $pro->name . " Asset Depreciation Applied at " . $cur_time;
+        }
+	}
+
+    public function updateAssetDepreciation(Request $request) {
+
+		 date_default_timezone_set(config('app.timezone'));
+        $cur_time = date("Y-m-d H:i:s");
+        $cur_date = date("Y-m-d");
+
+        $ret = array();
+
+        // get property list
+        $property_list = DB::table('common_property')->get();
+        foreach($property_list as $pro)
+        {
+            $property_id = $pro->id;
+           
+            $rules = array(); 
+            $rules['allow_asset_depreciation'] = 1;
+
+            $rules = PropertySetting::getPropertySettings($property_id, $rules);
+            if ( $rules['allow_asset_depreciation'] == 1)
+            {
+                $eng_category = DB::table('eng_equip_category')
+                                ->where('property_id', $property_id)
+                                ->get();
+                
+                foreach ($eng_category as $category){
+                    $equips = DB::table('eng_equip_list as el')
+                        ->leftJoin('eng_equip_category as eec', 'el.category_id', '=', 'eec.id')
+                        ->where('el.property_id',$property_id)
+                        ->where('el.category_id',$category->id)
+                        ->select('el.*')
+                        ->get();
+
+                    foreach($equips as $equip){
+
+
+                        if ($equip->life_unit == 'years')
+                            $life = $equip->life*12;
+                        if ($equip->life_unit == 'months')
+                            $life = $equip->life;
+
+                        if ($category->deprec_type == 1){
+                            $depreciation = ($equip->purchase_cost - $equip->residual_value)/($life);
+                            // $date1 = new DateTime($equip->purchase_date);
+                            // $date2 = new DateTime($cur_date);
+                            // $date_diff = $date1->diff($date2);
+                            $date1=date_create($equip->purchase_date);
+                            $date2=date_create($cur_date);
+                            $date_diff=date_diff($date1,$date2);
+                            $elapsed_months = (($date_diff->y) * 12) + ($date_diff->m);
+                            $elapsed_depreciation  = $depreciation * $elapsed_months;
+                            if ($elapsed_depreciation == 0)
+                                $current_value = $equip->purchase_cost;
+                            elseif ($elapsed_depreciation >= $equip->residual_value)
+                                $current_value = $equip->purchase_cost - $elapsed_depreciation;
+                            else
+                                $current_value = $equip->residual_value;
+                        }else{
+                            $depreciation = ($equip->current_value * $category->deprec_rate)/100;
+                            $current_value = $equip->current_value - $depriciation;
+                        }
+                        echo $current_value;
+                         DB::table('eng_equip_list as el')
+                                ->where('el.property_id',$property_id)
+                                ->where('el.category_id',$category->id)
+                                ->where('el.id',$equip->id)
+                                ->update(['el.current_value'=> $current_value]);
+
+                    }
+                    DB::table('eng_equip_category')
+                                ->where('property_id', $property_id)
+                                ->where('id', $category->id)
+                                ->update(['last_deprec_date'=> $cur_date]);
+
+                }
+            }   
+        }
+
+        
+		$ret['code'] = 200;
+        $ret['message'] = "Depreciation done successfully";
+
+		return Response::json($ret);
+	}
 }

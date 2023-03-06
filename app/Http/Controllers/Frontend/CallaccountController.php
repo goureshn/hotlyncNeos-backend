@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
 use App\Models\Call\AdminCall;
+use App\Models\Call\BCCall;
 use App\Models\Call\CarrierGroup;
 use App\Models\Call\Destination;
 use App\Models\Call\GroupDestination;
@@ -19,6 +20,7 @@ use App\Models\Call\ClassifyReminder;
 use App\Models\Common\CommonUser;
 use App\Models\Call\Csvdata;
 use App\Models\Service\ShiftGroupMember;
+use App\Models\Common\Guest;
 use DateInterval;
 use DateTime;
 use DB;
@@ -485,7 +487,7 @@ $row= MobileTrack::find($details['id']);
 public function readFile(&$details,$property_id)
 {
 	ini_set('memory_limit','-1');
-	ini_set('max_execution_time', 300);
+	ini_set('max_execution_time', 3000);
 	set_time_limit(0);
 	 $csv_data = [];
 		 $i=0; $j=0;
@@ -497,8 +499,17 @@ public function readFile(&$details,$property_id)
 				{
 					if($i>=0 && $i<100000)
 					{
-						$csv_data[] = array('request_date' => $data [0],'call_from' => $data [1],'date' => $data [3],'time' => $data [4],
-									'call_to' => $data [5],'country' => $data [6],'duration' => $data [7],'charges' => $data [8]);
+						if($data[0] != "" || $data[0] != null || is_numeric($data[0]) || 
+						$data[1] != "" || $data[1] != null || is_numeric($data[1]) || 
+						$data[2] != "" || $data[2] != null ||
+						$data[3] != "" || $data[3] != null ||
+						$data[4] != "" || $data[4] != null || 
+						$data[5] != "" || $data[5] != null ||
+						$data[6] != "" || $data[6] != null || is_numeric($data[6]) || 
+						$data[7] != "" || $data[7] != null || is_numeric($data[7]) ){
+							$csv_data[] = array('request_date' => $data [0],'call_from' => $data [1],'date' => $data [2],'time' => $data [3],
+									'call_to' => $data [4],'country' => $data [5],'duration' => $data [6],'charges' => $data [7]);
+						}
 					}	
 					$i++;
 					if($i==100000)
@@ -515,10 +526,7 @@ public function readFile(&$details,$property_id)
 						$csv_data = [];
 						
 						$i=0;
-					}
-						
-					//}	
-				
+					}				
 				}
 				$j++;
 			}
@@ -1657,6 +1665,7 @@ $message_content = sprintf('The status of issue IT%05d',
 	//echo json_encode($data);
 	$content = view('frontend.report.callaccount.callaccount_detail_total', compact('data'))->render();
 	$filename = 'Detail_Report_By_Total_' . date('d_M_Y_H_i') . '_' . $user->id;
+	$filename = str_replace(' ', '_', $filename);
 		$folder_path = public_path() . '/uploads/reports/';
 		$path = $folder_path . $filename . '.html';
 		ob_start();
@@ -1944,9 +1953,9 @@ $message_content = sprintf('The status of issue IT%05d',
 			{
 				$time=explode('.',$value['duration']);
 			  if(count($time)>1)
-			  $elapse_seconds = ((($time[0])*60)+($time[1]));
+			  $elapse_seconds = (((intval($time[0]))*60)+(intval($time[1])));
 			  else 
-			   $elapse_seconds = (($time[0])*60);
+			   $elapse_seconds = ((intval($time[0]))*60);
 			  
 			  $value['duration']=$elapse_seconds;
 				

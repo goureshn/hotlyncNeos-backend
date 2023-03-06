@@ -40,7 +40,7 @@ class Kernel extends HttpKernel
 
         'api' => [
             // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-            'throttle:api',
+            'throttle:60,1',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
     ];
@@ -55,6 +55,10 @@ class Kernel extends HttpKernel
     protected $routeMiddleware = [
         'auth' => \App\Http\Middleware\Authenticate::class,
         'api_auth_group' => \App\Http\Middleware\AuthMiddleware::class,
+        'hash_check' => \App\Http\Middleware\AfterMiddleware::class,
+        'api_mobile_group' => \App\Http\Middleware\MobileAuthMiddleware::class,
+        'guest_group' => \App\Http\Middleware\GuestAuthMiddleware::class,
+        'cors' => \App\Http\Middleware\CorsMiddleware::class,
         'interface_auth_group' => \App\Http\Middleware\InterfaceAuthMiddleware::class,
         'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
         'auth.session' => \Illuminate\Session\Middleware\AuthenticateSession::class,

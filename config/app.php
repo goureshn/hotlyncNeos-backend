@@ -193,6 +193,7 @@ return [
         Illuminate\Translation\TranslationServiceProvider::class,
         Illuminate\Validation\ValidationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
+        Telegram\Bot\Laravel\TelegramServiceProvider::class,
 
         /*
          * Package Service Providers...
@@ -259,6 +260,7 @@ return [
         // 'Datatables' => yajra\Datatables\Datatables::class,
         'Datatables' => Yajra\DataTables\Facades\DataTables::class,
         'Curl'       => Ixudra\Curl\Facades\Curl::class,
+        'Telegram' => Telegram\Bot\Laravel\Facades\Telegram::class,
     ])->toArray(),
 
 ];

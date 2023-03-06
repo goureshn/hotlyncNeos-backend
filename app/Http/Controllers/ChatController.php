@@ -17,19 +17,31 @@ use App\Models\Service\RosterList;
 use App\Models\Service\ShiftUser;
 use App\Models\Service\Task;
 use App\Models\Service\TaskList;
+use App\Models\Service\AgentAgentChat;
+use App\Models\Service\AgentChatGroup;
+use App\Models\Service\AgentChatGroupMembers;
+use App\Models\Service\AgentGroupChatHistory;
+use App\Models\Service\GuestChatHistory;
+
 use App\Modules\Functions;
 use DB;
+use DateInterval;
+use DateTime;
 use Illuminate\Http\Request;
 use Redis;
 use Response;
 use File;
+use Telegram\Bot\Laravel\Facades\Telegram;
+use Illuminate\Support\Facades\Event;
+use App\Events\WhatsappProcessed;
+use Illuminate\Support\Facades\Log;
 
 define("WAITING", 1);
 define("ACTIVE", 2);
 define("ENDED", 3);
 define("TRANSFER", 4);
 
-define("COMPLETEDCHAT", 0);
+define("COMPLETED", 0);
 define("OPEN", 1);
 define("ESCALATED", 2);
 define("TIMEOUT", 3);
@@ -92,6 +104,38 @@ define("CHAT_WELCOME", "welcome");
 define("CHAT_AGENT_CALL_WAITING", "agent_call_waiting");
 
 define("CHAT_AGENT_LOGOUT", 'agent_logout');
+
+//staycae db templates
+define("SC_CHAT_FIRST_QUESTION",'sc_chat_first_question');
+define("SC_INVALID_OPTION",'sc_invalid_option');
+define("SC_SGUEST_A1_R",'sc_sguest_a1_r');
+define("SC_SGUEST_A1_B1_R",'sc_sguest_a1_b1_r');
+define("SC_SGUEST_A1_B1_C1_R",'sc_sguest_a1_b1_c1_r');
+define("SC_SGUEST_A1_B1_C2_R",'sc_sguest_a1_b1_c2_r');
+define("SC_SGUEST_A1_B1_C2_D1_R",'sc_sguest_a1_b1_c2_d1_r');
+define("SC_SGUEST_A1_B1_C2_D2_R",'sc_sguest_a1_b1_c2_d2_r');
+define("SC_SGUEST_A1_B1_C2_D3_R",'sc_sguest_a1_b1_c2_d3_r');
+define("SC_SGUEST_A1_B1_C2_D4_R",'sc_sguest_a1_b1_c2_d4_r');
+define("SC_SGUEST_A1_B1_C2_D5_R",'sc_sguest_a1_b1_c2_d5_r');
+define("SC_SGUEST_A1_B1_C3_R",'sc_sguest_a1_b1_c3_r');
+define("SC_SGUEST_A1_B1_C3_D1_R",'sc_sguest_a1_b1_c3_d1_r');
+define("SC_SGUEST_A1_B1_C3_D2_R",'sc_sguest_a1_b1_c3_d2_r');
+define("SC_SGUEST_A1_B1_C4_R",'sc_sguest_a1_b1_c4_r');
+define("SC_SGUEST_A1_B2_R",'sc_sguest_a1_b2_r');
+define("SC_SGUEST_A1_B2_C1_R",'sc_sguest_a1_b2_c1_r');
+define("SC_SGUEST_A1_B2_C2_R",'sc_sguest_a1_b2_c2_r');
+define("SC_SGUEST_A1_B3_R",'sc_sguest_a1_b3_r');
+define("SC_SGUEST_A1_B4_R",'sc_sguest_a1_b4_r');
+define("SC_SGUEST_A1_B4_C1_R",'sc_sguest_a1_b4_c1_r');
+define("SC_SGUEST_A1_B4_C2_R",'sc_sguest_a1_b4_c2_r');
+define("SC_SGUEST_A2_R",'sc_sguest_a2_r');
+define("SC_SGUEST_A2_B1_R",'sc_sguest_a2_b1_r');
+define("SC_SGUEST_A2_B1_C1_R",'sc_sguest_a2_b1_c1_r');
+define("SC_SGUEST_A2_B1_C2_R",'sc_sguest_a2_b1_c2_r');
+define("SC_SGUEST_A2_B1_C3_R",'sc_sguest_a2_b1_c3_r');
+define("SC_SGUEST_A2_B2_R",'sc_sguest_a2_b2_r');
+define("SC_SGUEST_A2_B2_C1_R",'sc_sguest_a2_b2_c1_r');
+define("SC_CHAT_AGENT_CALL_WAITING", "sc_agent_call_waiting");
 
 
 class ChatController extends Controller
@@ -240,6 +284,7 @@ class ChatController extends Controller
             }
 
             $vipList = DB::table('common_vip_codes')
+                ->where('property_id', $property_id)
                 ->where('name', 'LIKE', '%' . $searchValue . '%')
                 ->select(DB::raw('id'))
                 ->orderBy('name')
@@ -332,6 +377,7 @@ class ChatController extends Controller
                 $vipIds = explode(",", $strVipIds);
 
                 $vipList = DB::table('common_vip_codes')
+                    ->where('property_id', $property_id)
                     ->whereIn('id', $vipIds)
                     ->select(DB::raw('id, name'))
                     ->get();
@@ -446,12 +492,10 @@ class ChatController extends Controller
         $agent_id = $request->get('agent_id', 0);
         $property_id = $request->get('property_id', 0);
         $online_flag = $request->get('online_flag', true);
+        $pageNumber = $request->get('pageNumber', 0);
+        $pageCount = $request->get('pageCount', 0);
         $filter = $request->get('filter', '');
-
-        $filter = "'%" . $filter . "%'";
-
         $cur_time = date("Y-m-d H:i:s");
-
         $query = DB::table('common_users as cu')
             ->join('common_department as cd', 'cu.dept_id', '=', 'cd.id')
             ->join('common_job_role as jr', 'cu.job_role_id', '=', 'jr.id')
@@ -461,30 +505,34 @@ class ChatController extends Controller
             ->where('cd.property_id', $property_id)
             ->where('cu.id', '!=', $agent_id)
             ->where('cu.deleted', 0)
-            ->whereRaw('CONCAT_WS(" ", cu.first_name, cu.last_name) like ' . $filter)
             ->orderBy('cu.online_status', 'desc')
-            ->select(DB::raw('cu.id, cu.online_status, cu.picture, jr.job_role, 
+            ->select(DB::raw('cu.id, cu.online_status, cu.picture, jr.job_role, cd.department,
             CONCAT_WS(" ", cu.first_name, cu.last_name) as agent_name'));
-
-        if ($online_flag)
+        if (!empty($filter)) {
+            $filterWhere = "'%" . $filter . "%'";
+            $query->whereRaw('CONCAT_WS(" ", cu.first_name, cu.last_name) like ' . $filterWhere);
+        }
+        if ($online_flag) {
             $query->where('cu.online_status', 1);
-
+        }
+        $countQuery = clone $query;
+        $totalCount = $countQuery->count();
+        if ($pageCount > 0) {
+            $query->skip($pageCount * $pageNumber)->take($pageCount);
+        }
         $agent_list = $query->get();
-
         $site_url = Functions::getSiteURL();
         // get last message, unread count
         foreach ($agent_list as $row) {
-            $row->picture = $site_url . $row->picture;
+            // $row->picture = $site_url . $row->picture;
             $query = DB::table('services_chat_agent_history as cah')
                 ->where('cah.from_id', $agent_id)
                 ->where('cah.to_id', $row->id);
-
             $temp_query = clone $query;
             $row->last_message = $temp_query
                 ->orderBy('cah.updated_at', 'desc')
                 ->select(DB::raw('cah.*'))
                 ->first();
-
             // get last message
             $temp_query = clone $query;
             $unread_info = $temp_query
@@ -492,22 +540,19 @@ class ChatController extends Controller
                 ->first();
             $row->unread_count = $unread_info->unread_cnt;
         }
-        $agent_list_arr = $agent_list->toArray();
-        usort( $agent_list_arr, function ($a, $b) {
-            if (empty($a->last_message) && empty($b->last_message))
-                return 1;
-            if (empty($a->last_message) && !empty($b->last_message))
-                return 1;
-            if (!empty($a->last_message) && empty($b->last_message))
-                return -1;
-            return $a->last_message->updated_at >= $b->last_message->updated_at ? -1 : 1;
-        });
-
+        // usort($agent_list, function ($a, $b) {
+        //     if (empty($a->last_message) && empty($b->last_message))
+        //         return 1;
+        //     if (empty($a->last_message) && !empty($b->last_message))
+        //         return 1;
+        //     if (!empty($a->last_message) && empty($b->last_message))
+        //         return -1;
+        //     return $a->last_message->updated_at >= $b->last_message->updated_at ? -1 : 1;
+        // });
         $ret = array();
-
         $ret['code'] = 200;
-        $ret['content'] = $agent_list_arr;
-
+        $ret['content'] = $agent_list;
+        $ret['totalCount'] = $totalCount;
         return Response::json($ret);
     }
 
@@ -715,6 +760,134 @@ class ChatController extends Controller
         Redis::publish('notify', json_encode($message));
     }
 
+    /*
+	 * send to live server current ticket state
+	 */
+	public function saveTaskSystemNotification($task, $type, $isRefresh = true) {
+		$notification = new SystemNotification();
+		$taskinfo = $this->getTaskDetail($task->id);
+		$notification->type = 'app.guestservice.notify';
+		$notification->header = 'Requests';
+		$notification->property_id = $task->property_id;
+		$content = 'Unknown Notification';
+		$action = "opened";
+		if( $type == 'Complete' )
+			$action = "completed";
+		if( $type == 'Open' )
+			$action = "opened";
+		if( $type == 'Cancel' )
+			$action = "canceled";
+		if( $type == 'Schedule' )
+			$action = "scheduled";
+		if( $type == 'Extended' )
+			$action = "extended";
+		if( $type == 'Hold' )
+			$action = "put on Hold";
+		if( $type == 'Resume' )
+			$action = "resumed";
+		if( $type == 'Escalated' )
+			$action = "escalated";
+		if( $type == 'Timeout' )
+			$action = "timeout";
+		if( $type == 'Closed' )
+			$action = "closed";
+		if( $type == 'Assigned' )
+			$action = "assigned";
+		if( $type == 'Waiting Escalated' )
+			$action = "waiting escalated";
+		if( $type == 'Unattended' )
+			$action = "unattended";
+		$which = 'Guest';
+		$where = 'Room';
+		if( $taskinfo->type == 1 || $taskinfo->type == 4 && $taskinfo->subtype == 1 ) {
+			$which = 'Guest';
+			$where = 'Room ' . $taskinfo->room;
+		}
+		if( $taskinfo->type == 2 || $taskinfo->type == 4 && $taskinfo->subtype == 2 ) {
+			$which = 'Department';
+			$where = 'Location: ' . $taskinfo->lgm_name . ' - ' . $taskinfo->lgm_type;
+		}
+		if( $taskinfo->type == 3 ) {
+			$which = 'Complaint';
+			$where = 'Room ' . $taskinfo->room;
+		}
+		$content = sprintf('%s Request Ticket for %s is %s', $which, $where, $action);
+		if(!empty($taskinfo->department_id))
+		{
+			$notification->content = $content;
+			$notification->notification_id = $task->id;
+			date_default_timezone_set(config('app.timezone'));
+			$cur_time = date("Y-m-d H:i:s");
+			$notification->created_at = $cur_time;
+			$notification->dept_id=$taskinfo->department_id;
+			$notification->save();
+			CommonUser::addNotifyCount($task->property_id, 'app.guestservice.notify');
+			$message = array();
+			$message['type'] = 'webpush';
+			$message['to'] = $task->property_id;
+			$message['content'] = $notification;
+            $message['isRefresh'] = $isRefresh;
+            Redis::publish('notify', json_encode($message));
+		}
+	}
+    
+    public function getTaskDetail($task_id) {
+		$task = DB::table('services_task as st')
+				->leftJoin('services_dept_function as df', 'st.dept_func', '=', 'df.id')
+				->leftJoin('services_type as ty', 'st.type', '=', 'ty.id')
+				->leftJoin('services_priority as sp', 'st.priority', '=', 'sp.id')
+				->leftJoin('common_users as cu', 'st.dispatcher', '=', 'cu.id')
+				->leftJoin('common_users as cu1', 'st.attendant', '=', 'cu1.id')
+				->leftJoin('common_job_role as job', 'job.id', '=', 'cu1.job_role_id')
+				->leftJoin('common_room as cr', 'st.room', '=', 'cr.id')
+				->leftJoin('services_task_list as tl', 'st.task_list', '=', 'tl.id')
+				->leftJoin('services_complaints as sc', 'st.complaint_list', '=', 'sc.id')
+				->leftJoin('services_complaint_type as ct', 'sc.type_id', '=', 'ct.id')
+				->leftJoin('services_compensation as scom', 'st.compensation_id', '=', 'scom.id')
+				->leftJoin('common_department as cd', 'st.department_id', '=', 'cd.id')
+//				->leftJoin('common_guest as cg', 'st.guest_id', '=', 'cg.guest_id')
+				->leftJoin('common_guest as cg', function($join) {
+					$join->on('st.guest_id', '=', 'cg.guest_id');
+					$join->on('st.property_id', '=', 'cg.property_id');
+				})
+				->leftJoin('common_users as cu2', 'st.user_id', '=', 'cu2.id')
+				->leftJoin('common_user_group as cug', 'st.group_id', '=', 'cug.id')
+				->leftJoin('services_location as sl', 'st.location_id', '=', 'sl.id')
+				->leftJoin('services_location_type as slt', 'sl.type_id', '=', 'slt.id')
+				->where('st.id', $task_id)
+				->select(DB::raw('st.*, df.function, df.gs_device, sp.priority as priority_name, CONCAT_WS(" ", cu.first_name, cu.last_name) as staff_name, cu.username,job.job_role as jobrole_name,
+				CONCAT_WS(" ", cu1.first_name, cu1.last_name) as attendant_name, cr.room, tl.task as task_name,
+				sc.complaint, ct.type as ct_type, scom.compensation, scom.cost, cd.department, cg.guest_name,
+				CONCAT_WS(" ", cu.first_name, cu.last_name) as wholename, cu.mobile as device,sl.name as location_name, slt.type as location_type,
+				CONCAT_WS(" ", cu2.first_name, cu2.last_name) as manage_user_name, cu2.mobile as manage_user_mobile,
+				cug.name as manage_user_group, cg.vip, cg.arrival, cg.departure'))
+ 				->first();
+		if( !empty($task) ) {
+			if ($task->location_id > 0) {
+				$info = $this->getLocationInfo($task->location_id);
+				$task->lgm_name = '';
+				$task->lgm_type ='';
+				if (!empty($info)) {
+					$task->lgm_name = $info->name;
+					$task->lgm_type = $info->type;
+				}
+			}
+		}
+		return $task;
+	}
+
+    public function getLocationInfo($location_id)
+	{
+		$ret = DB::table('services_location as sl')
+			->join('common_property as cp', 'sl.property_id', '=', 'cp.id')
+			->join('services_location_type as lt', 'sl.type_id', '=', 'lt.id')
+			->where('sl.id', $location_id)
+			->select(DB::Raw('sl.*, sl.id as lg_id, sl.name, lt.type, cp.name as property'))
+			->first();
+		return $ret;
+	}
+
+
     /**
      * @param Request $request
      * @return mixed
@@ -768,6 +941,23 @@ class ChatController extends Controller
         $session_id = $request->get('session_id', 0);
         $agent_id = $request->get('agent_id', 0);
 
+        //hdxb check
+        $hdxb_value = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_hdxb_setup')
+            ->where('property_id', '4')
+            ->pluck('value');
+        if(@$hdxb_value[0] != '1'){
+            // DB::table('services_chat_history')
+            // ->where('session_id', $session_id)
+            // ->update(['agent_id' => $agent_id, 'type' => '1']);
+
+            /// QQQ update without type
+            // DB::table('services_chat_history')
+            // ->where('session_id', $session_id)
+            // ->update(['agent_id' => $agent_id]);
+
+        }
+
         $session = DB::table('services_chat_guest_session as cgs')
             ->leftJoin('common_users as cu', 'cgs.agent_id', '=', 'cu.id')
             ->where('cgs.id', $session_id)
@@ -814,6 +1004,18 @@ class ChatController extends Controller
 
         $session->save();
 
+        if($session->guest_path == "Guest APP"){
+            DB::table('services_chat_history')
+                ->where('mobile_number', $session->mobile_number)
+                ->update(['session_id' => $session->id, 'agent_id' => $session->agent_id]);
+        }else{
+            DB::table('services_chat_history')
+                ->where('mobile_number', $session->mobile_number)
+                ->where('session_id', $session->id)
+                ->where('text','!=','')
+                ->update(['agent_id' => $session->agent_id]);
+        }
+
         $this->saveChatEvent($session, 1);    // accept chat
 
         // send accept message and save to database
@@ -853,19 +1055,51 @@ class ChatController extends Controller
                 'text' => $accept_chat,
                 'text_trans' => '',
                 'language' => $language,
-                'sender' => 'server',
+                // 'sender' => 'server',
+                'direction' => 1,
                 'chat_type' => 'text',
                 'attachment' => '',
                 'other_info' => json_encode($other_info)
             ];
 
-            $responseWhatsapp = $this->sendMessageToWhatsapp($message_info);
-            if ($responseWhatsapp != false) {
-                $saveInfo['uuid'] = $responseWhatsapp->MessageUUID;
-                $this->saveChatbotHistoryWhatsapp($saveInfo);
+            //hdxb check
+        $hdxb_value = DB::table('property_setting')
+        ->where('settings_key', 'whatsapp_hdxb_setup')
+        ->where('property_id', '4')
+        ->pluck('value');
+
+        $newInfo = null;
+
+        $session_data = DB::table('services_chat_guest_session')
+            ->where('id', $session_id)
+            ->first();
+        if(!empty($session_data)){
+            if($session_data->socket_app == '1'){ // Guest app
+                $this->sendAgentMsgToGuestApp($mobile_number, $accept_chat, 'pass');
+            }
+            else{ // hdxb or staycae
+                if(@$hdxb_value[0] != '1'){
+                    $this->scSendMessage($mobile_number, $accept_chat, 'text', $property_id);
+                }
+                if(@$hdxb_value[0] == '1'){
+                    $responseWhatsapp = $this->sendMessageToWhatsapp($message_info);
+                }
             }
         }
+            
+            //if ($responseWhatsapp != false) {
+                $saveInfo['uuid'] = '';//$responseWhatsapp->MessageUUID;
+                // $this->saveChatbotHistoryWhatsapp($saveInfo);
+                $newInfo = $this->saveGuestAgentChatInfo($saveInfo);
+            //}
 
+            $current_datetime = date('Y-m-d H:i:s');
+            DB::table('services_chat_guest_session as cgs')
+            ->where('cgs.id', '=', $session_id)
+            ->update(array('cgs.updated_at' => $current_datetime));
+        }
+
+        $ret['code'] = 200;
         $ret['session'] = $session;
 
         // send notify to all agents
@@ -897,7 +1131,7 @@ class ChatController extends Controller
         $input['text_trans'] = '';
         $input['language'] = 'en';
         $input['direction'] = -1;    // outgoing
-        $input['type'] = 0;            // guest message
+        // $input['type'] = 0;            // guest message
 
         $id = DB::table('services_chat_history')->insertGetId($input);
     }
@@ -945,9 +1179,9 @@ class ChatController extends Controller
      */
     private function sendMessageToWhatsapp($message_info, $messageType = 'Text', $mediaId = 1)
     {
-        $authKey = 'xFNfwpRkveF013zOrtbk';
-        $authorization = 'eEZOZndwUmt2ZUYwMTN6T3J0Yms6U211UzNRakJ3blhCbk9TNG5rb3lPT1c2ZVVhSkJ1MXFmSXltR1lOMA==';
-        $channelId = '94792798-e368-4e53-80c3-6a13d586bb01';
+        $authKey = '5pUmByqCXvNLcG4UlwhT';
+        $authorization = 'NXBVbUJ5cUNYdk5MY0c0VWx3aFQ6Y0xDSkdyYjN1NjBHWjVodEI3S21mUjd6QXdZZWJ2SHVXTUhJSEtnSQ==';
+        $channelId = '8a37bf44-c137-4fc4-9777-5533a7994616';
 
         $mobile_number = $message_info['mobile_number'];
         $text = $message_info['text'];
@@ -988,6 +1222,27 @@ class ChatController extends Controller
         return json_decode($server_response);
     }
 
+    public function saveGuestAgentChatInfo($saveInfo) 
+    {
+        $newChatInfo = new GuestChatHistory();
+        foreach($saveInfo as $key => $value) {
+            if ($key === 'sender') {
+                continue;
+            }
+            $newChatInfo[$key] = $value;
+        }
+        if (isset($saveInfo['sender'])) {
+            $sender = $saveInfo['sender'];
+            if ($sender == 'guest') {
+                $newChatInfo->direction = 0;    // incoming
+            } else {
+                $newChatInfo->direction = 1; 
+            }    
+        }
+        $newChatInfo->save();
+        return $newChatInfo;
+    }
+
     /**
      * @param $saveInfo
      */
@@ -1001,7 +1256,7 @@ class ChatController extends Controller
         $text_trans = $saveInfo['text_trans'];
         $language = $saveInfo['language'];
 
-        $phone_number = $saveInfo['mobile_number'];
+        $mobile_number = $saveInfo['mobile_number'];
 
         $cur_chat_name = $saveInfo['cur_chat_name'];
         $chat_type = $saveInfo['chat_type'];
@@ -1026,34 +1281,36 @@ class ChatController extends Controller
         $input['language'] = $language;
 
         $input['cur_chat_name'] = $cur_chat_name;
-        $input['phone_number'] = $phone_number;
+        $input['mobile_number'] = $mobile_number;
         $input['chat_type'] = $chat_type;
         $input['attachment'] = $attachment;
         $input['other_info'] = $other_info;
         $input['uuid'] = $uuid;
+        $input['type'] = 0;
 
         $input['guest_path'] = $guest_path;
-
+        
+        $insertId = 0;
 
         if ($sender == 'guest') {
-            $input['direction'] = 1;    // outgoing
-            $input['type'] = 0;            // guest message
-            DB::table('services_chat_history')->insert($input);
+            // $input['direction'] = 1;    // outgoing
+            // $input['type'] = 0;            // guest message
+            // DB::table('services_chat_history')->insert($input);
 
             $input['direction'] = 0;    // incoming
-            $input['type'] = 1;            // agent message
 
-            DB::table('services_chat_history')->insert($input);
+            $insertId = DB::table('services_chat_history')->insertGetId($input);
         } else {
             $input['direction'] = 1;    // outgoing
-            $input['type'] = 1;            // agent message
-            DB::table('services_chat_history')->insert($input);
-
-            $input['direction'] = 0;    // incoming
-            $input['type'] = 0;            // guest message
-
-            DB::table('services_chat_history')->insert($input);
+            
+            $insertId = DB::table('services_chat_history')->insert($input);
         }
+
+        //chat active
+        $current_datetime = date('Y-m-d H:i:s');
+        DB::table('services_chat_guest_session as cgs')
+            ->where('cgs.id', '=', $session_id)
+            ->update(array('cgs.updated_at' => $current_datetime));   
     }
 
     /**
@@ -1064,20 +1321,15 @@ class ChatController extends Controller
     {
         date_default_timezone_set(config('app.timezone'));
         $cur_time = date("Y-m-d H:i:s");
-
         $ret = array();
         $ret['code'] = 200;
-
         $session_id = $request->get('session_id', 0);
-
         $session = GuestChatSession::find($session_id);
-
         if (empty($session)) {
             $ret['code'] = 201;
             $ret['message'] = 'Invalid Chat Session';
             return Response::json($ret);
         }
-
         // send end chat message and save to database
         $end_chat = $request->get('end_chat', '');
         if (!empty($end_chat)) {
@@ -1085,24 +1337,19 @@ class ChatController extends Controller
             $property_id = $session->property_id;
             $language = $session->language;
             $room = $request->get('room', 0);
-
             $guest_type = $session->guest_type;
             $language_name = $request->get('language_name', 'English');
-
             $end_chat_trans = $end_chat;
             if ($language != 'en') {
                 $end_chat_trans = $this->getTranslatedText('en', $language, $end_chat);
             }
-
             $message_info['text'] = $end_chat_trans;
             $message_info['mobile_number'] = $mobile_number;
-
             $other_info = [
                 'guest_type' => $guest_type,
                 'room' => $room,
                 'language_name' => $language_name
             ];
-
             // save chat info
             $saveInfo = [
                 'property_id' => $property_id,
@@ -1114,31 +1361,74 @@ class ChatController extends Controller
                 'text' => $end_chat,
                 'text_trans' => '',
                 'language' => $language,
-                'sender' => 'server',
+                'direction' => 1,
                 'chat_type' => 'text',
                 'attachment' => '',
                 'other_info' => json_encode($other_info)
             ];
-
-            $responseWhatsapp = $this->sendMessageToWhatsapp($message_info);
-            if ($responseWhatsapp != false) {
-                $saveInfo['uuid'] = $responseWhatsapp->MessageUUID;
-                $this->saveChatbotHistoryWhatsapp($saveInfo);
+            //hdxb check
+            $hdxb_value = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_hdxb_setup')
+            ->where('property_id', '4')
+            ->pluck('value');
+            $session_data = DB::table('services_chat_guest_session')
+                ->where('id', $session_id)
+                ->first();
+        if(!empty($session_data)){
+            if($session_data->socket_app == '1'){ // Guest app
+                $this->sendAgentMsgToGuestApp($mobile_number, $end_chat, 'pass');
+            }
+            else{ // hdxb or staycae
+                if(@$hdxb_value[0] != '1'){
+                    $this->scSendMessage($mobile_number, $end_chat, 'text', $session_data->property_id);
+                }
+                if(@$hdxb_value[0] == '1'){
+                    $responseWhatsapp = $this->saveGuestAgentChatInfo($message_info);
+                }
             }
         }
-
-        $session = $this->endChatSession($session);
+            //if ($responseWhatsapp != false) {
+                $saveInfo['uuid'] = '';//$responseWhatsapp->MessageUUID;
+                $this->saveChatbotHistoryWhatsapp($saveInfo);
+            //}
+            //blank entry to make user from starting
+            DB::table('services_chat_history')->insert([
+                'property_id' => $property_id,
+                'mobile_number' => $message_info['mobile_number'],
+                'text' => '0',
+                'text_trans' => '',
+                'direction' => 0,
+                'attachment' => '',
+                'other_info' => '',
+                'guest_path' => ''
+            ]);
+        }
+        
+        //hdxb check
+        $hdxb_value = DB::table('property_setting')
+        ->where('settings_key', 'whatsapp_hdxb_setup')
+        ->where('property_id', '4')
+        ->pluck('value');
+        $chat_guest_history = DB::table('services_chat_history')
+            ->where('mobile_number',  $session->mobile_number)
+            //->where('direction', '0')
+            ->orderBy('id','desc')
+            ->first();
+        if(@$hdxb_value[0] != '1'){
+            $session = $this->endChatSession($session);
+            $this->scSendMessage( $session->mobile_number, "Session Ended", 'text', $session->property_id);
+            $this->scSaveAgentEndMessage( $session->mobile_number, "Session Ended", $session->property_id, $chat_guest_history);
+        }else{
+            $session = $this->endChatSession($session);
+        }
 
         // send notify to all agents
         $message = array();
         $message['type'] = 'chat_event';
         $message['sub_type'] = 'end_chat';
         $message['data'] = $session;
-
         Redis::publish('notify', json_encode($message));
-
         $ret['session'] = $session;
-
         return Response::json($ret);
     }
 
@@ -1277,7 +1567,7 @@ class ChatController extends Controller
             'text' => $logout_chat,
             'text_trans' => '',
             'language' => $language,
-            'sender' => 'server',
+            'direction' => 1,
             'chat_type' => 'text',
             'attachment' => '',
             'other_info' => json_encode($other_info)
@@ -1302,7 +1592,7 @@ class ChatController extends Controller
         }
 
         $message_info['text'] = $next_chat;
-        $this->sendMessageToWhatsapp($message_info);
+        // $this->sendMessageToWhatsapp($message_info);
 
         $other_info = [
             'guest_type' => $guest_type,
@@ -1406,15 +1696,9 @@ class ChatController extends Controller
         $input['text'] = $text;
         $input['text_trans'] = $text_trans;
         $input['language'] = $language;
-        $input['direction'] = 1;    // outgoing
-        $input['type'] = 0;            // guest message
-        $input['phone_number'] = $session->mobile_number;
+        $input['direction'] = 0;    // outgoing
+        $input['mobile_number'] = $session->mobile_number;
         $input['cur_chat_name'] = CHAT_AGENT_CALL_WAITING;
-
-        $id = DB::table('services_chat_history')->insertGetId($input);
-
-        $input['direction'] = 0;    // incoming
-        $input['type'] = 1;            // agent message
 
         $id = DB::table('services_chat_history')->insertGetId($input);
     }
@@ -1455,15 +1739,9 @@ class ChatController extends Controller
         $input['text'] = $text;
         $input['text_trans'] = $text_trans;
         $input['language'] = $language;
-        $input['direction'] = 1;    // outgoing
-        $input['type'] = 1;            // agent message
-        $input['phone_number'] = $session->mobile_number;
+        $input['direction'] = 1;    // agent message (agent to gueest)
+        $input['mobile_number'] = $session->mobile_number;
         $input['cur_chat_name'] = CHAT_AGENT_CALL_WAITING;
-
-        $id = DB::table('services_chat_history')->insertGetId($input);
-
-        $input['direction'] = 0;    // incoming
-        $input['type'] = 0;            // guest message
 
         $id = DB::table('services_chat_history')->insertGetId($input);
     }
@@ -1479,14 +1757,12 @@ class ChatController extends Controller
         $chat_history = DB::table('services_chat_history as sch')
             ->leftJoin('common_users as cu', 'sch.agent_id', '=', 'cu.id')
             ->join('services_chat_guest_session as cgs', 'sch.session_id', '=', 'cgs.id')
-            ->where('type', 0)
             ->where('sch.agent_id', '!=', 0)
             ->where('sch.session_id', $session_id)
             ->select(DB::raw('sch.*, CONCAT_WS(" ", cu.first_name, cu.last_name) as agent_name'))
             ->get();
 
         $accept_count = DB::table('services_chat_history as sch')
-            ->where('sch.type', 0)
             ->where('sch.session_id', $session_id)
             ->where('sch.direction', -1)
             ->where('sch.text', '1')
@@ -1576,7 +1852,6 @@ class ChatController extends Controller
             $chat_histories = DB::table('services_chat_history as sch')
                 ->leftJoin('common_users as cu', 'sch.agent_id', '=', 'cu.id')
                 ->join('services_chat_guest_session as cgs', 'sch.session_id', '=', 'cgs.id')
-                ->where('type', 1)
                 ->where('sch.agent_id', '!=', 0)
                 ->where('sch.session_id', $session_id)
                 ->select(DB::raw('sch.*, CONCAT_WS(" ", cu.first_name, cu.last_name) as agent_name'))
@@ -1614,10 +1889,51 @@ class ChatController extends Controller
     public function getChatHistoryForAgent(Request $request)
     {
         $session_id = $request->get('session_id', 0);
+        $chat_history = $this->getChatHistoryBySessionId($session_id);
+        return Response::json($chat_history);
+    }
+
+    /**
+     * @param Request $request
+     * @return mixed
+     */
+    public function getChatHistoryForAgentForMobile(Request $request)
+    {
+        $session_id = $request->get('session_id', 0);
+        $property_id = $request->get('property_id', 0);
+        $user_id = $request->get('user_id', 0);
+        $pageCount = $request->get('pageCount', 0);
+        $last_id = $request->get('last_id', 0);
 
         $chat_history = $this->getChatHistoryBySessionId($session_id);
 
-        return Response::json($chat_history);
+        $query = DB::table('services_chat_history as sch')
+            ->leftJoin('common_users as cu', 'sch.agent_id', '=', 'cu.id')
+            ->join('services_chat_guest_session as cgs', 'sch.session_id', '=', 'cgs.id')
+            ->where('sch.agent_id', '!=', 0)
+            ->where('sch.direction', '!=', '-1')
+            ->where('sch.session_id', $session_id);
+
+        $totalCount = $query->count();
+
+        if ($last_id != 0) {
+            $query->where('sch.id', '<', $last_id);
+        }
+
+        if ($pageCount != 0) {
+            $query->take($pageCount);
+        }
+        $chat_histories = $query->select(DB::raw('sch.*, CONCAT_WS(" ", cu.first_name, cu.last_name) as agent_name'))
+            ->orderBy('sch.id', 'DESC')
+            ->get();
+
+        $ret = [];
+        $ret['code'] = 200;
+        $ret['content'] = $chat_histories;
+        $ret['unreadCount'] = $this->getGuestSessionUnreadCount($session_id, $property_id, $user_id);
+        $ret['totalCount'] = $totalCount;
+
+        return Response::json($ret);
     }
 
     /**
@@ -1629,11 +1945,21 @@ class ChatController extends Controller
         $chat_histories = DB::table('services_chat_history as sch')
             ->leftJoin('common_users as cu', 'sch.agent_id', '=', 'cu.id')
             ->join('services_chat_guest_session as cgs', 'sch.session_id', '=', 'cgs.id')
-            ->where('type', 1)
             ->where('sch.agent_id', '!=', 0)
             ->where('sch.session_id', $session_id)
+            ->where('sch.direction', '!=', '-1')
             ->select(DB::raw('sch.*, CONCAT_WS(" ", cu.first_name, cu.last_name) as agent_name'))
             ->get();
+	
+        //     $temp =  DB::table('services_chat_history as sch')
+        // ->leftJoin('common_users as cu', 'sch.agent_id', '=', 'cu.id')
+        // ->join('services_chat_guest_session as cgs', 'sch.session_id', '=', 'cgs.id')
+        // ->where('type', 1)
+        // ->where('sch.agent_id', '!=', 0)
+        // ->where('sch.session_id', $session_id)
+        // ->select(DB::raw('sch.*, CONCAT_WS(" ", cu.first_name, cu.last_name) as agent_name'))
+        // ->toSql();
+        // return $temp;
 
         return $chat_histories;
     }
@@ -1722,7 +2048,15 @@ class ChatController extends Controller
                 ->update($statusArr);
         }
 
+        $message = ['agent_id' => $agent_id];
+        $msgInfo = [];
+        $msgInfo['type'] = 'chat_event';
+        $msgInfo['sub_type'] = 'spam_changed';
+        $msgInfo['data'] = $message;
+        Redis::publish('notify', json_encode($msgInfo));
+
         $ret = [
+            'code' => 200,
             'success' => true
         ];
 
@@ -1741,7 +2075,16 @@ class ChatController extends Controller
             ->where('id', $phonebook_id)
             ->delete();
 
+        $message = array();
+        $message['type'] = 'chat_event';
+        $message['sub_type'] = 'updated_phonebook_info';
+        $message['data'] = [
+            'property_id' => $property_id
+        ];
+        Redis::publish('notify', json_encode($message));
+
         $ret = [
+            'code' => 200,
             'success' => true
         ];
 
@@ -1754,6 +2097,7 @@ class ChatController extends Controller
 
         $search_text = $request->get('search_text', '');
         $query = DB::table('common_preset_messages')
+            ->where('delete_flag', 0)
             ->where('agent_id', $agent_id);
 
         if (!empty($search_text)) {
@@ -1771,6 +2115,21 @@ class ChatController extends Controller
     {
         $agent_id = $request->get('agent_id', 0);
         $preset_messages = $request->get('preset_messages', []);
+
+        $db_ids = DB::table('common_preset_messages')
+            ->where('agent_id', $agent_id)
+            ->pluck('id');
+
+        $current_ids = [];
+        foreach($preset_messages as $preset_message){
+            $current_ids[] = $preset_message['id'];
+        }
+        $removed_ids = array_merge(array_diff($db_ids, $current_ids), array_diff($current_ids, $db_ids));
+        if(count($removed_ids) != 0){
+            DB::table('common_preset_messages')
+            ->whereIn('id',$removed_ids)
+            ->update(['delete_flag' => 1]);
+        }
 
         foreach ($preset_messages as $preset_message) {
             $id = $preset_message['id'];
@@ -1811,28 +2170,21 @@ class ChatController extends Controller
      * @param Request $request
      * @return mixed
      */
-    public function getChatSessionListNew(Request $request)
+    public function getGuestChatList(Request $request)
     {
         date_default_timezone_set(config('app.timezone'));
         $cur_time = date('Y-m-d H:i:s');
         $last24 = date('Y-m-d H:i:s', strtotime(' -1 day'));
-
         $property_id = $request->get('property_id', 0);
         $agent_id = $request->get('agent_id', 0);
         $status = $request->get('status', '');
-
         $status_arr = $request->get('status_arr', []);
-
         $start_date = $request->get('start_date', '');
         $end_date = $request->get('end_date', '');
-
         $room_ids = $request->get('room_ids', []);
         $agent_ids = $request->get('agent_ids', []);
-
         $search_text = $request->get('search_text', "");
-
         $user_id = $request->get('user_id', 0);
-
         $query = DB::table('services_chat_guest_session as cgs')
             // ->leftJoin('common_guest as cg', 'cgs.guest_id', '=', 'cg.guest_id')
             ->leftJoin('common_guest as cg', function ($join) use ($property_id) {
@@ -1854,9 +2206,160 @@ class ChatController extends Controller
             ->leftJoin('common_room_type as crt', 'cr.type_id', '=', 'crt.id')
             ->leftJoin('common_language_code as lc', 'cgs.language', '=', 'lc.code')
             ->where('cgs.property_id', $property_id);
-
         if ($agent_id > 0)
             $query->where('cgs.agent_id', $agent_id);
+//        if( $status != 'All' && !empty($status) )
+//            $query->where('cgs.status', $status);
+        if (!empty($start_date))
+            $query->where('cgs.updated_at', '>=', $start_date . ' 00:00:00');
+        if (!empty($end_date))
+            $query->where('cgs.updated_at', '<=', $end_date . ' 23:59:59');
+        if (!empty($agent_ids) && count($agent_ids) > 0)
+            $query->whereIn('cgs.agent_id', $agent_ids);
+        if (!empty($room_ids) && count($room_ids) > 0)
+            $query->whereIn('cgs.room_id', $room_ids);
+        if (!empty($status_arr)) {
+            $query->whereIn('cgs.status', $status_arr);
+        }
+        if (!empty($search_text)) {
+            $where = sprintf("(cgs.id like '%%%s%%' or 
+            cgs.guest_name like '%%%s%%' or
+            cg.mobile like '%%%s%%')",
+                $search_text, $search_text,
+                $search_text
+            );
+            $query->whereRaw($where);
+        }
+        $session_list = $query
+            ->orderBy('cgs.status', 'asc')
+            ->orderBy('cgs.updated_at', 'desc')
+            ->select(DB::raw('cgs.*, cr.room, crt.type as room_type, lc.language as language_name,
+                CONCAT_WS(" ", cu.first_name, cu.last_name) as agent_name, CONCAT_WS(" ", cu1.first_name, cu1.last_name) as transfer_name,
+                SEC_TO_TIME(TIME_TO_SEC(TIMEDIFF(cgs.start_time, cgs.created_at))) as wait_time,
+                SEC_TO_TIME(TIME_TO_SEC(TIMEDIFF(cgs.end_time, cgs.start_time))) as duration, 0 as unread,
+                cg.vip as vip, cg.booking_src as booking_src, cg.booking_rate as booking_rate, cgp.nationality as natitionality,
+                cg.arrival as arrival, cg.departure as departure, cgpb.id as phonebook_id, cgpb.name as phonebook_name,
+                cgsp.id as spam_id, cgsp.spam_status as spam_status, cgsp.agent_id as spam_agent_id
+                '))
+            ->get();
+        $ret = [];
+        $ret['code'] = 200;
+        $ret['content'] = $session_list;
+        return Response::json($session_list);
+    }
+
+    public function getChatSessionDetailInfo(Request $request)
+    {
+        $id = $request->get('id', 0);
+        $user_id = $request->get('user_id', 0);
+        $property_id = $request->get('property_id', 0);
+        date_default_timezone_set(config('app.timezone'));
+        $cur_time = date('Y-m-d H:i:s');
+        $last24 = date('Y-m-d H:i:s', strtotime(' -1 day'));
+        $query = DB::table('services_chat_guest_session as cgs')
+            // ->leftJoin('common_guest as cg', 'cgs.guest_id', '=', 'cg.guest_id')
+            ->leftJoin('common_guest as cg', function ($join) use ($property_id) {
+                $join->on('cgs.guest_id', '=', 'cg.guest_id');
+                $join->on('cgs.property_id', '=', 'cg.property_id');
+            })
+            ->leftJoin('common_guest_phonebook as cgpb', function ($join) use ($property_id, $user_id) {
+                $join->on('cgpb.mobile_number', '=', 'cgs.mobile_number');
+                $join->on('cgpb.property_id', '=', 'cgs.property_id');
+            })
+            ->leftJoin('common_guest_spam as cgsp', function ($join) use ($property_id, $user_id) {
+                $join->on('cgsp.mobile_number', '=', 'cgs.mobile_number');
+                $join->where('cgsp.agent_id', '=', $user_id);
+            })
+            ->leftJoin('common_chat_skill_mapping as ccsm', function ($join) use ($property_id, $user_id) {
+                $join->on('ccsm.property_id', '=', 'cg.property_id');
+            })
+            ->leftJoin('common_guest_profile as cgp', 'cgp.id', '=', 'cg.profile_id')
+            ->leftJoin('common_users as cu', 'cgs.agent_id', '=', 'cu.id')
+            ->leftJoin('common_users as cu1', 'cgs.transfer_id', '=', 'cu1.id')
+            ->leftJoin('common_room as cr', 'cgs.room_id', '=', 'cr.id')
+            ->leftJoin('common_room_type as crt', 'cr.type_id', '=', 'crt.id')
+            ->leftJoin('common_language_code as lc', 'cgs.language', '=', 'lc.code')
+            ->where('cgs.id', $id);
+        $query->groupBy('cgs.id');
+        $info = $query
+            ->orderBy('cgs.status', 'asc')
+            ->orderBy('cgs.updated_at', 'desc')
+            ->select(DB::raw('cgs.*, cgs.guest_name, cgs.agent_id, cr.room, cgs.transfer_id, crt.type as room_type, cgs.guest_path, cgs.created_at, cgs.updated_at, cgs.guest_type, cgs.mobile_number, cgs.start_time, cgs.status, lc.language as language_name,  CONCAT_WS(" ", cu1.first_name, cu1.last_name) as transfer_name,
+                CONCAT_WS(" ", cu.first_name, cu.last_name) as agent_name, 
+				SEC_TO_TIME(TIME_TO_SEC(TIMEDIFF(cgs.start_time, cgs.created_at))) as wait_time,
+				SEC_TO_TIME(TIME_TO_SEC(TIMEDIFF(cgs.end_time, cgs.start_time))) as duration, 0 as unread,
+                cgpb.id as phonebook_id, cgpb.name as phonebook_name, lc.language as language_name, 
+                cgsp.id as spam_id, cgsp.spam_status as spam_status, cgsp.agent_id as spam_agent_id
+				'))
+            ->first();
+        $ret = [];
+        $ret['code'] = 200;
+        $ret['content'] = $info;
+        return Response::json($ret);
+    }
+
+     /**
+     * @param Request $request
+     * @return mixed
+     */
+    public function getChatSessionListForMobile(Request $request)
+    {
+        date_default_timezone_set(config('app.timezone'));
+        $cur_time = date('Y-m-d H:i:s');
+        $last24 = date('Y-m-d H:i:s', strtotime(' -1 day'));
+
+        $property_id = $request->get('property_id', 0);
+        $agent_id = $request->get('agent_id', 0);
+        $status = $request->get('status', '');
+
+        $status_arr = $request->get('status_arr', []);
+
+        $start_date = $request->get('start_date', '');
+        $end_date = $request->get('end_date', '');
+
+        $room_ids = $request->get('room_ids', []);
+        $agent_ids = $request->get('agent_ids', []);
+
+        $last_id = $request->get('last_id', 0);
+        $pageCount = $request->get('pageCount', 0);
+
+        $search_text = $request->get('search_text', "");
+
+        $user_id = $request->get('user_id', 0);
+
+        $skill_ids = DB::table('common_chat_skill_mapping as ccsm')
+            ->where('ccsm.property_id', $property_id)
+            ->where('ccsm.agent_id', $user_id)
+            ->pluck('skill_id');
+
+        $query = DB::table('services_chat_guest_session as cgs')
+            // ->leftJoin('common_guest as cg', 'cgs.guest_id', '=', 'cg.guest_id')
+            ->leftJoin('common_guest as cg', function ($join) use ($property_id) {
+                $join->on('cgs.guest_id', '=', 'cg.guest_id');
+                $join->on('cgs.property_id', '=', 'cg.property_id');
+            })
+            ->leftJoin('common_guest_phonebook as cgpb', function ($join) use ($property_id, $user_id) {
+                $join->on('cgpb.mobile_number', '=', 'cgs.mobile_number');
+                $join->on('cgpb.property_id', '=', 'cgs.property_id');
+            })
+            ->leftJoin('common_guest_spam as cgsp', function ($join) use ($property_id, $user_id) {
+                $join->on('cgsp.mobile_number', '=', 'cgs.mobile_number');
+                $join->where('cgsp.agent_id', '=', $user_id);
+            })
+            ->leftJoin('common_chat_skill_mapping as ccsm', function ($join) use ($property_id, $user_id) {
+                $join->on('ccsm.property_id', '=', 'cg.property_id');
+            })
+            ->leftJoin('common_guest_profile as cgp', 'cgp.id', '=', 'cg.profile_id')
+            ->leftJoin('common_users as cu', 'cgs.agent_id', '=', 'cu.id')
+            ->leftJoin('common_users as cu1', 'cgs.transfer_id', '=', 'cu1.id')
+            ->leftJoin('common_room as cr', 'cgs.room_id', '=', 'cr.id')
+            ->leftJoin('common_room_type as crt', 'cr.type_id', '=', 'crt.id')
+            ->leftJoin('common_language_code as lc', 'cgs.language', '=', 'lc.code')
+            ->where('cgs.property_id', $property_id);
+
+        // if ($agent_id > 0) {
+        //     $query->where('cgs.agent_id', $agent_id);
+        // }
 
 //        if( $status != 'All' && !empty($status) )
 //            $query->where('cgs.status', $status);
@@ -1888,7 +2391,190 @@ class ChatController extends Controller
             $query->whereRaw($where);
         }
 
+        $query->groupBy('cgs.id');
+        $totalCount = count($query->get());
+
+        if ($last_id != 0) {
+            $query->where('cgs.id', '<', $last_id);
+        }
+
+        if ($pageCount !== 0) {
+            $query->take($pageCount);
+        }
+
         $session_list = $query
+            ->orderBy('cgs.status', 'asc')
+            ->orderBy('cgs.updated_at', 'desc')
+            ->select(DB::raw('cgs.id, cgs.guest_name, cgs.agent_id, cgs.transfer_id, cgs.guest_id, cgs.language, cr.room, cgs.created_at, cgs.guest_type, cgs.mobile_number, cgs.start_time, cgs.status, lc.language as language_name, CONCAT_WS(" ", cu1.first_name, cu1.last_name) as transfer_name,
+                CONCAT_WS(" ", cu.first_name, cu.last_name) as agent_name, 
+                SEC_TO_TIME(TIME_TO_SEC(TIMEDIFF(cgs.start_time, cgs.created_at))) as wait_time,
+                SEC_TO_TIME(TIME_TO_SEC(TIMEDIFF(cgs.end_time, cgs.start_time))) as duration, 0 as unread,
+                cgpb.id as phonebook_id, cgpb.name as phonebook_name, lc.language as language_name, 
+                cgsp.id as spam_id, cgsp.spam_status as spam_status, cgsp.agent_id as spam_agent_id
+                '))
+            // ->whereIn('cgs.skill_id', $skill_ids) // QQQ removed temp
+            ->get();
+
+
+        foreach($session_list as $session_info) {
+            $session_id = $session_info->id;
+
+            $session_info->lastChatInfo = DB::table('services_chat_history as sch')
+            ->leftJoin('common_users as cu', 'sch.agent_id', '=', 'cu.id')
+            ->join('services_chat_guest_session as cgs', 'sch.session_id', '=', 'cgs.id')
+            ->where('sch.agent_id', '!=', 0)
+            ->where('sch.session_id', $session_id)
+            ->where('sch.direction', '!=', '-1')
+            ->select(DB::raw('sch.id, sch.text, sch.type, sch.chat_type, sch.created_at, CONCAT_WS(" ", cu.first_name, cu.last_name) as agent_name'))
+            ->orderBy('sch.id', 'DESC')
+            ->first();
+        }
+
+        foreach($session_list as $session_info) {
+            $session_info->unreadCount = $this->getGuestSessionUnreadCount($session_info->id, $property_id, $agent_id);
+        }
+        $totalUnreadCount = $this->getGuestTotalUnreadCount($property_id, $agent_id);
+
+        $ret = [];
+        $ret['code'] = 200;
+        $ret['content'] = $session_list;
+        $ret['totalCount'] = $totalCount;
+        $ret['unreadCount'] = $this->getGuestTotalUnreadCount($property_id, $agent_id);
+
+        return Response::json($ret);
+    }
+
+    /**
+     * @param Request $request
+     * @return mixed
+     */
+    public function getChatSessionListNew(Request $request)
+    {
+        date_default_timezone_set(config('app.timezone'));
+        $cur_time = date('Y-m-d H:i:s');
+        $last24 = date('Y-m-d H:i:s', strtotime(' -1 day'));
+
+        $property_id = $request->get('property_id', 0);
+        $agent_id = $request->get('agent_id', 0);
+        $status = $request->get('status', '');
+
+        $status_arr = $request->get('status_arr', []);
+
+        $start_date = $request->get('start_date', '');
+        $end_date = $request->get('end_date', '');
+
+        $room_ids = $request->get('room_ids', []);
+        $agent_ids = $request->get('agent_ids', []);
+
+        $search_text = $request->get('search_text', "");
+
+        $user_id = $request->get('user_id', 0);
+
+        $mbl_number  = $request->get('mbl_number', 0);
+
+        //hdxb check
+        $hdxb_value = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_hdxb_setup')
+            ->where('property_id', '4')
+            ->pluck('value');
+
+        if(@$hdxb_value[0] == '1'){
+            $query = DB::table('services_chat_guest_session as cgs')
+                // ->leftJoin('common_guest as cg', 'cgs.guest_id', '=', 'cg.guest_id')
+                ->leftJoin('common_guest as cg', function ($join) use ($property_id) {
+                    $join->on('cgs.guest_id', '=', 'cg.guest_id');
+                    $join->on('cgs.property_id', '=', 'cg.property_id');
+                })
+                ->leftJoin('common_guest_phonebook as cgpb', function ($join) use ($property_id, $user_id) {
+                    $join->on('cgpb.mobile_number', '=', 'cgs.mobile_number');
+                    $join->on('cgpb.property_id', '=', 'cgs.property_id');
+                })
+                ->leftJoin('common_guest_spam as cgsp', function ($join) use ($property_id, $user_id) {
+                    $join->on('cgsp.mobile_number', '=', 'cgs.mobile_number');
+                    $join->where('cgsp.agent_id', '=', $user_id);
+                })
+                ->leftJoin('common_guest_profile as cgp', 'cgp.id', '=', 'cg.profile_id')
+                ->leftJoin('common_users as cu', 'cgs.agent_id', '=', 'cu.id')
+                ->leftJoin('common_users as cu1', 'cgs.transfer_id', '=', 'cu1.id')
+                ->leftJoin('common_room as cr', 'cgs.room_id', '=', 'cr.id')
+                ->leftJoin('common_room_type as crt', 'cr.type_id', '=', 'crt.id')
+                ->leftJoin('common_language_code as lc', 'cgs.language', '=', 'lc.code')
+                ->where('cgs.property_id', $property_id);
+        }else{
+            $skill_ids = DB::table('common_chat_skill_mapping as ccsm')
+            ->where('ccsm.property_id', $property_id)
+            ->where('ccsm.agent_id', $user_id)
+            ->pluck('skill_id');
+            $query = DB::table('services_chat_guest_session as cgs')
+                // ->leftJoin('common_guest as cg', 'cgs.guest_id', '=', 'cg.guest_id')
+                ->leftJoin('common_guest as cg', function ($join) use ($property_id) {
+                    $join->on('cgs.guest_id', '=', 'cg.guest_id');
+                    $join->on('cgs.property_id', '=', 'cg.property_id');
+                })
+                ->leftJoin('common_guest_phonebook as cgpb', function ($join) use ($property_id, $user_id) {
+                    $join->on('cgpb.mobile_number', '=', 'cgs.mobile_number');
+                    $join->on('cgpb.property_id', '=', 'cgs.property_id');
+                })
+                ->leftJoin('common_guest_spam as cgsp', function ($join) use ($property_id, $user_id) {
+                    $join->on('cgsp.mobile_number', '=', 'cgs.mobile_number');
+                    $join->where('cgsp.agent_id', '=', $user_id);
+                })
+                ->leftJoin('common_chat_skill_mapping as ccsm', function ($join) use ($property_id, $user_id) {
+                    $join->on('ccsm.property_id', '=', 'cg.property_id');
+                })
+                ->leftJoin('common_guest_profile as cgp', 'cgp.id', '=', 'cg.profile_id')
+                ->leftJoin('common_users as cu', 'cgs.agent_id', '=', 'cu.id')
+                ->leftJoin('common_users as cu1', 'cgs.transfer_id', '=', 'cu1.id')
+                ->leftJoin('common_room as cr', 'cgs.room_id', '=', 'cr.id')
+                ->leftJoin('common_room_type as crt', 'cr.type_id', '=', 'crt.id')
+                ->leftJoin('common_language_code as lc', 'cgs.language', '=', 'lc.code')
+                ->where('cgs.property_id', $property_id);
+        }
+        
+        // if ($agent_id > 0)
+        //     $query->where('cgs.agent_id', $agent_id);
+
+//        if( $status != 'All' && !empty($status) )
+//            $query->where('cgs.status', $status);
+
+        if (!empty($start_date))
+            $query->where('cgs.updated_at', '>=', $start_date . ' 00:00:00');
+
+        if (!empty($end_date))
+            $query->where('cgs.updated_at', '<=', $end_date . ' 23:59:59');
+
+        if (!empty($agent_ids) && count($agent_ids) > 0)
+            $query->whereIn('cgs.agent_id', $agent_ids);
+
+        if (!empty($room_ids) && count($room_ids) > 0)
+            $query->whereIn('cgs.room_id', $room_ids);
+
+        if (!empty($mbl_number) && $mbl_number != 0)
+            $query->where('cgs.mobile_number', $mbl_number);
+
+        if (!empty($status_arr)) {
+            $query->whereIn('cgs.status', $status_arr);
+        }
+
+        if (!empty($search_text)) {
+            $where = sprintf("(cgs.id like '%%%s%%' or 
+            cgs.guest_name like '%%%s%%' or
+            cg.mobile like '%%%s%%')",
+                $search_text, $search_text,
+                $search_text
+            );
+
+            $query->whereRaw($where);
+        }
+
+
+        //hdxb check
+        $hdxb_value = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_hdxb_setup')
+            ->where('property_id', '4')
+            ->pluck('value');
+        if(@$hdxb_value[0] == '1'){
+            $session_list = $query
             ->orderBy('cgs.status', 'asc')
             ->orderBy('cgs.updated_at', 'desc')
             ->select(DB::raw('cgs.*, cr.room, crt.type as room_type, lc.language as language_name,
@@ -1900,8 +2586,56 @@ class ChatController extends Controller
 				cgsp.id as spam_id, cgsp.spam_status as spam_status, cgsp.agent_id as spam_agent_id
 				'))
             ->get();
+        }else{
+            $session_list = $query
+                ->orderBy('cgs.status', 'asc')
+                ->orderBy('cgs.updated_at', 'desc')
+                ->select(DB::raw('cgs.*, cr.room, crt.type as room_type, lc.language as language_name,
+                    CONCAT_WS(" ", cu.first_name, cu.last_name) as agent_name, CONCAT_WS(" ", cu1.first_name, cu1.last_name) as transfer_name,
+                    SEC_TO_TIME(TIME_TO_SEC(TIMEDIFF(cgs.start_time, cgs.created_at))) as wait_time,
+                    SEC_TO_TIME(TIME_TO_SEC(TIMEDIFF(cgs.end_time, cgs.start_time))) as duration, 0 as unread,
+                    cg.vip as vip, cg.booking_src as booking_src, cg.booking_rate as booking_rate, cgp.nationality as natitionality,
+                    cg.arrival as arrival, cg.departure as departure, cgpb.id as phonebook_id, cgpb.name as phonebook_name,
+                    cgsp.id as spam_id, cgsp.spam_status as spam_status, cgsp.agent_id as spam_agent_id
+                    '))
+                ->whereIn('cgs.skill_id', $skill_ids) // QQQ removed temp
+                ->get();
+        }
 
-        return Response::json($session_list);
+        foreach($session_list as $session_info) {
+            $session_info->unreadCount = $this->getGuestSessionUnreadCount($session_info->id, $property_id, $agent_id);
+        }
+
+        $totalUnreadCount = $this->getGuestTotalUnreadCount($property_id, $agent_id);
+        $ret = [];
+        $ret['code'] = 200;
+        $ret['content'] = $session_list;
+        $ret['unreadCount'] = $totalUnreadCount;
+
+        return Response::json($ret);
+    }
+
+    private function getGuestTotalUnreadCount($property_id, $agent_id) {
+        return DB::table('services_chat_history as sch')
+            ->join('services_chat_guest_session as scgs', 'scgs.id', '=', 'sch.session_id')
+            ->where('sch.property_id', $property_id)
+            ->where('sch.agent_id', $agent_id)
+            ->where('sch.direction', 0)
+            ->where('sch.read_status', 0)
+            ->where('scgs.status', 2)
+            ->count();
+    }
+
+    private function getGuestSessionUnreadCount($session_id, $property_id, $agent_id) {
+        return DB::table('services_chat_history as sch')
+                ->join('services_chat_guest_session as scgs', 'scgs.id', '=', 'sch.session_id')
+                ->where('sch.session_id', $session_id)
+                ->where('sch.property_id', $property_id)
+                ->where('sch.agent_id', $agent_id)
+                ->where('sch.direction', 0)
+                ->where('sch.read_status', 0)
+                ->where('scgs.status', 2)
+                ->count();
     }
 
     /**
@@ -1946,6 +2680,7 @@ class ChatController extends Controller
         Redis::publish('notify', json_encode($message));
 
         $ret = [
+            'code' => 200,
             'success' => true,
             'id' => $id
         ];
@@ -2068,14 +2803,535 @@ class ChatController extends Controller
             ->where('pr.name', 'app.guestservice.chat')
             ->where('cd.property_id', $property_id)
             ->where('cu.id', '!=', $agent_id)
+            // ->where(function($q) {
+            //     $q->where('cu.mobile_login', 1)
+            //         ->where('cu.mobile_status', 1)
+            //         ->orWhere('cu.web_login', 1);
+            // })
             ->where('cu.web_login', 1)
-            ->where('cu.active_status', 1)
+            // ->where('cu.active_status', 1)
             ->where('cu.deleted', 0)
             ->whereRaw('CONCAT_WS(" ", cu.first_name, cu.last_name) like ' . $filter)
             ->select(DB::raw('cu.*, CONCAT_WS(" ", cu.first_name, cu.last_name) as agent_name'))
             ->get();
 
-        return Response::json($agent_list);
+        foreach($agent_list as $row){
+            $skills = DB::table('common_chat_skill_mapping as sk')
+                    ->leftjoin('common_chat_skill as cs', 'sk.skill_id', '=', 'cs.id')
+                    ->where('sk.agent_id', $row->id)
+                        ->select(DB::raw('cs.name'))
+                    ->get();
+            $skill = [];
+            foreach( $skills as $row1)
+            {
+                $skill[] .= $row1->name; 
+            }
+
+            $row->agent_skills = implode(",", $skill);
+        }
+
+        $ret = [];
+        $ret['code'] = 200;
+        $ret['content'] = $agent_list;
+
+        return Response::json($ret);
+    }
+
+    public function sendLeaveFromGroup(Request $request) 
+    {
+        $removed_id = $request->get('member_id', 0);
+        $group_id = $request->get('group_id', 0);
+        DB::table('services_chat_agent_group_members')
+                ->where('group_id', $group_id)
+                ->where('agent_id', $removed_id)
+                ->delete();
+        $ret = [];
+        $ret['code'] = 200;
+        $ret['content'] = $this->getGroupChatInfo($group_id);
+        return Response::json($ret);
+    }
+
+    public function sendDeleteGroup(Request $request) 
+    {
+        $group_id = $request->get('group_id', 0);
+        AgentChatGroup::where('id', $group_id)->delete();
+        DB::table('services_chat_agent_group_members')
+                ->where('group_id', $group_id)
+                ->delete();
+        $ret = [];
+        $ret['code'] = 200;
+        $ret['content'] = ['id' => $group_id];
+        
+        return Response::json($ret);
+    }
+
+    // created or updated chat event
+    public function sendGroupChatChanged(Request $request) 
+    {
+        $group_id = $request->get('id', 0);
+        $group_info = $this->getGroupChatInfo($group_id);
+        $ret = [];
+        $ret['code'] = 200;
+        $ret['content'] = $group_info;
+        
+        return Response::json($ret);
+    }
+
+    // created or updated chat event
+    public function sendGroupChatFocused(Request $request) 
+    {
+        $group_id = $request->get('group_id', 0);
+        $sender_id = $request->get('sender_id');
+        $last_id = $request->get('last_id', 0);
+        $member_ids = $request->get('member_ids', []);
+        $group_info = $this->getGroupChatInfo($group_id);
+        AgentGroupChatHistory::where('group_id', $group_id)
+            ->where('sender_id', '!=', $sender_id)
+            ->where('read_status', 0)
+            ->where('id', '<=', $last_id)
+            ->update(['read_status' => 1]);
+        $ret = [];
+        $ret['code'] = 200;
+        $ret['member_ids'] = $member_ids;
+        $ret['unreadCount'] = $this->groupChatUnreadCount($group_id, $sender_id, $member_ids);
+        
+        return Response::json($ret);
+    }
+
+
+    public function sendGroupChatMessage(Request $request) 
+    {
+        $sender_id = $request->get('sender_id', 0);
+        $group_id = $request->get('group_id', 0);
+        $type = $request->get('type', 0);
+        $text = $request->get('text', '');
+        $path = $request->get('path', '');
+        $newChat = new AgentGroupChatHistory();
+        $newChat['sender_id'] = $sender_id;
+        $newChat['group_id'] = $group_id;
+        $newChat['type'] = $type;
+        $newChat['text'] = $text;
+        if ($path !== '') {
+            $newChat['path'] = $path;
+        }
+        if ($type !== 0) {
+            $file_size = $request->get('file_size', 0);
+            $file_name = $request->get('file_name', '');
+            $file_type = $request->get('file_type', '');
+            $image_width = $request->get('image_width', 0);
+            $image_height = $request->get('image_height', 0);
+            if (!empty($file_size)) {
+                $newChat['file_size'] = $file_size;
+            }
+            if (!empty($file_name)) {
+                $newChat['file_name'] = $file_name;
+            }
+            if (!empty($file_type)) {
+                $newChat['file_type'] = $file_type;
+            }
+            if (!empty($image_width)) {
+                $newChat['image_width'] = $image_width;
+            }
+            if (!empty($image_height)) {
+                $newChat['image_height'] = $image_height;
+            }
+        }
+        $newChat->save();
+        //hdxb check
+        $hdxb_value = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_hdxb_setup')
+            ->where('property_id', '4')
+            ->pluck('value');
+        if(@$hdxb_value[0] == '1'){
+            $unreadCount = AgentAgentChat::where('from_id', $from_id)
+            ->where('to_id', $to_id)
+            ->where('from_deleted', 0)
+            ->where('to_deleted', 0)
+            ->where('read_status', '!=', 1)->count();
+            $totalCount = AgentAgentChat::whereIn('from_id', [$from_id, $to_id])
+                ->whereIn('to_id', [$from_id, $to_id])
+                ->where('from_deleted', 0)
+                ->where('to_deleted', 0)
+                ->count();
+        }
+        // $unreadCount = AgentGroupChatHistory::where('group_id', $group_id)
+        //     ->where('sender_id', '!=', $sender_id)
+        //     ->where('read_ids', 'NOT LIKE', '%"' . $sender_id . '"%')
+        //     ->where('deleted', 0)
+        //     ->count();
+        $ret = [];
+        $ret['code'] = 200;
+        $ret['content'] = $newChat;
+        //hdxb check
+        $hdxb_value = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_hdxb_setup')
+            ->where('property_id', '4')
+            ->pluck('value');
+        if(@$hdxb_value[0] == '1'){
+            $ret['totalCount'] = $totalCount;
+            $ret['unreadCount'] = $unreadCount;
+            $ret['userListUnreadCount'] = $this->getUserListUnreadCount($to_id);
+            $ret['to_fcm_key'] = $this->getFcmKeyForAgentChat($to_id);
+        }
+        return Response::json($ret);
+    }
+
+    public function sendAgentAgentMessage(Request $request) 
+    {
+        $from_id = $request->get('from_id', 0);
+        $to_id = $request->get('to_id', 0);
+        $type = $request->get('type', 0);
+        $text = $request->get('text', '');
+        $path = $request->get('path', '');
+        $newChat = new AgentAgentChat();
+        $newChat['from_id'] = $from_id;
+        $newChat['to_id'] = $to_id;
+        $newChat['type'] = $type;
+        $newChat['text'] = $text;
+        if ($path !== '') {
+            $newChat['path'] = $path;
+        }
+        if ($type !== 0) {
+            $file_size = $request->get('file_size', 0);
+            $file_name = $request->get('file_name', '');
+            $file_type = $request->get('file_type', '');
+            $image_width = $request->get('image_width', 0);
+            $image_height = $request->get('image_height', 0);
+            if (!empty($file_size)) {
+                $newChat['file_size'] = $file_size;
+            }
+            if (!empty($file_name)) {
+                $newChat['file_name'] = $file_name;
+            }
+            if (!empty($file_type)) {
+                $newChat['file_type'] = $file_type;
+            }
+            if (!empty($image_width)) {
+                $newChat['image_width'] = $image_width;
+            }
+            if (!empty($image_height)) {
+                $newChat['image_height'] = $image_height;
+            }
+        }
+        $newChat->save();
+        $ret = [];
+        $ret['code'] = 200;
+        $ret['content'] = $newChat;
+        return Response::json($ret);
+    }
+
+    public function createChatGroup(Request $request)
+    {
+        $id = $request->get('id', 0);
+        $user_id = $request->get('user_id', 0);
+        $name = $request->get('name', '');
+        $path = $request->get('path', '');
+        $description = $request->get('description', '');
+        $onlyAdd = $request->get('onlyAdd', false);
+        $members = $request->get('members', []);
+        $newChatGroup = null;
+        if (empty($id)) {
+            $newChatGroup = new AgentChatGroup();
+        } else {
+            $newChatGroup = AgentChatGroup::find($id);
+        }
+        $groupChatInfo = null;
+        if ($newChatGroup) {
+            if (empty($id)) {
+                $newChatGroup['user_id'] = $user_id;
+            } else if ($onlyAdd === false) {
+                $newChatGroup['user_id'] = $user_id;
+            }
+            
+            $newChatGroup['name'] = $name;
+            // $newChatGroup['member_ids'] = json_encode($member_ids);
+            
+            if (!empty($description)) {
+                $newChatGroup['description'] = $description;
+            }
+            if (!empty($path)) {
+                $newChatGroup['path'] = $path;
+            }
+            $newChatGroup->save();
+            // save to members
+            $group_id = $newChatGroup->id;
+            if (!empty($id)) {
+                // delete first 
+                DB::table('services_chat_agent_group_members')
+                        ->where('group_id', $id)
+                        ->delete();
+            }
+            foreach ($members as $member) {
+                # code...
+                DB::table('services_chat_agent_group_members')
+                        ->insert([
+                            'group_id' => $group_id,
+                            'agent_id' => $member['id'],
+                            'created_id' => $member['created_id']
+                        ]);
+            }
+            $groupChatInfo = $this->getGroupChatInfo($newChatGroup->id);
+        }
+        $ret = [];
+        $ret['code'] = 200;
+        $ret['content'] = $groupChatInfo;
+        return Response::json($ret);
+    }
+
+    public function test(Request $request)
+    {
+        $group_id = $request->get('group_id', 0);
+        $ret = [];
+        $ret['code'] = 200;
+        $ret['content'] = $this->getGroupChatInfo($group_id);
+        return Response::json($ret);
+    }
+
+    public function changeAgentAgentReadStatus(Request $request) 
+    {
+        $from_id = $request->get('from_id', 0);
+        $to_id = $request->get('to_id', 0);
+        $last_id = $request->get('last_id', 0);
+        AgentAgentChat::where('from_id', $to_id)
+            ->where('to_id', $from_id)
+            ->where('id', '<=', $last_id)
+            ->where('read_status', '!=', 1)
+            ->update(['read_status' => 1]);
+        $unreadCount = AgentAgentChat::where('from_id', $to_id)
+            ->where('to_id', $from_id)
+            ->where('from_deleted', 0)
+            ->where('to_deleted', 0)
+            ->where('read_status', '!=', 1)->count();
+        $ret = [];
+        $ret['code'] = 200;
+        $ret['content'] = $unreadCount;
+        return Response::json($ret);
+    }
+
+    public function changeGuestAgentReadStatus(Request $request) 
+    {
+        $session_id = $request->get('session_id', 0);
+        $agent_id = $request->get('agent_id', 0);
+        $last_id = $request->get('last_id', 0);
+        $property_id = $request->get('property_id', 0);
+        DB::table('services_chat_history')
+            ->where('session_id', $session_id)
+            ->where('agent_id', $agent_id)
+            ->where('property_id', $property_id)
+            ->where('read_status', 0)
+            ->where('id', '<=', $last_id)
+            ->update(['read_status' => 1]);
+        $unreadCount = $this->getGuestSessionUnreadCount($session_id, $property_id, $agent_id);
+        $ret = [];
+        $ret['code'] = 200;
+        $ret['content'] = $unreadCount;
+        return Response::json($ret);
+    }
+
+    /**
+     * @param Request $request
+     * @return mixed
+     */
+    public function getChatAgentListByIds($member_ids)
+    {
+        $query = DB::table('common_users as cu')
+            ->whereIn('id', $member_ids)
+            ->where('cu.deleted', 0);
+            
+        // $query->groupBy('cu.id');
+        $query->orderBy('cu.first_name')
+            ->select(DB::raw('cu.id, cu.web_login, cu.mobile_login, cu.picture,
+            CONCAT_WS(" ", cu.first_name, cu.last_name) as agent_name'));
+        return $query->get();
+    }
+
+    /**
+     * @param Request $request
+     * @return mixed
+     */
+    public function getChatAgentListNew(Request $request)
+    {
+        $agent_id = $request->get('agent_id', 0);
+        $property_id = $request->get('property_id', 0);
+        $online_flag = $request->get('online_flag', true);
+        $pageNumber = $request->get('pageNumber', 0);
+        $pageCount = $request->get('pageCount', 0);
+        $last_id = $request->get('last_id', 0);
+        $chat_flag = $request->get('chat_flag', false);
+        $filter = $request->get('filter', '');
+        $cur_time = date("Y-m-d H:i:s");
+        $query = DB::table('common_users as cu')
+            ->join('common_department as cd', 'cu.dept_id', '=', 'cd.id')
+            ->join('common_job_role as jr', 'cu.job_role_id', '=', 'jr.id')
+            ->join('common_permission_members as pm', 'pm.perm_group_id', '=', 'jr.permission_group_id')
+            ->join('common_page_route as pr', 'pm.page_route_id', '=', 'pr.id')
+            ->where('pr.name', 'app.guestservice.chat')
+            ->where('cd.property_id', $property_id)
+            ->where('cu.id', '!=', $agent_id)
+            ->where('cu.deleted', 0);
+            
+        if (!empty($filter)) {
+            $filterWhere = "'%" . $filter . "%'";
+            $query->whereRaw('CONCAT_WS(" ", cu.first_name, cu.last_name) like ' . $filterWhere);
+        }
+        if ($online_flag) {
+            // $query->where('cu.online_status', $online_flag);
+            $query->where(function($q) {
+                $q->where('cu.mobile_login', 1)
+                    ->orWhere('cu.web_login', 1);
+            });
+            // $query->whereRaw('(cu.web_login = 1 OR cu.mobile_login = 1)');
+        }
+        // $query->groupBy('cu.id');
+        $query->orderBy('cu.first_name')
+            ->select(DB::raw('cu.id, cu.online_status, cu.web_login, cu.mobile_login, cu.mobile_status, cu.picture, jr.job_role, cd.department,
+            CONCAT_WS(" ", cu.first_name, cu.last_name) as agent_name'));
+        $countQuery = clone $query;
+        $totalCount = $countQuery->count();
+        if ($pageCount > 0) {
+            $query->skip($pageCount * $pageNumber)->take($pageCount);
+        }
+        $agent_list = $query->get();
+        $list = [];
+        // get last message, unread count
+        foreach ($agent_list as $row) {
+            $query = AgentAgentChat::whereIn('from_id', [$agent_id, $row->id])
+                ->whereIn('to_id', [$agent_id, $row->id])
+                ->orderBy('id', 'DESC');
+            $row->lastChatInfo = $query->first();
+            if ($chat_flag && !$row->lastChatInfo) {
+                $totalCount --;
+                continue;
+            }
+            $row->unreadCount = AgentAgentChat::where('from_id', $row->id)
+                ->where('to_id', $agent_id)
+                ->where('read_status', 0)->count();
+            
+            $list[] = $row;
+        }
+        $ret = array();
+        $ret['code'] = 200;
+        $ret['content'] = $list;
+        $ret['totalCount'] = $totalCount;
+        $ret['unreadCount'] = $this->getUserListUnreadCount($agent_id);
+        return Response::json($ret);
+    }
+
+    /**
+     * @param Request $request
+     * @return mixed
+     */
+    public function getChatAgentNameListOnly(Request $request)
+    {
+        $property_id = $request->get('property_id', '');
+        $filter = $request->get('filter', '');
+        $filterWhere = "'%" . $filter . "%'";
+        $query = DB::table('common_users as cu')
+            ->join('common_department as cd', 'cu.dept_id', '=', 'cd.id')
+            ->join('common_job_role as jr', 'cu.job_role_id', '=', 'jr.id')
+            ->join('common_permission_members as pm', 'pm.perm_group_id', '=', 'jr.permission_group_id')
+            ->join('common_page_route as pr', 'pm.page_route_id', '=', 'pr.id')
+            ->where('pr.name', 'app.guestservice.chat')
+            ->where('cd.property_id', $property_id)
+            //->where('cu.id', '!=', $agent_id)
+            ->whereRaw('CONCAT_WS(" ", cu.first_name, cu.last_name) like ' . $filterWhere)
+            ->where('cu.deleted', 0)
+            ->select(DB::raw('CONCAT_WS(" ", cu.first_name, cu.last_name) as agent_name, cu.id'))
+            ->get();
+            
+        //return $query;
+        return Response::json($query);
+    }
+
+    /**
+     * @param Request $request
+     * @return mixed
+     */
+    public function getChatAgentListOnly(Request $request)
+    {
+        $agent_id = $request->get('agent_id', 0);
+        $property_id = $request->get('property_id', 0);
+        $cur_time = date("Y-m-d H:i:s");
+        $query = DB::table('common_users as cu')
+            ->join('common_department as cd', 'cu.dept_id', '=', 'cd.id')
+            ->join('common_job_role as jr', 'cu.job_role_id', '=', 'jr.id')
+            ->join('common_permission_members as pm', 'pm.perm_group_id', '=', 'jr.permission_group_id')
+            ->join('common_page_route as pr', 'pm.page_route_id', '=', 'pr.id')
+            ->where('pr.name', 'app.guestservice.chat')
+            ->where('cd.property_id', $property_id)
+            ->where('cu.id', '!=', $agent_id)
+            ->where('cu.deleted', 0);
+            
+        // $query->groupBy('cu.id');
+        $query->orderBy('cu.first_name')
+            ->select(DB::raw('cu.id, cu.web_status, cu.mobile_status, cu.picture,
+            CONCAT_WS(" ", cu.first_name, cu.last_name) as agent_name'));
+        $agent_list = $query->get();
+        $ret = array();
+        $ret['code'] = 200;
+        $ret['content'] = $agent_list;
+        return Response::json($ret);
+    }
+
+    private function getUserListUnreadCount($agent_id) 
+    {
+        $unreadCount = 0;
+        $query = AgentAgentChat::where('to_id', $agent_id)
+            ->where('read_status', '!=', 1)    
+            ->where('to_deleted', 0)
+            ->where('from_deleted', 0);
+        $unreadCount = $query->count();
+        return $unreadCount;
+    }
+
+    private function groupChatUnreadCount($group_id, $agent_id, $member_ids = []) 
+    {
+        $unreadCount = AgentGroupChatHistory::where('group_id', $group_id)
+            ->whereIn('sender_id', $member_ids)
+            ->where('sender_id', '!=', $agent_id)
+            ->where('read_status', 0)
+            ->count();
+        
+        return $unreadCount;
+    }
+
+    private function groupChatTotalUnreadCount($user_id) 
+    {
+        $totalUnreadCount = 0;
+        $group_list = DB::table('services_chat_agent_group as scag')
+                ->join('services_chat_agent_group_members as scagm', 'scagm.group_id', '=', 'scag.id')
+                ->where('scagm.agent_id', $user_id)
+                ->select(['scag.id'])
+                ->groupBy('scag.id')->get();
+        $group_ids = [];
+        foreach ($group_list as $group) {
+            # code...
+            $group_ids[] = $group->id;
+        }
+        $totalUnreadCount = DB::table('services_chat_agent_group_history')
+                ->whereIn('group_id', $group_ids)
+                ->where('sender_id', '!=', $user_id)
+                ->where('read_status', 0)
+                ->count();
+        
+        return $totalUnreadCount;
+    }
+
+    public function getAgentProfile(Request $request)
+    {
+        $id = $request->get('id', 0);
+        $agentInfo = DB::table('common_users as cu')
+            ->join('common_department as cd', 'cu.dept_id', '=', 'cd.id')
+            ->join('common_job_role as jr', 'cu.job_role_id', '=', 'jr.id')
+            ->join('common_permission_members as pm', 'pm.perm_group_id', '=', 'jr.permission_group_id')
+            ->where('cu.id', '=', $id)
+            ->select(DB::raw('cu.id, cu.online_status, cu.picture, jr.job_role, cd.department, cu.email, cu.mobile,
+            CONCAT_WS(" ", cu.first_name, cu.last_name) as agent_name'))
+            ->first();
+        $ret = [];
+        $ret['code'] = 200;
+        $ret['content'] = $agentInfo;
+        return Response::json($ret);
     }
 
     /**
@@ -2110,16 +3366,24 @@ class ChatController extends Controller
             return Response::json($ret);
         }
 
+        $agent_first_skill_id = DB::table('common_chat_skill_mapping')
+        ->where('agent_id', $new_agent_id)
+        ->orderBy('id','ASC')
+        ->first();
+        if(!empty($agent_first_skill_id)){
+            $session->skill_id = $agent_first_skill_id->skill_id;
+        }
+
         $session->transfer_id = $new_agent_id;
 
         $session->save();
 
         $row = DB::table('services_chat_guest_session as cgs')
-            ->join('common_room as cr', 'cgs.room_id', '=', 'cr.id')
+            // ->join('common_room as cr', 'cgs.room_id', '=', 'cr.id')
             ->join('common_users as cu', 'cgs.agent_id', '=', 'cu.id')
             ->join('common_users as cu1', 'cgs.transfer_id', '=', 'cu1.id')
             ->where('cgs.id', $session_id)
-            ->select(DB::raw('cgs.*, cr.room, CONCAT_WS(" ", cu.first_name, cu.last_name) as agent_name, 
+            ->select(DB::raw('cgs.*, CONCAT_WS(" ", cu.first_name, cu.last_name) as agent_name, 
             CONCAT_WS(" ", cu1.first_name, cu1.last_name) as transfer_name'))
             ->first();
 
@@ -2130,8 +3394,8 @@ class ChatController extends Controller
         $notification->type = 'app.guestservice.chat';
         $notification->property_id = $session->property_id;
 
-        $notification->content = sprintf('%s request to tranfer chat to %s for %s from Room %s.',
-            $row->agent_name, $row->transfer_name, $row->guest_name, $row->room);
+        $notification->content = sprintf('%s request to tranfer chat to %s for %s .',
+            $row->agent_name, $row->transfer_name, $row->guest_name);
 
         $notification->notification_id = $session->id;
 
@@ -2278,6 +3542,45 @@ class ChatController extends Controller
      * @param Request $request
      * @return mixed
      */
+    public function getAgentAgentChatList(Request $request)
+    {
+        $from_id = $request->get('from_id', 0);
+        $to_id = $request->get('to_id', 0);
+        $pageCount = $request->get('pageCount', 0);
+        $last_id = $request->get('last_id', 0);
+        $query = AgentAgentChat::whereIn('from_id', [$from_id, $to_id])
+            ->whereIn('to_id', [$from_id, $to_id])
+            ->where('from_deleted', 0)
+            ->where('to_deleted', 0)
+            ->orderBy('id', 'DESC');
+        $totalQuery = clone $query;
+        $totalCount = $totalQuery->count();
+        $unreadCount = AgentAgentChat::where('from_id', $to_id)
+            ->where('to_id', $from_id)
+            ->where('from_deleted', 0)
+            ->where('to_deleted', 0)
+            ->where('read_status', '=', 0)->count();
+        if ($last_id > 0) {
+            $query->where('id', '<', $last_id);
+        }
+        if ($pageCount > 0) {
+            $query->take($pageCount);
+        }
+        $list = $query->get();
+        $data = [
+            'list' => $list,
+            'totalCount' => $totalCount,
+            'unreadCount' => $unreadCount
+        ];
+        $ret['code'] = 200;
+        $ret['content'] = $data;
+        return Response::json($ret);
+    }
+
+    /**
+     * @param Request $request
+     * @return mixed
+     */
     public function getAgentChatHistory(Request $request)
     {
         $from_id = $request->get('from_id', 0);
@@ -2348,6 +3651,66 @@ class ChatController extends Controller
      * @param Request $request
      * @return mixed
      */
+    public function getGroupDetailList(Request $request)
+    {
+        $user_id = $request->get('user_id', 0);
+        $group_id = $request->get('group_id', 0);
+        $last_id = $request->get('last_id', 0);
+        $pageCount = $request->get('pageCount', 0);
+        $group_members = DB::table('services_chat_agent_group_members as scagm')
+                ->join('common_users as cu', 'cu.id', '=', 'scagm.agent_id')
+                ->where('scagm.group_id', $group_id)
+                ->select(['scagm.agent_id as member_id'])
+                ->get();
+        $member_ids = [];
+        foreach ($group_members as $group_member) {
+            # code...
+            $member_ids[] = $group_member->member_id;
+        }
+        $query = DB::table('services_chat_agent_group_history as scagh')
+            ->where('scagh.group_id', $group_id)
+            ->whereIn('scagh.sender_id', $member_ids)
+            ->where('scagh.deleted', 0);
+        $totalQuery = clone $query;
+        $totalCount = $totalQuery->count();
+        if ($last_id > 0) {
+            $query->where('id', '<', $last_id);
+        }
+        if ($pageCount > 0) {
+            $query->take($pageCount);
+        }
+        $query->orderBy('scagh.id', 'DESC')->select(DB::raw('scagh.*'));
+        $list = $query->get();
+        $data = [
+            'list' => $list,
+            'totalCount' => $totalCount,
+            'unreadCount' => $this->groupChatUnreadCount($group_id, $user_id, $member_ids)
+        ];
+        $ret['code'] = 200;
+        $ret['content'] = $data;
+        return Response::json($ret);
+    }
+
+    public function loadInitList(Request $request) 
+    {
+        $user_id = $request->get('user_id', 0);
+        $property_id = $request->get('property_id', 4);
+        $cur_time = date("Y-m-d H:i:s");
+        $online_flag = $request->get('online_flag', 0);
+        
+        $ret = array();
+        $ret['code'] = 200;
+        $ret['agent_unreadCount'] = $this->getUserListUnreadCount($user_id);
+        $ret['group_unreadCount'] = $this->groupChatTotalUnreadCount($user_id);
+        $ret['guest_unreadCount'] = $this->getGuestTotalUnreadCount($property_id, $user_id);
+
+        return Response::json($ret);
+    }
+
+    /**
+     * @param Request $request
+     * @return mixed
+     */
     public function setReadFlag(Request $request)
     {
         $from_id = $request->get('from_id', 0);
@@ -2376,7 +3739,7 @@ class ChatController extends Controller
      */
     public function uploadFiles(Request $request)
     {
-        $output_dir = "uploads/chat/";
+        $output_dir = "uploads/chat/files";
 
         if(!File::isDirectory(public_path($output_dir)))
             File::makeDirectory(public_path($output_dir), 0777, true, true);
@@ -2606,6 +3969,81 @@ class ChatController extends Controller
         return $message;
     }
 
+    private function getLastGroupChatInfo($group_id)
+    {
+        $res = DB::table('services_chat_agent_group_history as scagh')
+                ->where('scagh.group_id', $group_id)
+                ->where('scagh.deleted', 0)
+                ->orderBy('id', 'DESC')
+                ->first();
+        return $res;
+    }
+    
+    public function getGroupChatInfo($group_id, $searchKey = '') 
+    {
+        $query = DB::table('services_chat_agent_group as scag')
+            ->leftJoin('common_users as cu', 'scag.user_id', '=', 'cu.id');
+        if (!empty($searchKey)) {
+            $query->where('scag.name', 'LIKE', '%' . $searchKey . '%');
+        }
+        $group_info = $query->select(DB::raw('scag.id, scag.name, scag.path, scag.user_id, scag.description, scag.created_at,
+                CONCAT_WS(" ", cu.first_name, cu.last_name) as created_name'))
+            ->where('scag.id', $group_id)
+            ->first();
+        if ($group_info) {
+            $group_info->lastChatInfo = $this->getLastGroupChatInfo($group_info->id);
+            // get group ids
+            $group_info->members = $this->getGroupMembers($group_id, $group_info->user_id);
+        }
+        return $group_info;
+    }
+
+    private function getGroupMembers($group_id, $created_id)
+    {
+        $ret = DB::table('services_chat_agent_group_members as scagm')
+                    ->join('common_users as cu', 'cu.id', '=', 'scagm.agent_id')
+                    ->where('scagm.group_id', $group_id)
+                    ->select(DB::raw('scagm.created_id, cu.id, cu.web_status, cu.mobile_status, cu.picture,
+            CONCAT_WS(" ", cu.first_name, cu.last_name) as agent_name'))
+                    ->get();
+        return $ret;
+    }
+
+    public function getGroupChatListNew(Request $request)
+    {
+        $searchKey = $request->get("searchKey", '');
+        $user_id = $request->get("user_id", 0);
+        $query = DB::table('services_chat_agent_group as scag')
+            ->join('common_users as cu', 'scag.user_id', '=', 'cu.id')
+            ->join('services_chat_agent_group_members as scagm', 'scagm.group_id', '=', 'scag.id');
+        $query->where('scagm.agent_id', $user_id);
+        if (!empty($searchKey)) {
+            $query->where('scag.name', 'LIKE', '%' . $searchKey . '%');
+        }
+        $group_list = $query->select(DB::raw('scag.id, scag.name, scag.path, scag.user_id, scag.description, scag.created_at,
+                CONCAT_WS(" ", cu.first_name, cu.last_name) as created_name'))
+            ->groupBy('scag.id')
+            ->orderBy('scag.created_at', 'DESC')
+            ->get();
+        foreach ($group_list as $group_item) {
+            # code...
+            $group_item->lastChatInfo = $this->getLastGroupChatInfo($group_item->id);
+            $group_item->members = $this->getGroupMembers($group_item->id, $group_item->user_id);
+            $member_ids = [];
+            foreach ($group_item->members as $member) {
+                # code...
+                $member_ids[] = $member->id;
+            }
+            $group_item->unreadCount = $this->groupChatUnreadCount($group_item->id, $user_id, $member_ids);
+        }
+        $ret = [];
+        $ret['content'] = $group_list;
+        $ret['unreadCount'] = $this->groupChatTotalUnreadCount($user_id);
+        $ret['code'] = 200;
+        
+        return Response::json($ret);
+    }
+
     /**
      * @param Request $request
      * @return mixed
@@ -2630,6 +4068,8 @@ class ChatController extends Controller
 
         $ret = array();
         $ret['group_list'] = $group_list;
+        $ret['code'] = 200;
+
         return Response::json($ret);
     }
 
@@ -2812,6 +4252,168 @@ class ChatController extends Controller
 
     }
 
+    public function uploadFilesNew(Request $request) {
+        $output_dir = "uploads/chat/files/";
+        $ret = array();
+        $filekey = 'myfile';
+        if ($request->hasFile($filekey) === false) {
+            $ret['code'] = 201;
+            $ret['message'] = "No input file";
+            $ret['content'] = array();
+            return Response::json($ret);
+        }
+        //You need to handle  both cases
+        //If Any browser does not support serializing of multiple files using FormData()
+        if (!is_array($_FILES[$filekey]["name"])) //single file
+        {
+            if ($request->file($filekey)->isValid() === false) {
+                $ret['code'] = 202;
+                $ret['message'] = "No valid file";
+                return Response::json($ret);
+            }
+            $fileName = $_FILES[$filekey]["name"];
+            $ext = pathinfo($fileName, PATHINFO_EXTENSION);
+            $filename1 = "file_" . time() . "." . strtolower($ext);
+            $dest_path = $output_dir . $filename1;
+            move_uploaded_file($_FILES[$filekey]["tmp_name"], $dest_path);
+            $ret['code'] = 200;
+            $ret['message'] = "File is uploaded successfully";
+            $ret['content'] = "/" . $dest_path;
+            return Response::json($ret);
+        } else  //Multiple files, file[]
+        {
+            $filename = array();
+            $fileCount = count($_FILES[$filekey]["name"]);
+            for ($i = 0; $i < $fileCount; $i++) {
+                $fileName = $_FILES[$filekey]["name"][$i];
+                $ext = pathinfo($fileName, PATHINFO_EXTENSION);
+                $filename1 = "pic_" . time() . '_' . ($i + 1) . "." . strtolower($ext);
+                $dest_path = $output_dir . $filename1;
+                move_uploaded_file($_FILES[$filekey]["tmp_name"][$i], $dest_path);
+                $filename[$i] = "/" . $dest_path;
+            }
+            $ret['code'] = 200;
+            $ret['message'] = "File is uploaded successfully";
+            $ret['content'] = $filename;
+            return Response::json($ret);
+        }
+    }
+
+    public function uploadGuestChatFile(Request $request) {
+        $ret = array();
+        $filekey = 'myfile';
+        if ($request->hasFile($filekey) === false) {
+            $ret['code'] = 201;
+            $ret['message'] = "No input file";
+            $ret['content'] = array();
+            return Response::json($ret);
+        }
+        $mobile_number = $request->get('mobile_number', 0);
+        $output_dir = 'wauploads/' . $mobile_number . "/";
+        if (!file_exists($upload_path)) {
+            mkdir($upload_path, 0777, true);
+        }
+        //You need to handle  both cases
+        //If Any browser does not support serializing of multiple files using FormData()
+        if (!is_array($_FILES[$filekey]["name"])) //single file
+        {
+            if ($request->file($filekey)->isValid() === false) {
+                $ret['code'] = 202;
+                $ret['message'] = "No valid file";
+                return Response::json($ret);
+            }
+            $fileName = $_FILES[$filekey]["name"];
+            $ext = pathinfo($fileName, PATHINFO_EXTENSION);
+            if (strtolower($ext) === 'heic') {
+                $ext = 'jpg';
+            }
+            $filename1 = "file_" . time() . "." . strtolower($ext);
+            $dest_path = $output_dir . $filename1;
+            move_uploaded_file($_FILES[$filekey]["tmp_name"], $dest_path);
+            $ret['code'] = 200;
+            $ret['content'] = $dest_path;
+            return Response::json($ret);
+        }
+    }
+
+    public function uploadGuestChatPicture(Request $request) {
+        $ret = array();
+        $filekey = 'myfile';
+        if ($request->hasFile($filekey) === false) {
+            $ret['code'] = 201;
+            $ret['message'] = "No input file";
+            $ret['content'] = array();
+            return Response::json($ret);
+        }
+        $mobile_number = $request->get('mobile_number', 0);
+        $output_dir = 'wauploads/' . $mobile_number . "/";
+        if (!file_exists($output_dir)) {
+            mkdir($output_dir, 0777, true);
+        }
+        //You need to handle  both cases
+        //If Any browser does not support serializing of multiple files using FormData()
+        if ($request->file($filekey)->isValid() === false) {
+            $ret['code'] = 202;
+            $ret['message'] = "No valid file";
+            return Response::json($ret);
+        }
+        $fileName = $_FILES[$filekey]["name"];
+        $ext = pathinfo($fileName, PATHINFO_EXTENSION);
+        $filename1 = "pic_" . time() . "." . strtolower($ext);
+        $dest_path = $output_dir . $filename1;
+        move_uploaded_file($_FILES[$filekey]["tmp_name"], $dest_path);
+        $ret['code'] = 200;
+        $ret['content'] = $dest_path;
+        return Response::json($ret);
+    }
+
+    public function uploadPictures(Request $request) {
+        $output_dir = "uploads/chat/images/";
+        $ret = array();
+        $filekey = 'myfile';
+        if ($request->hasFile($filekey) === false) {
+            $ret['code'] = 201;
+            $ret['message'] = "No input file";
+            $ret['content'] = array();
+            return Response::json($ret);
+        }
+        //You need to handle  both cases
+        //If Any browser does not support serializing of multiple files using FormData()
+        if (!is_array($_FILES[$filekey]["name"])) //single file
+        {
+            if ($request->file($filekey)->isValid() === false) {
+                $ret['code'] = 202;
+                $ret['message'] = "No valid file";
+                return Response::json($ret);
+            }
+            $fileName = $_FILES[$filekey]["name"];
+            $ext = pathinfo($fileName, PATHINFO_EXTENSION);
+            $filename1 = "pic_" . time() . "." . strtolower($ext);
+            $dest_path = $output_dir . $filename1;
+            move_uploaded_file($_FILES[$filekey]["tmp_name"], $dest_path);
+            $ret['code'] = 200;
+            $ret['message'] = "File is uploaded successfully";
+            $ret['content'] = "/" . $dest_path;
+            return Response::json($ret);
+        } else  //Multiple files, file[]
+        {
+            $filename = array();
+            $fileCount = count($_FILES[$filekey]["name"]);
+            for ($i = 0; $i < $fileCount; $i++) {
+                $fileName = $_FILES[$filekey]["name"][$i];
+                $ext = pathinfo($fileName, PATHINFO_EXTENSION);
+                $filename1 = "pic_" . time() . '_' . ($i + 1) . "." . strtolower($ext);
+                $dest_path = $output_dir . $filename1;
+                move_uploaded_file($_FILES[$filekey]["tmp_name"][$i], $dest_path);
+                $filename[$i] = "/" . $dest_path;
+            }
+            $ret['code'] = 200;
+            $ret['message'] = "File is uploaded successfully";
+            $ret['content'] = $filename;
+            return Response::json($ret);
+        }
+    }
+
     /**
      * @param Request $request
      * @return mixed
@@ -2864,7 +4466,7 @@ class ChatController extends Controller
      */
     public function addNewQuickTask(Request $request)
     {
-//        $phone_number = $request->get('phone_number', '');
+//        $mobile_number = $request->get('mobile_number', '');
         $guest_id = $request->get('guest_id', 0);
         $task_id = $request->get('task_id', 0);
 
@@ -2965,17 +4567,20 @@ class ChatController extends Controller
         $ret = array();
         $model = TaskList::find($task_id);
 
+        $taskgroup = DB::table('services_task_group_members as stgm')
+        ->where('task_list_id', $task_id)
+        ->first();
 
-        $taskgroup = $model->taskgroup;
-        if (empty($taskgroup) || count($taskgroup) < 1) {
-            $ret['code'] = 201;
-            $ret['message'] = 'No task group.';
-            return $ret;
-        }
+        // $taskgroup = $model->taskgroup;
+        // if (empty($taskgroup) || count($taskgroup) < 1) {
+        //     $ret['code'] = 201;
+        //     $ret['message'] = 'No task group.';
+        //     return $ret;
+        // }
 
-        $task = $taskgroup[0];
+        // $task = $taskgroup[0];
 
-        return $this->getTaskShiftInfoData($task_id, $task, $location_id);
+        return $this->getTaskShiftInfoData($task_id, $taskgroup, $location_id);
     }
 
     /**
@@ -2990,6 +4595,12 @@ class ChatController extends Controller
 
         // // find department function
         // $model = TaskList::find($task_id);
+
+        $taskgroup = DB::table('services_task_list as stl')
+        ->leftJoin('services_task_group_members as stgm','stl.id','=','stgm.task_list_id')
+        ->leftJoin('services_task_group as stg', 'stg.id', '=', 'stgm.task_grp_id')
+        ->where('stl.id', $task_id)
+        ->first();
 
         $task = $taskgroup;
         $ret['taskgroup'] = $task;
@@ -3251,7 +4862,7 @@ class ChatController extends Controller
             'text' => $text,
             'text_trans' => '',
             'language' => $language,
-            'sender' => 'server',
+            'direction' => 1,
             'chat_type' => $chat_type,
             'attachment' => $attachment,
             'other_info' => json_encode($other_info)
@@ -3287,14 +4898,15 @@ class ChatController extends Controller
         $room = $request->get('room', 0);
         $guest_type = $request->get('guest_type', '');
         $language_name = $request->get('language_name', 'English');
+        $chat_type = $request->get('chat_type', 'text');
+        $attachment = $request->get('attachment', '');
+        $agent_id = $request->get('agent_id', 0);
+        $guest_id = $request->get('guest_id', 0);
+        $filename = $request->get('filename', '');
 
         if ($language != 'en') {
             $text = $this->getTranslatedText('en', $language, $text);
         }
-
-        $message_info = [];
-        $message_info['text'] = $text;
-        $message_info['mobile_number'] = $request->get('mobile_number');
 
         $other_info = [
             'guest_type' => $guest_type,
@@ -3306,16 +4918,16 @@ class ChatController extends Controller
         $saveInfo = [
             'property_id' => $property_id,
             'session_id' => $session_id,
-            'agent_id' => $request->get('agent_id', 0),
-            'guest_id' => $request->get('guest_id', 0),
+            'agent_id' => $agent_id,
+            'guest_id' => $guest_id,
             'cur_chat_name' => '',
             'mobile_number' => $mobile_number,
             'text' => $text,
             'text_trans' => '',
             'language' => $language,
-            'sender' => 'server',
-            'chat_type' => 'text',
-            'attachment' => '',
+            'direction' => 1,
+            'chat_type' => $chat_type,
+            'attachment' => $attachment,
             'other_info' => json_encode($other_info)
         ];
 
@@ -3323,15 +4935,1196 @@ class ChatController extends Controller
             'success' => false
         ];
 
-        $responseWhatsapp = $this->sendMessageToWhatsapp($message_info);
-        if ($responseWhatsapp != false) {
-            $saveInfo['uuid'] = $responseWhatsapp->MessageUUID;
-            $this->saveChatbotHistoryWhatsapp($saveInfo);
+        $newChatInfo = $this->saveGuestAgentChatInfo($saveInfo);
 
-            $ret['success'] = true;
+        //hdxb check
+        $hdxb_value = DB::table('property_setting')
+        ->where('settings_key', 'whatsapp_hdxb_setup')
+        ->where('property_id', '4')
+        ->pluck('value');
+        $session_data = DB::table('services_chat_guest_session')
+            ->where('id', $session_id)
+            ->first();
+        if(!empty($session_data)){
+            if($session_data->socket_app == '1'){ // Guest app
+                $this->sendAgentMsgToGuestApp($mobile_number, $text, 'pass');
+            }
+            else{ // hdxb or staycae
+                if(@$hdxb_value[0] != '1'){
+                     // send message 
+                     if ($chat_type === 'text') {
+                        $this->scSendMessage($mobile_number, $text, 'text', $session_data->property_id);
+                    } else if ($chat_type === 'image') {
+                        
+                        $this->sendMessageToWhatsappImg($mobile_number, $agent_id, $session_id, $attachment);
+                    } else if ($chat_type === 'document') {
+                        $this->sendMessageToWhatsappDoc($mobile_id, $agent_id, $session_id, $attachment, $filename);
+                    }
+                }
+                if(@$hdxb_value[0] == '1'){
+                    $responseWhatsapp = $this->sendMessageToWhatsapp($message_info);
+                }
+            }
         }
+        //$saveInfo['uuid'] = $responseWhatsapp->MessageUUID;
+        $this->saveChatbotHistoryWhatsapp($saveInfo);
+        // if ($responseWhatsapp != false) {
+        //     $saveInfo['uuid'] = $responseWhatsapp->MessageUUID;
+        //     $this->saveChatbotHistoryWhatsapp($saveInfo);
+        //
+            $ret['success'] = true;
+        // }
 
         return Response::json($ret);
+    }
+
+    public function sendAgentMsgToGuestApp($mobile_number, $text, $pass){
+        $site_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]";
+        $site_port = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "8002" : "8001");
+        $params = ['guest_id' => $mobile_number , 'msg' => $text , 'pass' => $pass];
+        $url = $site_url . ':'.$site_port.'/sendchat?' . http_build_query($params);
+        // create curl resource
+        $ch = curl_init();
+        // set url
+        curl_setopt($ch, CURLOPT_URL, $url);
+        //return the transfer as a string
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        // $output contains the output string
+        $output = curl_exec($ch);
+        // close curl resource to free up system resources
+        curl_close($ch);
+        // $this->scSendMessage($mobile_number, $agent_working_hours_msg->template, 'text');
+        //             $this->scSaveInvalidBRBotStaticMessage($mobile_number, $agent_working_hours_msg->template, $chat_guest_history->property_id, $chat_guest_history);
+        
+    }
+
+    public function getEntryId($message)
+    {
+        if($message != ''){
+            $json_data = $message;
+            return $json_data[0]['id'];
+        }
+    }
+
+    public function getEntryUniqueId($message)
+    {
+        $uniqueId = '';
+        if($message != ''){
+            $json_data = $message;
+            foreach ($message as $key => $value) {
+                foreach ($value['changes'] as $ckey => $changes_value) {
+                    if (array_key_exists('messages', $changes_value['value'])) {
+                        if($changes_value['value']['messages']){
+                            foreach($changes_value['value']['messages'] as $mkey => $mvalue){
+                                $uniqueId = $mvalue['id'];
+                            }
+                        }
+                    }
+                    
+                }
+            }
+        }
+        return $uniqueId;
+    }
+
+    public function getEntryChatType($message)
+    {
+        return 'text';
+    }
+
+    public function getImgEntryChatType($message)
+    {
+        $type = '';
+        if($message != ''){
+            $json_data = $message;
+            foreach ($message as $key => $value) {
+                foreach ($value['changes'] as $ckey => $changes_value) {
+                    if (array_key_exists('messages', $changes_value['value'])) {
+                        foreach($changes_value['value']['messages'] as $mkey => $mvalue){
+                            $type = $mvalue['type'];
+                        }
+                    }
+                    
+                }
+            }
+        }
+        return $type;
+    }
+
+    public function getWAInteractiveId($message)
+    {
+        $interactive_id = '';
+        if($message != ''){
+            $json_data = $message;
+            foreach ($message as $key => $value) {
+                foreach ($value['changes'] as $ckey => $changes_value) {
+                    if (array_key_exists('messages', $changes_value['value'])) {
+                        foreach($changes_value['value']['messages'] as $mkey => $mvalue){
+                            //$interactive_id = $mvalue['type'];
+                            $interactive_id = $mvalue[$mvalue['type']]['button_reply']['id'];
+                        }
+                    }
+                    
+                }
+            }
+        }
+        return $interactive_id;
+    }
+
+    public function getEntryMobileNo($message)
+    {
+        $mobileNo = '';
+        if($message != ''){
+            $json_data = $message;
+            foreach ($message as $key => $value) {
+                foreach ($value['changes'] as $ckey => $changes_value) {
+                    if (array_key_exists('messages', $changes_value['value'])) {
+                        foreach($changes_value['value']['messages'] as $mkey => $mvalue){
+                            $mobileNo = $mvalue['from'];
+                        }
+                    }
+                    
+                }
+            }
+        }
+        return $mobileNo;
+    }
+
+    public function getPropertyMblNo($message){
+        $property_number = '';
+        if($message != ''){
+            $json_data = $message;
+            foreach ($message as $key => $value) {
+                foreach ($value['changes'] as $ckey => $changes_value) {
+                    if (array_key_exists('metadata', $changes_value['value'])) {
+                        $property_number = $changes_value['value']['metadata']['display_phone_number'];
+                    }
+                }
+            }
+        }
+        return $property_number;
+    }
+
+    public function getEntryTextBody($message)
+    {
+        $textBody = '';
+        if($message != ''){
+            $json_data = $message;
+            foreach ($message as $key => $value) {
+                foreach ($value['changes'] as $ckey => $changes_value) {
+                    if (array_key_exists('messages', $changes_value['value'])) {
+                        foreach($changes_value['value']['messages'] as $mkey => $mvalue){
+                            $textBody = $mvalue['text']['body'];
+                        }
+                    }
+                    
+                }
+            }
+        }
+        return $textBody;
+    }
+
+    /**
+     * @param Request $request
+     */
+    public function onMetaWhatsapp(Request $request)
+    {
+        $hub_mode=$request->input('hub_mode','');
+        $hub_challenge=$request->input('hub_challenge','');
+        $hub_verify_token=$request->input('hub_verify_token','');
+
+        $message = $request->input('entry','');
+
+        $chat_type = $this->getEntryChatType($message);
+        $type_main = $this->getImgEntryChatType($message);
+
+        $id = $this->getEntryId($message);
+        $uuid = $this->getEntryUniqueId($message);
+
+        $myfile = fopen("testlogging.txt", "a");
+        fwrite($myfile, $type_main . "\n");
+        fclose($myfile);
+
+        $myfile = fopen("testlogging.txt", "a");
+        fwrite($myfile, json_encode($message));
+        fclose($myfile);
+        
+        $attachment = '';
+        if($type_main == 'image' || $type_main == 'audio' || $type_main == 'video' || $type_main == 'interactive'){
+            $message_content = '';
+        }else{
+            $message_content = $this->getEntryTextBody($message);
+        }
+        
+        $mobile_number = $this->getEntryMobileNo($message);
+
+        $property_number = $this->getPropertyMblNo($message);
+
+        $myfile = fopen("testlogging.txt", "a");
+        fwrite($myfile, $type_main . "\n");
+        fclose($myfile);
+
+        $myfile = fopen("testlogging.txt", "a");
+        fwrite($myfile, json_encode($property_number));
+        fclose($myfile);
+
+        // if (!empty($id)) {
+        //     return;
+        // }
+
+        if($mobile_number == ''){
+            return;
+        }
+        
+        //         // get Info
+        $info = $this->getInfoFromMobileNumber($mobile_number);
+
+        $this->scIncoming($hub_mode, $hub_challenge, $hub_verify_token, $message, $property_number, $id, $uuid, $chat_type, $type_main, $attachment, $message_content, $mobile_number, $info);
+
+
+        // // OLD INCOMING MESSAGE
+
+        // $guest_info = $info['guest_info'];
+        // $session_info = $info['session_info'];
+        // $cur_chat_name = $info['cur_chat_name'];
+
+        // $other_info = $info['other_info'];
+
+        // $guest_path_list = $info['guest_path_list'];
+
+        // if ($session_info['status'] == ENDED) {
+
+        //         $guest_info['agent_id'] = 0;
+
+        //         $session_info['id'] = 0;
+        //         $session_info['agent_id'] = 0;
+
+        //         // save current chat
+        //         $saveInfo = [
+        //             'property_id' => $guest_info['property_id'],
+        //             'mobile_number' => $mobile_number,
+        //             'session_id' => $session_info['id'],
+        //             'guest_id' => $guest_info['guest_id'],
+        //             'agent_id' => $session_info['agent_id'],
+        //             'text' => $message_content,
+        //             'text_trans' => '',
+        //             'sender' => 'guest',
+        //             'language' => $session_info['language'],
+        //             'chat_type' => $chat_type,
+        //             'attachment' => $attachment,
+        //             'other_info' => json_encode($other_info),
+        //             'cur_chat_name' => $cur_chat_name,
+        //             'uuid' => $uuid
+        //         ];
+
+        //         $this->saveChatbotHistoryWhatsapp($saveInfo);
+
+        //         $guest_id = $guest_info['guest_id'];
+        //         $property_id = $guest_info['property_id'];
+
+        //         $chat_name = CHAT_IN_HOUSE_MAIN_MENU;
+        //         $prev_chat_name = CHAT_IN_HOUSE_MAIN_MENU;
+
+        //         if ($other_info->guest_type === "Outside") {
+        //             $chat_name = CHAT_OUTSIDE_FAQ_MAIN_MENU;
+        //             $prev_chat_name = CHAT_OUTSIDE_FAQ_MAIN_MENU;
+        //         }
+
+        //         $guestResult = $this->getGuestInfoFromGuestId($guest_id);
+        //         $room_type_id = 0;
+        //         $vip_id = 0;
+
+        //         if (!empty($guestResult)) {
+        //             $room_type_id = $guestResult->room_type_id;
+        //             $vip_id = $guestResult->vip_id;
+        //         }
+
+        //         $chatResult = $this->getChatResult($property_id, $chat_name, $room_type_id, $vip_id, $prev_chat_name);
+        //         $saveInfo['cur_chat_name'] = $chat_name;
+        //         $saveInfo['text'] = $chatResult->template;
+        //         $saveInfo['session_id'] = 0;
+        //         $saveInfo['agent_id'] = 0;
+        //         if ($session_info['language'] != 'en') {
+        //             $saveInfo['text'] = $this->getTranslatedText('en', $session_info['language'], $saveInfo['text']);
+        //         }
+
+        //         $message_info = [
+        //             'text' => $saveInfo['text'],
+        //             'language' => $session_info['language'],
+        //             'mobile_number' => $mobile_number
+        //         ];
+
+        //         $responseWhatsapp = $this->sendMessageToWhatsapp($message_info);
+        //         if ($responseWhatsapp != false) {
+        //             $saveInfo['uuid'] = $responseWhatsapp->MessageUUID;
+        //             $this->saveChatbotHistoryWhatsapp($saveInfo);
+        //         }
+
+        //         return;
+        // }
+
+        // $text_trans = '';
+        // if ($session_info['language'] != 'en') {
+        //     $text_trans = $this->getTranslatedText($session_info['language'], 'en', $message_content);
+        // }
+
+        // // save current chat
+        // $saveInfo = [
+        //     'property_id' => $guest_info['property_id'],
+        //     'mobile_number' => $mobile_number,
+        //     'session_id' => $session_info['id'],
+        //     'guest_id' => $guest_info['guest_id'],
+        //     'agent_id' => $session_info['agent_id'],
+        //     'text' => $message_content,
+        //     'text_trans' => $text_trans,
+        //     'sender' => 'guest',
+        //     'language' => $session_info['language'],
+        //     'chat_type' => $chat_type,
+        //     'attachment' => $attachment,
+        //     'other_info' => json_encode($other_info),
+        //     'cur_chat_name' => $cur_chat_name,
+        //     'guest_path' => empty($guest_path_list) ? '' : implode(">>", $guest_path_list)
+        // ];
+
+        // $this->saveChatbotHistoryWhatsapp($saveInfo);
+
+        // if (!empty($session_info['id'])) { // chatting with agent
+        //     if ($session_info['status'] == WAITING) {
+
+        //         if ($message_content === '0') { // end
+        //             $session_id = $session_info['id'];
+
+                    
+
+        //             DB::table('services_chat_guest_session')
+        //                 ->where('id', $session_id)
+        //                 ->update(['status' => ENDED]);
+
+        //             DB::table('services_chat_guest_session')
+        //                 ->where('agent_id', '=', 0)
+        //                 ->where('id', $session_id)
+        //                 ->delete();
+        //             // send notification to agent
+
+        //             $message = array();
+        //             $message['type'] = 'chat_event';
+        //             $message['sub_type'] = 'exit_chat';
+        //             $message['data'] = [
+        //                 'property_id' => $saveInfo['property_id']
+        //             ];
+
+        //             Redis::publish('notify', json_encode($message));
+
+        //             $guest_id = $guest_info['guest_id'];
+        //             $property_id = $guest_info['property_id'];
+
+        //             $chat_name = CHAT_IN_HOUSE_MAIN_MENU;
+        //             $prev_chat_name = CHAT_IN_HOUSE_MAIN_MENU;
+
+        //             if ($other_info->guest_type === "Outside") {
+        //                 $chat_name = CHAT_OUTSIDE_FAQ_MAIN_MENU;
+        //                 $prev_chat_name = CHAT_OUTSIDE_FAQ_MAIN_MENU;
+        //             }
+
+        //             $guestResult = $this->getGuestInfoFromGuestId($guest_id);
+        //             $room_type_id = 0;
+        //             $vip_id = 0;
+
+        //             if (!empty($guestResult)) {
+        //                 $room_type_id = $guestResult->room_type_id;
+        //                 $vip_id = $guestResult->vip_id;
+        //             }
+
+        //             $chatResult = $this->getChatResult($property_id, $chat_name, $room_type_id, $vip_id, $prev_chat_name);
+        //             $saveInfo['cur_chat_name'] = $chat_name;
+        //             $saveInfo['text'] = $chatResult->template;
+        //             $saveInfo['session_id'] = 0;
+        //             $saveInfo['agent_id'] = 0;
+        //             if ($session_info['language'] != 'en') {
+        //                 $saveInfo['text'] = $this->getTranslatedText('en', $session_info['language'], $saveInfo['text']);
+        //             }
+
+        //             $message_info = [
+        //                 'text' => $saveInfo['text'],
+        //                 'language' => $session_info['language'],
+        //                 'mobile_number' => $mobile_number
+        //             ];
+
+        //             $responseWhatsapp = $this->sendMessageToWhatsapp($message_info);
+        //             if ($responseWhatsapp != false) {
+        //                 $saveInfo['uuid'] = $responseWhatsapp->MessageUUID;
+        //                 $this->saveChatbotHistoryWhatsapp($saveInfo);
+        //             }
+        //         } else {
+        //             $guest_id = $guest_info['guest_id'];
+        //             $property_id = $guest_info['property_id'];
+        //             $chat_name = CHAT_AGENT_CALL_WAITING;
+        //             $prev_chat_name = CHAT_AGENT_CALL_WAITING;
+
+        //             $guestResult = $this->getGuestInfoFromGuestId($guest_id);
+        //             $room_type_id = 0;
+        //             $vip_id = 0;
+
+        //             if (!empty($guestResult)) {
+        //                 $room_type_id = $guestResult->room_type_id;
+        //                 $vip_id = $guestResult->vip_id;
+        //             }
+
+        //             $chatResult = $this->getChatResult($property_id, $chat_name, $room_type_id, $vip_id, $prev_chat_name);
+        //             $saveInfo['cur_chat_name'] = CHAT_AGENT_CALL_WAITING;
+        //             $saveInfo['text'] = $chatResult->template;
+
+        //             if ($session_info['language'] != 'en') {
+        //                 $saveInfo['text'] = $this->getTranslatedText('en', $session_info['language'], $saveInfo['text']);
+        //             }
+
+        //             $message_info = [
+        //                 'text' => $saveInfo['text'],
+        //                 'language' => $session_info['language'],
+        //                 'mobile_number' => $mobile_number
+        //             ];
+
+        //             $responseWhatsapp = $this->sendMessageToWhatsapp($message_info);
+        //             if ($responseWhatsapp != false) {
+        //                 $saveInfo['uuid'] = $responseWhatsapp->MessageUUID;
+        //                 $this->saveChatbotHistoryWhatsapp($saveInfo);
+        //             }
+        //         }
+        //         return;
+        //     } else {
+        //         $message = [];
+        //         $message['session_id'] = $session_info['id'];
+        //         $message['guest_name'] = isset($guest_info['guest_name']) ? $guest_info['guest_name'] : '';
+        //         $message['guest_id'] = $guest_info['guest_id'];
+        //         $message['agent_id'] = $session_info['agent_id'];
+        //         $message['property_id'] = $guest_info['property_id'];
+        //         $message['room'] = isset($other_info->room) ? $other_info->room : 0;
+        //         $message['text'] = $message_content;
+        //         $message['created_at'] = date('Y-m-d H:i:s');
+
+        //         $message['chat_type'] = $chat_type;
+        //         $message['attachment'] = $attachment;
+
+        //         $message['direction'] = 1;
+        //         $message['language'] = $session_info['language'];
+
+        //         if ($session_info['language'] != 'en') {
+        //             $message['text_trans'] = $this->getTranslatedText($session_info['language'], 'en', $message_content);
+        //         }
+
+        //         $msgInfo = [];
+        //         $msgInfo['type'] = 'chat_event';
+        //         $msgInfo['sub_type'] = 'guest_message';
+        //         $msgInfo['data'] = $message;
+
+        //         Redis::publish('notify', json_encode($msgInfo));
+        //     }
+        // } else {
+        //     $isRecall = false;
+
+        //     while (true) {
+        //         // get next chat info
+        //         $reqInfo = [
+        //             'mobile_number' => $mobile_number,
+        //             'property_id' => $guest_info['property_id'],
+        //             'message_content' => $isRecall ? '' : $message_content,
+        //             'prev_chat_name' => $cur_chat_name,
+        //             'guest_id' => $guest_info['guest_id'],
+        //             'guest_name' => isset($guest_info['guest_name']) ? $guest_info['guest_name'] : '',
+        //             'language' => $session_info['language'],
+        //             'room_id' => $guest_info['room_id'],
+        //             'session_id' => $session_info['id']
+        //         ];
+
+                
+
+
+
+        //         $nextInfo = $this->getNextChatContentWhatsapp($reqInfo, $other_info, $guest_path_list);
+
+        //         $guest_info['guest_id'] = $nextInfo['guest_id'];
+        //         $guest_info['guest_name'] = isset($nextInfo['guest_name']) ? $nextInfo['guest_name'] : '';
+        //         $session_info['id'] = isset($nextInfo['session_id']) ? $nextInfo['session_id'] : $session_info['id'];
+        //         $cur_chat_name = $nextInfo['name'];
+
+        //         $session_info['language'] = $nextInfo['language'];
+
+        //         $text = $nextInfo['message_content'];
+
+        //         if ($session_info['language'] != 'en') {
+        //             $text = $this->getTranslatedText('en', $session_info['language'], $nextInfo['message_content']);
+        //         }
+
+        //         // save chat info
+        //         $saveInfo = [
+        //             'property_id' => $guest_info['property_id'],
+        //             'session_id' => $session_info['id'],
+        //             'agent_id' => $session_info['agent_id'],
+        //             'guest_id' => $guest_info['guest_id'],
+        //             'cur_chat_name' => $cur_chat_name,
+        //             'mobile_number' => $mobile_number,
+        //             'text' => $text,
+        //             'text_trans' => '',
+        //             'language' => $session_info['language'],
+        //             'sender' => 'server',
+        //             'chat_type' => 'text',
+        //             'attachment' => '',
+        //             'other_info' => json_encode($other_info),
+        //             'guest_path' => empty($guest_path_list) ? '' : implode(">>", $guest_path_list)
+        //         ];
+
+        //         $message_info = [
+        //             'text' => $text,
+        //             'language' => $session_info['language'],
+        //             'mobile_number' => $mobile_number
+        //         ];
+
+        //         $responseWhatsapp = $this->sendMessageToWhatsapp($message_info);
+
+        //         // //Emirates Palace
+        //         // sleep(1);
+        //         // $message_info['text'] = 'Personal information collected is only used by Emirates Palace for the purposes defined at the time of the collection or a use that complies with these purposes. We do not share your information with any third parties.';
+        //         // $responseWhatsapp = $this->sendMessageToWhatsapp($message_info);
+
+        //         // sleep(2);
+        //         // $message_info['text'] = 'Please wait while we connect you to one of our agents.';
+        //         // $responseWhatsapp = $this->sendMessageToWhatsapp($message_info);
+
+        //         // sleep(4);
+        //         // $chat_name = CHAT_QUESTION_FIRST;
+        //         // $prev_chat_name = CHAT_QUESTION_FIRST;
+        //         // $this->setAgentChat($chat_name, $prev_chat_name, $reqInfo, $other_info, $guest_path_list);
+        //         // //Emirates Palace Changes Ends
+
+
+        //         $saveInfo['uuid'] = $uuid;
+        //             $this->saveChatbotHistoryWhatsapp($saveInfo);
+
+
+        //         if ($responseWhatsapp != false) {
+        //             $saveInfo['uuid'] = $responseWhatsapp->MessageUUID;
+        //             $this->saveChatbotHistoryWhatsapp($saveInfo);
+        //         }
+
+        //         if ($nextInfo['is_wrong'] == false) {
+        //             break;
+        //         } else {
+        //             $isRecall = true;
+
+        //             usleep(200);
+        //         }
+        //     }
+        // }
+
+        return $hub_challenge;
+        
+    }
+
+    /**
+     * @param Request $request
+     */
+    public function sendSCMetaWhatsappFromLiveserver(Request $request)
+    {   //sendToMetaWhatsapp
+        
+        $data = $request->get('data', 0);
+        $json_data = json_encode($data[0]);
+        $mobile_number = $data[0];
+        $text = $data[1];
+        $message_type = $data[2];
+        $dbAuthKey = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_fb_authkey')
+            ->pluck('value');
+        $dbAuthorization = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_fb_authorization')
+            ->pluck('value');
+        $dbURL = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_fb_url')
+            ->pluck('value');  
+        //return to sender
+        $authKey = $dbAuthKey[0];
+        $authorization = $dbAuthorization[0];
+        
+        $url = $dbURL[0]."/$authKey/messages";
+        $headers = [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $authorization
+        ];
+        $reqBody = (object)['body' => $text];
+        $reqObj = (object)[
+            'messaging_product' => 'whatsapp',
+            'preview_url' => 'true',
+            'recipient_type' => 'individual',
+            'to' => $mobile_number,
+            'type' => $message_type,
+            'text' => $reqBody
+        ];
+        $postData = json_encode($reqObj);
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+        $server_response = curl_exec($ch);
+        curl_close($ch);
+        $json_sent_response = json_decode($server_response, true);
+        return $server_response;
+        
+    }
+
+    /**
+     * @param Request $request
+     */
+    public function sendSCLocationMetaWhatsappFromLiveserver(Request $request)
+    {   //sendToMetaWhatsapp
+        
+        $data = $request->get('data', 0);
+        $json_data = json_encode($data[0]);
+        $mobile_number = $data[0];
+        $text = $data[1];
+        $message_type = $data[2];
+        $long = $data[3];
+        $lat = $data[4];
+        $name = $data[5];
+        $addr = $data[6];
+        $dbAuthKey = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_fb_authkey')
+            ->pluck('value');
+        $dbAuthorization = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_fb_authorization')
+            ->pluck('value');
+        $dbURL = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_fb_url')
+            ->pluck('value');  
+        //return to sender
+        $authKey = $dbAuthKey[0];
+        $authorization = $dbAuthorization[0];
+        
+        $url = $dbURL[0]."/$authKey/messages";
+        $headers = [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $authorization
+        ];
+        $reqBody = (object)[
+            "longitude" => $long,
+            "latitude" => $lat,
+            "name" => $name,
+            "address" => $addr
+        ];
+        $reqObj = (object)[
+            'messaging_product' => 'whatsapp',
+            'preview_url' => 'true',
+            'recipient_type' => 'individual',
+            'to' => $mobile_number,
+            'type' => 'location',
+            'location' => $reqBody
+        ];
+        $postData = json_encode($reqObj);
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+        $server_response = curl_exec($ch);
+        curl_close($ch);
+        $json_sent_response = json_decode($server_response, true);
+        return $server_response;
+        
+    }
+
+    public function sendSCLocationMetaWhatsapp($mobile_number, $text, $message_type, $long, $lat, $name, $addr)
+    {   //sendToMetaWhatsapp
+        
+        // $data = $request->get('data', 0);
+        // $json_data = json_encode($data[0]);
+        // $mobile_number = $data[0];
+        // $text = $data[1];
+        // $message_type = $data[2];
+        // $long = $data[3];
+        // $lat = $data[4];
+        // $name = $data[5];
+        // $addr = $data[6];
+        $dbAuthKey = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_fb_authkey')
+            ->pluck('value');
+        $dbAuthorization = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_fb_authorization')
+            ->pluck('value');
+        $dbURL = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_fb_url')
+            ->pluck('value');  
+        //return to sender
+        $authKey = $dbAuthKey[0];
+        $authorization = $dbAuthorization[0];
+        
+        $url = $dbURL[0]."/$authKey/messages";
+        $headers = [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $authorization
+        ];
+        $reqBody = (object)[
+            "longitude" => $long,
+            "latitude" => $lat,
+            "name" => $name,
+            "address" => $addr
+        ];
+        $reqObj = (object)[
+            'messaging_product' => 'whatsapp',
+            'preview_url' => 'true',
+            'recipient_type' => 'individual',
+            'to' => $mobile_number,
+            'type' => 'location',
+            'location' => $reqBody
+        ];
+        $postData = json_encode($reqObj);
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+        $server_response = curl_exec($ch);
+        curl_close($ch);
+        $json_sent_response = json_decode($server_response, true);
+        return $server_response;
+        
+    }
+
+    public function sendAgentInteractiveMessageToWhatsapp($mobile_number, $text)
+    {   //sendToMetaWhatsapp
+        //$mobile_number = '971585361732';
+        //$text = "Test Message";
+        //$message_type = 'agent-interactive';
+        $dbAuthKey = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_fb_authkey')
+            ->pluck('value');
+        $dbAuthorization = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_fb_authorization')
+            ->pluck('value');
+        $dbURL = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_fb_url')
+            ->pluck('value');  
+        $guest_history = DB::table('services_chat_history')
+            ->where('phone_number', $mobile_number)
+            ->orderBy('id','desc')
+            ->first(); 
+        $template = DB::table('common_chat_templates')
+            ->where('name', 'agentbutton_template')
+            ->where('property_id', $guest_history->property_id )
+            ->first();  
+        $property = DB::table('common_property')
+            ->where('id', $guest_history->property_id )
+            ->first();
+        //return to sender
+        $authKey = $dbAuthKey[0];
+        $authorization = $dbAuthorization[0];
+        
+        $url = $dbURL[0]."/$authKey/messages";
+        $headers = [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $authorization
+        ];
+        $action = [
+            'buttons' => (object)[
+                [
+                    'type' => 'reply',
+                    'reply' => (object)[
+                        'id' => 'agent-postback-id-yes',
+                        'title' => 'Yes'
+                    ],
+                ],
+                [
+                    'type' => 'reply',
+                    'reply' => (object)[
+                        'id' => 'agent-postback-id-no',
+                        'title' => 'No'
+                    ],
+                ]
+            ]
+        ];
+        $reqBody = (object)[
+            'type' => 'button',
+            'header' => (object)[
+                "type" => "text",
+                "text" => $property->name
+            ],
+            'body' => (object)[
+                "text" => $template->template
+            ],
+            'footer' => (object)[
+                "text" => "-"
+            ],
+            'action' => $action
+        ];
+        $reqObj = (object)[
+            'messaging_product' => 'whatsapp',
+            'recipient_type' => 'individual',
+            'to' => $mobile_number,
+            'type' => 'interactive',
+            'interactive' => $reqBody
+        ];
+        $postData = json_encode($reqObj);
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+        $server_response = curl_exec($ch);
+        curl_close($ch);
+        $json_sent_response = json_decode($server_response, true);
+        $response = false;
+        // if($json_sent_response['contacts'][0]['input']){
+        //     $response = true;
+        // }
+        // else{
+        //     $response = false;
+        // };
+        //return strVal($server_response);
+        return strVal($server_response);
+    }
+
+    /**
+     * @param Request $request
+     */
+    public function sendMetaWhatsappFromLiveserver(Request $request)
+    {   //sendToMetaWhatsapp
+        
+        //var_dump($dd);
+        $data = $request->get('data', 0);
+        $json_data = json_encode($data[0]['mobile_number']);
+        $mobile_number = $data[0]['mobile_number'];
+        $text = $data[0]['text'];
+        $message_type = $data[1];
+        $dbAuthKey = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_fb_authkey')
+            ->pluck('value');
+        $dbAuthorization = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_fb_authorization')
+            ->pluck('value');
+        $dbURL = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_fb_url')
+            ->pluck('value');  
+        //return to sender
+        $authKey = $dbAuthKey[0];
+        $authorization = $dbAuthorization[0];
+        
+        $url = $dbURL[0]."/$authKey/messages";
+        $headers = [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $authorization
+        ];
+        $reqBody = (object)['body' => $text];
+        $reqObj = (object)[
+            'messaging_product' => 'whatsapp',
+            'preview_url' => 'true',
+            'recipient_type' => 'individual',
+            'to' => $mobile_number,
+            'type' => $message_type,
+            'text' => $reqBody
+        ];
+        $postData = json_encode($reqObj);
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+        $server_response = curl_exec($ch);
+        curl_close($ch);
+        $json_sent_response = json_decode($server_response, true);
+        return $server_response;
+        
+    }
+
+    /**
+     * @param Request $request
+     */
+    public function sendMessageToWhatsappTest(Request $request)
+    {   //sendToMetaWhatsapp
+        $mobile_number = '971585361732';
+        $text = "Test Message";
+        $message_type = 'text';
+        $dbAuthKey = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_fb_authkey')
+            ->pluck('value');
+        $dbAuthorization = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_fb_authorization')
+            ->pluck('value');
+        $dbURL = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_fb_url')
+            ->pluck('value');  
+        //return to sender
+        $authKey = $dbAuthKey[0];
+        $authorization = $dbAuthorization[0];
+        
+        $url = $dbURL[0]."/$authKey/messages";
+        $headers = [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $authorization
+        ];
+        // $reqBody = (object)['body' => $text];
+        // $reqObj = (object)[
+        //     'messaging_product' => 'whatsapp',
+        //     'preview_url' => 'true',
+        //     'recipient_type' => 'individual',
+        //     'to' => $mobile_number,
+        //     'type' => $message_type,
+        //     'text' => $reqBody
+        // ];
+        $parameters = (object)[
+            'type' => 'payload', 
+            'payload' => 'Yes-Button-Payload'
+        ];
+        $action = [
+            'buttons' => (object)[
+                [
+                    'type' => 'reply',
+                    'reply' => (object)[
+                        'id' => 'unique-postback-id-yes',
+                        'title' => 'Yes'
+                    ],
+                ],
+                [
+                    'type' => 'reply',
+                    'reply' => (object)[
+                        'id' => 'unique-postback-id-no',
+                        'title' => 'No'
+                    ],
+                ]
+            ]
+        ];
+        $reqBody = (object)[
+            'type' => 'button',
+            'header' => (object)[
+                "type" => "text",
+                "text" => "Emirates Palace"
+            ],
+            'body' => (object)[
+                "text" => "Do you Want to Speak to An Agent?"
+            ],
+            'footer' => (object)[
+                "text" => "-"
+            ],
+            'action' => $action
+        ];
+        $reqObj = (object)[
+            'messaging_product' => 'whatsapp',
+            //'preview_url' => 'true',
+            'recipient_type' => 'individual',
+            'to' => $mobile_number,
+            'type' => 'interactive',
+            'interactive' => $reqBody
+        ];
+        $postData = json_encode($reqObj);
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+        $server_response = curl_exec($ch);
+        curl_close($ch);
+        $json_sent_response = json_decode($server_response, true);
+        $response = false;
+        // if($json_sent_response['contacts'][0]['input']){
+        //     $response = true;
+        // }
+        // else{
+        //     $response = false;
+        // };
+        //return strVal($server_response);
+        return strVal($server_response);
+    }
+
+    /**
+     * @param Request $request
+     */
+    public function sendBusinessMessageToWhatsappTest(Request $request)
+    {   //sendToMetaWhatsapp
+        $mobile_number = '971585361732';
+        //$mobile_number = '12345';
+        $text = "Test Message";
+        $message_type = 'text';
+        $dbAuthKey = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_fb_authkey')
+            ->pluck('value');
+        $dbAuthorization = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_fb_authorization')
+            ->pluck('value');
+        $dbURL = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_fb_url')
+            ->pluck('value');  
+        //return to sender
+        $authKey = $dbAuthKey[0];
+        $authorization = $dbAuthorization[0];
+        
+        $url = $dbURL[0]."/$authKey/messages";
+        $headers = [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $authorization
+        ];
+        $language = (object)[
+            "code" => "en",
+            "policy" => "deterministic"
+        ];
+        $reqBody = (object)[
+            "name" => "welcome_guest",
+            "language" => $language
+        ];
+        $reqObj = (object)[
+            'messaging_product' => 'whatsapp',
+            'preview_url' => 'true',
+            'recipient_type' => 'individual',
+            'to' => $mobile_number,
+            'type' => 'template',
+            'template' => $reqBody
+        ];
+        // $reqBody = (object)[
+        //     "longitude" => -122.425332,
+        //     "latitude" => 37.758056,
+        //     "name" => "Facebook HQ",
+        //     "address" => "1 Hacker Way, Menlo Park, CA 94025"
+        // ];
+        // $reqObj = (object)[
+        //     'messaging_product' => 'whatsapp',
+        //     'preview_url' => 'true',
+        //     'recipient_type' => 'individual',
+        //     'to' => $mobile_number,
+        //     'type' => 'location',
+        //     'location' => $reqBody
+        // ];
+        $postData = json_encode($reqObj);
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+        $server_response = curl_exec($ch);
+        curl_close($ch);
+        $json_sent_response = json_decode($server_response, true);
+        $response = false;
+        // if($json_sent_response['contacts'][0]['input']){
+        //     $response = true;
+        // }
+        // else{
+        //     $response = false;
+        // };
+        //return strVal($server_response);
+        return strVal($server_response);
+    }
+
+    // /**
+    //  * @param Request $request
+    //  */
+    // public function sendMessageToWhatsappTest(Request $request)
+    // {   //sendToMetaWhatsapp
+    //     $mobile_number = '971585361732';
+    //     //$mobile_number = '971502900792';
+    //     $text = "Test Message";
+    //     $message_type = 'template';
+    //     $dbAuthKey = DB::table('property_setting')
+    //         ->where('settings_key', 'whatsapp_fb_authkey')
+    //         ->pluck('value');
+    //     $dbAuthorization = DB::table('property_setting')
+    //         ->where('settings_key', 'whatsapp_fb_authorization')
+    //         ->pluck('value');
+    //     $dbURL = DB::table('property_setting')
+    //         ->where('settings_key', 'whatsapp_fb_url')
+    //         ->pluck('value');  
+    //     //return to sender
+    //     $authKey = $dbAuthKey[0];
+    //     $authorization = $dbAuthorization[0];
+        
+    //     $url = $dbURL[0]."/$authKey/messages";
+    //     $headers = [
+    //         'Content-Type: application/json',
+    //         'Authorization: Bearer ' . $authorization
+    //     ];
+    //     // ,
+    //     //         'components' => [
+    //     //             [
+    //     //                 'type' => 'header',
+    //     //                 'parameters' => (object)[[
+    //     //                     'type'=>'text',
+    //     //                     'text'=>'head text'
+    //     //                 ]]
+    //     //             ],
+    //     //             [
+    //     //                 'type' => 'body',
+    //     //                 'parameters' => (object)[[
+    //     //                     'type'=>'text',
+    //     //                     'text'=>'body text'
+    //     //                 ]]
+    //     //             ]
+    //     //             ]
+    //     $reqBody = (object)['body' => $text];
+    //     $reqObj = (object)[
+    //         'messaging_product' => 'whatsapp',
+    //         'preview_url' => 'true',
+    //         'recipient_type' => 'individual',
+    //         'to' => $mobile_number,
+    //         'type' => $message_type,
+    //         'template' => (object)[
+    //             'name' => 'welcome_stay_button',
+    //             'language' => (object)[
+    //                 'policy'=>'deterministic',
+    //                 'code'=>'en'
+    //             ] ,
+    //             'components' => [
+    //                 [
+    //                     'type' => 'button',
+    //                     "sub_type" => "quick_reply",
+    //                     "index"=> "0", 
+    //                     'parameters' => (object)[[
+    //                         'type'=>'text',
+    //                         'text'=>'Some text'
+    //                     ]]
+    //                 ]
+    //                 ]
+    //             ]
+    //         ];
+        
+    //     $postData = json_encode($reqObj);
+    //     $ch = curl_init();
+    //     curl_setopt($ch, CURLOPT_URL, $url);
+    //     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    //     curl_setopt($ch, CURLOPT_POST, true);
+    //     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    //     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+    //     curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+    //     $server_response = curl_exec($ch);
+    //     curl_close($ch);
+    //     $json_sent_response = json_decode($server_response, true);
+    //     $response = false;
+    //     return strVal($server_response);
+    // }
+
+    public function sendMessageToWhatsapp_new($message_info, $message_type = 'text', $mediaId = 1)
+    {   //sendToMetaWhatsapp
+        $data = [$message_info, $message_type, $mediaId];
+        $message = array();
+        $message['type'] = 'send_meta_chat_event';
+        $message['sub_type'] = 'request_chat';
+        $message['data'] = $data;
+        Redis::publish('notify', json_encode($message));
+        $mobile_number = $message_info['mobile_number']; // '971585361732'
+        $text = $message_info['text']; // 'text body'
+        $server_response = false;
+        // if ($server_response == false) {
+        //     return false;
+        // }
+        return json_decode($server_response);
+        
     }
 
     /**
@@ -3341,13 +6134,11 @@ class ChatController extends Controller
     {
         $outgoing = $request->input('outgoing', true);
 
+        // $myfile = fopen("testlogging.txt", "a");
+        // fwrite($myfile, json_encode($outgoing));
+        // fclose($myfile);
+
         if ($outgoing == false) {
-//            $msgInfo = [];
-//            $msgInfo['type'] = 'whatsapp';
-//            $msgInfo['sub_type'] = 'guest_message';
-//            $msgInfo['data'] = $request->input();
-//
-//            Redis::publish('notify', json_encode($msgInfo));
 
             $id = $request->input('id', '');
             $uuid = $request->input('uuid', '');
@@ -3594,10 +6385,15 @@ class ChatController extends Controller
                         $message['text_trans'] = $this->getTranslatedText($session_info['language'], 'en', $message_content);
                     }
 
+                    $agents = DB::table('common_chat_skill_mapping')
+                    ->where('skill_id', $session->skill_id)
+                    ->get();
+
                     $msgInfo = [];
                     $msgInfo['type'] = 'chat_event';
                     $msgInfo['sub_type'] = 'guest_message';
                     $msgInfo['data'] = $message;
+                    $msgInfo['agents'] = $agents;
 
                     Redis::publish('notify', json_encode($msgInfo));
                 }
@@ -3719,7 +6515,6 @@ class ChatController extends Controller
 
         $historyInfo = DB::table('services_chat_history as sch')
             ->leftJoin('services_chat_guest_session as scgs', 'scgs.id', '=', 'sch.session_id')
-            ->where('sch.type', 0)
             ->where('sch.direction', '!=', '-1')
             ->where('sch.phone_number', $mobile_number)
             ->where('sch.created_at', '>=', $limit_time)
@@ -4150,6 +6945,8 @@ class ChatController extends Controller
             $prev_chat_name = CHAT_FAQ_HOTEL_ANSWERS;
 
             $guest_path_list[] = '5.Hotel';
+        }else if ($message_content === '7') { // room reservation
+            $this->setAgentChat($chat_name, $prev_chat_name, $reqInfo, $other_info, $guest_path_list);
         } else {
             $chat_name = CHAT_INVALID;
             if ($bInHouse == true) {
@@ -4592,15 +7389,17 @@ class ChatController extends Controller
         if ($message_content === "") {
             $chat_name = CHAT_FAQ_CONCIERGE_MENU;
             $prev_chat_name = CHAT_FAQ_CONCIERGE_MENU;
-        } else if ($message_content === "0") { // chat with agent
+        } else if (in_array($message_content, ["1", "2", "3", "4"])) { // chat with agent
             $this->setAgentChat($chat_name, $prev_chat_name, $reqInfo, $other_info, $guest_path_list);
-        } else if (in_array($message_content, ["1", "2", "3", "4", "5"])) {
+        } else if (in_array($message_content, ["5"])) {
             $guest_path_list[] = $this->getGuestFindPath($prev_chat_name, $message_content, $reqInfo);
 
             $other_info->selectedAnswerNumber = intval($message_content);
             $chat_name = CHAT_FAQ_CONCIERGE_ANSWERS;
             $prev_chat_name = CHAT_FAQ_CONCIERGE_ANSWERS;
 
+        } else if ($message_content === "0") { // chat with agent
+            $this->setAgentChat($chat_name, $prev_chat_name, $reqInfo, $other_info, $guest_path_list);
         } else if ($message_content === "00") {
             if ($bInHouse == true) {
                 $chat_name = CHAT_IN_HOUSE_FAQ_MAIN_MENU;
@@ -5133,7 +7932,7 @@ class ChatController extends Controller
             $propertyName = "$message_content";
             if (!empty($other_info->info_list->$propertyName)) {
                 $itemInfo = $other_info->info_list->$propertyName;
-
+                //$itemInfo->quantity = 1;
                 if (isset($itemInfo->quantity)) {
                     $chat_name = CHAT_IN_HOUSE_REQUEST_QUANTITY;
                     $prev_chat_name = CHAT_IN_HOUSE_REQUEST_QUANTITY;
@@ -5144,6 +7943,17 @@ class ChatController extends Controller
                 } else {
                     // create task item
 
+                    // $temp = $other_info->info_list[$reqInfo['message_content']];
+                    // foreach ($other_info->info_list as $key => $value) {
+                    //     $temp = $key;
+                    // }
+                    $temp_req_num = $reqInfo['message_content'];
+                    $temp = (array)$other_info->info_list;//['info_list'];
+                    $temp_task_id = $temp[$temp_req_num]->id;
+                    $other_info->task_id = $temp_task_id;
+                    //$other_info->taskName = $temp[$temp_req_num]->name;
+                    
+                    //$res = false;
                     $res = $this->createQuickTask($reqInfo, $other_info, 1, $createTaskResultInfo);
 
                     if ($res == true) {
@@ -5183,83 +7993,140 @@ class ChatController extends Controller
         $task_id = isset($other_info->task_id) ? $other_info->task_id : 0;
         $guest_id = isset($reqInfo['guest_id']) ? $reqInfo['guest_id'] : 0;
         $room_id = $reqInfo['room_id'] ? $reqInfo['room_id'] : 0;
-
-
-        $result = $this->getCreateTaskResult($guest_id, $task_id, $room_id);
-
+        
+        //$result = $this->getCreateTaskResult($guest_id, $task_id, $room_id);
+        $ret = [
+        ];
+        // if (empty($guest_id) || empty($task_id) || empty($room_id)) {
+        //     return $ret;
+        // }
+        $locationGroupInfo = $this->getLocationGroupIDFromRoom($room_id);
+        // if (empty($locationGroupInfo)) {
+        //     return $ret;
+        // }
+        $taskInfo = $this->getTaskShiftInfo($task_id, $locationGroupInfo->id);
+        // if (empty($taskInfo)) {
+        //     return $ret;
+        // }
+        $ret['task_info'] = $taskInfo;
+        $ret['location_id'] = $locationGroupInfo->id;
+        $result = $ret;
+        
         if (empty($result)) {
             return false;
         }
-
         $task_info = $result['task_info'];
         $location_id = $result['location_id'];
-
         if (empty($task_info['department'])) {
             return false;
         }
-
         $priorityList = DB::table('services_priority as pr')
             ->select(DB::raw('pr.*'))
-            ->get();
-
-
+            ->get();  
         $quickTaskData['property_id'] = $property_id;
         $quickTaskData['dept_func'] = $task_info['deptfunc']['id'];
         $quickTaskData['department_id'] = $task_info['department']['id'];
         $quickTaskData['type'] = 1;
         $quickTaskData['priority'] = empty($priorityList) ? 0 : $priorityList[0]->id;
-
         $time = date('Y-m-d H:i:s');
         $quickTaskData['start_date_time'] = $time;
         $quickTaskData['created_time'] = $time;
         $quickTaskData['end_date_time'] = '0000-00-00 00:00:00';
-        $quickTaskData['dispatcher'] = $task_info['prioritylist'][0]['id'];
+        $quickTaskData['dispatcher'] = $task_info['staff_list'][0]->id;
         $quickTaskData['feedback_flag'] = false;
         $quickTaskData['attendant'] = 0;
         $quickTaskData['room'] = $room_id;
         $quickTaskData['task_list'] = $task_id;
-        $quickTaskData['max_time'] = $task_info['taskgroup']['max_time'];
+        $quickTaskData['max_time'] = $task_info['taskgroup']->max_time;//['max_time'];
         $quickTaskData['quantity'] = $quantity;
         $quickTaskData['custom_message'] = '';
         $quickTaskData['status_id'] = 1;
         $quickTaskData['guest_id'] = $guest_id;
         $quickTaskData['location_id'] = $location_id;
-
+        $quickTaskData['start_duration'] = $task_info['taskgroup']->max_time;
         $headers = [
             'Content-Type: application/json'
         ];
-
         $taskList[] = $quickTaskData;
-
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, 'http://mytestsite.com/createtasklist');
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($taskList));
-
-        $server_response = curl_exec($ch);
-
-        curl_close($ch);
-
-        $response = json_decode($server_response);
-
-        if ($response == false) {
-            return false;
-        } else {
-
-            if (count($response->invalid_task_list) == 0) {
-                return true;
-            } else {
-                foreach ($response->invalid_task_list as $list) {
-                    $createTaskResultInfo['success'] = false;
-                    $createTaskResultInfo['message'] .= $list->message . "\n";
-                }
-
-                return false;
-            }
-        }
+        $service_task_id = DB::table('services_task')->insertGetId([
+            'property_id' => $quickTaskData['property_id'],
+            'dept_func' => $quickTaskData['dept_func'],
+            'department_id' => $quickTaskData['department_id'],
+            'type' => $quickTaskData['type'],
+            'priority' => $quickTaskData['priority'],
+            'created_time' => $quickTaskData['created_time'],
+            'start_date_time' => $quickTaskData['start_date_time'],
+            'end_date_time' => $quickTaskData['end_date_time'],
+            //'duration' => '20',
+            'dispatcher' => $quickTaskData['dispatcher'],
+            //'finisher' => '',
+            'attendant' => '0',
+            'attendant_auto' => '',
+            'room' => $quickTaskData['room'],
+            'task_list' => $quickTaskData['task_list'],
+            'location_id' => $quickTaskData['location_id'],
+            'old_loc_id' => 0,
+            'max_time' => $quickTaskData['max_time'],
+            'quantity' => $quickTaskData['quantity'],
+            'guest_id' => $quickTaskData['guest_id'],
+            'requester_id' => 0,
+            'requester_notify_flag' => 0,
+            'custom_message' => 'From Whatsapp',
+            'compensation_id' => 0,
+            'compensation_status' => 1,
+            'follow_id' => 0,
+            'status_id' => 1,
+            'escalate_flag' => 0,
+            'forward_flag' => 0,
+            'closed_flag' => 0,
+            'queued_flag' => 0,
+            'running' => 1,
+            'self_start_status' => 0,
+            'start_duration' => $quickTaskData['start_duration'],
+            'ack' => 0,
+            'repeat_flag' => 0,
+            'until_checkout_flag' => 0,
+            'feedback_flag' => 0,
+            'reminder_flag' => 0,
+            'hold_reminder_flag' => 0,
+            'reassigned_flag' => 0,
+            'source' => 1,
+            'feedback_type' => 1,
+            'feedback_closed_flag' => 0,
+            'guest_feedback' => 'From Whatsapp',
+            'checklist_flag' => 0,
+            'cost' => '0',
+        ]);
+        $current_task = DB::table('services_task')->where('id', $service_task_id)->first();
+        $this->saveTaskSystemNotification($current_task, 'Open');
+        return true;
+        // DB::table('users')->insert([
+        //     'email' => 'kayla@example.com',
+        //     'votes' => 0
+        // ]);
+        // $ch = curl_init();
+        // curl_setopt($ch, CURLOPT_URL, 'http://mytestsite.com/createtasklist');
+        // curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        // curl_setopt($ch, CURLOPT_POST, true);
+        // curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        // curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        // curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($taskList));
+        // $server_response = curl_exec($ch);
+        // curl_close($ch);
+        // $response = json_decode($server_response);
+        // if ($response == false) {
+        //     return false;
+        // } else {
+        //     if (count($response->invalid_task_list) == 0) {
+        //         return true;
+        //     } else {
+        //         foreach ($response->invalid_task_list as $list) {
+        //             $createTaskResultInfo['success'] = false;
+        //             $createTaskResultInfo['message'] .= $list->message . "\n";
+        //         }
+        //         return false;
+        //     }
+        // }
     }
 
     /**
@@ -5279,7 +8146,7 @@ class ChatController extends Controller
         }
 
 
-        $locationGroupInfo = $this->getLocationGroupIDFromRoom($room_id);
+        $locationGroupInfo = Location::getLocationFromRoom($room_id);
 
         if (empty($locationGroupInfo)) {
             return $ret;
@@ -5394,5 +8261,2441 @@ class ChatController extends Controller
 
         $result['template'] = $realTemplate;
         return $result;
+    }
+
+    /**
+     * @param Request $request
+     */
+    public function getTelegramBotMessage(Request $request)
+    {
+        $response = Telegram::getUpdates();
+        var_dump($response);
+    }
+
+    // Staycae 
+    public function scSendMessage($mobile_number, $text, $message_type){
+        $data = [$mobile_number,$text,$message_type];
+        $message = array();
+        $message['type'] = 'send_sc_meta_chat_event';
+        $message['sub_type'] = 'request_chat';
+        $message['data'] = $data;
+        Redis::publish('notify', json_encode($message));
+    }
+
+    public function scSendLocationMessage($mobile_number, $text, $message_type, $long, $lat, $name, $addr ){
+        $data = [$mobile_number,$text,$message_type, $long, $lat, $name, $addr];
+        $message = array();
+        $message['type'] = 'send_sc_location_meta_chat_event';
+        $message['sub_type'] = 'request_chat';
+        $message['data'] = $data;
+        Redis::publish('notify', json_encode($message));
+    }
+
+    /**
+     * @param Request $request
+     */
+    public function scIncoming($hub_mode, $hub_challenge, $hub_verify_token, $message, $property_number, $id, $uuid, $chat_type, $type_main, $attachment, $message_content, $mobile_number, $info)
+    {
+        
+        // $myfile = fopen("testlogging.txt", "w");
+        // $txt = " \n Incoming Mobile number : " . $mobile_number . " \n ";
+        // fwrite($myfile, $txt);
+        // fclose($myfile);
+
+        //return;
+
+        //check for old message
+        $chat_guest_history = DB::table('services_chat_history')
+            ->where('phone_number', $mobile_number)
+            //->where('direction', '0')
+            ->orderBy('id','desc')
+            ->first();
+
+        $property = DB::table('common_chat_property_mapping')
+            ->where('mobile_number', $property_number)
+            ->first();
+
+        if( !is_null($chat_guest_history)){ // old GUEST
+
+            //Starting Msg for dormant user
+            // if($this->scSetStartingMsgForInactiveUser($chat_guest_history) && $chat_guest_history->session_id != 0){
+            //     $this->scSendFirstMessage($mobile_number, $property->mobile_number);
+            //     return;
+            // }
+
+            //Agent Chat
+            if($chat_guest_history->session_id != 0){
+
+                if($message_content == "0"){
+                    $this->scEndAgentChat($chat_guest_history->session_id, $mobile_number, $chat_guest_history->property_id, $chat_guest_history);
+                    //$this->scSaveCustomBotStaticMessage($mobile_number, "Chat Ended", $chat_guest_history->property_id, $chat_guest_history);
+                    return;
+                }
+
+                $session_info = DB::table('services_chat_guest_session')
+                    ->where('id', $chat_guest_history->session_id)
+                    ->first();
+
+                if($type_main == "image" || $type_main == "audio" || $type_main == 'video'){
+
+                    $fb_media_id = $this->getMediaId($message);
+
+                    $fb_media_data = $this->getMediaData($fb_media_id);
+
+                    $t=time();
+                    $fb_media_data_json = json_decode($fb_media_data);
+                    $ext = explode("/",$fb_media_data_json->mime_type);
+                    $filename = $mobile_number . "_" . $t;
+
+                    $fb_download_media = $this->downloadfbMedia($fb_media_data_json->url , $ext[1], $filename, $mobile_number);
+                    $site_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]";
+                    $filepath = $site_url. "/wauploads/" . $mobile_number . "/" . $filename . "." . $ext[1];
+                    
+                    $text = '';
+                    //$mobile_number = $mobile_number;
+                    $property_id = $chat_guest_history->property_id;
+                    $language = 'en';
+                    $session_id = $chat_guest_history->session_id;
+                    $room = '0';
+                    $guest_type = $session_info->guest_type;
+                    $language = $session_info->language;
+                    if($ext[1] == 'jpeg' || $ext[1] == 'jpg' || $ext[1] == 'png'){
+                        $chat_type = 'image';
+                    }
+                    if($ext[1] == 'ogg' || $ext[1] == 'aac' || $ext[1] == 'mpeg' || $ext[1] == 'amr'){
+                        $chat_type = 'audio';
+                    }
+                    if($ext[1] == 'mp4' || $ext[1] == '3gp'){
+                        $chat_type = 'video';
+                    }
+                    $attachment = $filepath;
+                    $media_id = '1';
+                    $filename = $filename . $ext[1];
+                    //$this->getAttachmentURLFromUser($text, $mobile_number, $property_id, $language, $session_id, $room, $guest_type, $language, $chat_type, $attachment, $media_id, $filename);
+                    $this->scSendMediaChatToAgent($session_id, $text, $chat_guest_history, $chat_type, $attachment);
+
+                    return $hub_challenge;
+                }
+                    
+                $this->scSendChatToAgent("user", $session_info->id, $message_content, $chat_guest_history, 'text', '');
+                return;
+            }
+
+            $template_function = DB::table('common_chat_templates')
+                ->where('id',$chat_guest_history->cur_chat_id)
+                ->first();
+            if($type_main == 'interactive'){
+                if(!empty($template_function)){
+                    
+                    if($template_function->function == 'agentbutton'){
+                        
+                            $interactive_id = $this->getWAInteractiveId($message);
+
+                            if($interactive_id == 'agent-postback-id-yes'){
+                                $this->scSetAgentChat($chat_guest_history, $mobile_number, $message_content, $chat_guest_history->property_id, "1");
+                            }
+                        
+                            //$this->scSetAgentChat($chat_guest_history, $mobile_number, $message_content, $chat_guest_history->property_id, "1");
+                    }
+                    return $hub_challenge;
+                }
+            }
+
+            //Set function
+            $template_function = DB::table('common_chat_templates')
+            ->where('id',$chat_guest_history->cur_chat_id)
+            ->first();
+            if(!empty($template_function)){
+                if($template_function->function == 'agentbutton'){
+                    $text = "Do you want to speak to an Agent?";
+                    $this->sendAgentInteractiveMessageToWhatsapp($mobile_number, $text);
+                    //$this->scSetAgentChat($chat_guest_history, $mobile_number, $message_content, $chat_guest_history->property_id, "1");
+                    return $hub_challenge;
+                }
+            }
+
+            //return auth for non used image
+            if($type_main == 'image' || $type_main == 'audio' || $type_main == 'video' || $type_main == 'interactive'){
+                return $hub_challenge;
+            }
+
+            //Handle Options
+            if($message_content === "0"){ // back option
+                $next_template_mapping = $this->scGetPrevTemplate($chat_guest_history->cur_chat_id);
+            }else if($message_content === "00"){ // Starting option
+                $this->scSendFirstMessage($mobile_number, $property->mobile_number);
+                //$this->scSaveCustomBotStaticMessage($mobile_number, "Starting Message", $chat_guest_history->property_id, $chat_guest_history);
+                return;
+            }else{
+                //get next template
+
+                
+
+                if($chat_guest_history->cur_chat_id == '74' || $chat_guest_history->cur_chat_id == '78' ||
+                $chat_guest_history->cur_chat_id == '82' || $chat_guest_history->cur_chat_id == '86' ||
+                $chat_guest_history->cur_chat_id == '90' || $chat_guest_history->cur_chat_id == '94' ||
+                $chat_guest_history->cur_chat_id == '98'){
+                    $this->scSendFirstMessage($mobile_number, $property->mobile_number);
+                    return;
+                }
+
+                if($chat_guest_history->cur_chat_id == '71' || $chat_guest_history->cur_chat_id == '72' ||
+                $chat_guest_history->cur_chat_id == '73' || $chat_guest_history->cur_chat_id == '74'){
+                    $next_template_mapping = $this->scGetNextTemplate($chat_guest_history->cur_chat_id, '1');
+                }
+                else if($chat_guest_history->cur_chat_id == '75' || $chat_guest_history->cur_chat_id == '76' ||
+                $chat_guest_history->cur_chat_id == '77' || $chat_guest_history->cur_chat_id == '78'){
+                    $next_template_mapping = $this->scGetNextTemplate($chat_guest_history->cur_chat_id, '1');
+                }
+                else if($chat_guest_history->cur_chat_id == '79' || $chat_guest_history->cur_chat_id == '80' ||
+                $chat_guest_history->cur_chat_id == '81' || $chat_guest_history->cur_chat_id == '82'){
+                    $next_template_mapping = $this->scGetNextTemplate($chat_guest_history->cur_chat_id, '1');
+                }
+                else if($chat_guest_history->cur_chat_id == '83' || $chat_guest_history->cur_chat_id == '84' ||
+                $chat_guest_history->cur_chat_id == '85' || $chat_guest_history->cur_chat_id == '86'){
+                    $next_template_mapping = $this->scGetNextTemplate($chat_guest_history->cur_chat_id, '1');
+                }
+                else if($chat_guest_history->cur_chat_id == '87' || $chat_guest_history->cur_chat_id == '88' ||
+                $chat_guest_history->cur_chat_id == '89' || $chat_guest_history->cur_chat_id == '90'){
+                    $next_template_mapping = $this->scGetNextTemplate($chat_guest_history->cur_chat_id, '1');
+                }
+                else if($chat_guest_history->cur_chat_id == '91' || $chat_guest_history->cur_chat_id == '92' ||
+                $chat_guest_history->cur_chat_id == '93' || $chat_guest_history->cur_chat_id == '94'){
+                    $next_template_mapping = $this->scGetNextTemplate($chat_guest_history->cur_chat_id, '1');
+                }
+                else if($chat_guest_history->cur_chat_id == '95' || $chat_guest_history->cur_chat_id == '96' ||
+                $chat_guest_history->cur_chat_id == '97' || $chat_guest_history->cur_chat_id == '98'){
+                    $next_template_mapping = $this->scGetNextTemplate($chat_guest_history->cur_chat_id, '1');
+                }else{
+                    $next_template_mapping = $this->scGetNextTemplate($chat_guest_history->cur_chat_id, $message_content);
+                }  
+                
+            }
+    
+            //static end chat due to lack of time
+            if($next_template_mapping == "" && $chat_guest_history->cur_chat_id == "61"){
+                
+                $location_data = DB::table('common_chat_template_locations')
+                    ->where('template_id', $chat_guest_history->cur_chat_id)
+                    ->where('message_content', $message_content)
+                    ->first();
+                $this->sendSCLocationMetaWhatsapp($mobile_number, $location_data->text, $location_data->message_type, $location_data->longtitude, $location_data->latitude, $location_data->name, $location_data->addr );
+                //$this->sendSCLocationMetaWhatsapp($mobile_number, "Damac Towers by Paramount", 'location', "25.18685052330355", "55.29198296931478", "Damac Towers by Paramount", "Business Bay - Dubai - 042483333" );
+                $this->scSaveCustomBotStaticMessage($mobile_number, "Location Sent", $chat_guest_history->property_id, $chat_guest_history);
+                return;
+            }
+
+            if($next_template_mapping == "" && $chat_guest_history->cur_chat_id == "61" && $message_content == "1"){
+                //$this->scSendLocationMessage($mobile_number, "Damac Towers by Paramount", 'location', "25.18685052330355", "55.29198296931478", "Damac Towers by Paramount", "Business Bay - Dubai - 042483333" );
+                $this->sendSCLocationMetaWhatsapp($mobile_number, "Damac Towers by Paramount", 'location', "25.18685052330355", "55.29198296931478", "Damac Towers by Paramount", "Business Bay - Dubai - 042483333" );
+                $this->scSaveCustomBotStaticMessage($mobile_number, "Location Sent", $chat_guest_history->property_id, $chat_guest_history);
+                return;
+            }
+
+            // End Chat to Email
+            // if($chat_guest_history->cur_chat_id == "73"){
+            //     $myfile = fopen("testlogging.txt", "a");
+            //     fwrite($myfile, "send email");
+            //     fclose($myfile);
+            // }
+
+            // Agent chats
+
+            $agent_working_hours_msg = DB::table('common_chat_templates')
+                ->where('name','agent_unavailable')
+                ->where('property_id',$chat_guest_history->property_id)
+                ->first();
+            $agent_working_hours= DB::table('property_setting')
+                ->where('settings_key','whatsapp_fb_agent_work_timing')
+                ->where('property_id',$chat_guest_history->property_id)
+                ->first();
+            if(empty($agent_working_hours_msg) && empty($agent_working_hours)){
+                return;
+            }
+
+            if($next_template_mapping == "" && $chat_guest_history->cur_chat_id == "57"){ // reservation chat dept sc_sguest_a1_b1_c3_d1_r
+                //$this->scSaveCustomBotStaticMessage($mobile_number, "An Agent will be with you shortly.", $chat_guest_history->property_id);
+                //$this->scSendLocationMessage($mobile_number, "Celestia", 'location', "24.953063239657567", "55.204821123257155", "Celestia", "Dubai South - Dubai - 04 248 3333" );
+                if($this->checkAgentWorkingTime($chat_guest_history->property_id) && ($agent_working_hours->value == '1')){
+                    $this->scSendMessage($mobile_number, $agent_working_hours_msg->template, 'text');
+                    $this->scSaveInvalidBRBotStaticMessage($mobile_number, $agent_working_hours_msg->template, $chat_guest_history->property_id, $chat_guest_history);
+                    return;
+                }else{
+                    $this->scSetAgentChat($chat_guest_history, $mobile_number, $message_content, $chat_guest_history->property_id, "1");
+                }
+                return;
+            }
+            if($next_template_mapping == "" && $chat_guest_history->cur_chat_id == "45"){ // reservation chat dept sc_sguest_a1_b1_c3_d1_r
+                if($this->checkAgentWorkingTime($chat_guest_history->property_id) && ($agent_working_hours->value == '1')){
+                    $this->scSendMessage($mobile_number, $agent_working_hours_msg->template, 'text');
+                    $this->scSaveInvalidBRBotStaticMessage($mobile_number, $agent_working_hours_msg->template, $chat_guest_history->property_id, $chat_guest_history);
+                    return;
+                }else{
+                $this->scSetAgentChat($chat_guest_history, $mobile_number, $message_content, $chat_guest_history->property_id, "1");
+                return;
+                }
+            }
+            if($next_template_mapping == "" && $chat_guest_history->cur_chat_id == "55"){ // reservation chat dept sc_sguest_a1_b1_c3_d1_r
+                if($this->checkAgentWorkingTime($chat_guest_history->property_id) && ($agent_working_hours->value == '1')){
+                    $this->scSendMessage($mobile_number, $agent_working_hours_msg->template, 'text');
+                    $this->scSaveInvalidBRBotStaticMessage($mobile_number, $agent_working_hours_msg->template, $chat_guest_history->property_id, $chat_guest_history);
+                    return;
+                }else{
+                $this->scSetAgentChat($chat_guest_history, $mobile_number, $message_content, $chat_guest_history->property_id, "3");
+                return;
+                }
+            }
+            if($next_template_mapping == "" && $chat_guest_history->cur_chat_id == "58"){ // reservation chat dept sc_sguest_a1_b1_c3_d1_r
+                if($this->checkAgentWorkingTime($chat_guest_history->property_id) && ($agent_working_hours->value == '1')){
+                    $this->scSendMessage($mobile_number, $agent_working_hours_msg->template, 'text');
+                    $this->scSaveInvalidBRBotStaticMessage($mobile_number, $agent_working_hours_msg->template, $chat_guest_history->property_id, $chat_guest_history);
+                    return;
+                }else{
+                $this->scSetAgentChat($chat_guest_history, $mobile_number, $message_content, $chat_guest_history->property_id, "1");
+                return;
+                }
+            }
+            if($next_template_mapping == "" && $chat_guest_history->cur_chat_id == "59"){ // reservation chat dept sc_sguest_a1_b1_c3_d1_r
+                if($this->checkAgentWorkingTime($chat_guest_history->property_id) && ($agent_working_hours->value == '1')){
+                    $this->scSendMessage($mobile_number, $agent_working_hours_msg->template, 'text');
+                    $this->scSaveInvalidBRBotStaticMessage($mobile_number, $agent_working_hours_msg->template, $chat_guest_history->property_id, $chat_guest_history);
+                    return;
+                }else{
+                $this->scSetAgentChat($chat_guest_history, $mobile_number, $message_content, $chat_guest_history->property_id, "1");
+                return;
+                }
+            }
+            if($next_template_mapping == "" && $chat_guest_history->cur_chat_id == "62"){ // reservation chat dept sc_sguest_a1_b1_c3_d1_r
+                if($this->checkAgentWorkingTime($chat_guest_history->property_id) && ($agent_working_hours->value == '1')){
+                    $this->scSendMessage($mobile_number, $agent_working_hours_msg->template, 'text');
+                    $this->scSaveInvalidBRBotStaticMessage($mobile_number, $agent_working_hours_msg->template, $chat_guest_history->property_id, $chat_guest_history);
+                    return;
+                }else{
+                $this->scSetAgentChat($chat_guest_history, $mobile_number, $message_content, $chat_guest_history->property_id, "1");
+                return;
+                }
+            }
+            if($next_template_mapping == "" && $chat_guest_history->cur_chat_id == "65"){ // CRM chat dept sc_sguest_a1_b1_c3_d1_r
+                if($this->checkAgentWorkingTime($chat_guest_history->property_id) && ($agent_working_hours->value == '1')){
+                    $this->scSendMessage($mobile_number, $agent_working_hours_msg->template, 'text');
+                    $this->scSaveInvalidBRBotStaticMessage($mobile_number, $agent_working_hours_msg->template, $chat_guest_history->property_id, $chat_guest_history);
+                    return;
+                }else{
+                $this->scSetAgentChat($chat_guest_history, $mobile_number, $message_content, $chat_guest_history->property_id, "2");
+                return;
+                }
+            }
+            if($next_template_mapping == "" && $chat_guest_history->cur_chat_id == "66"){ // CRM chat dept sc_sguest_a1_b1_c3_d1_r
+                if($this->checkAgentWorkingTime($chat_guest_history->property_id) && ($agent_working_hours->value == '1')){
+                    $this->scSendMessage($mobile_number, $agent_working_hours_msg->template, 'text');
+                    $this->scSaveInvalidBRBotStaticMessage($mobile_number, $agent_working_hours_msg->template, $chat_guest_history->property_id, $chat_guest_history);
+                    return;
+                }else{
+                $this->scSetAgentChat($chat_guest_history, $mobile_number, $message_content, $chat_guest_history->property_id, "2");
+                return;
+                }
+            }
+            if($next_template_mapping == "" && $chat_guest_history->cur_chat_id == "67"){ // reservation chat dept sc_sguest_a1_b1_c3_d1_r
+                if($this->checkAgentWorkingTime($chat_guest_history->property_id) && ($agent_working_hours->value == '1')){
+                    $this->scSendMessage($mobile_number, $agent_working_hours_msg->template, 'text');
+                    $this->scSaveInvalidBRBotStaticMessage($mobile_number, $agent_working_hours_msg->template, $chat_guest_history->property_id, $chat_guest_history);
+                    return;
+                }else{
+                $this->scSetAgentChat($chat_guest_history, $mobile_number, $message_content, $chat_guest_history->property_id, "2");
+                return;
+                }
+            }
+
+
+            //Engineering
+            if($next_template_mapping == "" && $chat_guest_history->cur_chat_id == "47"){ //ac 
+                if($chat_guest_history->direction == 1){
+                    $json_data = json_decode($chat_guest_history->other_info);
+                    if( isset( $json_data->level ) ){
+                        //create eng req - category 2 eng, sub category 9 ac
+                        $done = $this->scEngRepairRequest($mobile_number, $message_content, $chat_guest_history, "1", "3");
+                        if($done){
+                            $this->scSendMessage($mobile_number, "A request has been created and forwarded to the respective department. Our team will get in touch with you soon. For more information, please do not hesitate to reach out to us", 'text');
+                            $this->scSaveCustomBotStaticMessage($mobile_number, "A request has been created and forwarded to the respective department. Our team will get in touch with you soon. For more information, please do not hesitate to reach out to us", $chat_guest_history->property_id, $chat_guest_history);
+                        }
+                        if($json_data->level == "1"){
+                            return;
+                        }
+                    }
+                }
+                $hsRes = $this->scCheckBuildingRoom($mobile_number, $message_content, $chat_guest_history);
+                return;
+            }
+            if($next_template_mapping == "" && $chat_guest_history->cur_chat_id == "48"){  //Kitchen Appliance (Fridge/Stove/Washer)
+                if($chat_guest_history->direction == 1){
+                    $json_data = json_decode($chat_guest_history->other_info);
+                    if( isset( $json_data->level ) ){
+                        //create eng req - category 2 eng, sub category 9 ac
+                        $done = $this->scEngRepairRequest($mobile_number, $message_content, $chat_guest_history, "24", "0");
+                        if($done){
+                            $this->scSendMessage($mobile_number, "A request has been created and forwarded to the respective department. Our team will get in touch with you soon. For more information, please do not hesitate to reach out to us", 'text');
+                            $this->scSaveCustomBotStaticMessage($mobile_number, "A request has been created and forwarded to the respective department. Our team will get in touch with you soon. For more information, please do not hesitate to reach out to us", $chat_guest_history->property_id, $chat_guest_history);
+                        }
+                        if($json_data->level == "1"){
+                            return;
+                        }
+                    }
+                }
+                $hsRes = $this->scCheckBuildingRoom($mobile_number, $message_content, $chat_guest_history);
+                return;
+            }
+            if($next_template_mapping == "" && $chat_guest_history->cur_chat_id == "49"){  // Door Lock Assistant
+                if($chat_guest_history->direction == 1){
+                    $json_data = json_decode($chat_guest_history->other_info);
+                    if( isset( $json_data->level ) ){
+                        //create eng req - category 2 eng, sub category 9 ac
+                        $done = $this->scEngRepairRequest($mobile_number, $message_content, $chat_guest_history, "4", "52");
+                        if($done){
+                            $this->scSendMessage($mobile_number, "A request has been created and forwarded to the respective department. Our team will get in touch with you soon. For more information, please do not hesitate to reach out to us", 'text');
+                            $this->scSaveCustomBotStaticMessage($mobile_number, "A request has been created and forwarded to the respective department. Our team will get in touch with you soon. For more information, please do not hesitate to reach out to us", $chat_guest_history->property_id, $chat_guest_history);
+                        }
+                        if($json_data->level == "1"){
+                            return;
+                        }
+                    }
+                }
+                $hsRes = $this->scCheckBuildingRoom($mobile_number, $message_content, $chat_guest_history);
+                return;
+            }
+            if($next_template_mapping == "" && $chat_guest_history->cur_chat_id == "50"){  // WiFi or Internet
+                if($chat_guest_history->direction == 1){
+                    $json_data = json_decode($chat_guest_history->other_info);
+                    if( isset( $json_data->level ) ){
+                        //create eng req - category 2 eng, sub category 9 ac
+                        $done = $this->scEngRepairRequest($mobile_number, $message_content, $chat_guest_history, "13", "377");
+                        if($done){
+                            $this->scSendMessage($mobile_number, "A request has been created and forwarded to the respective department. Our team will get in touch with you soon. For more information, please do not hesitate to reach out to us", 'text');
+                            $this->scSaveCustomBotStaticMessage($mobile_number, "A request has been created and forwarded to the respective department. Our team will get in touch with you soon. For more information, please do not hesitate to reach out to us", $chat_guest_history->property_id, $chat_guest_history);
+                        }
+                        if($json_data->level == "1"){
+                            return;
+                        }
+                    }
+                }
+                $hsRes = $this->scCheckBuildingRoom($mobile_number, $message_content, $chat_guest_history);
+                return;
+            }
+            if($next_template_mapping == "" && $chat_guest_history->cur_chat_id == "51"){  // Television
+                if($chat_guest_history->direction == 1){
+                    $json_data = json_decode($chat_guest_history->other_info);
+                    if( isset( $json_data->level ) ){
+                        //create eng req - category 2 eng, sub category 9 ac
+                        $done = $this->scEngRepairRequest($mobile_number, $message_content, $chat_guest_history, "13", "378");
+                        if($done){
+                            $this->scSendMessage($mobile_number, "A request has been created and forwarded to the respective department. Our team will get in touch with you soon. For more information, please do not hesitate to reach out to us", 'text');
+                            $this->scSaveCustomBotStaticMessage($mobile_number, "A request has been created and forwarded to the respective department. Our team will get in touch with you soon. For more information, please do not hesitate to reach out to us", $chat_guest_history->property_id, $chat_guest_history);
+                        }
+                        if($json_data->level == "1"){
+                            return;
+                        }
+                    }
+                }
+                $hsRes = $this->scCheckBuildingRoom($mobile_number, $message_content, $chat_guest_history);
+                return;
+            }
+
+            //Housekeeping
+            if($next_template_mapping == "" && $chat_guest_history->cur_chat_id == "53"){  
+                if($chat_guest_history->direction == 1){
+                    $json_data = json_decode($chat_guest_history->other_info);
+                    if( isset( $json_data->level ) ){
+                        // room cleaning
+                        $done = $this->scHSRequest($mobile_number, $message_content, $chat_guest_history, "1338");
+                        if($done){
+                            $this->scSendMessage($mobile_number, "A request has been created and forwarded to the respective department. Our team will get in touch with you soon. For more information, please do not hesitate to reach out to us", 'text');
+                            $this->scSaveCustomBotStaticMessage($mobile_number, "A request has been created and forwarded to the respective department. Our team will get in touch with you soon. For more information, please do not hesitate to reach out to us", $chat_guest_history->property_id, $chat_guest_history);
+                        }
+                        
+                        //sleep(1);
+                        //$this->scSendFirstMessage($mobile_number);
+                        // $responseText = "Please try again";
+                        // $this->scSendMessage($mobile_number, $responseText, 'text');
+                        // $this->scSaveInvalidBRBotStaticMessage($mobile_number, $responseText, $chat_guest_history->property_id, $chat_guest_history);
+
+                        if($json_data->level == "1"){
+                            return;
+                        }
+                    }
+                }
+                //$this->scSendMessage($mobile_number, "Sent", 'text');
+                //$this->scSaveHSBotStaticMessage($mobile_number, "Buiding,Unit", $chat_guest_history->property_id, $chat_guest_history, "");
+                $hsRes = $this->scCheckBuildingRoom($mobile_number, $message_content, $chat_guest_history);
+                return;
+            }
+            if($next_template_mapping == "" && $chat_guest_history->cur_chat_id == "54"){  
+                if($chat_guest_history->direction == 1){
+                    $json_data = json_decode($chat_guest_history->other_info);
+                    if( isset( $json_data->level ) ){
+                        // room cleaning supplies
+                        $done = $this->scHSRequest($mobile_number, $message_content, $chat_guest_history, "7741");
+                        if($done){
+                            $this->scSendMessage($mobile_number, "A request has been created and forwarded to the respective department. Our team will get in touch with you soon. For more information, please do not hesitate to reach out to us", 'text');
+                            $this->scSaveCustomBotStaticMessage($mobile_number, "A request has been created and forwarded to the respective department. Our team will get in touch with you soon. For more information, please do not hesitate to reach out to us", $chat_guest_history->property_id, $chat_guest_history);
+                        }
+                    }
+                }
+                $hsRes = $this->scCheckBuildingRoom($mobile_number, $message_content, $chat_guest_history);
+                return;
+            }
+
+            // Start from First Message Check
+            if($chat_guest_history->cur_chat_id == "0"){
+                $this->scSendFirstMessage($mobile_number, $property->mobile_number);
+                return;
+            }
+
+            // Invalid option handling
+            if($next_template_mapping == ""){
+                $this->scSendMessage($mobile_number, "Invalid option, please try again!", 'text');
+                return;
+            }
+
+            //save incoming message
+            $saveInfo = [
+                'property_id' => $chat_guest_history->property_id,
+                'phone_number' => $mobile_number,
+                'session_id' => '0',
+                'guest_id' => '0',
+                'agent_id' => '0',
+                'text' => $message_content,
+                'text_trans' => '',
+                'direction' => '1',
+                'type' => 'guest',
+                'language' => 'en',
+                'chat_type' => 'text',
+                'attachment' => '',
+                'other_info' => '',
+                'cur_chat_name' => $chat_guest_history->cur_chat_name,
+                'cur_chat_id' => $chat_guest_history->cur_chat_id,
+                'uuid' => '',
+                'guest_path' => $chat_guest_history->guest_path,
+                'status' => $chat_guest_history->status
+            ];
+            $this->scSaveToChatHistory($saveInfo);
+
+            $next_template_text = $this->scGetDBTemplateText($next_template_mapping->id);
+
+            if($next_template_mapping != ""){
+                $this->scSendMessage($mobile_number, $next_template_text, 'text');
+
+                $saveInfo = [
+                    'property_id' => $chat_guest_history->property_id,
+                    'phone_number' => $mobile_number,
+                    'session_id' => '0',
+                    'guest_id' => '0',
+                    'agent_id' => '0',
+                    'text' => $next_template_text,
+                    'text_trans' => '',
+                    'direction' => '0',
+                    'type' => 'guest',
+                    'language' => 'en',
+                    'chat_type' => 'text',
+                    'attachment' => '',
+                    'other_info' => '',
+                    'cur_chat_name' => strtoupper($next_template_mapping->name),
+                    'cur_chat_id' => $next_template_mapping->id,
+                    'uuid' => '',
+                    'guest_path' => '',
+                    'status' => '1'
+                ];
+                $this->scSaveToChatHistory($saveInfo);
+
+            }else{
+                //$this->scSendMessage($mobile_number,'Invalid Option','text');
+                $this->scSendMessage($mobile_number, $next_template_text, 'text');
+            }
+            
+            //send email for these end messages
+            $this->sendEmailForMsg($next_template_mapping->id , $chat_guest_history->property_id, $mobile_number);
+            
+        }else{ // NEW GUEST
+
+            // if(!empty($property)){
+            //     $chat_guest_history->property_id = $property->property_id;
+            // }
+
+            $this->scSendFirstMessage($mobile_number, $property->mobile_number);
+
+            sleep(2);
+
+            $chat_guest_history = DB::table('services_chat_history')
+            ->where('phone_number', $mobile_number)
+            //->where('direction', '0')
+            ->orderBy('id','desc')
+            ->first();
+
+            ////if($next_template_mapping == "" && $chat_guest_history->cur_chat_id == "62"){
+            // //Set function
+            // $template_function = DB::table('common_chat_templates')
+            //     ->where('id',$chat_guest_history->cur_chat_id)
+            //     ->first();
+            // if(!empty($template_function)){
+            //     if($template_function->function == 'agentbutton'){
+            //         $text = "Do you want to speak to an Agent?";
+            //         $this->sendAgentInteractiveMessageToWhatsapp($mobile_number, $text);
+            //         //$this->scSetAgentChat($chat_guest_history, $mobile_number, $message_content, $chat_guest_history->property_id, "1");
+            //     }
+            //     return $hub_challenge;
+            // }
+
+            //return auth for non used image
+            if($type_main == 'image' || $type_main == 'audio' || $type_main == 'video' || $type_main == 'interactive'){
+                return $hub_challenge;
+            }
+        }
+    }
+
+    public function getMediaId($message){
+        $media_id = '';
+        if($message != ''){
+            $json_data = $message;
+            foreach ($message as $key => $value) {
+                foreach ($value['changes'] as $ckey => $changes_value) {
+                    if (array_key_exists('messages', $changes_value['value'])) {
+                        foreach($changes_value['value']['messages'] as $mkey => $mvalue){
+                            $media_id = $mvalue[$mvalue['type']]['id'];
+                        }
+                    }
+                    
+                }
+            }
+        }
+        return $media_id;
+    }
+    
+    public function getMediaData($media_id){
+        $dbAuthKey = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_fb_authkey')
+            ->pluck('value');
+        $dbAuthorization = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_fb_authorization')
+            ->pluck('value');
+        $dbURL = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_fb_url')
+            ->pluck('value');  
+        //return to sender
+        $authKey = $dbAuthKey[0];
+        $authorization = $dbAuthorization[0];
+        
+        $url = $dbURL[0]."/$media_id";
+        $headers = [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $authorization
+        ];
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        //$body = '{}';
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET"); 
+        //curl_setopt($ch, CURLOPT_POSTFIELDS,$body);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        // Timeout in seconds
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        $media = curl_exec($ch);
+        return $media;
+    }
+
+    public function downloadfbMedia($url, $ext, $filename, $mobile_number){
+        $upload_path = $_SERVER["DOCUMENT_ROOT"] . '/wauploads/' . $mobile_number;
+            if (!file_exists($upload_path)) {
+                mkdir($upload_path, 0777);
+            }
+            //$upload_path = "wauploads/" . $mobile_number . "/";
+        $dbAuthorization = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_fb_authorization')
+            ->pluck('value');
+        $authorization = $dbAuthorization[0];
+        $headers = [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $authorization
+        ];
+        $filepath = $_SERVER["DOCUMENT_ROOT"] . "/wauploads/" . $mobile_number . "/" . $filename . "." . $ext;
+        $shell_string = "curl '". $url . "' -H 'Authorization: Bearer " . $authorization . "' > ". $filepath;
+        $output = shell_exec($shell_string);
+        // $myfile = fopen("testlogging.txt", "a");
+        //     fwrite($myfile, json_encode($output));
+        //     fclose($myfile);
+        return $output;
+    }
+
+    public function getAttachmentURLFromUser($text, $mobile_number, $property_id, $language, $session_id, $room, $guest_type, $language_name, $chat_type, $attachment, $media_id, $filename)
+    {
+        $session_info = DB::table('services_chat_guest_session')
+                    ->where('id', $session_id)
+                    ->first();
+        $message_info = [];
+        $message_info['text'] = $chat_type == 'image' || $chat_type == 'video' ? $text : $filename;
+        //$message_info['mobile_number'] = $request->get('mobile_number');
+        $message_info['mobile_number'] = $mobile_number;
+        $other_info = [
+            'guest_type' => $guest_type,
+            'room' => $room,
+            'language_name' => $language_name
+        ];
+        // save chat info
+        $saveInfo = [
+            'property_id' => $property_id,
+            'session_id' => $session_id,
+            'agent_id' => $session_info->agent_id,
+            'guest_id' => $session_info->guest_id,
+            'cur_chat_name' => '',
+            'mobile_number' => $mobile_number,
+            'text' => $text,
+            'text_trans' => '',
+            'language' => $language,
+            'sender' => 'server',
+            'chat_type' => $chat_type,
+            'attachment' => $attachment,
+            'other_info' => json_encode($other_info)
+        ];
+        $ret = [
+            'success' => false
+        ];
+        $responseWhatsapp = $this->sendMessageToWhatsapp($message_info, 'Attachment', $media_id);
+        if ($responseWhatsapp != false) {
+            $saveInfo['uuid'] = $responseWhatsapp->MessageUUID;
+            $this->saveChatbotHistoryWhatsapp($saveInfo);
+            $ret['success'] = true;
+        }
+        return Response::json($ret);
+    }
+
+    public function scGetTemplateDetails(){
+        $template_details = DB::table('common_chat_templates')
+            ->get();
+        return $template_details;
+    }
+
+    public function scGetTemplateMapping(){
+        $template_mapping = DB::table('common_chat_template_mapping')
+        ->get();
+        return $template_mapping;
+    }
+
+    public function scGetFirstTemplate($property_mbl_no){
+        $property = DB::table('common_chat_property_mapping')
+            ->where('mobile_number', $property_mbl_no)
+            ->first();
+        $template = DB::table('common_chat_templates')
+            ->where('id',$property->template_id)
+            ->first();
+            
+        return $template;
+        // $template_mapping = $this->scGetTemplateMapping();
+        // for ($i=0; $i < count($template_mapping); $i++) { 
+        //     $found_first_flag = false;
+        //     for ($j=0; $j < count($template_mapping) - 1; $j++) { 
+        //         if($template_mapping[$i]->template_id == $template_mapping[$j]->template_next_id){
+        //             $found_first_flag = true;
+        //         }
+        //     }
+        //     if($found_first_flag == false){
+        //         //return $template_mapping[$i]->template_id;
+        //         $template = DB::table('common_chat_templates')
+        //             ->where('id',$template_mapping[$i]->template_id)
+        //             ->first();
+        //         return $template;
+        //         break;
+        //     }
+        // }
+        // return "";
+    }
+
+    public function scGetNextTemplate($template_id, $answer){
+        
+        $template_mapping = DB::table('common_chat_template_mapping')
+            ->where('template_id', $template_id)
+            ->where('answer', $answer)
+            ->first();
+        if( is_null($template_mapping) ){
+            return "";
+        }
+        $template = DB::table('common_chat_templates')
+            ->where('id', $template_mapping->template_next_id)
+            ->first();
+        if( is_null($template_mapping) ){
+            return "";
+        }
+        else{
+            return $template;
+        }
+    }
+
+    public function scGetPrevTemplate($template_next_id){
+        $template_mapping = DB::table('common_chat_template_mapping')
+            ->where('template_next_id', $template_next_id)
+            ->first();
+        if( is_null($template_mapping) ){
+            return "";
+        }
+        $template = DB::table('common_chat_templates')
+            ->where('id', $template_mapping->template_id)
+            ->first();
+        if( is_null($template_mapping) ){
+            return "";
+        }
+        else{
+            return $template;
+        }
+    }
+
+    public function scSaveToChatHistory($saveInfo){
+        //default save validation
+        $saveInfo['property_id'] = $saveInfo['property_id'] == '' ? '4' : $saveInfo['property_id'];
+        $saveInfo['phone_number'] = $saveInfo['phone_number'] == '' ? '' : $saveInfo['phone_number'];
+        $saveInfo['session_id'] = $saveInfo['session_id'] == '' ? '' : $saveInfo['session_id'];
+        $saveInfo['guest_id'] = $saveInfo['guest_id'] == '' ? '0' : $saveInfo['guest_id'];
+        $saveInfo['agent_id'] = $saveInfo['agent_id'] == '' ? '0' : $saveInfo['agent_id'];
+        $saveInfo['text'] = $saveInfo['text'] == '' ? '' : $saveInfo['text'];
+        $saveInfo['text_trans'] = $saveInfo['text_trans'] == '' ? '' : $saveInfo['text_trans'];
+        $saveInfo['language'] = $saveInfo['language'] == '' ? 'en' : $saveInfo['language'];
+        $saveInfo['chat_type'] = $saveInfo['chat_type'] == '' ? 'text' : $saveInfo['chat_type'];
+        $saveInfo['attachment'] = $saveInfo['attachment'] == '' ? '' : $saveInfo['attachment'];
+        $saveInfo['other_info'] = $saveInfo['other_info'] == '' ? '' : $saveInfo['other_info'];
+        $saveInfo['cur_chat_name'] = $saveInfo['cur_chat_name'] == '' ? '' : $saveInfo['cur_chat_name'];
+        $saveInfo['cur_chat_id'] = $saveInfo['cur_chat_id'] == '' ? '' : $saveInfo['cur_chat_id'];
+        $saveInfo['uuid'] = $saveInfo['uuid'] == '' ? '' : $saveInfo['uuid'];
+        $saveInfo['guest_path'] = $saveInfo['guest_path'] == '' ? '' : $saveInfo['guest_path'];
+        DB::table('services_chat_history')->insert($saveInfo);
+        
+    }
+
+    public function scGetDBTemplateText($template_id){
+        $template = DB::table('common_chat_templates')
+            ->where('id', $template_id)
+            ->first();
+        return $template->template;
+    }
+
+    // public function scGetDBTemplate($template_id){
+    //     $template = DB::table('common_chat_templates')
+    //         ->where('id', $template_id)
+    //         ->first();
+    //     return $template;
+    // }
+
+    public function scCheckGuestResponse($mobile_number, $message_content, $template_id, $chat_guest_history){
+        //$responseText = "";
+        $responseTemplate = $this->scGetNextTemplate($template_id, $message_content);
+        $this->scSendMessage($mobile_number, $responseTemplate->template, 'text');
+        $saveInfo = [
+            'property_id' => $responseTemplate->property_id,
+            'phone_number' => $mobile_number,
+            'session_id' => '0',
+            'guest_id' => '0',
+            'agent_id' => '0',
+            'text' => $responseTemplate->template,
+            'text_trans' => '',
+            'direction' => '1',
+            'type' => 'guest',
+            'language' => 'en',
+            'chat_type' => 'text',
+            'attachment' => '',
+            'other_info' => '',
+            'cur_chat_name' => '',
+            'uuid' => '',
+            'guest_path' => '',
+            'status' => '1'
+        ];
+        $this->scSaveToChatHistory($saveInfo);
+    }
+
+    public function scSendFirstMessage($mobile_number, $property_mbl_no)
+    {   //sendToMetaWhatsapp 
+        
+        $first_question = $this->scGetFirstTemplate($property_mbl_no);
+        $responseText = $this->scGetDBTemplateText($first_question->id);
+        $this->scSendMessage($mobile_number, $responseText, 'text');
+        $saveInfo = [
+            'property_id' => $first_question->property_id,
+            'phone_number' => $mobile_number,
+            'session_id' => '0',
+            'guest_id' => '0',
+            'agent_id' => '0',
+            'text' => $responseText,
+            'text_trans' => '',
+            'direction' => '0',
+            'type' => 'guest',
+            'language' => 'en',
+            'chat_type' => 'text',
+            'attachment' => '',
+            'other_info' => '',
+            'cur_chat_name' => strtoupper($first_question->name),
+            'cur_chat_id' => $first_question->id,
+            'uuid' => '',
+            'guest_path' => '',
+            'status' => '1'
+        ];
+        $this->scSaveToChatHistory($saveInfo);
+        sleep(2);
+        
+        if($first_question->function == 'agentbutton'){
+            $text = "Do you want to speak to an Agent?";
+            $this->sendAgentInteractiveMessageToWhatsapp($mobile_number, $text);
+            //$this->scSetAgentChat($chat_guest_history, $mobile_number, $message_content, $chat_guest_history->property_id, "1");
+        }
+            
+    }
+
+    //Static functions coz of no time
+
+    public function scSaveCustomBotStaticMessage($mobile_number, $responseText, $property_id, $chat_guest_history)
+    {   //sendToMetaWhatsapp 
+        
+        $saveInfo = [
+            'property_id' => $property_id,
+            'phone_number' => $mobile_number,
+            'session_id' => $chat_guest_history->session_id,
+            'guest_id' => '0',
+            'agent_id' => '0',
+            'text' => $responseText,
+            'text_trans' => '',
+            'direction' => '0',
+            'type' => 'guest',
+            'language' => 'en',
+            'chat_type' => 'text',
+            'attachment' => '',
+            'other_info' => '',
+            'cur_chat_name' => $chat_guest_history->cur_chat_name,
+            'cur_chat_id' => '0',
+            'uuid' => '',
+            'guest_path' => '',
+            'status' => '1'
+        ];
+        $this->scSaveToChatHistory($saveInfo);
+    }
+    
+    //save invalid build bot response
+    public function scSaveInvalidBRBotStaticMessage($mobile_number, $responseText, $property_id, $chat_guest_history)
+    {   //sendToMetaWhatsapp 
+        
+        $saveInfo = [
+            'property_id' => $property_id,
+            'phone_number' => $mobile_number,
+            'session_id' => $chat_guest_history->session_id,
+            'guest_id' => '0',
+            'agent_id' => '0',
+            'text' => $responseText,
+            'text_trans' => '',
+            'direction' => '0',
+            'type' => 'guest',
+            'language' => 'en',
+            'chat_type' => 'text',
+            'attachment' => '',
+            'other_info' => '',
+            'cur_chat_name' => $chat_guest_history->cur_chat_name,
+            'cur_chat_id' => $chat_guest_history->cur_chat_id,
+            'uuid' => '',
+            'guest_path' => '',
+            'status' => '1'
+        ];
+        $this->scSaveToChatHistory($saveInfo);
+    }
+
+    //end Agent chat
+    public function scSaveAgentEndMessage($mobile_number, $responseText, $property_id, $chat_guest_history)
+    {   //sendToMetaWhatsapp 
+        
+        $saveInfo = [
+            'property_id' => $property_id,
+            'phone_number' => $mobile_number,
+            'session_id' => '0',
+            'guest_id' => '0',
+            'agent_id' => '0',
+            'text' => $responseText,
+            'text_trans' => '',
+            'direction' => '0',
+            'type' => 'guest',
+            'language' => 'en',
+            'chat_type' => 'text',
+            'attachment' => '',
+            'other_info' => '',
+            'cur_chat_name' => $chat_guest_history->cur_chat_name,
+            'cur_chat_id' => '0',
+            'uuid' => '',
+            'guest_path' => '',
+            'status' => '1'
+        ];
+        $this->scSaveToChatHistory($saveInfo);
+    }
+
+    public function scSaveEngineeringBotStaticMessage($mobile_number, $responseText, $property_id, $chat_guest_history)
+    {   //sendToMetaWhatsapp 
+        
+        $saveInfo = [
+            'property_id' => $property_id,
+            'phone_number' => $mobile_number,
+            'session_id' => '0',
+            'guest_id' => '0',
+            'agent_id' => '0',
+            'text' => $responseText,
+            'text_trans' => '',
+            'direction' => '0',
+            'type' => 'guest',
+            'language' => 'en',
+            'chat_type' => 'text',
+            'attachment' => '',
+            'other_info' => '',
+            'cur_chat_name' => $chat_guest_history->cur_chat_name,
+            'cur_chat_id' => $chat_guest_history->cur_chat_id,
+            'uuid' => '',
+            'guest_path' => '',
+            'status' => '0'
+        ];
+        $this->scSaveToChatHistory($saveInfo);
+    }
+
+    public function scEngCheckBuildingRoom($mobile_number, $message_content){
+        $response = "Invalid";
+        $msg_content = explode(" ",$message_content);
+        if(count($msg_content) == "2"){
+            $building = DB::table('common_building')
+                ->where('name',$msg_content[0])
+                ->first();
+            if(empty($building)){
+                $response = "Invalid Building";
+                return $response;
+            }
+            $unit = DB::table('common_room as cr')
+                ->join('common_floor as cf','cr.flr_id','=','cf.id')
+                ->join('common_building as cb','cf.bldg_id','=','cb.id')
+                ->where('cr.room',$msg_content[1])
+                ->where('cb.name',$msg_content[0])
+                ->first();
+            if(empty($unit)){
+                $response = "Invalid Unit";
+                return $response;
+            }else{
+                $response = "Valid";
+            }
+        }
+        return $response;
+    }
+
+    public function scEngRepairRequest($mobile_number, $message_content, $chat_guest_history, $category_id, $sub_category_id){
+        $json_data = json_decode($chat_guest_history->other_info);
+        $build_str = explode(",",$json_data->message);
+        $b_trim = trim($build_str[0]);
+        $building_synonym = $building = DB::table('common_building')
+                        ->where('name','like','%'.$b_trim.'%')
+                        ->pluck('name');
+        $building = DB::table('common_building')
+        ->where('name',$building_synonym[$message_content - 1])
+        ->first();
+        if(empty($building)){
+            $this->scSendMessage($mobile_number, "Invalid Building", 'text');
+            $wronginput_count = DB::table('services_chat_history')
+                ->where('phone_number', $mobile_number)
+                ->orderBy('id','desc')
+                ->take(4)
+                ->get();
+            $count = 0;
+            foreach ($wronginput_count as $item) {
+                if($item->cur_chat_id == $chat_guest_history->cur_chat_id){
+                    $count += 1;
+                }
+            }
+            if($count >= 4){ //3 wrong + 1 question
+                $this->scSetAgentChat($chat_guest_history, $mobile_number, $message_content, $chat_guest_history->property_id, "3");
+            }else{
+                $responseText = "Please try again";
+                $this->scSendMessage($mobile_number, $responseText, 'text');
+                $this->scSaveInvalidBRBotStaticMessage($mobile_number, $responseText, $chat_guest_history->property_id, $chat_guest_history);
+            }
+            
+            return false;
+        }
+        $r_trim = trim($build_str[1]);
+        $unit = DB::table('common_room as cr')
+                ->join('common_floor as cf','cr.flr_id','=','cf.id')
+                ->join('common_building as cb','cf.bldg_id','=','cb.id')
+                ->where('cr.room','like','%'.$r_trim.'%')
+                ->where('cb.id',$building->id)
+                ->select(DB::raw('cb.property_id as property_id, cb.id as building_id, cf.id as floor_id, cr.id as unit_id'))
+                ->first();
+        if(empty($unit)){
+            $this->scSendMessage($mobile_number, "Invalid Room, Please enter Building, Unit#", 'text');
+            $this->scSaveInvalidBRBotStaticMessage($mobile_number, "Invalid Room", $chat_guest_history->property_id, $chat_guest_history);
+            $wronginput_count = DB::table('services_chat_history')
+                ->where('phone_number', $mobile_number)
+                ->orderBy('id','desc')
+                ->take(5)
+                ->get();
+            $count = 0;
+            foreach ($wronginput_count as $item) {
+                if($item->cur_chat_id == $chat_guest_history->cur_chat_id){
+                    $count += 1;
+                }
+            }
+            if($count >= 5){ //3 wrong + 1 question
+                $this->scSetAgentChat($chat_guest_history, $mobile_number, $message_content, $chat_guest_history->property_id, "3");
+            }else{
+                $responseText = "Please try again";
+                $this->scSendMessage($mobile_number, $responseText, 'text');
+                $this->scSaveInvalidBRBotStaticMessage($mobile_number, $responseText, $chat_guest_history->property_id, $chat_guest_history);
+            }
+            
+            return false;
+        }
+        $location = DB::table('services_location')
+            ->where('property_id',$unit->property_id)
+            ->where('building_id',$unit->building_id)
+            ->where('floor_id',$unit->floor_id)
+            ->where('room_id',$unit->unit_id)
+            ->first();
+        //loc id, 2 eng, 9 ac
+        $this->scSendEngRepairRequest($location->id, $category_id, $sub_category_id, $mobile_number);
+        return true;
+    }
+
+    public function scSendEngRepairRequest($location_id, $category_id, $sub_category_id, $mobile_number){
+        $taskDetails = DB::table('eng_request_subcategory')
+            ->where('category_id', $category_id)
+            ->where('id', $sub_category_id)
+            ->first();
+        if(!empty($taskDetails)){
+            $taskName = $taskDetails->name;
+        }else{
+            $taskName = "";
+        }
+        //create eng
+        $site_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]";
+        $url = $site_url."/repair/createrequest";
+        $headers = [
+            'Content-Type: application/json'
+        ];
+        $reqObj = (object)[
+            'requestor_type' => 'User',
+            'location_id' => $location_id,
+            'repair' => 'From Whatsapp ' . $mobile_number,
+            'description' => $taskName,
+            'category' => $category_id,
+            'sub_category' => $sub_category_id
+        ];
+        $postData = json_encode($reqObj);
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+        $server_response = curl_exec($ch);
+        curl_close($ch);
+        $json_sent_response = json_decode($server_response, true);
+        // $myfile = fopen("testlogging.txt", "a");
+        //     fwrite($myfile, json_encode($server_response));
+        //     fclose($myfile);
+    }
+
+    public function scSaveHSBotStaticMessage($mobile_number, $responseText, $property_id, $chat_guest_history, $other_info)
+    {   //sendToMetaWhatsapp 
+        
+        $saveInfo = [
+            'property_id' => $property_id,
+            'phone_number' => $mobile_number,
+            'session_id' => '0',
+            'guest_id' => '0',
+            'agent_id' => '0',
+            'text' => $responseText,
+            'text_trans' => '',
+            'direction' => '0',
+            'type' => 'guest',
+            'language' => 'en',
+            'chat_type' => 'text',
+            'attachment' => '',
+            'other_info' => $other_info,
+            'cur_chat_name' => $chat_guest_history->cur_chat_name,
+            'cur_chat_id' => $chat_guest_history->cur_chat_id,
+            'uuid' => '',
+            'guest_path' => '',
+            'status' => '0'
+        ];
+        $this->scSaveToChatHistory($saveInfo);
+    }
+
+    public function scSaveHSBotStaticMessageFromUser($mobile_number, $responseText, $property_id, $chat_guest_history, $other_info)
+    {   //sendToMetaWhatsapp 
+        
+        $saveInfo = [
+            'property_id' => $property_id,
+            'phone_number' => $mobile_number,
+            'session_id' => '0',
+            'guest_id' => '0',
+            'agent_id' => '0',
+            'text' => $responseText,
+            'text_trans' => '',
+            'direction' => '1',
+            'type' => 'guest',
+            'language' => 'en',
+            'chat_type' => 'text',
+            'attachment' => '',
+            'other_info' => $other_info,
+            'cur_chat_name' => $chat_guest_history->cur_chat_name,
+            'cur_chat_id' => $chat_guest_history->cur_chat_id,
+            'uuid' => '',
+            'guest_path' => '',
+            'status' => '0'
+        ];
+        $this->scSaveToChatHistory($saveInfo);
+    }
+
+    public function scHSRequest($mobile_number, $message_content, $chat_guest_history, $task_id){
+        //return;
+        $json_data = json_decode($chat_guest_history->other_info);
+        $build_str = explode(",",$json_data->message);
+        $b_trim = trim($build_str[0]);
+        $building_synonym = $building = DB::table('common_building')
+                        ->where('name','like','%'.$b_trim.'%')
+                        ->pluck('name');
+        $building = DB::table('common_building')
+        ->where('name',$building_synonym[$message_content - 1])
+        ->first();
+        if(empty($building)){
+            $this->scSendMessage($mobile_number, "Invalid Building", 'text');
+            //$this->scSendFirstMessage($mobile_number);
+            $wronginput_count = DB::table('services_chat_history')
+                ->where('phone_number', $mobile_number)
+                ->orderBy('id','desc')
+                ->take(4)
+                ->get();
+            $count = 0;
+            foreach ($wronginput_count as $item) {
+                if($item->cur_chat_id == $chat_guest_history->cur_chat_id){
+                    $count += 1;
+                }
+            }
+            if($count >= 4){ //3 wrong + 1 question
+                $this->scSetAgentChat($chat_guest_history, $mobile_number, $message_content, $chat_guest_history->property_id, "3");
+            }else{
+                $responseText = "Please try again";
+                $this->scSendMessage($mobile_number, $responseText, 'text');
+                $this->scSaveInvalidBRBotStaticMessage($mobile_number, $responseText, $chat_guest_history->property_id, $chat_guest_history);
+            }
+            
+            return false;
+        }
+        $r_trim = trim($build_str[1]);
+        $unit = DB::table('common_room as cr')
+                ->join('common_floor as cf','cr.flr_id','=','cf.id')
+                ->join('common_building as cb','cf.bldg_id','=','cb.id')
+                ->where('cr.room','like','%'.$r_trim.'%')
+                ->where('cb.id',$building->id)
+                ->select(DB::raw('cb.property_id as property_id, cb.id as building_id, cf.id as floor_id, cr.id as unit_id'))
+                ->first();
+        if(empty($unit)){
+            $this->scSendMessage($mobile_number, "Invalid Room, Please enter Building, Unit#", 'text');
+            $this->scSaveInvalidBRBotStaticMessage($mobile_number, "Invalid Room", $chat_guest_history->property_id, $chat_guest_history);
+            //$this->scSendFirstMessage($mobile_number);
+            $wronginput_count = DB::table('services_chat_history')
+                ->where('phone_number', $mobile_number)
+                ->orderBy('id','desc')
+                ->take(5)
+                ->get();
+            $count = 0;
+            foreach ($wronginput_count as $item) {
+                if($item->cur_chat_id == $chat_guest_history->cur_chat_id){
+                    $count += 1;
+                }
+            }
+            if($count >= 5){ //3 wrong + 1 question
+                $this->scSetAgentChat($chat_guest_history, $mobile_number, $message_content, $chat_guest_history->property_id, "3");
+            }else{
+                $responseText = "Please try again";
+                $this->scSendMessage($mobile_number, $responseText, 'text');
+                $this->scSaveInvalidBRBotStaticMessage($mobile_number, $responseText, $chat_guest_history->property_id, $chat_guest_history);
+            }
+            
+            return false;
+        }
+        $location = DB::table('services_location')
+            ->where('property_id',$unit->property_id)
+            ->where('building_id',$unit->building_id)
+            ->where('floor_id',$unit->floor_id)
+            ->where('room_id',$unit->unit_id)
+            ->first();
+        
+        //room cleaning
+        $this->scSendHSRequest($unit->property_id, $location->id, $unit->unit_id, $task_id, $mobile_number);
+        return true;
+    }
+
+    public function scSendHSRequest($property_id, $location_id, $room_id, $task_id, $mobile_number){
+        $locationGroupInfo = $this->getLocationGroupIDFromRoom($room_id);
+        $taskInfo = $this->getTaskShiftInfo($task_id, $locationGroupInfo->id);
+        $guestResult = DB::table('common_guest as cg')
+                ->where('cg.room_id', $locationGroupInfo->room_id)
+                ->orderBy('cg.id','desc')
+                ->first();
+        if(!empty($guestResult)){
+            $guestId = $guestResult->guest_id;
+        }else{
+            $guestId = "0";
+        }
+        $taskgroup = DB::table('services_task_list as stl')
+        ->leftJoin('services_task_group_members as stgm','stl.id','=','stgm.task_list_id')
+        ->leftJoin('services_task_group as stg', 'stg.id', '=', 'stgm.task_grp_id')
+        ->where('stl.id', $task_id)
+        ->first();
+        $task = $taskgroup;
+        date_default_timezone_set(config('app.timezone'));
+		$cur_time = date("Y-m-d H:i:s");
+        //create hskp
+        $site_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]";
+        $url = $site_url."/guestservice/createtasklist";
+        $headers = [
+            'Content-Type: application/json'
+        ];
+        //$dispatcher = $taskInfo['staff_list'][0]->id ? $taskInfo['staff_list'][0]->id : '0';
+        if(!empty($taskInfo['staff_list'])){
+            $dispatcher = $taskInfo['staff_list'][0]->id;
+        }else{
+            $dispatcher = '0';
+        }
+        $dataObj = (object)[
+            'created_time' => $cur_time,
+            //'status_id' => '1',
+            'quantity' => '1',
+            'guest_id' => $guestId,
+            'custom_message' => $mobile_number,
+            'start_date_time' => $cur_time,
+            'max_time' => $task->max_time,
+            'property_id' => $property_id,
+            'dispatcher' => $dispatcher,
+            'attendant' => '0',
+            'status_id' => '1',
+            'priority' => '1',
+            'task_list' => $taskgroup->task_list_id,
+            'dept_func' => $taskgroup->dept_function,
+            'reassigned_flag' => '0',
+            'type' => '1',//$locationGroupInfo->type_id,
+            'room' => $locationGroupInfo->room_id,
+            'location_id' => $locationGroupInfo->id,
+            'department_id' => $taskInfo['department']['id']
+        ];
+        $reqObj = (object)[
+            'data' => $dataObj
+        ];
+        $postData = json_encode($reqObj);
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+        $server_response = curl_exec($ch);
+        curl_close($ch);
+        $json_sent_response = json_decode($server_response, true);
+        // $myfile = fopen("testlogging.txt", "a");
+        //     fwrite($myfile, json_encode($server_response));
+        //     fclose($myfile);
+        
+    }
+
+    public function scCheckBuildingRoom($mobile_number, $message_content, $chat_guest_history){
+        $json_data = json_decode($chat_guest_history->other_info);
+            if($chat_guest_history->other_info == ""){
+                $msg_arr = explode(",",$message_content);
+                if(count($msg_arr) < 2){
+                    $responseText = "Invalid Input";
+                    $this->scSendMessage($mobile_number, $responseText, 'text');
+                    $this->scSaveInvalidBRBotStaticMessage($mobile_number, $responseText, $chat_guest_history->property_id, $chat_guest_history);
+                    sleep(1);
+                    $wronginput_count = DB::table('services_chat_history')
+                        ->where('phone_number', $mobile_number)
+                        ->orderBy('id','desc')
+                        ->take(5)
+                        ->get();
+                    $count = 0;
+                    foreach ($wronginput_count as $item) {
+                        if($item->cur_chat_id == $chat_guest_history->cur_chat_id){
+                            $count += 1;
+                        }
+                    }
+                    if($count >= 5){ //3 wrong + 1 question
+                        $this->scSetAgentChat($chat_guest_history, $mobile_number, $message_content, $chat_guest_history->property_id, "3");
+                    }else{
+                        $responseText = "Please try again";
+                        $this->scSendMessage($mobile_number, $responseText, 'text');
+                        $this->scSaveInvalidBRBotStaticMessage($mobile_number, $responseText, $chat_guest_history->property_id, $chat_guest_history);
+                    }
+                    return;
+                }
+                $building_synonym = DB::table('common_building')
+                        ->where('name','like','%'.$msg_arr[0].'%')
+                        ->pluck('name');
+                if(count($building_synonym) == 0){
+                    $this->scSendMessage($mobile_number, "Invalid Building or room" , 'text');
+                    sleep(1);
+                    $wronginput_count = DB::table('services_chat_history')
+                        ->where('phone_number', $mobile_number)
+                        ->orderBy('id','desc')
+                        ->take(3)
+                        ->get();
+                    $count = 0;
+                    foreach ($wronginput_count as $item) {
+                        if($item->cur_chat_id == $chat_guest_history->cur_chat_id){
+                            $count += 1;
+                        }
+                    }
+                    if($count >= 3){ //3 wrong + 1 question
+                        $this->scSetAgentChat($chat_guest_history, $mobile_number, $message_content, $chat_guest_history->property_id, "3");
+                    }else{
+                        $responseText = "Please try again";
+                        $this->scSendMessage($mobile_number, $responseText, 'text');
+                        $this->scSaveInvalidBRBotStaticMessage($mobile_number, $responseText, $chat_guest_history->property_id, $chat_guest_history);
+                    }
+                    
+                    return;
+                }
+                // if(count($building_synonym) == 1){
+                //     $building = DB::table('common_building')
+                //     ->where('name',$building_synonym[0])
+                //     ->first();
+                //     return $building;
+                // }
+                $send_msg = "Please Select an Option: \n";
+                foreach ($building_synonym as $key => $value) {
+                    $send_msg .= "*" . strval($key + 1) . "*. " . $value . " \n";
+                }
+                $saveObj = (object)[
+                    'level' => '1',
+                    'message' => $message_content
+                ];
+                $strSaveObj = json_encode($saveObj);
+                $this->scSendMessage($mobile_number, $send_msg, 'text');
+                $this->scSaveHSBotStaticMessageFromUser($mobile_number, $message_content, $chat_guest_history->property_id, $chat_guest_history, $strSaveObj);
+                sleep(1);
+                $this->scSaveHSBotStaticMessageFromUser($mobile_number, $send_msg, $chat_guest_history->property_id, $chat_guest_history, $strSaveObj);
+                return;
+            }            
+    }
+
+    public function quickHSTask($property_id, $room_id, $task_id, $guest_id, $reqInfo){
+        //$property_id = isset($reqInfo['property_id']) ? $reqInfo['property_id'] : 0;
+        //$task_id = isset($other_info->task_id) ? $other_info->task_id : 0;
+        //$guest_id = 0;
+        //$room_id = $reqInfo['room_id'] ? $reqInfo['room_id'] : 0;
+        $ret = [
+        ];
+        $locationGroupInfo = $this->getLocationGroupIDFromRoom($room_id);
+        $taskInfo = $this->getTaskShiftInfo($task_id, $locationGroupInfo->id);
+        $ret['task_info'] = $taskInfo;
+        $ret['location_id'] = $locationGroupInfo->id;
+        $result = $ret;
+        
+        if (empty($result)) {
+            return false;
+        }
+        $task_info = $result['task_info'];
+        $location_id = $result['location_id'];
+        if (empty($task_info['department'])) {
+            return false;
+        }
+        $priorityList = DB::table('services_priority as pr')
+            ->select(DB::raw('pr.*'))
+            ->get();  
+        $quickTaskData['property_id'] = $property_id;
+        $quickTaskData['dept_func'] = $task_info['deptfunc']['id'];
+        $quickTaskData['department_id'] = $task_info['department']['id'];
+        $quickTaskData['type'] = 1;
+        $quickTaskData['priority'] = empty($priorityList) ? 0 : $priorityList[0]->id;
+        $time = date('Y-m-d H:i:s');
+        $quickTaskData['start_date_time'] = $time;
+        $quickTaskData['created_time'] = $time;
+        $quickTaskData['end_date_time'] = '0000-00-00 00:00:00';
+        $quickTaskData['dispatcher'] = $task_info['staff_list'][0]->id;
+        $quickTaskData['feedback_flag'] = false;
+        $quickTaskData['attendant'] = 0;
+        $quickTaskData['room'] = $room_id;
+        $quickTaskData['task_list'] = $task_id;
+        $quickTaskData['max_time'] = $task_info['taskgroup']->max_time;//['max_time'];
+        $quickTaskData['quantity'] = $quantity;
+        $quickTaskData['custom_message'] = '';
+        $quickTaskData['status_id'] = 1;
+        $quickTaskData['guest_id'] = $guest_id;
+        $quickTaskData['location_id'] = $location_id;
+        $quickTaskData['start_duration'] = $task_info['taskgroup']->max_time;
+        $headers = [
+            'Content-Type: application/json'
+        ];
+        $taskList[] = $quickTaskData;
+        $service_task_id = DB::table('services_task')->insertGetId([
+            'property_id' => $quickTaskData['property_id'],
+            'dept_func' => $quickTaskData['dept_func'],
+            'department_id' => $quickTaskData['department_id'],
+            'type' => $quickTaskData['type'],
+            'priority' => $quickTaskData['priority'],
+            'created_time' => $quickTaskData['created_time'],
+            'start_date_time' => $quickTaskData['start_date_time'],
+            'end_date_time' => $quickTaskData['end_date_time'],
+            //'duration' => '20',
+            'dispatcher' => $quickTaskData['dispatcher'],
+            //'finisher' => '',
+            'attendant' => '0',
+            'attendant_auto' => '',
+            'room' => $quickTaskData['room'],
+            'task_list' => $quickTaskData['task_list'],
+            'location_id' => $quickTaskData['location_id'],
+            'old_loc_id' => 0,
+            'max_time' => $quickTaskData['max_time'],
+            'quantity' => $quickTaskData['quantity'],
+            'guest_id' => $quickTaskData['guest_id'],
+            'requester_id' => 0,
+            'requester_notify_flag' => 0,
+            'custom_message' => 'From Whatsapp',
+            'compensation_id' => 0,
+            'compensation_status' => 1,
+            'follow_id' => 0,
+            'status_id' => 1,
+            'escalate_flag' => 0,
+            'forward_flag' => 0,
+            'closed_flag' => 0,
+            'queued_flag' => 0,
+            'running' => 1,
+            'self_start_status' => 0,
+            'start_duration' => $quickTaskData['start_duration'],
+            'ack' => 0,
+            'repeat_flag' => 0,
+            'until_checkout_flag' => 0,
+            'feedback_flag' => 0,
+            'reminder_flag' => 0,
+            'hold_reminder_flag' => 0,
+            'reassigned_flag' => 0,
+            'source' => 1,
+            'feedback_type' => 1,
+            'feedback_closed_flag' => 0,
+            'guest_feedback' => 'From Whatsapp',
+            'checklist_flag' => 0,
+            'cost' => '0',
+        ]);
+        $current_task = DB::table('services_task')->where('id', $service_task_id)->first();
+        $this->saveTaskSystemNotification($current_task, 'Open');
+    }
+
+    public function scSaveAgentMessage($mobile_number, $responseText, 
+                    $property_id, $session, $chat_type, $attach_location)
+    {   //sendToMetaWhatsapp 
+        
+        $saveInfo = [
+            'property_id' => $property_id,
+            'phone_number' => $mobile_number,
+            'session_id' => $session->id,
+            'guest_id' => '0',
+            'agent_id' => $session->agent_id,
+            'text' => $responseText,
+            'text_trans' => '',
+            'direction' => '0',
+            'type' => 'agent',
+            'language' => 'en',
+            'chat_type' => $chat_type,
+            'attachment' => $attach_location,
+            'other_info' => '',
+            'cur_chat_name' => '',
+            'cur_chat_id' => '0',
+            'uuid' => '',
+            'guest_path' => '',
+            'status' => '0'
+        ];
+        $this->scSaveToChatHistory($saveInfo);
+    }
+
+    public function scSaveAgentMessageAttachment($mobile_number, $responseText, 
+                    $property_id, $session, $chat_type, $attach_location)
+    {   //sendToMetaWhatsapp 
+        
+        $saveInfo = [
+            'property_id' => $property_id,
+            'phone_number' => $mobile_number,
+            'session_id' => $session->id,
+            'guest_id' => '0',
+            'agent_id' => $session->agent_id,
+            'text' => $responseText,
+            'text_trans' => '',
+            'direction' => '1',
+            'type' => 'agent',
+            'language' => 'en',
+            'chat_type' => $chat_type,
+            'attachment' => $attach_location,
+            'other_info' => '',
+            'cur_chat_name' => '',
+            'cur_chat_id' => '0',
+            'uuid' => '',
+            'guest_path' => '',
+            'status' => '0'
+        ];
+        $this->scSaveToChatHistory($saveInfo);
+    }
+
+    public function scSetStartingMsgForInactiveUser($chat_guest_history){
+        $limit_time = 10;
+        $limit_time_info = DB::table('property_setting')
+            ->where('settings_key', 'chatbot_limit_time')
+            ->first();
+        if (!empty($limit_time_info)) {
+            $limit_time = $limit_time_info->value;
+        }
+        $limit_time = date('Y-m-d H:i:s', strtotime("-" . $limit_time . " Hours"));
+        $current_limit_time = new DateTime($limit_time);
+        $last_user_msg = new DateTime($chat_guest_history->created_at);
+        
+        if($current_limit_time > $last_user_msg){
+            $diff = true;
+        }else{
+            $diff = false;
+        }
+        return $diff;
+    }
+
+    //Staycae Agent Chat
+    public function checkAgentWorkingTime($property_id){
+        $now = new DateTime();
+        $agent_start_time = DB::table('property_setting')
+            ->where('settings_key','whatsapp_fb_agent_start_time')
+            ->where('property_id', $property_id)
+            ->first();
+        $agent_end_time = DB::table('property_setting')
+            ->where('settings_key','whatsapp_fb_agent_end_time')
+            ->where('property_id', $property_id)
+            ->first();
+        $starting_time = new DateTime($agent_start_time->value);
+        $ending_time = new DateTime($agent_end_time->value);
+        if($now > $starting_time && $now < $ending_time){
+            $working_hours = false; //working hours
+        }else{
+            $working_hours = true;
+        }
+        return $working_hours;
+    }
+
+    private function scSetAgentChat($chat_guest_history, $mobile_number, $message_content, $property_id, $skill_id, $room_info = "", $guest_id = 0, $guest_type = "Unknown", $guest_path_list = [])
+    {
+        $db_guest_mbl = DB::table('common_guest')
+            ->where('mobile', $mobile_number)
+            ->first();
+        if(!empty($db_guest_mbl)){
+            $guest_type = 'Inside';
+        }else{
+            $guest_type = 'Outside';
+        }
+        $guest_path_list = [];
+        $guest_path_list[] = $chat_guest_history->cur_chat_name;
+        $online_agents = DB::table('common_chat_skill_mapping as ccsm')
+            ->join('common_users as cu', 'cu.id', '=', 'ccsm.agent_id')
+            ->where('ccsm.skill_id', $skill_id)
+            ->where('cu.web_login', '1')
+            ->get();
+            
+        if(count($online_agents) == 0){
+            //waiting agent msg;
+            $waiting_agent_msg = "No agents are currently available. Please send us your inquiry to info@staycae.ae and we will assist you as soon as possible.";
+            $this->scSendMessage($mobile_number, $waiting_agent_msg, 'text');
+            $this->scSaveAgentEndMessage($mobile_number, $waiting_agent_msg, $property_id, $chat_guest_history);
+            return;
+        }
+        $session = $this->scGetCreatedSession($mobile_number, $property_id, $skill_id, $room_info, $guest_id,
+            'en', $guest_type, $guest_path_list);
+        if (!empty($session)) {
+            $chat_guest_history->session_id = $session->id;
+            $this->scSaveCustomBotStaticMessage($mobile_number, $message_content, $chat_guest_history->property_id, $chat_guest_history);
+            // save to database
+            $reqInfo['session_id'] = $session->id;
+            //waiting agent msg;
+            $waiting_agent_msg = "An Agent Will Be with you shortly. 0 To Exit.";
+            $this->scSaveAgentMessage($mobile_number, $waiting_agent_msg, $property_id, $session, 'text', '');
+            $this->scSendMessage($mobile_number, $waiting_agent_msg, 'text');
+            $callResponse = $this->scGetCallToAgent($reqInfo['session_id']);
+            if ($callResponse['success'] == true) {
+                // $chat_name = CHAT_AGENT_CALL_WAITING;
+                // $prev_chat_name = CHAT_AGENT_CALL_WAITING;
+            }
+        }
+    }
+
+    public function scSetNewCallAgentChat(Request $request)
+    {
+        $mobile_number = $request->get('mobile_number',0);
+        $property_id = $request->get('property_id',0);
+        $agent_id = $request->get('agent_id',0);
+        $template_id = $request->get('mobile_msg','');
+        //$mobile_number = '971585361732';
+        //$mobile_number = '12345';
+        //$template_id = 'welcom_owner';
+        $text = "Test Message";
+        $message_type = 'text';
+        $dbAuthKey = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_fb_authkey')
+            ->pluck('value');
+        $dbAuthorization = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_fb_authorization')
+            ->pluck('value');
+        $dbURL = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_fb_url')
+            ->pluck('value');  
+        //return to sender
+        $authKey = $dbAuthKey[0];
+        $authorization = $dbAuthorization[0];
+        
+        $url = $dbURL[0]."/$authKey/messages";
+        $headers = [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $authorization
+        ];
+        $language = (object)[
+            "code" => "en",
+            "policy" => "deterministic"
+        ];
+        $reqBody = (object)[
+            "name" => $template_id,
+            "language" => $language
+        ];
+        $reqObj = (object)[
+            'messaging_product' => 'whatsapp',
+            'preview_url' => 'true',
+            'recipient_type' => 'individual',
+            'to' => $mobile_number,
+            'type' => 'template',
+            'template' => $reqBody
+        ];
+        $postData = json_encode($reqObj);
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+        $server_response = curl_exec($ch);
+        // $myfile = fopen("testlogging.txt", "w");
+        //             fwrite($myfile, json_encode($server_response));
+        //             fclose($myfile);
+        curl_close($ch);
+        $json_sent_response = json_decode($server_response, true);
+        $response = 'false';
+        if( isset( $json_sent_response['error'] ) ){
+            $response = 'true';
+        }
+        else{
+            $response = 'false';
+            $skill_id = '1';
+            $room = [];
+            $guest_id = 0;
+            $language = 'en';
+            $guest_type = 'Outside';
+            $guest_path_list = [];
+            $session = $this->scGetCreatedSession($mobile_number, $property_id, $skill_id, $room, $guest_id, $language, $guest_type, $guest_path_list);
+            $message_content = "Greetings from Staycae Vacation Homes. We are trying to reach you regarding your stay with us. Please accept the chat so we may contact you further.";
+            $this->scSaveAgentMessage($mobile_number, $message_content, $property_id, $session, 'text', '');
+            //sleep(1);
+            //$this->scSaveAgentMessage($mobile_number, '0 to Exit Chat', $property_id, $session, 'text', '');
+        }
+        return $response;
+    }
+
+    private function scGetCreatedSession($mobile_number, $property_id, $skill_id, $room, $guest_id, $language, $guest_type, $guest_path_list = [])
+    {
+        date_default_timezone_set(config('app.timezone'));
+        $last24 = date('Y-m-d H:i:s', strtotime(' -1 day'));
+        DB::table('services_chat_guest_session as cgs')
+            ->where('cgs.updated_at', '<=', $last24)
+            ->where('cgs.status', '!=', ENDED)
+            ->update(array('cgs.status' => ENDED));
+        $ret = $this->scCreateChatSession($property_id, $skill_id, $guest_id, $language, $mobile_number, $guest_type, $guest_path_list);
+        $new_flag = $ret['new_flag'];
+        $session = $ret['session'];
+        // if ($new_flag == true && $session->status == WAITING)    // create new chat session and waiting
+        //     $this->saveSystemNotification($property_id, $session->id, $room, $session->guest_name);
+        return $session;
+    }
+
+    private function scGetCallToAgent($session_id)
+    {
+        // find first waiting session
+        $session = GuestChatSession::where('id', $session_id)
+            ->first();
+        $ret = [
+            'success' => true
+        ];
+        if (empty($session)) {
+            $ret['success'] = false;
+            return $ret;
+        }
+        $agents = DB::table('common_chat_skill_mapping')
+        ->where('skill_id', $session->skill_id)
+        ->get();
+        $message = array();
+        $message['type'] = 'chat_event';
+        $message['sub_type'] = 'request_chat';
+        $message['data'] = $session;
+        $message['agents'] = $agents;
+        Redis::publish('notify', json_encode($message));
+        return $ret;
+    }
+
+    public function scCreateChatSession($property_id, $skill_id = "0", $guest_id, $language, $mobile_number, $guest_type, $guest_path_list = [])
+    {
+        $ret = array();
+        if (!empty($guest_id)) {
+            $ret['new_flag'] = false;
+            // find first waiting session
+            $session = GuestChatSession::where('guest_id', $guest_id)
+                ->where('status', WAITING)
+                ->first();
+            if (!empty($session))    // exist waiting session
+            {
+                $ret['session'] = $session;
+                return $ret;
+            }
+            // find active session
+            $session = GuestChatSession::where('guest_id', $guest_id)
+                ->where('status', ACTIVE)
+                ->first();
+            if (!empty($session))    // exist active session
+            {
+                $ret['session'] = $session;
+                return $ret;
+            }
+        }
+        $guest_name = 'Unknown';
+        // get guest info from mobile_number
+        $guest_info = DB::table('common_guest')
+            ->where('property_id', $property_id)
+            ->where('guest_id', $guest_id)
+            ->first();
+        if (!empty($guest_info)) {
+            $guest_name = $guest_info->guest_name;
+        }
+        $ret['new_flag'] = true;
+        $session = new GuestChatSession();
+        $session->guest_id = $guest_id;
+        $session->agent_id = 0;
+        $session->skill_id = $skill_id;
+        $session->guest_type = $guest_type;
+        $session->mobile_number = $mobile_number;
+        $session->language = $language;
+        $session->guest_name = $guest_name;
+        $session->property_id = $property_id;
+        $session->guest_path = !empty($guest_path_list) ? implode(" >> ", $guest_path_list) : '';
+        if (!empty($guest_info)) {
+            $session->room_id = $guest_info->room_id;
+            $session->status = WAITING;
+            $session->transfer_id = 0;
+            $session->start_time = '';
+        }
+        $session->save();
+        $guest_path_list = [];
+        $ret['session'] = $session;
+        return $ret;
+    }
+
+    public function scSaveSystemNotification($property_id, $session_id, $room, $guest_name)
+    {
+        date_default_timezone_set(config('app.timezone'));
+        $cur_time = date("Y-m-d H:i:s");
+        $notification = new SystemNotification();
+        $notification->type = 'app.guestservice.chat';
+        $notification->header = 'Chat';
+        $notification->property_id = $property_id;
+        $notification->content = sprintf('%s from Room %s wants to have a chat.', $guest_name, $room);
+        $notification->notification_id = $session_id;
+        $notification->created_at = $cur_time;
+        $notification->save();
+        CommonUser::addNotifyCount($property_id, 'app.guestservice.chat');
+        $message = array();
+        $message['type'] = 'webpush';
+        $message['to'] = $property_id;
+        $message['content'] = $notification;
+        Redis::publish('notify', json_encode($message));
+    }
+
+    public function scSendChatToAgent($from, $session_id, $message_content, $chat_guest_history, $chat_type = "text", $attach_location){
+        $session_info = DB::table('services_chat_guest_session as cgs')
+            ->leftJoin('common_users as cu', 'cu.id', '=', 'cgs.agent_id')
+            ->where('cgs.id', $session_id)
+            ->select(DB::raw('cgs.start_time, cgs.mobile_number, cgs.guest_name, 
+                SEC_TO_TIME(TIME_TO_SEC(TIMEDIFF(cgs.end_time, cgs.start_time))) as chat_duration,
+                SEC_TO_TIME(TIME_TO_SEC(TIMEDIFF(cgs.start_time, cgs.created_at))) as wait_time,
+            CONCAT(cu.first_name, " ", cu.last_name) as agent_name'))
+            ->first();
+        $session = DB::table('services_chat_guest_session')
+            ->where('id',$session_id)->first();
+        if($from == "agent"){
+            $this->scSaveAgentMessageAttachment($chat_guest_history->phone_number, $message_content, $chat_guest_history->property_id, $session, $chat_type, $attach_location);
+        }else{
+            $this->scSaveAgentMessage($chat_guest_history->phone_number, $message_content, $chat_guest_history->property_id, $session, $chat_type, $attach_location);
+        }
+        
+       $agents = DB::table('common_chat_skill_mapping')
+            ->where('skill_id', $session->skill_id)
+            ->get();
+        $message = [];
+        $message['session_id'] = $session->id;
+        //$message['guest_name'] = isset($guest_info['guest_name']) ? $guest_info['guest_name'] : '';
+        $guest_info['guest_name'] = '';
+        $message['guest_id'] = '0';
+        $message['agent_id'] = $session->agent_id;
+        $message['property_id'] = $session->property_id;
+        //$message['room'] = isset($other_info->room) ? $other_info->room : 0;
+        $message['text'] = $message_content;
+        $message['created_at'] = date('Y-m-d H:i:s');
+        $message['chat_type'] = $chat_type;
+        $message['attachment'] = $attach_location;
+        if($from == "agent"){
+            $message['direction'] = "1";
+        }else{
+            $message['direction'] = "0";
+        }
+        $message['language'] = 'en';
+        $msgInfo = [];
+        $msgInfo['type'] = 'chat_event';
+        if($from == "agent"){
+            $msgInfo['sub_type'] = 'agent_message';
+        }else{
+            $msgInfo['sub_type'] = 'guest_message';
+        }
+        $msgInfo['data'] = $message;
+        $msgInfo['agents'] = $agents;
+        Redis::publish('notify', json_encode($msgInfo));
+        //}
+    //}
+    }
+
+    public function scSendMediaChatToAgent($session_id, $message_content, $chat_guest_history, $chat_type = "text", $attach_location){
+        $session_info = DB::table('services_chat_guest_session as cgs')
+            ->leftJoin('common_users as cu', 'cu.id', '=', 'cgs.agent_id')
+            ->where('cgs.id', $session_id)
+            ->select(DB::raw('cgs.start_time, cgs.mobile_number, cgs.guest_name, 
+                SEC_TO_TIME(TIME_TO_SEC(TIMEDIFF(cgs.end_time, cgs.start_time))) as chat_duration,
+                SEC_TO_TIME(TIME_TO_SEC(TIMEDIFF(cgs.start_time, cgs.created_at))) as wait_time,
+            CONCAT(cu.first_name, " ", cu.last_name) as agent_name'))
+            ->first();
+        $session = DB::table('services_chat_guest_session')
+            ->where('id',$session_id)->first();
+       $this->scSaveAgentMessage($chat_guest_history->phone_number, $message_content, $chat_guest_history->property_id, $session, $chat_type, $attach_location);
+        
+       $agents = DB::table('common_chat_skill_mapping')
+            ->where('skill_id', $session->skill_id)
+            ->get();
+        $message = [];
+        $message['session_id'] = $session->id;
+        //$message['guest_name'] = isset($guest_info['guest_name']) ? $guest_info['guest_name'] : '';
+        $guest_info['guest_name'] = '';
+        $message['guest_id'] = '0';
+        $message['agent_id'] = $session->agent_id;
+        $message['property_id'] = $session->property_id;
+        //$message['room'] = isset($other_info->room) ? $other_info->room : 0;
+        $message['text'] = $message_content;
+        $message['created_at'] = date('Y-m-d H:i:s');
+        $message['chat_type'] = $chat_type;
+        $message['attachment'] = $attach_location;
+        $message['direction'] = "1";
+        $message['language'] = 'en';
+        $msgInfo = [];
+        $msgInfo['type'] = 'chat_event';
+        $msgInfo['sub_type'] = 'guest_message';
+        $msgInfo['data'] = $message;
+        $msgInfo['agents'] = $agents;
+        Redis::publish('notify', json_encode($msgInfo));
+        
+    }
+
+    public function scEndAgentChat($session_id, $mobile_number, $property_id, $chat_guest_history){
+        $session = GuestChatSession::find($session_id);
+        $this->scEndChatSession($session);
+        $this->scSendMessage($mobile_number, "Session Ended", 'text');
+        $this->scSaveAgentEndMessage($mobile_number, "Session Ended", $property_id, $chat_guest_history);
+        $session = $this->scEndChatSession($session);
+        // send notify to all agents
+        $message = array();
+        $message['type'] = 'chat_event';
+        $message['sub_type'] = 'end_chat';
+        $message['data'] = $session;
+        Redis::publish('notify', json_encode($message));
+    }
+
+    public function scEndChatSession($session)
+    {
+        date_default_timezone_set(config('app.timezone'));
+        $cur_time = date("Y-m-d H:i:s");
+        if (empty($session)) {
+            return array();
+        }
+        $session->status = ENDED;
+        $session->end_time = $cur_time;
+        $session->save();
+        $this->saveChatEvent($session, 2);    // end chat
+        return $session;
+    }
+
+    public function scEndWarningChatSession($session)
+    {
+        date_default_timezone_set(config('app.timezone'));
+        $cur_time = date("Y-m-d H:i:s");
+        if (empty($session)) {
+            return array();
+        }
+        $chat_guest_history = DB::table('services_chat_history')
+            ->where('session_id', $session->id)
+            ->orderBy('id','desc')
+            ->first();
+        $end_chat_warning = DB::table('common_chat_templates')
+            ->where('name','end_chat_warning')
+            ->where('property_id', $session->property_id)
+            ->first();
+        $this->scSendChatToAgent("agent", $session->id, $end_chat_warning->template, $chat_guest_history, "text", "");
+        return $session;
+    }
+
+    //Staycae buttons
+    /**
+     * @param Request $request
+     */
+    public function waSCChatFirstQuestionA1(Request $request)
+    {   //sendToMetaWhatsapp 
+        // $myfile = fopen("testlogging.txt", "w");
+        //             $txt = "Button 1 Clicked \n";
+        //             fwrite($myfile, $txt);
+        //             fclose($myfile);
+    }
+
+    /**
+     * @param Request $request
+     */
+    public function waSCChatFirstQuestionA2(Request $request)
+    {   //sendToMetaWhatsapp 
+        // $myfile = fopen("testlogging.txt", "w");
+        //             $txt = "Button 2 Clicked \n";
+        //             fwrite($myfile, $txt);
+        //             fclose($myfile);
+    }
+
+    //Staycae ATTACHMENTS
+    /**
+     * @param Request $request
+     */
+    public function sendMessageToWhatsappDocTest(Request $request)
+    {   //sendToMetaWhatsapp
+        
+        $mobile_number = '971585361732';
+        $text = "Test Message";
+        $message_type = 'text';
+        $dbAuthKey = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_fb_authkey')
+            ->pluck('value');
+        $dbAuthorization = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_fb_authorization')
+            ->pluck('value');
+        $dbURL = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_fb_url')
+            ->pluck('value');  
+        //return to sender
+        $authKey = $dbAuthKey[0];
+        $authorization = $dbAuthorization[0];
+        
+        $url = $dbURL[0]."/$authKey/messages";
+        $headers = [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $authorization
+        ];
+        $reqBody = (object)[
+            "link" => "https://staging2.myhotlync.com/images/tick.png",
+            //"filename" => "tick"
+        ];
+        $reqObj = (object)[
+            'messaging_product' => 'whatsapp',
+            'preview_url' => 'true',
+            'recipient_type' => 'individual',
+            'to' => $mobile_number,
+            'type' => 'image',
+            'image' => $reqBody
+        ];
+        $postData = json_encode($reqObj);
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+        $server_response = curl_exec($ch);
+        curl_close($ch);
+        $json_sent_response = json_decode($server_response, true);
+        $response = false;
+        return strVal($server_response);
+        
+        return "here";
+    }
+
+    /**
+     * @param Request $request
+     */
+    public function sendDocMessageToWhatsapp(Request $request)
+    {   //sendToMetaWhatsapp
+        if( $request->has('mobile_id') == false  ||
+            $request->has('agent_id') == false||
+            $request->has('session_id') == false )
+		{ 
+			$this->outputResult(MISSING_PARAMETER);
+			return;
+		}
+		$mobile_id = $request->input('mobile_id', '');
+		$agent_id = $request->input('agent_id', '');
+        $session_id = $request->input('session_id', '');
+        $fileName = $_FILES['senddoc']['name'];
+        $tempPath = $_FILES['senddoc']['tmp_name'];
+        $fileSize = $_FILES['senddoc']['size'];
+        print_r($_FILES['senddoc']);
+        if(empty($fileName))
+        {
+            $errorMSG = json_encode(array("message" => "please select image/pdf", "status" => false));	
+        }
+        else
+        {
+            //$upload_path = 'wauploads/'; // set upload folder path
+            
+            $upload_path = $_SERVER["DOCUMENT_ROOT"] . '/wauploads/' . $mobile_id;
+            if (!file_exists($upload_path)) {
+                mkdir($upload_path, 0777);
+            }
+            $upload_path = "wauploads/" . $mobile_id . "/";
+            
+            $fileExt = strtolower(pathinfo($fileName,PATHINFO_EXTENSION)); // get image extension
+                
+            // valid image extensions
+            $valid_extensions = array('jpeg', 'jpg', 'png', 'gif','pdf'); 
+                            
+            // allow valid image file formats
+            if(in_array($fileExt, $valid_extensions))
+            {				
+                //check file not exist our upload folder path
+                //if(!file_exists($upload_path . $fileName))
+                //{
+                    // check file size '20MB'
+                    if($fileSize < 20000000){
+                        move_uploaded_file($tempPath, $upload_path . $fileName); // move file from system temporary path to our upload folder path 
+                    }
+                    else{		
+                        $errorMSG = json_encode(array("message" => "Sorry, your file is too large, please upload 20 MB size", "status" => false));	
+                        //echo $errorMSG;
+                    }
+                //}
+                //else
+                //{		
+                    //$errorMSG = json_encode(array("message" => "Sorry, file already exists check upload folder", "status" => false));	
+                    ////echo $errorMSG;
+                //}
+            }
+            else
+            {		
+                $errorMSG = json_encode(array("message" => "Sorry, only JPG, JPEG, PNG & GIF files are allowed", "status" => false));	
+                //echo $errorMSG;		
+            }
+        }
+                
+        // if no error caused, continue ....
+        if(!isset($errorMSG))
+        {
+            $site_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]";
+            $url = $site_url. "/" . $upload_path . $fileName;
+            $img_location = $url;
+            $chat_guest_history = DB::table('services_chat_history')
+            ->where('phone_number', $mobile_id)
+            ->orderBy('id','desc')
+            ->first();
+            if($fileExt == 'jpeg' || $fileExt == 'jpg' || $fileExt == 'png' || $fileExt == 'gif'){
+                $this->sendMessageToWhatsappImg($mobile_id, $agent_id, $session_id, $img_location);
+                sleep(1);
+                $this->scSendChatToAgent("agent", $session_id, "", $chat_guest_history, "image", $img_location);
+            }
+            
+            if($fileExt == 'pdf'){
+                $this->sendMessageToWhatsappDoc($mobile_id, $agent_id, $session_id, $img_location, $fileName);
+                sleep(1);
+                $this->scSendChatToAgent("agent", $session_id, "", $chat_guest_history, "document", $img_location);
+            }
+            
+            return json_encode(array("message" => "Image Uploaded Successfully", "status" => true));	
+        }
+        else{
+            return $errorMSG;
+        }
+    }
+
+    /// SEND IMAGE
+    public function sendMessageToWhatsappImg($mobile_id, $agent_id, $session_id, $img_location)
+    {   //sendToMetaWhatsapp
+        
+        $mobile_number = $mobile_id;
+        $text = "";
+        $message_type = 'image';
+        $dbAuthKey = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_fb_authkey')
+            ->pluck('value');
+        $dbAuthorization = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_fb_authorization')
+            ->pluck('value');
+        $dbURL = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_fb_url')
+            ->pluck('value');  
+        //return to sender
+        $authKey = $dbAuthKey[0];
+        $authorization = $dbAuthorization[0];
+        
+        $url = $dbURL[0]."/$authKey/messages";
+        $headers = [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $authorization
+        ];
+        $reqBody = (object)[
+            "link" => $img_location,
+            //"filename" => "tick"
+        ];
+        $reqObj = (object)[
+            'messaging_product' => 'whatsapp',
+            'preview_url' => 'true',
+            'recipient_type' => 'individual',
+            'to' => $mobile_number,
+            'type' => 'image',
+            'image' => $reqBody
+        ];
+        $postData = json_encode($reqObj);
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+        $server_response = curl_exec($ch);
+        curl_close($ch);
+        $json_sent_response = json_decode($server_response, true);
+        $response = false;
+        return strVal($server_response);
+        
+        //return "here";
+    }
+
+    /// SEND DOCUMENT
+    public function sendMessageToWhatsappDoc($mobile_id, $agent_id, $session_id, $doc_location, $fileName)
+    {   //sendToMetaWhatsapp
+        
+        $mobile_number = $mobile_id;
+        $text = "";
+        $message_type = 'document';
+        $dbAuthKey = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_fb_authkey')
+            ->pluck('value');
+        $dbAuthorization = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_fb_authorization')
+            ->pluck('value');
+        $dbURL = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_fb_url')
+            ->pluck('value');  
+        //return to sender
+        $authKey = $dbAuthKey[0];
+        $authorization = $dbAuthorization[0];
+        
+        $url = $dbURL[0]."/$authKey/messages";
+        $headers = [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $authorization
+        ];
+        $reqBody = (object)[
+            "link" => $doc_location,
+            "filename" => $fileName
+        ];
+        $reqObj = (object)[
+            'messaging_product' => 'whatsapp',
+            'preview_url' => 'true',
+            'recipient_type' => 'individual',
+            'to' => $mobile_number,
+            'type' => 'document',
+            'document' => $reqBody
+        ];
+        $postData = json_encode($reqObj);
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+        $server_response = curl_exec($ch);
+        curl_close($ch);
+        $json_sent_response = json_decode($server_response, true);
+        $response = false;
+        return strVal($server_response);
+        
+        //return "here";
+    }
+
+    /**
+     * @param Request $request
+     */
+    public function onMetaWhatsappVerificationTest(Request $request)
+    {
+        $hub_mode=$request->input('hub_mode','');
+        $hub_challenge=$request->input('hub_challenge','');
+        $hub_verify_token=$request->input('hub_verify_token','');
+        $myfile = fopen("testlogging.txt", "a");
+        fwrite($myfile, json_encode($hub_challenge));
+        fclose($myfile);
+        return $hub_challenge;
+    
+    }
+
+    public function sendEmailForMsg($template_id , $property_id, $mobile_number){
+        if($template_id == '74' || $template_id == '78' ||
+        $template_id == '82' || $template_id == '86' ||
+        $template_id == '90' || $template_id == '94' ||
+        $template_id == '98'){
+            $this->sendEmailToAgent($property_id, $mobile_number);
+        }
+    }
+
+    public function sendEmailToAgent($property_id, $mobile_number){
+        // $last_message = DB::table('services_chat_history')
+        //     ->where('phone_number', $mobile_number)
+        //     ->orderBy('id','desc')
+        //     ->first();
+        $last_messages = DB::table('services_chat_history')
+            ->where('phone_number', $mobile_number)
+            ->orderBy('id','desc')
+            ->take(7)
+            ->get();
+        // $myfile = fopen("testlogging.txt", "a");
+        //     fwrite($myfile, json_encode($last_messages));
+        //     fclose($myfile);
+        $last_messages =  array_reverse($last_messages, true);
+        $this->sendEmail($property_id, $last_messages, $mobile_number);
+    }
+
+    /**
+     * @param Request $request
+     * @return mixed
+     * @throws \Throwable
+     */
+    public function sendEmail($property_id, $last_messages, $mobile_number)
+    {
+            $db_email = DB::table('property_setting')
+            ->where('settings_key', 'whatsapp_fb_cust_enq_email')
+            ->pluck('value');
+        
+            $email = $db_email[0];
+            $message = [];
+            $message['type'] = 'email';
+            $message['to'] = $email;
+            $message['subject'] = 'Hotlync Notification - Customer Enquiry '  . $mobile_number;
+            $message['title'] = '';
+            $message['content'] = view('emails.chat_email', ['info' => $last_messages])->render();
+            //$message['content'] = "test";
+            $message['smtp'] = Functions::getMailSetting($property_id, 'notification_');
+            Redis::publish('notify', json_encode($message));
+        
+        $ret = [
+            'success' => true,
+            'message' => ''
+        ];
+        return Response::json($ret);
+    }
+
+    /**
+     * @param Request $request
+     */
+    public function timoutSessionChat(Request $request){
+        $last24 = date('Y-m-d H:i:s', strtotime(' -1 day'));
+        $sessions = DB::table('services_chat_guest_session as cgs')
+            ->where('cgs.updated_at', '<=', $last24)
+            ->where('cgs.status', '!=', ENDED)
+            ->get();
+        foreach($sessions as $session){
+            $session = $this->scEndChatSession($session);
+            // send notify to all agents
+            $message = array();
+            $message['type'] = 'chat_event';
+            $message['sub_type'] = 'end_chat';
+            $message['data'] = $session;
+            Redis::publish('notify', json_encode($message));
+        }
+        // DB::table('services_chat_guest_session as cgs')
+        //     ->where('cgs.updated_at', '<=', $last24)
+        //     ->where('cgs.status', '!=', ENDED)
+        //     ->update(array('cgs.status' => ENDED));
+        //warning message to end chat
+        $warning_time = DB::table('property_setting')
+            ->where('settings_key','whatsapp_fb_end_warning_time')
+            ->first();
+        $lastminutes = date('Y-m-d H:i:s', strtotime(' -'.$warning_time->value));
+        $sessions = DB::table('services_chat_guest_session as cgs')
+            ->where('cgs.updated_at', '<=', $lastminutes)
+            ->where('cgs.end_warning', '0')
+            ->where('cgs.status', '!=', ENDED)
+            ->get();
+        foreach($sessions as $session){
+            $end_chat_warning = DB::table('common_chat_templates')
+            ->where('name','end_chat_warning')
+            ->where('property_id', $session->property_id)
+            ->first();
+            $this->scSendMessage($session->mobile_number, $end_chat_warning->template, 'text');
+            $session = $this->scEndWarningChatSession($session);
+            DB::table('services_chat_guest_session as cgs')
+            ->where('cgs.id', '<=', $session->id)
+            ->update(array('cgs.end_warning' => '1'));
+        }
+        //end chat
+        $end_time = DB::table('property_setting')
+            ->where('settings_key','whatsapp_fb_end_time')
+            ->first();
+        $lastminutes = date('Y-m-d H:i:s', strtotime(' -'.$end_time->value));
+        $sessions = DB::table('services_chat_guest_session as cgs')
+            ->where('cgs.updated_at', '<=', $lastminutes)
+            ->where('cgs.status', '!=', ENDED)
+            ->get();
+        foreach($sessions as $session){
+            $chat_guest_history = DB::table('services_chat_history')
+            ->where('session_id', $session->id)
+            ->orderBy('id','desc')
+            ->first();
+            $this->scEndAgentChat($chat_guest_history->session_id, $session->mobile_number, $chat_guest_history->property_id, $chat_guest_history);
+            // send notify to all agents
+            $message = array();
+            $message['type'] = 'chat_event';
+            $message['sub_type'] = 'end_chat';
+            $message['data'] = $session;
+            Redis::publish('notify', json_encode($message));
+        }
+    }
+
+    public function agentlist(){
+        $chatTypeList = DB::table('services_chat_guest_session as scgs')
+                ->join('common_users as cu', 'cu.id', '=', 'scgs.agent_id')
+				//->whereRaw(" guest_type != 'null' ")
+				->select(DB::raw(' distinct(cu.username) as label '))
+				->get();
+		return Response::json($chatTypeList);
+    }
+
+    public function agentchattypelist(){
+        $chatTypeList = DB::table('services_chat_guest_session')
+				->whereRaw(" guest_type != 'null' ")
+				->select(DB::raw(' distinct(guest_type) as label '))
+				->get();
+		return Response::json($chatTypeList);
+    }
+
+    public function agentchatskillgrouplist(){
+        $chatTypeList = DB::table('common_chat_skill')
+                //->leftJoin('common_chat_skill as st', 'scgs.skill_id', '=', 'st.id')
+				//->whereRaw(" scgs.guest_type != 'null' AND  ")
+				->select(DB::raw(' distinct(name) as label '))
+				->get();
+		return Response::json($chatTypeList);
     }
 }

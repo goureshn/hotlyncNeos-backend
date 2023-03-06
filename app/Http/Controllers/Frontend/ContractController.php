@@ -40,7 +40,9 @@ class ContractController extends Controller
         $start_date = $request->get('start_date', '');
         $end_date = $request->get('end_date', '');
         $user_id = $request->get('user_id', 0);
+        $dept_id = $request->get('dept_id', 0);
         $dispatcher = $request->get('dispatcher', 0);
+        $department_ids = $request->get('department_ids', '');
 
         $date = new DateTime($cur_time);
         $date->sub(new DateInterval('P1D'));
@@ -55,6 +57,7 @@ class ContractController extends Controller
         $query = DB::table('eng_contracts as er')
             ->leftJoin('common_users as cu', 'er.user_id', '=', 'cu.id')
             ->leftJoin('common_job_role as jr', 'cu.job_role_id', '=', 'jr.id')
+            ->leftJoin('common_department as cd', 'er.dept_id', '=', 'cd.id')
             ->leftJoin('common_property as cp', 'er.property_id', '=', 'cp.id')
             ->leftJoin('eng_contract_status as ecs', 'er.status', '=', 'ecs.id')
             ->leftJoin('services_location as sl', 'er.apartment_no', '=', 'sl.id')
@@ -70,6 +73,7 @@ class ContractController extends Controller
                 $query->where('er.id', 'like', $value)
                     ->orWhere('er.leasor', 'like', $value)
                     ->orWhere('cp.name', 'like', $value)
+                    ->orWhere('cd.department', 'like', $value)
                     ->orWhere('cu.first_name', 'like', $value)
                     ->orWhere('cu.last_name', 'like', $value)
                     ->orWhere('sl.name', 'like', $value)
@@ -77,10 +81,18 @@ class ContractController extends Controller
             });
         }
 
+        if ($dept_id != 0)
+            $query->where('er.dept_id', $dept_id);
+        if( !empty($department_ids) )
+        {
+            $department_ids = explode(',', $department_ids);
+            $query->whereIn('er.dept_id', $department_ids);
+        }
+
         $data_query = clone $query;
         $data_list = $data_query
             ->orderBy($orderby, $sort)
-            ->select(DB::raw('er.*, jr.job_role,ecs.status_name, sl.name as location_name, slt.type as location_type, 
+            ->select(DB::raw('er.*, jr.job_role,ecs.status_name, sl.name as location_name, slt.type as location_type, cd.department, 
                             CONCAT_WS(" ", cu.first_name, cu.last_name) as wholename, 
                             cp.name as property_name'))
             ->skip($skip)->take($pageSize)
@@ -116,6 +128,7 @@ class ContractController extends Controller
         $input["reminder_days"] = $request->get('reminder_days', '');
         $input["user_id"] = $request->get('user_id',0);
         $input["status"] = 4;  // New
+        $input["dept_id"] = $request->get('dept_id',0);
         date_default_timezone_set(config('app.timezone'));
         $cur_time = date("Y-m-d H:i:s");
         $cur_date = date("Y-m-d");
@@ -161,6 +174,7 @@ class ContractController extends Controller
         $input["reminder"] = $request->get('reminder',0);
         $input["reminder_days"] = $request->get('reminder_days', '');
         $input["user_id"] = $request->get('user_id',0);
+        $input["dept_id"] = $request->get('dept_id',0);
         $status = $request->get('status',0);
         if($status == 2){
             $input["status"] = 3;  // Renewed
