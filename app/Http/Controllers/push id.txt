@@ -1,0 +1,9 @@
+project number :  1045839541596 
+
+release:
+   	MD5 : 03:D1:9C:17:BE:EA:55:B7:20:4D:AC:18:E4:5C:EF:DC
+	SHA1: 86:53:69:A1:0F:A1:99:03:DB:ED:B4:B2:10:B3:F8:3B:EA:2E:DA:E9
+Android push key:
+        AIzaSyBmSNr3bqkpfqORfA3p-yBPK3snb2muP60 
+Server push key:
+	AIzaSyAHqhnGZPx86bch5p956X5BtkOmrYSasTw 

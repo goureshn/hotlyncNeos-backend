@@ -28,9 +28,9 @@ class UploadController extends Controller
 
     function upload(Request $request)
     {
-        ini_set("post_max_size", "1024M");
-        ini_set("upload_max_filesize", "1024M");
-        ini_set("memory_limit", "1024M");
+        // ini_set("post_max_size", "1024M");
+        // ini_set("upload_max_filesize", "1024M");
+        // ini_set("memory_limit", "1024M");
         $output_dir = "uploads/csv/";
 
         if(!File::isDirectory(public_path($output_dir)))
@@ -143,7 +143,8 @@ class UploadController extends Controller
 
     function uploadpicture(Request $request)
     {
-        $output_dir = "uploads/picture/";
+        // $output_dir = "uploads/picture/";
+        $output_dir = "uploads/chat/images/";
 
         if(!File::isDirectory(public_path($output_dir)))
             File::makeDirectory(public_path($output_dir), 0777, true, true);

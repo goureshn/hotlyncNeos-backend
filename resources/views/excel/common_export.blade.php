@@ -42,5 +42,8 @@
                 @endforeach
             </tr>
         @endforeach
-    @endif
+    @elseif (isset($data['heading_list']))
+    <tr> <th colspan="{{count($data['heading_list'])}}">{{ $data['sub_title'] }}</th> </tr>
+    <tr> @foreach($data['heading_list'] as $value) <th>{{ $value }}</th> @endforeach </tr>
+    @endif 
 </table>

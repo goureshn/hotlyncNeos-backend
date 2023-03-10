@@ -9,6 +9,7 @@
         "consoletvs/charts": "6.*",
         "darkaonline/l5-swagger": "^8.4",
         "guzzlehttp/guzzle": "^7.2",
+        "irazasyed/telegram-bot-sdk": "^3.0",
         "ixudra/curl": "^6.22",
         "laravel/framework": "^9.19",
         "laravel/sanctum": "^3.0",

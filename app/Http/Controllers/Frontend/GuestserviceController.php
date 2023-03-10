@@ -52,6 +52,7 @@ use Response;
 use Log;
 use Redis;
 use File;
+use Mail;
 
 // define("CLEANING_NOT_ASSIGNED", 100);
 // define("CLEANING_PENDING", 0);
@@ -142,6 +143,78 @@ class GuestserviceController extends Controller
 		}
 
 		return response(["message" => "guest not found"], 500);
+	}
+
+	public function uploadguestcustomimg (Request $request) {
+		$guest_id = $request->guest_id;
+		$output_dir = "uploads/guest/vip/images/" . $guest_id . "/";
+		$filekey = "guest_custom_img";
+		$query = DB::table('common_guest')->where('guest_id', $guest_id);
+		$data = $query->first()->custom_imgs;
+		$custom_imgs = $data === null ? [] : json_decode($data);
+		$ret = array();
+
+        if(!File::isDirectory(public_path($output_dir)))
+            File::makeDirectory(public_path($output_dir), 0777, true, true);
+
+		if ($request->file($filekey)->isValid() === false) {
+			$ret['code'] = 202;
+			$ret['message'] = "No valid file";
+			return Response::json($ret);
+		}
+
+		$fileName = $_FILES[$filekey]["name"];
+		$ext = pathinfo($fileName, PATHINFO_EXTENSION);
+		$filename1 = "vip_" . time() . "." . strtolower($ext);
+
+		$dest_path = $output_dir . $filename1;
+
+		move_uploaded_file($_FILES[$filekey]["tmp_name"], $dest_path);
+
+		array_unshift($custom_imgs, ["url" => $dest_path, 'title' => 'user uploaded']);
+
+		$query->update([ 'custom_imgs' => $custom_imgs ]);
+		
+		$ret['custom_imgs'] = $custom_imgs;
+		$ret['guest_custom_img'] = ["url" => $dest_path, 'title' => 'user uploaded'];
+
+		return Response::json($ret);
+	}
+
+	public function removeguestcustomimg (Request $request) {
+		$guest_id = $request->guest_id;
+		$file = public_path($request->url);
+		$query = DB::table('common_guest')->where('guest_id', $guest_id);
+		$data = json_decode($query->first()->custom_imgs);
+
+		array_splice($data, $request->i, 1);
+		
+		if(is_file($file)){
+			unlink($file);
+			$query->update([ 'custom_imgs' => $data ]);
+		}
+	}
+
+	public function emailvippdf (Request $request) {
+		$subject = $request->subject ?? "";
+		$body = $request->body ?? "";
+		$mailto = $request->mailto ?? "";
+		$pdf = $request->file('pdf');
+		
+		$mail = DB::table('common_users')->where('email', $mailto)->first();
+
+		if($mail){
+			Mail::send('emails.guest_vip_dashboard', ['body' => $body], function($message)use($subject, $body, $mailto, $pdf) {
+				$message->to($mailto)
+						->subject($subject)
+						->attach($pdf, array(
+							'as' => 'GuestVipDashboard.pdf', 
+							'mime' => 'application/pdf'
+						));
+			});
+		} else {
+			return response(["message" => "Email not found"]);
+		}
 	}
 
 	public function getTicketStatisticInfo(Request $request)

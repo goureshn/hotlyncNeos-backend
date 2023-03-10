@@ -329,11 +329,11 @@ class Functions
 	{
 		$smtp = array();
 
-		$smtp['smtp_server'] = 'send.one.com';
-		$smtp['smtp_port'] = '465';
-		$smtp['smtp_user'] = 'reports@myhotlync.com';
-		$smtp['smtp_password'] = 'Hotlync_2@16';
-		$smtp['smtp_sender'] = 'jyyblue1987@outlook.com';
+		$smtp['smtp_server'] = 'sandbox.smtp.mailtrap.io';
+		$smtp['smtp_port'] = '2525';
+		$smtp['smtp_user'] = '8e75f313f7adb8';
+		$smtp['smtp_password'] = '8145ae2718d78d';
+		$smtp['smtp_sender'] = 'avadh.panthercodx@gmail.com';
 		$smtp['smtp_auth'] = '1';
 		$smtp['smtp_tls'] = 'ssl';
 
@@ -352,6 +352,13 @@ class Functions
 				continue;
 
 			$smtp[$key] = $data->value;
+			$smtp['smtp_server'] = 'sandbox.smtp.mailtrap.io';
+			$smtp['smtp_port'] = '2525';
+			$smtp['smtp_user'] = '8e75f313f7adb8';
+			$smtp['smtp_password'] = '8145ae2718d78d';
+			$smtp['smtp_sender'] = 'avadh.panthercodx@gmail.com';
+			$smtp['smtp_auth'] = '1';
+			$smtp['smtp_tls'] = 'tls';
 		}
 
 		return $smtp;

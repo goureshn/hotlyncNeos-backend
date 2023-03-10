@@ -65,7 +65,12 @@ class DataController extends Controller
         $model = array();
         switch ($name) {
             case 'client':
-                $model = DB::table('common_chain')->get();
+                $client_id = $request->get('client_id', 0);
+                $query = DB::table('common_chain');
+                if ($client_id > 0)
+                    $query->where('id', $client_id);
+                
+                $model = $query->get();
                 // $model = Chain::all();
                 break;
             case 'manager':
@@ -77,11 +82,22 @@ class DataController extends Controller
                     ->get();
                 break;
             case 'user':
-                $model = Db::table('common_users')
-                    ->select(DB::raw('*, CONCAT_WS(" ", first_name, last_name,"(",username,")") as wholename'))
-                    ->where('deleted', 0)
-                    ->orderBy('wholename', 'asc')
-                    ->get();
+                $user_id = $request->get('user_id', 0);
+                $client_id = $request->get('user_id', 0);
+                if($user_id > 0)
+			        $property_list = CommonUser::getPropertyIdsByJobroleids($user_id);
+		        else
+			        $property_list = CommonUser::getProertyIdsByClient($client_id);	
+                    
+                $query = Db::table('common_users as cu')
+                    ->LeftJoin('common_department as cd', 'cu.dept_id', '=', 'cd.id')
+                    ->leftJoin('common_property as cp', 'cd.property_id', '=', 'cp.id')
+                    ->where('deleted', 0);
+                if (count($property_list) > 0)
+                    $query->whereIn('cd.property_id', $property_list);
+                $model = $query->select(DB::raw('cu.*, CONCAT_WS(" ", first_name, last_name,"(",username,")") as wholename'))
+                        ->orderBy('wholename', 'asc')
+                        ->get();
                 // $model = CommonUser::all();
                 break;
             case 'emails':
@@ -159,7 +175,16 @@ class DataController extends Controller
                 break;
             case 'jobrole':
                 $property_id = $request->get('property_id', 0);
+                $user_id = $request->get('user_id', 0);
+		        $client_id = $request->get('client_id', 0);
+		        if($user_id > 0)
+			        $property_list = CommonUser::getPropertyIdsByJobroleids($user_id);
+		        else
+			        $property_list = CommonUser::getProertyIdsByClient($client_id);
+
                 $query = DB::table('common_job_role');
+                $query->whereIn('property_id', $property_list);
+
                 if ($property_id > 0)
                     $query->where('property_id', $property_id);
 
@@ -189,9 +214,17 @@ class DataController extends Controller
                 break;
             case 'property':
                 $client_id = $request->get('client_id', 0);
+                $user_id = $request->get('user_id', 0);
+                $property_list = CommonUser::getPropertyIdsByJobroleids($user_id);
+                $property_list1 = CommonUser::getProertyIdsByClient($client_id);
+
                 $query = DB::table('common_property');
                 if ($client_id > 0)
-                    $query->where('client_id', $client_id);
+                    $query->whereIn('id', $property_list1);
+                
+                if ($user_id > 0)
+                    $query->whereIn('id', $property_list);
+
                 $model = $query->get();
                 break;
             case 'propertylist':
@@ -220,11 +253,37 @@ class DataController extends Controller
                 $model = $query->get();
                 break;
             case 'building':
-                $model = DB::table('common_building')->get();
+                $user_id = $request->get('user_id', 0);
+                $client_id = $request->get('client_id', 0);
+                if($user_id > 0)
+			        $property_list = CommonUser::getPropertyIdsByJobroleids($user_id);
+		        else
+			        $property_list = CommonUser::getProertyIdsByClient($client_id);	
+                $query = DB::table('common_building');
+                if (count($property_list) > 0)
+                    $query->whereIn('property_id', $property_list);
+                $model = $query->get();
+                // $model = Building::all();
+                break;
+            case 'buildingbyproperty':
+                $property_id = $request->get('property_id', 0);
+                $query = DB::table('common_building');
+                if ($property_id > 0)
+                    $query->where('property_id', $property_id);
+                $model = $query->get();
                 // $model = Building::all();
                 break;
             case 'department':
-                $model = DB::table('common_department')->get();
+                $user_id = $request->get('user_id', 0);
+                $client_id = $request->get('client_id', 0);
+                if($user_id > 0)
+			        $property_list = CommonUser::getPropertyIdsByJobroleids($user_id);
+		        else
+			        $property_list = CommonUser::getProertyIdsByClient($client_id);	
+                $query = DB::table('common_department');
+                if (count($property_list) > 0)
+                    $query->whereIn('property_id', $property_list);
+                $model = $query->get();
                 // $model = Department::all();
                 break;
             case 'departmentbyproperty':
@@ -235,7 +294,16 @@ class DataController extends Controller
                 // $model = Department::all();
                 break;
             case 'division':
-                $model = DB::table('common_division')->get();
+                $user_id = $request->get('user_id', 0);
+                $client_id = $request->get('client_id', 0);
+                if($user_id > 0)
+			        $property_list = CommonUser::getPropertyIdsByJobroleids($user_id);
+		        else
+			        $property_list = CommonUser::getProertyIdsByClient($client_id);	
+                $query = DB::table('common_division');
+                if (count($property_list) > 0)
+                    $query->whereIn('property_id', $property_list);
+                $model = $query->get();
                 break;
             case 'servicedepartment':
                 $model = DB::table('common_department')
@@ -304,20 +372,41 @@ class DataController extends Controller
                 $model = DB::table('call_tax')->get();
                 break;
             case 'locationgroups':
-                $model = DB::table('services_location_group')->get();
+                $user_id = $request->get('user_id', 0);
+                $client_id = $request->get('client_id', 0);
+                if($user_id > 0)
+			        $property_list = CommonUser::getPropertyIdsByJobroleids($user_id);
+		        else
+			        $property_list = CommonUser::getProertyIdsByClient($client_id);	
+                $query = DB::table('services_location_group');
+                if (count($property_list) > 0)
+                    $query->whereIn('property_id', $property_list);
+                $model = $query->get();
                 break;
 
             case 'vips':
-                $model = DB::table('common_vip_codes')->get();
+                $property_id = $request->get('property_id', 0);
+                $query = DB::table('common_vip_codes');
+                 if ($property_id > 0){
+				    $query->where('property_id', $property_id);
+                }
+                
+                $model = $query->get();
                 break;
 
             case 'viplist':
-                $property_id = $request->property_id || 0;
-                $model = DB::table('common_vip_codes')->where('property_id', $property_id)->get();
+                $property_id = $request->property_id ?? 0;
+                $model = DB::table('common_vip_codes')->where('property_id', (int)$property_id)->get();
                 break;
 
             case 'roomtype':
-                $model = DB::table('common_room_type')->get();
+                $property_id = $request->get('property_id', 0);
+                $query = DB::table('common_room_type as rt');
+                if ($property_id > 0){
+                    $query->join('common_building as cb', 'rt.bldg_id', '=', 'cb.id');
+				    $query->where('cb.property_id', $property_id);
+                }
+                $model = $query->select(DB::raw('rt.*'))->get();
                 break;
             case 'linentype':
                 $model = DB::table('services_linen_type')->get();
@@ -434,15 +523,28 @@ class DataController extends Controller
             case 'complaint_datalist':
                 $client_id = $request->get('client_id', 4);
                 $model['severity_list'] = DB::table('services_complaint_type')->get();
-                $model['division_list'] = DB::table('common_division')->get();
-                $model['feedback_type_list'] = DB::table('services_complaint_feedback_type')->get();
-                $model['feedback_source_list'] = DB::table('services_complaint_feedback_source')->get();
+                $model['division_list'] = DB::table('common_division as cd')
+                ->leftJoin('common_property as cp', 'cd.property_id', '=', 'cp.id')
+                ->where('cp.client_id', $client_id)
+                ->select(DB::raw('cd.*'))
+                ->get();
+                $model['feedback_type_list'] = DB::table('services_complaint_feedback_type as scft')
+                                        ->leftJoin('common_property as cp', 'scft.property_id', '=', 'cp.id')
+                                        ->where('cp.client_id', $client_id)
+                                        ->select(DB::raw('scft.*'))
+                                        ->get();
+                $model['feedback_source_list'] = DB::table('services_complaint_feedback_source as scfs')
+                                        ->leftJoin('common_property as cp', 'scfs.property_id', '=', 'cp.id')
+                                        ->where('cp.client_id', $client_id)
+                                        ->select(DB::raw('scfs.*'))
+                                        ->get();
                 $model['category_list'] = DB::table('services_complaint_maincategory as scmc')
                     ->leftJoin('common_users as cu', 'scmc.user_id', '=', 'cu.id')
                     ->leftJoin('services_complaint_type as ct', 'scmc.severity', '=', 'ct.id')
                     ->leftJoin('common_property as cp', 'scmc.property_id', '=', 'cp.id')
                     ->leftJoin('common_division as ci', 'scmc.division_id', '=', 'ci.id')
                     ->where('cp.client_id', $client_id)
+                    ->where('scmc.disabled', 0)
                     ->select(DB::raw('scmc.*, ct.type, CONCAT_WS(" ", cu.first_name, cu.last_name) as wholename, ci.division'))
                     ->orderBy('scmc.name', 'asc')
                     ->get();
@@ -455,6 +557,8 @@ class DataController extends Controller
                 break;
             case 'feedbacksourcelist':
                 $type_id = $request->get('type_id', '4');
+                $client_id = $request->get('client_id', 0);
+
                 if ($type_id != 0) {
                     $model['feedback_source_list'] = DB::table('services_complaint_feedback_source')
                     ->where('type_id', $type_id)
@@ -462,7 +566,24 @@ class DataController extends Controller
                 }
                 
                 if (empty($model['feedback_source_list']?->toArray())) {
-                    $model['feedback_source_list'] = DB::table('services_complaint_feedback_source')->get();
+                    $model['feedback_source_list'] = DB::table('services_complaint_feedback_source as scfs')
+                                                        ->leftJoin('common_property as cp', 'scfs.property_id', '=', 'cp.id')
+                                                        ->where('cp.client_id', $client_id)
+                                                        ->select(DB::raw('scfs.*'))
+                                                        ->get();
+                }
+                break;
+             case 'feedbackcategorylist':
+                $type_id = $request->get('type_id', '4');
+                $property_id = $request->get('property_id', 0);
+                if ($type_id != 0) {
+                    $model['category_list'] = DB::table('services_complaint_maincategory')
+                        ->where('type_id', $type_id)
+                        ->where('property_id', $property_id)
+                        ->get();
+                }
+                if (empty($model['category_list']?->toArray())) {
+                    $model['category_list'] = DB::table('services_complaint_maincategory')->where('property_id', $property_id)->get();
                 }
                 break;
             case 'severitylistit':
@@ -542,6 +663,18 @@ class DataController extends Controller
                     ->select(DB::raw('cr.*,cb.id as bldg_id, cb.property_id'))
                     ->get();
                 break;
+            case 'roomlistbyuser':
+                $room = '%' . $request->get('room', '') . '%';
+                $user_id = $request->get('user_id', '');
+                $property_list = CommonUser::getPropertyIdsByJobroleids($user_id);
+                $model = DB::table('common_room as cr')
+                    ->join('common_floor as cf', 'cr.flr_id', '=', 'cf.id')
+                    ->join('common_building as cb', 'cf.bldg_id', '=', 'cb.id')
+                    ->where('cr.room', 'like', '%' . $room . '%')
+                    ->whereIn('cb.property_id', $property_list)
+                    ->select(DB::raw('cr.*,cb.id as bldg_id, cb.property_id'))
+                    ->get();
+                break;
             case 'engcategorylist':
                 $property_id = $request->get('property_id', 0);
                 $model = DB::table('eng_request_category as erc')
@@ -586,7 +719,9 @@ class DataController extends Controller
                     ->get();
                 break;
             case 'housecomplaint':
+                $property_id = $request->get('property_id', 0);
                 $model = DB::table('common_house_complaints_category')
+                    ->where('property_id', $property_id)
                     ->get();
                 break;
             case 'deptpermissiongroup':
@@ -703,15 +838,19 @@ class DataController extends Controller
                 break;
             case 'lnf_datalist':
                 $client_id = $request->get('client_id', 0);
+                $user_id = $request->get('user_id', 0);
+                $property_list = CommonUser::getPropertyIdsByJobroleids($user_id);
 
                 // LNF Item Store Location
                 $list = DB::table('services_lnf_storedloc as ls')
+                    ->whereIn('ls.property_id', $property_list)
                     ->select(DB::raw('ls.*'))
                     ->get();
                 $model['store_loc'] = $list;
 
                 // LNF Item Type
                 $list = DB::table('services_lnf_item_type as ina')
+                    ->whereIn('ina.property_id', $property_list)
                     ->select(DB::raw('ina.*'))
                     ->get();
                 $model['item_type'] = $list;
@@ -721,6 +860,7 @@ class DataController extends Controller
                     ->leftJoin('common_department as cd', 'cu.dept_id', '=', 'cd.id')
                     ->select(DB::raw('cu.*, cd.department, CONCAT(cu.first_name, " ", COALESCE(cu.last_name,""), " - Hotel User") as fullname, 1 as user_type'))
                     ->where('cu.deleted', 0)
+                    ->whereIn('cd.property_id', $property_list)
                     ->get();
 
                 $custom_list = DB::table('services_lnf_item_customuser as ta')
@@ -749,18 +889,19 @@ class DataController extends Controller
                 $model['item_status'] = $list;
 
                 // LNF Item Tag
-                $model['item_tag'] = Functions::getTagList('services_lnf_item', 'tags');
+                $model['item_tag'] = Functions::getTagListbyProperty($property_list);
 
                 // LNF Item Category
                 //$list = LNFItemCategory::get();
                 $list = DB::table('services_lnf_item_category as ca')
                     ->leftJoin('common_job_role as jr', 'ca.notify_job_role_id', '=', 'jr.id')
                     ->select(DB::raw('ca.*, jr.job_role'))
+                    ->whereIn('ca.property_id', $property_list)
                     ->get();
                 $model['item_category'] = $list;
 
                 // Job Role
-                $list = DB::table('common_job_role')->orderBy('job_role', 'asc')->get();
+                $list = DB::table('common_job_role')->whereIn('property_id', $property_list)->orderBy('job_role', 'asc')->get();
                 $model['item_jobrole'] = $list;
 
                 break;
@@ -855,9 +996,36 @@ class DataController extends Controller
     public function getBuildList(Request $request)
     {
         $property_id = $request->get('property_id');
-        $build_list = DB::table('common_building as cb')
-            ->where('property_id', $property_id)
-            ->get();
+        $user_id = $request->get('user_id', '0');
+        $property_list = CommonUser::getPropertyIdsByJobroleids($user_id);
+        $query = DB::table('common_building as cb');
+        
+        if ($user_id > 0){
+            
+            $building_ids = CommonUser::getBuildingIds($user_id);
+            $building_ids = explode(',', $building_ids);
+			
+            $property_list = CommonUser::getPropertyIdsByJobroleids($user_id);
+            $query->whereIn('cb.property_id', $property_list);
+        
+        $permission = DB::table('common_users as cu')
+            	->join('common_job_role as jr', 'cu.job_role_id', '=', 'jr.id')
+            	->join('common_perm_group as pg', 'jr.permission_group_id', '=', 'pg.id')
+				->join('common_permission_members as cpm', 'pg.id', '=', 'cpm.perm_group_id')
+				->join('common_page_route as pr', 'cpm.page_route_id', '=', 'pr.id')
+            	->where('cu.id', $user_id)
+            	->select(DB::raw('pr.name'))
+            	->get();
+			$perm = [];
+			foreach ($permission as $row){
+				$perm[] .= $row->name; 
+			}
+            if (in_array("mobile.guestservice.usergroup", $perm)){
+                $query->whereIn('cb.id', $building_ids);
+            }
+        }
+        $build_list = $query->get();
+        
         return Response::json($build_list);
     }
 
@@ -971,8 +1139,9 @@ class DataController extends Controller
                 ->join('common_room as cr', 'rs.id', '=', 'cr.id')
                 ->join('common_floor as cf', 'cr.flr_id', '=', 'cf.id')
                 ->join('common_building as cb', 'cf.bldg_id', '=', 'cb.id')
+                ->leftJoin('services_hskp_status as shs', 'shs.id', '=', 'cr.hskp_status_id')
                 ->where('cb.property_id', $property_id)
-                ->select(DB::raw('cr.*,cb.property_id'))
+                ->select(DB::raw('cr.*,cb.property_id, shs.status as hskp_status'))
                 ->get();
         } else {
             $ret['room_list'] = [];
@@ -1004,9 +1173,226 @@ class DataController extends Controller
         return Response::json($ret);
     }
 
+    public function loadCompensationList(Request $request) 
+    {
+        $user_id = $request->get('user_id', 0);
+        $client_id = $request->get('client_id', 0);
+        if (CommonUser::isValidModule($user_id, 'mobile.mytask')) {
+            $compensation_item_list = DB::table('services_compensation as sc')
+                ->leftJoin('common_property as cp', 'sc.property_id', '=', 'cp.id')
+                ->where('sc.client_id', $client_id)
+                ->select(DB::raw('sc.*, cp.name'))
+                ->get();
+        } else
+            $compensation_item_list = [];
+        $ret['code'] = 200;
+        $ret['content'] = $compensation_item_list;
+        return Response::json($ret);
+    }
+
+    public function loadStaffList(Request $request) 
+    {
+        $user_id = $request->get('user_id', 0);
+        $client_id = $request->get('client_id', 0);
+        $user = CommonUser::find($user_id);
+        $dept_id = 0;
+        if (!empty($user))
+            $dept_id = $user->dept_id;
+        $query = DB::table('common_users as cu')
+            ->leftJoin('common_job_role as jr', 'jr.id', '=', 'cu.job_role_id')
+            ->leftJoin('common_department as de', 'cu.dept_id', '=', 'de.id')
+            ->leftJoin('common_property as cp', 'de.property_id', '=', 'cp.id')
+            ->where('cp.client_id', $client_id)
+            ->where('cu.deleted', 0);
+        if ($dept_id > 0)
+            $query->where('cu.dept_id', $dept_id);
+        if (CommonUser::isValidModule($user_id, 'mobile.mytask') ||
+            CommonUser::isValidModule($user_id, 'mobile.maintenance.view')) {
+            $ret['staff_list'] = $query
+                ->select(DB::raw('cu.id, jr.job_role, CONCAT_WS(" ", cu.first_name, cu.last_name) as wholename , de.department, cp.name as property_name'))
+                ->get();
+        } else
+            $ret['staff_list'] = [];
+        $staffList = [];
+        if (CommonUser::isValidModule($user_id, 'mobile.mytask') ||
+            CommonUser::isValidModule($user_id, 'mobile.maintenance.view')) {
+            $staffList = $query
+                ->select(DB::raw('cu.id, jr.job_role, CONCAT_WS(" ", cu.first_name, cu.last_name) as wholename , de.department, cp.name as property_name'))
+                ->get();
+        }
+        $ret['code'] = 200;
+        $ret['content'] = $staffList;
+        return Response::json($ret);
+    }
+
+    public function loadMinibarItemList(Request $request) 
+    {
+        $user_id = $request->get('user_id', 0);
+        $client_id = $request->get('client_id', 0);
+        $minibarItemList = [];
+        if (CommonUser::isValidModule($user_id, 'mobile.guestservice.view') ||
+            CommonUser::isValidModule($user_id, 'mobile.mytask') ||
+            CommonUser::isValidModule($user_id, 'mobile.minibar.view')
+        ) {
+            $minibarItemList = DB::table('services_rm_srv_itm')->get();
+        } else
+            $minibarItemList = [];
+        $ret['code'] = 200;
+        $ret['content'] = $minibarItemList;
+        return Response::json($ret);
+    }
+
+    public function loadGuestRequestListRequest(Request $request) 
+    {
+        $user_id = $request->get('user_id', 0);
+        $client_id = $request->get('client_id', 0);
+        $property_id = $request->get('property_id', 4);
+        $list = [];
+        if (CommonUser::isValidModule($user_id, 'mobile.guestservice.view')) {
+            $list = app('App\Http\Controllers\Frontend\GuestserviceController')->makeTaskListForMobile($property_id, 1, $user_id);
+        } else {
+            $list = [];
+        }
+        $ret['code'] = 200;
+        $ret['content'] = $list;
+        return Response::json($ret);
+    }
+
+    public function loadRoomList(Request $request) 
+    {
+        $user_id = $request->get('user_id', 0);
+        $client_id = $request->get('client_id', 0);
+        $property_id = $request->get('property_id', 4);
+        $list = [];
+        if (CommonUser::isValidModule($user_id, 'mobile.guestservice.view') ||
+            CommonUser::isValidModule($user_id, 'mobile.mytask') ||
+            CommonUser::isValidModule($user_id, 'mobile.hskpattendant.view') ||
+            CommonUser::isValidModule($user_id, 'mobile.minibar.view') ||
+            CommonUser::isValidModule($user_id, 'mobile.myroom')
+        ) {
+            $list = DB::table('services_room_status as rs')
+                ->join('common_room as cr', 'rs.id', '=', 'cr.id')
+                ->join('common_floor as cf', 'cr.flr_id', '=', 'cf.id')
+                ->join('common_building as cb', 'cf.bldg_id', '=', 'cb.id')
+                ->leftJoin('services_hskp_status as shs', 'shs.id', '=', 'cr.hskp_status_id')
+                ->where('cb.property_id', $property_id)
+                ->select(DB::raw('cr.*,cb.property_id, shs.status as hskp_status'))
+                ->get();
+        } else {
+            $list = [];
+        }
+        $ret['code'] = 200;
+        $ret['content'] = $list;
+        return Response::json($ret);
+    }
+
+    public function loadTaskActionReasonList(Request $request) 
+    {
+        $user_id = $request->get('user_id', 0);
+        $client_id = $request->get('client_id', 0);
+        $property_id = $request->get('property_id', 4);
+        $list = [];
+        //$ret['housecomplaint_category_list'] = DB::table('common_house_complaints_category')->get();
+        if (CommonUser::isValidModule($user_id, 'mobile.guestservice.view'))
+            $list = DB::table('services_task_action_reason')
+                ->where('client_id', $client_id)
+                ->get();
+        else
+            $list = [];
+        $ret['minuteList'] = [5, 10, 15, 20, 30, 40, 50, 60];
+        $ret['code'] = 200;
+        $ret['reasonList'] = $list;
+        return Response::json($ret);
+    }
+
+    public function loadLocationList(Request $request)
+    {
+        $user_id = $request->get('user_id', 0);
+        $client_id = $request->get('client_id', 0);
+        $property_id = $request->get('property_id', 0);
+        $list = [];
+        if (CommonUser::isValidModule($user_id, 'mobile.guestservice.view') ||
+            CommonUser::isValidModule($user_id, 'mobile.mytask') ||
+            CommonUser::isValidModule($user_id, 'mobile.dutymanager.view') ||
+            CommonUser::isValidModule($user_id, 'mobile.maintenance.view')
+        ) {
+            $list = DB::table('services_location as sl')
+            ->join('common_property as cp', 'sl.property_id', '=', 'cp.id')
+            ->join('services_location_type as lt', 'sl.type_id', '=', 'lt.id')
+            ->where('sl.property_id', $property_id)
+            ->select(DB::Raw('sl.id, sl.name, sl.property_id, sl.id as lg_id, sl.room_id, lt.type, 
+                    sl.room_id as type_id,
+                    cp.name as property'))
+            ->orderBy('sl.id')
+            ->get();
+        } else {
+            $list = [];
+        }
+        $ret = [];
+        $ret['code'] = 200;
+        $ret['content'] = $list;
+        return Response::json($ret);
+    }
+
+    public function loadDataNew(Request $request)
+    {
+        $user_id = $request->get('user_id', 0);
+        $client_id = $request->get('client_id', 0);
+        $property_id = $request->get('property_id', 0);
+        $permission_group_id = $request->get('permission_group_id', '');
+        $locationList = [];
+        $permissions = [];
+        if (CommonUser::isValidModule($user_id, 'mobile.guestservice.view') ||
+            CommonUser::isValidModule($user_id, 'mobile.mytask') ||
+            CommonUser::isValidModule($user_id, 'mobile.dutymanager.view') ||
+            CommonUser::isValidModule($user_id, 'mobile.maintenance.view')
+        ) {
+            $locationList = DB::table('services_location as sl')
+            ->join('common_property as cp', 'sl.property_id', '=', 'cp.id')
+            ->join('services_location_type as lt', 'sl.type_id', '=', 'lt.id')
+            ->where('sl.property_id', $property_id)
+            ->where('sl.disable', 0)
+            ->select(DB::Raw('sl.id, sl.name, sl.property_id, sl.id as lg_id, sl.room_id, lt.type, 
+                    sl.room_id as type_id,
+                    cp.name as property'))
+            ->orderBy('sl.id')
+            ->get();
+        }
+        if (!empty($permission_group_id)) {
+            $tempList = DB::table('common_permission_members as pm')
+            ->join('common_page_route as pr', 'pm.page_route_id', '=', 'pr.id')
+            ->where('pm.perm_group_id', $permission_group_id)
+            ->select(DB::raw('pr.*'))
+            ->get();
+            foreach($tempList as $row){
+                $permissions[] = $row->name;
+            }
+        }
+        
+        $ret = [];
+        $ret['code'] = 200;
+        $ret['locationList'] = $locationList;
+        $ret['permissions'] = $permissions;
+        return Response::json($ret);
+    }
+
     public function getCurrency()
     {
         $currencyitem = \DB::table('property_setting')->where('settings_key', 'currency')->first();
+        $currency = "";
+        if (!empty($currencyitem)) {
+            $currency = $currencyitem->value;
+        }
+        $ret = array();
+        $ret['code'] = 200;
+        $ret['currency'] = $currency;
+        return Response::json($ret);
+    }
+
+    public function getCurrencyforMobile(Request $request)
+    {
+        $property_id = $request->get('property_id', 0);
+        $currencyitem = DB::table('property_setting')->where('settings_key', 'currency')->where('property_id', $property_id)->first();
         $currency = "";
         if (!empty($currencyitem)) {
             $currency = $currencyitem->value;
@@ -1026,6 +1412,28 @@ class DataController extends Controller
         $model = $query->get();
 
         return Response::json($model);
+    }
+
+    public function getFloorListMobile(Request $request)
+    {
+        $property_id = $request->get('property_id', 0);
+        $query = DB::table('common_floor as cf')
+                ->join('common_building as cb', 'cf.bldg_id', '=', 'cb.id')
+                ->where('cb.property_id', $property_id)
+                ->select(DB::raw('cf.*, cb.property_id'));
+        $model = $query->get();
+        $ret = array();
+        $ret['code'] = 200;
+        $ret['content'] = $model;
+        return Response::json($ret);
+    }
+    public function getHskpSettingInfo(Request $request) {
+        $property_id = $request->get('property_id', 0);
+        $model = PropertySetting::getHskpSettingValue($property_id);
+        $ret = [];
+        $ret['code'] = 200;
+        $ret['content'] = $model;
+        return Response::json($ret);
     }
 
     public function getLocationList(Request $request)
@@ -1053,10 +1461,15 @@ class DataController extends Controller
     {
         $property_id = $request->get('property_id', '');
         $building_id = $request->get('building_id', '');
+        $user_id = $request->get('user_id', '');
         $building_tags = $request->get('building_tags');
         $query = DB::table('common_floor as cf')
-            ->join('common_building as cb', 'cf.bldg_id', '=', 'cb.id')
-            ->where('cb.property_id', $property_id);
+            ->join('common_building as cb', 'cf.bldg_id', '=', 'cb.id');
+        
+        if ($user_id > 0){
+            $property_list = CommonUser::getPropertyIdsByJobroleids($user_id);
+            $query->whereIn('cb.property_id', $property_list);
+        } else  $query->where('cb.property_id', $property_id);
 
         if ($building_id > 0)
             $query->where('cf.bldg_id', $building_id);
@@ -1095,17 +1508,17 @@ class DataController extends Controller
             ->where('cn.user_id', $user_id)
             ->where('cn.unread_flag', 1)
             ->count();
-        $chat_notify_cnt = DB::table('services_chat_agent_history as hist')
-            ->where('hist.from_id', $user_id)
-            ->where('hist.direction', 0)
-            ->where('unread', 1)
-            ->count();
+        // $chat_notify_cnt = DB::table('services_chat_agent_history as hist')
+        //     ->where('hist.from_id', $user_id)
+        //     ->where('hist.direction', 0)
+        //     ->where('unread', 1)
+        //     ->count();
         $ret = array();
         $ret['code'] = 200;
         $ret['content'] = array(
             'guestservice' => $guestservice_count,
             'push_notify_cnt' => $push_notify_cnt,
-            'chat_notify_cnt' => $chat_notify_cnt,
+            // 'chat_notify_cnt' => $chat_notify_cnt,
             'minibar' => $minibar_count,
             'feedback' => $feedback_count,
             'hskp' => $hskp_count,
@@ -1240,6 +1653,230 @@ class DataController extends Controller
         return Response::json($model);
     }
 
+    // public function getDataForMyManager1(Request $request)
+    // {
+    //     date_default_timezone_set(config('app.timezone'));
+    //     $start_date = $request->get('start_date', '');
+    //     $end_date = $request->get('end_date', '');
+    //     $user_id = $request->get('user_id', '0');
+    //     $last24 = date('Y-m-d H:i:s', strtotime(' -1 day'));
+    //     $cur_date = date('Y-m-d', strtotime(' -1 day'));
+    //     $start_time = $start_date . ' 00:00:00';
+    //     $end_time = $end_date . ' 00:00:00';
+    //     $property_id = $request->get('property_id', 0);
+    //     $start = microtime(true);
+    //     $ret = array();
+    //     // get VIP guest data
+    //     $vip_list = DB::table('common_guest as cg')
+    //         ->join('services_room_status as rs', 'cg.room_id', '=', 'rs.id')
+    //         ->join('common_room as cr', 'cg.room_id', '=', 'cr.id')
+    //         ->join('common_floor as cf', 'cr.flr_id', '=', 'cf.id')
+    //         ->join('common_building as cb', 'cf.bldg_id', '=', 'cb.id')
+    //         ->join('common_vip_codes as vc', 'vc.vip_code', '=', 'cg.vip')
+    //         ->leftJoin('common_guest_profile as gp', 'cg.guest_id', '=', 'gp.guest_id')
+    //         //->where('cg.created_at', '>=', $last24)
+    //         ->whereBetween('cg.created_at', array($start_time, $end_time))
+    //         ->where('cg.vip', '!=', '0')
+    //         ->where('cb.property_id', $property_id)
+    //         ->groupBy('cg.guest_id')
+    //         ->select(DB::raw('cg.*,rs.working_status, gp.id as new_guest_id, cr.room, vc.name as vip_name'))
+    //         ->get();
+
+    //     $total_count_select = '
+	// 					CAST(COALESCE(sum(st.status_id = 0 and st.duration <= st.max_time), 0) AS UNSIGNED) as ontime,				
+	// 					count(*) as total						
+	// 				';
+    //     foreach ($vip_list as $key => $row) {
+    //         $complaint = DB::table('services_complaint_request as scr')
+    //             ->where('scr.guest_id', $row->new_guest_id)
+    //             ->where('scr.created_at', '>=', $last24)
+    //             ->select(DB::raw("
+	// 					count(*) as cnt,
+	// 					CAST(COALESCE(sum(scr.status = 'Resolved'), 0) AS UNSIGNED) as resolved,
+	// 					CAST(COALESCE(sum(scr.status = 'Pending'), 0) AS UNSIGNED) as pending
+	// 				"))
+    //             ->first();
+    //         $vip_list[$key]->complaint = $complaint;
+    //         $guest_request = DB::table('services_task as st')
+    //             ->where('st.start_date_time', '>=', $last24)
+    //             ->where('st.guest_id', $row->guest_id)
+    //             ->select(DB::raw($total_count_select))
+    //             ->first();
+    //         $vip_list[$key]->request = $guest_request;
+
+    //         if (($row->working_status >= 0)) {
+    //             switch ($vip_list[$key]->working_status) {
+    //                 case CLEANING_PENDING:
+    //                     $vip_list[$key]->cleaning_state = 'Pending';
+    //                     break;
+    //                 case CLEANING_RUNNING:
+    //                     $vip_list[$key]->cleaning_state = 'Cleaning';
+    //                     break;
+    //                 case CLEANING_DONE:
+    //                     $vip_list[$key]->cleaning_state = 'Done';
+    //                     break;
+    //                 case CLEANING_DND:
+    //                     $vip_list[$key]->cleaning_state = 'DND';
+    //                     break;
+    //                 case CLEANING_DECLINE:
+    //                     $vip_list[$key]->cleaning_state = 'Reject';
+    //                     break;
+    //                 case CLEANING_POSTPONE:
+    //                     $vip_list[$key]->cleaning_state = 'Delay';
+    //                     break;
+    //                 case CLEANING_COMPLETE:
+    //                     $vip_list[$key]->cleaning_state = 'Inspected';
+    //                     break;
+    //                 case CLEANING_PAUSE:
+    //                     $vip_list[$key]->cleaning_state = 'Pause';
+    //                     break;
+    //                 default:
+    //                     $vip_list[$key]->cleaning_state = 'Unassigned';
+    //                     break;
+    //             }
+
+    //         }
+    //     }
+    //     // get total rooms
+    //     $total_room = Room::getRoomCount($property_id);
+    //     $room_status_counts = app('App\Http\Controllers\Frontend\GuestserviceController')->getmyroomcountAll($property_id, '');
+    //     // get occupancy room count for today
+    //     $occupancy = DB::table('common_room_occupancy')
+    //         ->where('property_id', $property_id)
+    //         ->where('check_date', '<', $end_date)
+    //         ->orderBy('check_date', 'desc')
+    //         ->first();
+
+    //     $occupancy_percent = 0;
+    //     if (!empty($occupancy) > 0)
+    //         $occupancy_percent = round($occupancy->occupancy * 100 / $total_room, 1);
+    //     $occupancy_list = $this->getOccupancyStatisticsByDate($property_id, $start_date, $end_date);
+    //     // get total request and ontime
+    //     $guest_request = DB::table('services_task as st')
+    //         ->where('st.property_id', $property_id)
+    //         ->whereBetween('st.start_date_time', array($start_time, $end_time))
+    //         ->select(DB::raw('
+	// 					CAST(COALESCE(sum(st.status_id = 0 and st.duration <= st.max_time), 0) AS UNSIGNED) as ontime,
+	// 					count(*) as cnt						
+	// 				'))
+    //         ->first();
+    //     $ontime_percent = 0;
+    //     if (!empty($guest_request) && $guest_request->cnt > 0)
+    //         $ontime_percent = round($guest_request->ontime * 100 / $guest_request->cnt, 1);
+    //     $guest_request->ontime_percent = $ontime_percent;
+    //     // get minibar sales
+    //     $total_mb_sales = DB::table('services_minibar_log as ml')
+    //         ->join('common_room as cr', 'ml.room_id', '=', 'cr.id')
+    //         ->join('common_floor as cf', 'cr.flr_id', '=', 'cf.id')
+    //         ->join('common_building as cb', 'cf.bldg_id', '=', 'cb.id')
+    //         ->where('cb.property_id', $property_id)
+    //         ->whereBetween('ml.created_at', array($start_time, $end_time))
+    //         ->select(DB::raw('CAST(COALESCE(sum(ml.total_amount), 0) AS UNSIGNED) as total'))
+    //         ->first();
+    //     // get complaint severity
+    //     $complaint = DB::table('services_complaint_request as scr')
+    //         ->where('scr.property_id', $property_id)
+    //         ->whereBetween('scr.created_at', array($start_time, $end_time))
+    //         ->select(DB::raw("
+	// 					CAST(COALESCE(sum(scr.status = 'Resolved'), 0) AS UNSIGNED) as resolved,
+	// 					count(*) as cnt						
+	// 				"))
+    //         ->first();
+    //     $resolved_percent = 0;
+    //     if (!empty($complaint) && $complaint->cnt > 0) {
+    //         $resolved_percent = round($complaint->resolved * 100 / $complaint->cnt);
+    //     }
+    //     $complaint->resolved_percent = $resolved_percent;
+    //     $severity_types = DB::table('services_complaint_type as sct')
+    //         ->get();
+    //     $complaint_sql = '';
+    //     foreach ($severity_types as $row) {
+    //         $complaint_sql .= sprintf("CAST(COALESCE(sum(scr.severity = %d), 0) AS UNSIGNED) as %s,", $row->id, $row->type);
+    //     }
+    //     $complaint_sql .= "count(*) as cnt";
+    //     $complaint_by_severity = DB::table('services_complaint_request as scr')
+    //         ->where('scr.property_id', $property_id)
+    //         ->whereBetween('scr.created_at', array($start_time, $end_time))
+    //         ->select(DB::raw($complaint_sql))
+    //         ->first();
+    //     $severity_list = [];
+    //     foreach ($complaint_by_severity as $key => $row) {
+    //         if ($key == 'cnt')
+    //             continue;
+    //         $severity_list[] = array('count' => $row, 'name' => $key);
+    //     }
+    //     $complaint->severity_by = $severity_list;
+    //     //department chart
+    //     $query = DB::table('services_task as st')
+    //         ->leftJoin('services_task_list as tl', 'st.task_list', '=', 'tl.id')
+    //         ->leftJoin('common_department as cd', 'st.department_id', '=', 'cd.id');
+    //     $dept_id = CommonUser::getDeptID($user_id, Config::get('constants.GUESTSERVICE_DEPT_DASHBOARD'));
+    //     if ($dept_id == 0) {
+    //         $dept_id = CommonUser::getDeptID($user_id, Config::get('constants.GUESTSERVICE_DEPT'));
+    //     }
+    //     if ($dept_id > 0)
+    //         $query->where('st.department_id', $dept_id);
+    //     else
+    //         $query->where('st.property_id', $property_id);
+    //     $count_query = clone $query;
+    //     $time_range = sprintf("'%s' < DATE(st.start_date_time) AND DATE(st.start_date_time) <= '%s'", $start_date, $end_date);
+    //     $count_query->whereRaw($time_range);
+    //     $dept_id = CommonUser::getDeptID($user_id, Config::get('constants.GUESTSERVICE_DEPT_DASHBOARD'));
+    //     if ($dept_id == 0) {
+    //         $dept_id = CommonUser::getDeptID($user_id, Config::get('constants.GUESTSERVICE_DEPT'));
+    //     }
+    //     $query = DB::table('common_department as cd')
+    //         ->where('cd.services', 'Y')
+    //         ->where('cd.property_id', $property_id);
+    //     if ($dept_id > 0)
+    //         $query->where('cd.id', $dept_id);
+    //     $department_list = $query->select(DB::raw('cd.*'))
+    //         ->get();
+    //     $by_dept = array();
+    //     for ($d = 0; $d < count($department_list); $d++) {
+    //         $dept_id = $department_list[$d]->id;
+    //         $dept_query = clone $count_query;
+    //         $dept_query->where('st.department_id', $dept_id);
+    //         $by_dept[$d] = $this->getTotalGuestServiceCount($dept_query, null);
+    //         $by_dept[$d]['department'] = $department_list[$d]->short_code;
+    //     }
+    //     $end = microtime(true);
+    //     $currencyitem = \DB::table('property_setting')->where('settings_key', 'currency')->first();
+    //     if (!empty($currencyitem)) {
+    //         $currency = $currencyitem->value;
+    //     } else {
+    //         $currency = 'AED';
+    //     }
+    //     $time_range1 = sprintf("(scr.created_at >= '%s' && scr.created_at <= '%s')", $start_date, $end_date);
+    //     $query = DB::table('services_complaint_request as scr')
+    //         ->where('scr.property_id', $property_id)
+    //         ->whereRaw($time_range1);
+    //     $select_sql = sprintf("COALESCE(sum(scr.compensation_total), 0) as compensation");
+    //     // get status statistics
+    //     $data_query = clone $query;
+    //     $count = $data_query
+    //         ->select(DB::raw($select_sql))
+    //         ->first();
+    //     if (!empty($count)) {
+    //         $compensation = $count->compensation;
+    //     }
+    //     $staffitem = \DB::table('common_users')->where('device_id', '!=', '')->count();
+    //     $ret['code'] = 200;
+    //     $ret['time'] = $end - $start;
+    //     $ret['total_room'] = $total_room;
+    //     $ret['vip_list'] = $vip_list;
+    //     $ret['occupancy_percent'] = $occupancy_percent;
+    //     $ret['room_status_counts'] = $room_status_counts;
+    //     $ret['occupancy_list'] = $occupancy_list;
+    //     $ret['guest_request'] = $guest_request;
+    //     $ret['total_mb_sales'] = $currency . ' ' . number_format($total_mb_sales->total, 2, '.', ',');
+    //     $ret['total_mb_recovery'] = $currency . ' ' . number_format($compensation, 2, '.', ',');
+    //     $ret['total_mb_staff'] = $staffitem;
+    //     $ret['complaint'] = $complaint;
+    //     $ret['department'] = $by_dept;
+    //     return Response::json($ret);
+    // }
+
     public function getDataForMyManager(Request $request)
     {
         date_default_timezone_set(config('app.timezone'));
@@ -1250,217 +1887,303 @@ class DataController extends Controller
         $cur_date = date('Y-m-d', strtotime(' -1 day'));
         $start_time = $start_date . ' 00:00:00';
         $end_time = $end_date . ' 00:00:00';
-        $property_id = $request->get('property_id', 0);
+        $property_id = $request->get('property_id', '4');
         $start = microtime(true);
         $ret = array();
-        // get VIP guest data
-        $vip_list = DB::table('common_guest as cg')
-            ->join('services_room_status as rs', 'cg.room_id', '=', 'rs.id')
-            ->join('common_room as cr', 'cg.room_id', '=', 'cr.id')
-            ->join('common_floor as cf', 'cr.flr_id', '=', 'cf.id')
-            ->join('common_building as cb', 'cf.bldg_id', '=', 'cb.id')
-            ->join('common_vip_codes as vc', 'vc.vip_code', '=', 'cg.vip')
-            ->leftJoin('common_guest_profile as gp', 'cg.guest_id', '=', 'gp.guest_id')
-            //->where('cg.created_at', '>=', $last24)
-            ->whereBetween('cg.created_at', array($start_time, $end_time))
-            ->where('cg.vip', '!=', '0')
-            ->where('cb.property_id', $property_id)
-            ->groupBy('cg.guest_id')
-            ->select(DB::raw('cg.*,rs.working_status, gp.id as new_guest_id, cr.room, vc.name as vip_name'))
-            ->get();
-
-        $total_count_select = '
-						CAST(COALESCE(sum(st.status_id = 0 and st.duration <= st.max_time), 0) AS UNSIGNED) as ontime,				
-						count(*) as total						
-					';
-        foreach ($vip_list as $key => $row) {
-            $complaint = DB::table('services_complaint_request as scr')
-                ->where('scr.guest_id', $row->new_guest_id)
-                ->where('scr.created_at', '>=', $last24)
-                ->select(DB::raw("
-						count(*) as cnt,
-						CAST(COALESCE(sum(scr.status = 'Resolved'), 0) AS UNSIGNED) as resolved,
-						CAST(COALESCE(sum(scr.status = 'Pending'), 0) AS UNSIGNED) as pending
-					"))
-                ->first();
-            $vip_list[$key]->complaint = $complaint;
-            $guest_request = DB::table('services_task as st')
-                ->where('st.start_date_time', '>=', $last24)
-                ->where('st.guest_id', $row->guest_id)
-                ->select(DB::raw($total_count_select))
-                ->first();
-            $vip_list[$key]->request = $guest_request;
-
-            if (($row->working_status >= 0)) {
-                switch ($vip_list[$key]->working_status) {
-                    case CLEANING_PENDING:
-                        $vip_list[$key]->cleaning_state = 'Pending';
-                        break;
-                    case CLEANING_RUNNING:
-                        $vip_list[$key]->cleaning_state = 'Cleaning';
-                        break;
-                    case CLEANING_DONE:
-                        $vip_list[$key]->cleaning_state = 'Done';
-                        break;
-                    case CLEANING_DND:
-                        $vip_list[$key]->cleaning_state = 'DND';
-                        break;
-                    case CLEANING_DECLINE:
-                        $vip_list[$key]->cleaning_state = 'Reject';
-                        break;
-                    case CLEANING_POSTPONE:
-                        $vip_list[$key]->cleaning_state = 'Delay';
-                        break;
-                    case CLEANING_COMPLETE:
-                        $vip_list[$key]->cleaning_state = 'Inspected';
-                        break;
-                    case CLEANING_PAUSE:
-                        $vip_list[$key]->cleaning_state = 'Pause';
-                        break;
-                    default:
-                        $vip_list[$key]->cleaning_state = 'Unassigned';
-                        break;
-                }
-
-            }
-        }
-        // get total rooms
-        $total_room = Room::getRoomCount($property_id);
-        $room_status_counts = app('App\Http\Controllers\Frontend\GuestserviceController')->getmyroomcountAll($property_id, '');
-        // get occupancy room count for today
-        $occupancy = DB::table('common_room_occupancy')
-            ->where('property_id', $property_id)
-            ->where('check_date', '<', $end_date)
-            ->orderBy('check_date', 'desc')
-            ->first();
-
-        $occupancy_percent = 0;
-        if (!empty($occupancy) > 0)
-            $occupancy_percent = round($occupancy->occupancy * 100 / $total_room, 1);
-        $occupancy_list = $this->getOccupancyStatisticsByDate($property_id, $start_date, $end_date);
+    
         // get total request and ontime
-        $guest_request = DB::table('services_task as st')
-            ->where('st.property_id', $property_id)
-            ->whereBetween('st.start_date_time', array($start_time, $end_time))
-            ->select(DB::raw('
-						CAST(COALESCE(sum(st.status_id = 0 and st.duration <= st.max_time), 0) AS UNSIGNED) as ontime,
-						count(*) as cnt						
-					'))
-            ->first();
-        $ontime_percent = 0;
-        if (!empty($guest_request) && $guest_request->cnt > 0)
-            $ontime_percent = round($guest_request->ontime * 100 / $guest_request->cnt, 1);
-        $guest_request->ontime_percent = $ontime_percent;
-        // get minibar sales
-        $total_mb_sales = DB::table('services_minibar_log as ml')
-            ->join('common_room as cr', 'ml.room_id', '=', 'cr.id')
-            ->join('common_floor as cf', 'cr.flr_id', '=', 'cf.id')
-            ->join('common_building as cb', 'cf.bldg_id', '=', 'cb.id')
-            ->where('cb.property_id', $property_id)
-            ->whereBetween('ml.created_at', array($start_time, $end_time))
-            ->select(DB::raw('CAST(COALESCE(sum(ml.total_amount), 0) AS UNSIGNED) as total'))
-            ->first();
-        // get complaint severity
-        $complaint = DB::table('services_complaint_request as scr')
-            ->where('scr.property_id', $property_id)
-            ->whereBetween('scr.created_at', array($start_time, $end_time))
-            ->select(DB::raw("
-						CAST(COALESCE(sum(scr.status = 'Resolved'), 0) AS UNSIGNED) as resolved,
-						count(*) as cnt						
-					"))
-            ->first();
-        $resolved_percent = 0;
-        if (!empty($complaint) && $complaint->cnt > 0) {
-            $resolved_percent = round($complaint->resolved * 100 / $complaint->cnt);
-        }
-        $complaint->resolved_percent = $resolved_percent;
-        $severity_types = DB::table('services_complaint_type as sct')
+        $category_types = DB::table('services_task_category as sct')
             ->get();
-        $complaint_sql = '';
-        foreach ($severity_types as $row) {
-            $complaint_sql .= sprintf("CAST(COALESCE(sum(scr.severity = %d), 0) AS UNSIGNED) as %s,", $row->id, $row->type);
+        $guest_sql = '';
+        foreach ($category_types as $row) {
+            $guest_sql .= sprintf("CAST(COALESCE(sum(tl.category_id = %d), 0) AS UNSIGNED) as %s,", $row->id, $row->name);
         }
-        $complaint_sql .= "count(*) as cnt";
-        $complaint_by_severity = DB::table('services_complaint_request as scr')
-            ->where('scr.property_id', $property_id)
-            ->whereBetween('scr.created_at', array($start_time, $end_time))
-            ->select(DB::raw($complaint_sql))
+        $guest_sql .= "count(*) as cnt";
+        $guest_request = DB::table('services_task as st')
+            ->leftJoin('services_task_list as tl', 'st.task_list', '=', 'tl.id')
+            ->leftJoin('services_task_category as tc', 'tl.category_id', '=', 'tc.id')
+            ->where('st.property_id', $property_id)
+            ->whereRaw(sprintf("DATE(st.start_date_time) >= '%s' and DATE(st.start_date_time) <= '%s'", $start_date, $end_date))
+            // ->select(DB::raw('
+			// 			CAST(COALESCE(sum(st.status_id = 0 and st.duration <= st.max_time), 0) AS UNSIGNED) as ontime,
+			// 			count(*) as cnt						
+			// 		'))
+            ->select(DB::raw($guest_sql))
             ->first();
-        $severity_list = [];
-        foreach ($complaint_by_severity as $key => $row) {
+        $category_list = [];
+        foreach ($guest_request as $key => $row) {
             if ($key == 'cnt')
                 continue;
-            $severity_list[] = array('count' => $row, 'name' => $key);
+            $category_list[] = array('count' => $row, 'name' => $key);
         }
-        $complaint->severity_by = $severity_list;
-        //department chart
-        $query = DB::table('services_task as st')
-            ->leftJoin('services_task_list as tl', 'st.task_list', '=', 'tl.id')
-            ->leftJoin('common_department as cd', 'st.department_id', '=', 'cd.id');
-        $dept_id = CommonUser::getDeptID($user_id, Config::get('constants.GUESTSERVICE_DEPT_DASHBOARD'));
-        if ($dept_id == 0) {
-            $dept_id = CommonUser::getDeptID($user_id, Config::get('constants.GUESTSERVICE_DEPT'));
-        }
-        if ($dept_id > 0)
-            $query->where('st.department_id', $dept_id);
-        else
-            $query->where('st.property_id', $property_id);
-        $count_query = clone $query;
-        $time_range = sprintf("'%s' < DATE(st.start_date_time) AND DATE(st.start_date_time) <= '%s'", $start_date, $end_date);
-        $count_query->whereRaw($time_range);
-        $dept_id = CommonUser::getDeptID($user_id, Config::get('constants.GUESTSERVICE_DEPT_DASHBOARD'));
-        if ($dept_id == 0) {
-            $dept_id = CommonUser::getDeptID($user_id, Config::get('constants.GUESTSERVICE_DEPT'));
-        }
-        $query = DB::table('common_department as cd')
-            ->where('cd.services', 'Y')
-            ->where('cd.property_id', $property_id);
-        if ($dept_id > 0)
-            $query->where('cd.id', $dept_id);
-        $department_list = $query->select(DB::raw('cd.*'))
-            ->get();
-        $by_dept = array();
-        for ($d = 0; $d < count($department_list); $d++) {
-            $dept_id = $department_list[$d]->id;
-            $dept_query = clone $count_query;
-            $dept_query->where('st.department_id', $dept_id);
-            $by_dept[$d] = $this->getTotalGuestServiceCount($dept_query, null);
-            $by_dept[$d]['department'] = $department_list[$d]->short_code;
-        }
-        $end = microtime(true);
-        $currencyitem = \DB::table('property_setting')->where('settings_key', 'currency')->first();
-        if (!empty($currencyitem)) {
-            $currency = $currencyitem->value;
-        } else {
-            $currency = 'AED';
-        }
-        $time_range1 = sprintf("(scr.created_at >= '%s' && scr.created_at <= '%s')", $start_date, $end_date);
-        $query = DB::table('services_complaint_request as scr')
+        
+        // get complaint data
+        $complaint = DB::table('services_complaint_request as scr')
             ->where('scr.property_id', $property_id)
-            ->whereRaw($time_range1);
-        $select_sql = sprintf("COALESCE(sum(scr.compensation_total), 0) as compensation");
-        // get status statistics
-        $data_query = clone $query;
-        $count = $data_query
-            ->select(DB::raw($select_sql))
+            ->whereRaw(sprintf("DATE(scr.created_at) >= '%s' and DATE(scr.created_at) <= '%s'", $start_date, $end_date))
+            ->select(DB::raw("
+						COALESCE(sum(scr.compensation_total), 0) as service_recovery,
+						count(*) as cnt						
+					"))
             ->first();
-        if (!empty($count)) {
-            $compensation = $count->compensation;
+        // get housekeeping data
+        $room_status = DB::table('common_room as cr')
+						->join('common_floor as cf', 'cr.flr_id', '=', 'cf.id')
+						->leftJoin('services_room_status as hl', 'cr.id', '=', 'hl.id')
+						->leftJoin('services_devices as sd', 'hl.device_ids','=', 'sd.device_id')
+						->leftJoin('common_users as cu', 'sd.device_id', '=', 'cu.device_id')
+                        ->where('hl.property_id', $property_id);
+
+        $count_query = clone $room_status;
+
+		$total_count_select = '
+						CAST(COALESCE(sum(hl.working_status = 0 ), 0) AS UNSIGNED) as pending,
+						CAST(COALESCE(sum(hl.working_status = 100 ), 0) AS UNSIGNED) as unassigned,
+						CAST(COALESCE(sum(hl.working_status = 1), 0) AS UNSIGNED) as progress,
+						CAST(COALESCE(sum(hl.working_status = 2), 0) AS UNSIGNED) as complete,
+						CAST(COALESCE(sum(hl.working_status = 3), 0) AS UNSIGNED) as dnd,
+						CAST(COALESCE(sum(hl.working_status = 4), 0) AS UNSIGNED) as decline,
+						CAST(COALESCE(sum(hl.working_status = 5), 0) AS UNSIGNED) as postpone,
+						CAST(COALESCE(sum(hl.working_status = 6), 0) AS UNSIGNED) as inspected,
+						CAST(COALESCE(sum(hl.working_status = 7), 0) AS UNSIGNED) as pause,
+                        CAST(COALESCE(sum(hl.working_status = 11), 0) AS UNSIGNED) as noservice,
+                        CAST(COALESCE(sum(hl.working_status = 12), 0) AS UNSIGNED) as sleepout,
+						count(*) as total						
+					';
+
+		$hskp = $count_query					    
+				->select(DB::raw($total_count_select))
+				->first();
+         // get engineering data     
+        $eng = DB::table('eng_repair_request as err')
+            ->where('err.property_id', $property_id)
+             ->whereRaw(sprintf("DATE(err.created_at) >= '%s' and DATE(err.created_at) <= '%s'", $start_date, $end_date));
+       
+
+        $today_query = clone $eng;
+        $number_of_repairs = $today_query
+            ->select(DB::raw("count(*) as cnt,
+						SUM(err.status_name = 'Pending') AS pending,
+						SUM(err.status_name =  'On Hold') AS hold, 
+						SUM(err.status_name =  'In Progress') AS progress,
+                        SUM(err.status_name =  'Assigned') AS assigned,
+                        SUM(err.status_name =  'Closed') AS closed,
+						SUM(err.status_name =  'Completed') AS completed "))
+            ->first();
+         if(empty($number_of_repairs)) {
+            $number_of_repairs['pending'] = 0;
+            $number_of_repairs['hold'] = 0;
+            $number_of_repairs['progress'] = 0;
+            $number_of_repairs['completed'] = 0;
+            $number_of_repairs['assigned'] = 0;
+            $number_of_repairs['closed'] = 0;
         }
-        $staffitem = \DB::table('common_users')->where('device_id', '!=', '')->count();
+        
         $ret['code'] = 200;
-        $ret['time'] = $end - $start;
-        $ret['total_room'] = $total_room;
-        $ret['vip_list'] = $vip_list;
-        $ret['occupancy_percent'] = $occupancy_percent;
-        $ret['room_status_counts'] = $room_status_counts;
-        $ret['occupancy_list'] = $occupancy_list;
-        $ret['guest_request'] = $guest_request;
-        $ret['total_mb_sales'] = $currency . ' ' . number_format($total_mb_sales->total, 2, '.', ',');
-        $ret['total_mb_recovery'] = $currency . ' ' . number_format($compensation, 2, '.', ',');
-        $ret['total_mb_staff'] = $staffitem;
+        $ret['guest_request'] = $category_list;
         $ret['complaint'] = $complaint;
-        $ret['department'] = $by_dept;
+        $ret['housekeeping'] = $hskp;
+        $ret['engineering'] = $number_of_repairs;
+
+       
+        return Response::json($ret);
+    }
+
+    public function getDataForMyManagerGS(Request $request)
+    {
+        date_default_timezone_set(config('app.timezone'));
+        
+        $selected_year = $request->get('selected_year', '');
+        $compared_year = $request->get('compared_year', '');
+        
+        $cur_date = date('Y-m-d');
+        $cur_year = date('Y');
+        $selected_year = '2022';
+       $compared_year = '2021';
+        
+        $property_id = $request->get('property_id', '4');
+        $start = microtime(true);
+        $ret = array();
+        $sel_start_date = $selected_year. '-01-01';
+        $comp_start_date = $compared_year. '-01-01';
+        $comp_end_date = $compared_year. '-12-31';
+        if ($selected_year == $cur_year)
+            $sel_end_date = $cur_date;
+        else
+            $sel_end_date = $selected_year . '-12-31';
+       
+    
+        // get gguest request data
+        $query = DB::table('services_task as st')
+                ->leftJoin('common_department as cd','st.department_id','=','cd.id')
+                ->where('st.property_id', $property_id);
+        $count_query = clone $query;
+        $count_query1 = clone $query;
+        $count_query2 = clone $query;
+        $count_query3 = clone $query;
+		$total_count_select = '
+						CAST(COALESCE(sum(st.status_id = 0 and st.duration <= st.max_time), 0) AS UNSIGNED) as ontime,
+						CAST(COALESCE(sum(st.status_id = 4), 0) AS UNSIGNED) as canceled,
+						CAST(COALESCE(sum(st.status_id = 3), 0) AS UNSIGNED) as timeout,
+						CAST(COALESCE(sum(st.escalate_flag = 1), 0) AS UNSIGNED) as escalated,
+						CAST(COALESCE(sum(st.status_id = 5), 0) AS UNSIGNED) as scheduled,
+						CAST(COALESCE(sum((st.status_id = 1 or st.status_id = 2 ) and st.running = 0), 0) AS UNSIGNED) as hold,
+						count(*) as cnt	, cd.department	, YEAR(st.start_date_time) as year , MONTH(st.start_date_time)	as month	
+					';
+		$count1 = $count_query
+                ->groupBy('year')
+                ->groupBy('month')
+                ->groupBy('st.department_id')
+				->select(DB::raw($total_count_select))
+                ->whereRaw(sprintf("DATE(st.start_date_time) >= '%s' and DATE(st.start_date_time) <= '%s'", $sel_start_date, $sel_end_date))
+				->get();
+        $count2 = $count_query1
+               ->groupBy('month')
+                ->groupBy('st.department_id')
+				->select(DB::raw($total_count_select))
+                ->whereRaw(sprintf("DATE(st.start_date_time) >= '%s' and DATE(st.start_date_time) <= '%s'", $comp_start_date, $comp_end_date))
+				->get();
+        $count3 = $count_query2
+				->select(DB::raw($total_count_select))
+                ->whereRaw(sprintf("DATE(st.start_date_time) >= '%s' and DATE(st.start_date_time) <= '%s'", $sel_start_date, $sel_end_date))
+				->get();
+        $count4 = $count_query3
+				->select(DB::raw($total_count_select))
+                ->whereRaw(sprintf("DATE(st.start_date_time) >= '%s' and DATE(st.start_date_time) <= '%s'", $comp_start_date, $comp_end_date))
+				->get();
+        $count_dept = [];
+        $count_stat = [];
+        $guest_list_dept = [];
+        $guest_list = [];
+        $count_dept = array_merge($count1, $count2);
+        foreach ( $count_dept as $data)
+        {
+            $group_key = $data->department;
+			if (isset($guest_list_dept[$group_key])) {
+			} else {
+				$guest_list_dept[$group_key] = [];
+			}
+			$guest_list_dept[$group_key][] = $data;
+        }
+        $count_stat = array_merge($count3, $count4);
+        foreach ( $count_stat as $data)
+        {
+            $group_key = $data->department;
+			if (isset($guest_list[$group_key])) {
+			} else {
+				$guest_list[$group_key] = [];
+			}
+			$guest_list[$group_key][] = $data;
+        }
+        
+        $ret['code'] = 200;
+        $ret['guest_list_dept'] = $guest_list_dept;
+        $ret['guest_list'] = $count_stat;
+        $ret['sel_start_date'] = $sel_start_date;
+        $ret['sel_end_date'] = $sel_end_date;
+        $ret['comp_start_date'] = $comp_start_date;
+        $ret['comp_end_date'] = $comp_end_date;
+       
+       
+        return Response::json($ret);
+    }
+
+
+    public function getDataForMyManagerFC(Request $request)
+    {
+        date_default_timezone_set(config('app.timezone'));
+        
+        $selected_year = $request->get('selected_year', '');
+        $compared_year = $request->get('compared_year', '');
+        
+        $cur_date = date('Y-m-d');
+        $cur_year = date('Y');
+        $selected_year = '2022';
+        $compared_year = '2021';
+        
+        $property_id = $request->get('property_id', '4');
+        $start = microtime(true);
+        $ret = array();
+        $sel_start_date = $selected_year. '-01-01';
+        $comp_start_date = $compared_year. '-01-01';
+        $comp_end_date = $compared_year. '-12-31';
+        if ($selected_year == $cur_year)
+            $sel_end_date = $cur_date;
+        else
+            $sel_end_date = $selected_year . '-12-31';
+        
+    
+        // get feedback data
+        $query = DB::table('services_task as st')
+                ->leftJoin('common_department as cd','st.department_id','=','cd.id')
+                ->where('st.property_id', $property_id);
+        $count_query = clone $query;
+        $count_query1 = clone $query;
+        $count_query2 = clone $query;
+        $count_query3 = clone $query;
+		$total_count_select = '
+						CAST(COALESCE(sum(st.status_id = 0 and st.duration <= st.max_time), 0) AS UNSIGNED) as ontime,
+						CAST(COALESCE(sum(st.status_id = 4), 0) AS UNSIGNED) as canceled,
+						CAST(COALESCE(sum(st.status_id = 3), 0) AS UNSIGNED) as timeout,
+						CAST(COALESCE(sum(st.escalate_flag = 1), 0) AS UNSIGNED) as escalated,
+						CAST(COALESCE(sum(st.status_id = 5), 0) AS UNSIGNED) as scheduled,
+						CAST(COALESCE(sum((st.status_id = 1 or st.status_id = 2 ) and st.running = 0), 0) AS UNSIGNED) as hold,
+						count(*) as cnt	, cd.department	, YEAR(st.start_date_time) as year				
+					';
+		$count1 = $count_query
+                ->groupBy('year')
+                ->groupBy('st.department_id')
+				->select(DB::raw($total_count_select))
+                ->whereRaw(sprintf("DATE(st.start_date_time) >= '%s' and DATE(st.start_date_time) <= '%s'", $sel_start_date, $sel_end_date))
+				->get();
+        $count2 = $count_query1
+               ->groupBy('year')
+                ->groupBy('st.department_id')
+				->select(DB::raw($total_count_select))
+                ->whereRaw(sprintf("DATE(st.start_date_time) >= '%s' and DATE(st.start_date_time) <= '%s'", $comp_start_date, $comp_end_date))
+				->get();
+        $count3 = $count_query2
+				->select(DB::raw($total_count_select))
+                ->whereRaw(sprintf("DATE(st.start_date_time) >= '%s' and DATE(st.start_date_time) <= '%s'", $sel_start_date, $sel_end_date))
+				->get();
+        $count4 = $count_query3
+				->select(DB::raw($total_count_select))
+                ->whereRaw(sprintf("DATE(st.start_date_time) >= '%s' and DATE(st.start_date_time) <= '%s'", $comp_start_date, $comp_end_date))
+				->get();
+        $count_dept = [];
+        $count_stat = [];
+        $guest_list_dept = [];
+        $guest_list = [];
+        $count_dept = array_merge($count1, $count2);
+        foreach ( $count_dept as $data)
+        {
+            $group_key = $data->department;
+			if (isset($guest_list_dept[$group_key])) {
+			} else {
+				$guest_list_dept[$group_key] = [];
+			}
+			$guest_list_dept[$group_key][] = $data;
+        }
+        $count_stat = array_merge($count3, $count4);
+        foreach ( $count_stat as $data)
+        {
+            $group_key = $data->department;
+			if (isset($guest_list[$group_key])) {
+			} else {
+				$guest_list[$group_key] = [];
+			}
+			$guest_list[$group_key][] = $data;
+        }
+        
+        $ret['code'] = 200;
+        $ret['guest_list_dept'] = $guest_list_dept;
+        $ret['guest_list'] = $count_stat;
+        $ret['sel_start_date'] = $sel_start_date;
+        $ret['sel_end_date'] = $sel_end_date;
+        $ret['comp_start_date'] = $comp_start_date;
+        $ret['comp_end_date'] = $comp_end_date;
+       
+       
         return Response::json($ret);
     }
 
@@ -1622,5 +2345,17 @@ class DataController extends Controller
         }
 
         return Response::json($message_key);
+    }
+
+    public function reactGetChatUnreadCount(Request $request)
+    {
+        $user_id = $request->get('user_id', 0);
+        $chat_notify_cnt = AgentChatHistory::getTotalUnreadCount($user_id);
+        $ret = array();
+        $ret['code'] = 200;
+        $ret['content'] = array(
+            'chat_notify_cnt' => $chat_notify_cnt,
+        );
+        return Response::json($ret);
     }
 }

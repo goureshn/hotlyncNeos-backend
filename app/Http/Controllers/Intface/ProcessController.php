@@ -15,16 +15,20 @@ use App\Models\Call\HotelCharges;
 use App\Models\Call\StaffExternal;
 use App\Models\Call\Tax;
 use App\Models\Call\TimeSlab;
+use App\Models\Call\TimeSlabGroup;
 use App\Models\Call\Whitelist;
 use App\Models\IVR\IVRAgentStatus;
 use App\Models\Common\Property;
+use App\Models\Common\CommonUserGroup;
 use App\Models\Common\Room;
-// use App\Models\Common\LinenChange;
+use App\Models\Common\LinenChange;
+// use App\Models\Common\RoomType;
 use App\Models\Service\VIPCodes;
 use App\Models\Service\HskpStatus;
 use App\Models\Service\HskpRoomStatus;
 use App\Models\Service\RoomServiceGroup;
 use App\Models\Service\RoomServiceItem;
+use App\Models\Service\TaskNotification;
 use App\Models\Call\Allowance;
 use App\Models\Intface\Protocol;
 use App\Models\IVR\IVRUser;
@@ -35,6 +39,7 @@ use Illuminate\Support\Facades\DB;
 
 use App\Models\Common\Guest;
 use App\Models\Common\GuestAdvancedDetail;
+use App\Models\Common\GuestCheckinTemplate;
 use App\Models\Call\GuestExtension;
 use App\Models\Intface\Alarm;
 use App\Models\Intface\Parser;
@@ -47,11 +52,15 @@ use App\Modules\Functions;
 use App\Models\Service\Wakeup;
 use App\Models\Service\WakeupLog;
 
+use App\Models\Service\RosterList;
+use App\Models\Service\Location;
 
 use Response;
+use Curl;
 use DateTime;
 use DateInterval;
 use Redis;
+use App;
 use Log;
 use Illuminate\Contracts\Encryption\DecryptException;
 
@@ -104,12 +113,28 @@ class ProcessController extends Controller
             case 'checkin_gva0a1':
             case 'checkinnew':
             case 'checkinnogvgg':
-                $this->checkin($request);
+                $this->checkin($request, 1);
                 break;
             case 'offline_checkin':
+            case 'offline_checkin_1':    
+            case 'offline_checkin_2':
+            case 'offline_checkin_3':
+            case 'offline_checkin_4':
+            case 'offline_checkin_5':
+            case 'offline_checkin_6':
+            case 'offline_checkin_7':
+            case 'offline_checkin_8':
                 $this->offline_checkin($request);
                 break;
             case 'offline_vacant':
+            case 'offline_vacant_1':
+            case 'offline_vacant_2':
+            case 'offline_vacant_3':
+            case 'offline_vacant_4':
+            case 'offline_vacant_5':
+            case 'offline_vacant_6':
+            case 'offline_vacant_7':
+            case 'offline_vacant_8':
                 $this->offline_vacant($request);
                 break;
             case 'checkin_adv':
@@ -197,6 +222,18 @@ class ProcessController extends Controller
                 break;
             case 'minibarpost':
                 $this->minibarpost($request);
+                break;
+            case 'postingacknowledge':
+                $this->minibarPAcheck($request);
+                break;
+            case 'dndongrms':
+                $this->dndOnGrms($request);
+                break;
+            case 'dndoffgrms':
+                $this->dndOffGrms($request);
+                break;
+            case 'murgrms':
+                $this->murGrms($request);
                 break;
         }
     }
@@ -334,7 +371,7 @@ class ProcessController extends Controller
         //      }
         //     }
             //}
-            $ret = $this->checkin_proc($channel_id, $property_id, $params, $src_config);
+            $ret = $this->checkin_proc($channel_id, $property_id, $params, $src_config, 0);
            }
        // echo json_encode($protocollist, JSON_UNESCAPED_UNICODE);
     }
@@ -361,7 +398,7 @@ class ProcessController extends Controller
 
         $room_info = $query->where('r.room', '=', $room_number)
             ->where('b.property_id', '=', $property_id)
-            ->select(DB::raw('r.id, f.bldg_id,r.room'))->first();
+            ->select(DB::raw('r.id, f.bldg_id,r.room, r.hskp_status_id'))->first();
 
         return $room_info;
 	}	   
@@ -409,7 +446,8 @@ class ProcessController extends Controller
 
         $guest = DB::table('common_guest as cg')
 				->where('cg.room_id', $room_id)
-				->where('cg.arrival', '=', $cur_date)
+				// ->where('cg.arrival', '=', $cur_date)
+                ->where('cg.departure', '>=', $cur_date)
 				->where('cg.checkout_flag', 'checkin')
 				->first();
 
@@ -452,18 +490,18 @@ class ProcessController extends Controller
         
         for ($i = 0; $i < count($extensions); $i++) {
  
-            $ret['msg'] = sprintf("|NAM1|GN%s|ET%d|", $guest_name, $extensions[$i]->extension);
+            // $ret['msg'] = sprintf("|NAM1|GN%s|ET%d|", $guest_name, $extensions[$i]->extension);
 
-            Functions::sendMessageToInterface('interface_hotlync', $ret);
+            // Functions::sendMessageToInterface('interface_hotlync', $ret);
 
-            if(!empty($extensions[$i]->guid))
-            {
-                $ret['msg'] = sprintf("|NAM1|GN%s|GUID%s|", $guest_name, $extensions[$i]->guid);
+            // if(!empty($extensions[$i]->guid))
+            // {
+            //     $ret['msg'] = sprintf("|NAM1|GN%s|GUID%s|", $guest_name, $extensions[$i]->guid);
 
-                Functions::sendMessageToInterface('interface_hotlync', $ret);    
-            }    
+            //     Functions::sendMessageToInterface('interface_hotlync', $ret);    
+            // }    
 
-            usleep(500000);
+            // usleep(500000);
         }
 
       //  $ret['msg'] = sprintf("|TV|CHK1|GN%s|RN%d|", $guest_name, $room->room);    
@@ -477,15 +515,15 @@ class ProcessController extends Controller
         $extensions = GuestExtension::where('room_id', '=', $room_id)->get();
 
         for ($i = 0; $i < count($extensions); $i++) {
-            $ret['msg'] = sprintf("|CHK0|ET%d|", $extensions[$i]->extension);
+            // $ret['msg'] = sprintf("|CHK0|ET%d|", $extensions[$i]->extension);
 
-            Functions::sendMessageToInterface('interface_hotlync', $ret);    
-            usleep(500000);
-            $extntosend = $extensions[$i]->extension;
-            $messageoff = array();
-            $messageoff['type'] = 'messagelampoff';
-            $messageoff['extension'] = $extntosend;
-            Redis::publish('notify', json_encode($messageoff));
+            // Functions::sendMessageToInterface('interface_hotlync', $ret);    
+            // usleep(500000);
+            // $extntosend = $extensions[$i]->extension;
+            // $messageoff = array();
+            // $messageoff['type'] = 'messagelampoff';
+            // $messageoff['extension'] = $extntosend;
+            // Redis::publish('notify', json_encode($messageoff));
         }
 
         $room = Room::find($room_id);
@@ -497,31 +535,31 @@ class ProcessController extends Controller
 
     private function sendGuestchangeResponse($ret, $room_id, $guest_name)
     {
-        usleep(500000);
-        $extensions = GuestExtension::where('room_id', '=', $room_id)->get();
+        // usleep(500000);
+        // $extensions = GuestExtension::where('room_id', '=', $room_id)->get();
         
-        for ($i = 0; $i < count($extensions); $i++) {
+        // for ($i = 0; $i < count($extensions); $i++) {
         
-            $ret['msg'] = sprintf("|NAM2|GN%s|ET%d|", $guest_name, $extensions[$i]->extension);
+        //     $ret['msg'] = sprintf("|NAM2|GN%s|ET%d|", $guest_name, $extensions[$i]->extension);
 
-            Functions::sendMessageToInterface('interface_hotlync', $ret);   
+        //     Functions::sendMessageToInterface('interface_hotlync', $ret);   
 
-            usleep(500000);
-        }
+        //     usleep(500000);
+        // }
 
     }
 
     private function sendFlagvalueResponse($ret, $prefix, $value, $room_id)
     {
         
-        $extensions = GuestExtension::where('room_id', '=', $room_id)->get();
+        // $extensions = GuestExtension::where('room_id', '=', $room_id)->get();
 
-        for ($i = 0; $i < count($extensions); $i++) {
-            usleep(5000000);
-            $ret['msg'] = sprintf("|" . $prefix . "%d|ET%d|", $value, $extensions[$i]->extension);
+        // for ($i = 0; $i < count($extensions); $i++) {
+        //     usleep(5000000);
+        //     $ret['msg'] = sprintf("|" . $prefix . "%d|ET%d|", $value, $extensions[$i]->extension);
 
-            Functions::sendMessageToInterface('interface_hotlync', $ret);    
-        }
+        //     Functions::sendMessageToInterface('interface_hotlync', $ret);    
+        // }
     }
 
     private function saveGuestLog($action, $id) {
@@ -571,7 +609,385 @@ class ProcessController extends Controller
         return $param;
     }
 
-    private function checkin($request)
+    public function roomStateValue($value){
+        $returnValue = "";
+        if($value == "DI"){
+            $returnValue = "Dirty";
+        }elseif ($value == "CL") {
+            $returnValue = "Clean";
+        }elseif ($value == "IP") {
+            $returnValue = "Inspected";
+        }elseif ($value == "OS") {
+            $returnValue = "Out of Service";
+        }elseif ($value == "OO") {
+            $returnValue = "Out of Order";
+        }else {
+            # code...
+        }
+        return $returnValue;
+    }
+
+    public function occupancyValue($value){
+        $returnValue = "";
+        if($value == "OCC"){
+            $returnValue = "Occupied";
+        }elseif ($value == "VAC") {
+            $returnValue = "Vacant";
+        }else {
+            # code...
+        }
+        return $returnValue;
+    }
+
+    private function offline_checkin($request){
+        //room number, fo_status, occupancy, room state ,adult, kid - 101|Checked In|OCC|DI|1|0
+        $params = explode('|', $this->getParam($request->input('param', ''))); 
+        $property_id = $request->input('property_id', '0');
+
+        $src_config = $request->input('src_config');
+        if( !empty($src_config) ){
+            $property_id = $src_config['src_property_id'];
+        }
+        // if($property_id_src == $property_id){
+
+            $rm_info =  DB::table('common_room as r')
+                    ->leftJoin('services_room_status as srs', 'r.id', '=', 'srs.id')
+                    ->where('r.room','=', (int)$params[0])
+                    ->where('srs.property_id','=',$property_id)
+                    ->first();
+        
+            if (!empty($rm_info)) {
+
+                // services_hskp_log config
+                $update_hskp_log = DB::table('offline_interface_update_config')
+                    ->where('property_id', $property_id)
+                    ->where('incoming_property','ov_occupancy')
+                    ->where('table_name','services_hskp_log')
+                    ->where('incoming_value', $params[2])
+                    ->first();
+
+                $cur_time = date("Y-m-d H:i:s");
+            
+                $hskp_log = new HskpStatusLog();
+                $hskp_log->room_id = $rm_info->id;
+                $hskp_log->hskp_id = 0;
+                $hskp_log->user_id = 0;
+                $hskp_log->method = "offlinefiles";
+                if(!empty($update_hskp_log)){
+                    $hskp_log->state = $update_hskp_log->value;
+                }
+                $hskp_log->created_at = $cur_time;
+                $hskp_log->save();
+
+                // services_room_status config
+
+                $rm_status = HskpRoomStatus::where('id','=',$rm_info->id)
+                ->where('property_id',$property_id)->first();
+
+                //update rm_state
+                $update_rm_status = DB::table('offline_interface_update_config')
+                    ->where('property_id', $property_id)
+                    ->where('incoming_property','rm_state')
+                    ->where('table_name','services_room_status')
+                    ->where('column_name','rm_state')
+                    ->where('incoming_value', $params[3])
+                    ->first();
+
+                if(!empty($update_rm_status)){
+                    $rm_status->rm_state = $update_rm_status->value;
+                }
+
+                //update room_status
+                $update_room_status = DB::table('offline_interface_update_config')
+                    ->where('property_id', $property_id)
+                    ->where('incoming_property','rm_state')
+                    ->where('table_name','services_room_status')
+                    ->where('column_name','room_status')
+                    ->where('incoming_value', $params[3])
+                    ->first();
+
+                if(!empty($update_room_status)){
+                    $rm_status->room_status = $update_room_status->value;
+                }
+
+                //update ov_occupancy
+                $update_ov_occupancy = DB::table('offline_interface_update_config')
+                    ->where('property_id', $property_id)
+                    ->where('incoming_property','ov_occupancy')
+                    ->where('table_name','services_room_status')
+                    ->where('column_name','ov_occupancy')
+                    ->where('incoming_value', $params[2])
+                    ->first();
+
+                if(!empty($update_ov_occupancy)){
+                    $rm_status->ov_occupancy = $update_ov_occupancy->value;
+                }
+
+                // $update_service_state = DB::table('offline_interface_update_config')
+                //     ->where('property_id', $property_id)
+                //     ->where('incoming_property','rm_state')
+                //     ->where('table_name','services_room_status')
+                //     ->where('column_name','service_state')
+                //     ->where('incoming_value', $params[3])
+                //     ->first();
+                // if(!empty($update_service_state)){
+                //     $rm_status->service_state = $update_service_state->value;
+                // }
+                
+                // fo_state to fo_state
+                $update_fo_state = DB::table('offline_interface_update_config')
+                    ->where('property_id', $property_id)
+                    ->where('incoming_property','fo_state')
+                    ->where('table_name','services_room_status')
+                    ->where('column_name','fo_state')
+                    ->where('incoming_value', $params[1])
+                    ->first();
+
+                if(!empty($update_fo_state)){
+                    $rm_status->fo_state = $update_fo_state->value;
+                }
+
+                //exception for fo_state with occupancy
+                $update_ov_occupancy_fo = DB::table('offline_interface_update_config')
+                    ->where('property_id', $property_id)
+                    ->where('incoming_property','ov_occupancy')
+                    ->where('table_name','services_room_status')
+                    ->where('column_name','fo_state')
+                    ->where('incoming_value', $params[2])
+                    ->first();
+
+                if(!empty($update_ov_occupancy_fo)){
+                    $rm_status->fo_state = $update_ov_occupancy_fo->value;
+                }
+
+                // if($rm_status->ov_occupancy == 'Vacant'){
+                //     $rm_status->fo_state = 'Checked Out';
+                // }else{
+                //     $rm_status->fo_state = $params[1];
+                // }
+                // if($rm_status->rm_state = "Out of Service"){
+                //     $rm_status->service_state = "OOS";
+                // }
+                // if($rm_status->rm_state = "Out of Order"){
+                //     $rm_status->service_state = "OOO";
+                // }
+
+                //update service_state
+                $update_service_state = DB::table('offline_interface_update_config')
+                    ->where('property_id', $property_id)
+                    ->where('incoming_property','rm_state')
+                    ->where('table_name','services_room_status')
+                    ->where('column_name','service_state')
+                    ->where('incoming_value', $params[3])
+                    ->first();
+                if(!empty($update_service_state)){
+                    $rm_status->service_state = $update_service_state->value;
+                }
+
+                //update working_status
+                $update_working_status = DB::table('offline_interface_update_config')
+                    ->where('property_id', $property_id)
+                    ->where('incoming_property','rm_state')
+                    ->where('table_name','services_room_status')
+                    ->where('column_name','working_status')
+                    ->where('incoming_value', $params[3])
+                    ->first();
+
+                if(!empty($update_working_status)){
+                    if ($rm_status->working_status  == 0 || $rm_status->working_status  == 1 || $rm_status->working_status  == 2 || $rm_status->working_status  == 7)
+                    {
+                        $rm_status->working_status = $update_working_status->value;
+                    }
+                }
+
+                $rm_status->save();
+
+                $rules = array();
+
+		        $rules['offline_adult_kid'] = 0;
+
+                $rules = PropertySetting::getPropertySettings($property_id, $rules);
+                $cur_date = date("Y-m-d");
+
+                if ($rules['offline_adult_kid'] == 1){
+
+                    $guest = DB::table('common_guest as cg')
+				            ->join('common_room as cr', 'cg.room_id', '=', 'cr.id')
+				            ->join('common_floor as cf', 'cr.flr_id', '=', 'cf.id')	
+				            ->join('common_building as cb', 'cf.bldg_id', '=', 'cb.id')
+					        ->where('cg.room_id', $rm_info->id)
+					        ->where('cg.departure', '>=', $cur_date)
+					        ->where('cg.checkout_flag', 'checkin')
+					        ->where('cg.property_id',$property_id)
+					        ->where('cb.property_id',$property_id)
+					        ->first();
+
+                    if (!empty($guest)){
+
+                         DB::table('common_guest as cg')
+				            ->join('common_room as cr', 'cg.room_id', '=', 'cr.id')
+				            ->join('common_floor as cf', 'cr.flr_id', '=', 'cf.id')	
+				            ->join('common_building as cb', 'cf.bldg_id', '=', 'cb.id')
+					        ->where('cg.room_id', $rm_info->id)
+					        ->where('cg.departure', '>=', $cur_date)
+					        ->where('cg.checkout_flag', 'checkin')
+					        ->where('cg.property_id',$property_id)
+					        ->where('cb.property_id',$property_id)
+					        ->update(['cg.adult' => $params[4], 'cg.chld' => $params[5]]);
+                    }
+                }
+            }
+        // }
+    }
+
+    private function offline_vacant($request){
+        //room number, occupancy, room state - 108|VAC|OS
+        $params = explode('|', $this->getParam($request->input('param', ''))); 
+        $property_id = $request->input('property_id', '0');
+
+        $src_config = $request->input('src_config');
+        if( !empty($src_config) ){
+            $property_id = $src_config['src_property_id'];
+        }
+        // if($property_id_src == $property_id){
+
+            $rm_info =  DB::table('common_room as r')
+                    ->leftJoin('services_room_status as srs', 'r.id', '=', 'srs.id')
+                    ->where('r.room','=', (int)$params[0])
+                    ->where('srs.property_id','=',$property_id)
+                    ->first();
+        
+            if (!empty($rm_info)) {
+
+                // services_hskp_log config
+                $update_hskp_log = DB::table('offline_interface_update_config')
+                    ->where('property_id', $property_id)
+                    ->where('incoming_property','rm_state')
+                    ->where('table_name','services_hskp_log')
+                    ->where('incoming_value', $params[2])
+                    ->first();
+
+                $cur_time = date("Y-m-d H:i:s");
+                
+                $hskp_log = new HskpStatusLog();
+                $hskp_log->room_id = $rm_info->id;
+                $hskp_log->hskp_id = 0;
+                $hskp_log->user_id = 0;
+                $hskp_log->method = "offlinefiles";
+                if(!empty($update_hskp_log)){
+                    $hskp_log->state = $update_hskp_log->value;
+                }
+                $hskp_log->created_at = $cur_time;
+                $hskp_log->save();
+
+                // services_room_status config
+                $update_room_status = DB::table('offline_interface_update_config')
+                    ->where('property_id', $property_id)
+                    ->where('incoming_property','rm_state')
+                    ->where('table_name','services_room_status')
+                    ->where('column_name','working_status')
+                    ->where('incoming_value', $params[2])
+                    ->first();
+
+                $rm_status = HskpRoomStatus::where('id','=',$rm_info->id)
+                ->where('property_id',$property_id)->first();
+
+                //update rm_state
+                $update_rm_status = DB::table('offline_interface_update_config')
+                    ->where('property_id', $property_id)
+                    ->where('incoming_property','rm_state')
+                    ->where('table_name','services_room_status')
+                    ->where('column_name','rm_state')
+                    ->where('incoming_value', $params[2])
+                    ->first();
+
+                if(!empty($update_rm_status)){
+                    $rm_status->rm_state = $update_rm_status->value;
+                }
+
+                //update room_status
+                $update_room_status = DB::table('offline_interface_update_config')
+                    ->where('property_id', $property_id)
+                    ->where('incoming_property','rm_state')
+                    ->where('table_name','services_room_status')
+                    ->where('column_name','room_status')
+                    ->where('incoming_value', $params[2])
+                    ->first();
+
+                if(!empty($update_room_status)){
+                    $rm_status->room_status = $update_room_status->value;
+                }
+
+                //$rm_status->rm_state = $this->roomStateValue($params[2]);
+                //$rm_status->room_status = $this->roomStateValue($params[2]);
+
+                //update ov_occupancy
+                $update_ov_occupancy = DB::table('offline_interface_update_config')
+                    ->where('property_id', $property_id)
+                    ->where('incoming_property','ov_occupancy')
+                    ->where('table_name','services_room_status')
+                    ->where('column_name','ov_occupancy')
+                    ->where('incoming_value', $params[1])
+                    ->first();
+
+                if(!empty($update_ov_occupancy)){
+                    $rm_status->ov_occupancy = $update_ov_occupancy->value;
+                }
+
+                //exception for fo_state with occupancy
+                $update_ov_occupancy_fo = DB::table('offline_interface_update_config')
+                    ->where('property_id', $property_id)
+                    ->where('incoming_property','ov_occupancy')
+                    ->where('table_name','services_room_status')
+                    ->where('column_name','fo_state')
+                    ->where('incoming_value', $params[1])
+                    ->first();
+
+                if(!empty($update_ov_occupancy_fo)){
+                    $rm_status->fo_state = $update_ov_occupancy_fo->value;
+                }
+
+                //$rm_status->ov_occupancy = $this->occupancyValue($params[1]);
+                // if($rm_status->ov_occupancy == 'Vacant'){
+                //     $rm_status->fo_state = 'Checked Out';
+                // }
+                // if($rm_status->rm_state = "Out of Service"){
+                //     $rm_status->service_state = "OOS";
+                // }
+                // if($rm_status->rm_state = "Out of Order"){
+                //     $rm_status->service_state = "OOO";
+                // }
+                $update_service_state = DB::table('offline_interface_update_config')
+                    ->where('property_id', $property_id)
+                    ->where('incoming_property','rm_state')
+                    ->where('table_name','services_room_status')
+                    ->where('column_name','service_state')
+                    ->where('incoming_value', $params[2])
+                    ->first();
+                if(!empty($update_service_state)){
+                    $rm_status->service_state = $update_service_state->value;
+                }
+
+                $update_working_status = DB::table('offline_interface_update_config')
+                    ->where('property_id', $property_id)
+                    ->where('incoming_property','rm_state')
+                    ->where('table_name','services_room_status')
+                    ->where('column_name','working_status')
+                    ->where('incoming_value', $params[2])
+                    ->first();
+
+                if(!empty($update_working_status)){
+                    if ($rm_status->working_status  == 0 || $rm_status->working_status  == 1 || $rm_status->working_status  == 2 || $rm_status->working_status  == 7){
+                        $rm_status->working_status = $update_working_status->value;
+                    }
+                }
+                $rm_status->save();
+            }
+
+        // }
+    }
+
+    private function checkin($request, $flag)
     {        
         $channel_id = $request->input('channel_id', '0');
         $property_id = $request->input('property_id', '0');
@@ -603,7 +1019,7 @@ class ProcessController extends Controller
         }     
         $params[2] = $guest_name;
         
-        $ret = $this->checkin_proc($channel_id, $property_id, $params, $src_config);
+        $ret = $this->checkin_proc($channel_id, $property_id, $params, $src_config, $flag);
         
         // check flagged guest
         $guest_id = $params[1];
@@ -647,7 +1063,7 @@ class ProcessController extends Controller
         if( !empty($src_config) )
             $property_id = $src_config['src_property_id'];
 
-        $ret = $this->checkin_proc($channel_id, $property_id, $params, $src_config);
+        $ret = $this->checkin_proc($channel_id, $property_id, $params, $src_config, 0);
 
         $this->saveGuestAdvancedDetail($channel_id, $property_id, $params, $src_config);
 
@@ -661,7 +1077,7 @@ class ProcessController extends Controller
         return $ret;
     }
 
-    private function checkin_proc($channel_id, $property_id, $params, $src_config) {
+    private function checkin_proc($channel_id, $property_id, $params, $src_config, $email_flag) {
         $room_number = $params[0];
         $guest_id = $params[1];
        
@@ -671,6 +1087,9 @@ class ProcessController extends Controller
         $share = $params[6];
         $arrival = $params[7];
         $departure = $params[8];
+        $mealplan = $params[13];
+        $adults = $params[14];
+		$kids = $params[15];
 		 //$title = '';
         if( count($params) > 9 )
         {
@@ -773,6 +1192,9 @@ class ProcessController extends Controller
         $guest->checkout_flag = 'checkin';
         $guest->share = $share;
         $guest->vip = $vip;
+        $guest->meal_plan = $mealplan;
+        $guest->adult =  $adults;
+        $guest->chld =  $kids;
         $guest->language = $language;
         $guest->profile_id = $profileid;
         $guest->no_post = $no_post;
@@ -789,6 +1211,10 @@ class ProcessController extends Controller
         // save to log
         $this->saveGuestLog('checkin', $guest->id);
 
+        if ($email_flag == 1){
+            $this->sendCheckinEmailtoGuest($guest->id, $property_id);
+        }
+
         $ret['guest_unique_id'] = $guest_id;
 
         // 3. Room status should change to Occupies dirty
@@ -803,25 +1229,28 @@ class ProcessController extends Controller
         }
 
         // 4. there is a Voicemail box that needs to be assigned to room
-        $mailbox = IVRUser::where('room_id', $room_info->id)->first();
-        if (empty($mailbox)) // there is no mailbox assigned to this room
-        {
-            $mailbox = IVRUser::where('room_id', '<', '1')->first();
-            if (empty($mailbox))    // There is no valid mail box
-            {
-                $data = array();
-                $data['type'] = 'warn';
-                $data['msg'] = 'Invalid assign mailbox request for Room %3$s received from %2$s in %1$s. Cause: There is no mailbox for %3$s in Property %1$s';
-                array_push($alarm, $data);
-            } else  // there is valid mailbox.
-            {
-                $mailbox->room_id = $room_info->id;
-                $mailbox->save();
-            }
-        }
+        // $mailbox = IVRUser::where('room_id', $room_info->id)->first();
+        // if (empty($mailbox)) // there is no mailbox assigned to this room
+        // {
+        //     $mailbox = IVRUser::where('room_id', '<', '1')->first();
+        //     if (empty($mailbox))    // There is no valid mail box
+        //     {
+        //         $data = array();
+        //         $data['type'] = 'warn';
+        //         $data['msg'] = 'Invalid assign mailbox request for Room %3$s received from %2$s in %1$s. Cause: There is no mailbox for %3$s in Property %1$s';
+        //         array_push($alarm, $data);
+        //     } else  // there is valid mailbox.
+        //     {
+        //         $mailbox->room_id = $room_info->id;
+        //         $mailbox->save();
+        //     }
+        // }
 
         // 5. return extension array
         $this->sendCheckinResponse($ret, $room_info->id, $guest->guest_name);
+
+        //review pro survey
+        app('App\Http\Controllers\ReviewproController')->sendSurvey($property_id, $guest_id, 'checkin');
 
         return $this->sendAlarm($ret, $alarm);
     }
@@ -900,6 +1329,10 @@ class ProcessController extends Controller
         $share = $params[6];
         $arrival = $params[7];
         $departure = $params[8];
+        $mealplan = $params[13];
+        $adults = $params[14];
+		$kids = $params[15];
+
         if( count($params) > 9 )
         {
              $guest_name =  $params[2];
@@ -951,11 +1384,14 @@ class ProcessController extends Controller
             ->where('share', $share)
             ->where('vip', $vip)
             ->where('language', $language)
+            ->where('meal_plan', $mealplan)
+            ->where('chld', $kids)
+            ->where('adult', $adults)
             ->where('checkout_flag', 'checkin')
             ->first();
 
         if( empty($guest) ) // not exist same
-            return $this->checkin($request);
+            return $this->checkin($request, 0);
 
         // 5. return extension array
         $this->sendCheckinResponse($ret, $room_info->id, $guest->guest_name);
@@ -1085,13 +1521,18 @@ class ProcessController extends Controller
             ->exists();
 
         if ($exist == false){
-
-            HskpRoomStatus::where('id', $room_info->id)->update(['occupancy' => 'Vacant', 'schedule' => '']);
-
+            $room_status = HskpRoomStatus::where('id',$room_info->id)->first();
+            if ($room_status->attendant_id == 0 ){
+                HskpRoomStatus::where('id', $room_info->id)->update(['occupancy' => 'Vacant', 'schedule' => '', 'fo_state' => NULL, 'working_status' => 100, 'full_clean_date' => NULL]);
+            }else{
+                HskpRoomStatus::where('id', $room_info->id)->update(['occupancy' => 'Vacant', 'schedule' => '', 'fo_state' => NULL, 'working_status' => 0, 'full_clean_date' => NULL]);
+            }
         }
        
         $this->sendCheckoutResponse($ret, $room_info->id, ' ');
         
+         //review pro survey
+         app('App\Http\Controllers\ReviewproController')->sendSurvey($property_id, $guest_id, 'checkout');
         
         return $this->sendAlarm($ret, $alarm);
     }
@@ -1148,7 +1589,12 @@ class ProcessController extends Controller
 
         if ($exist == false){
 
-            HskpRoomStatus::where('id', $room_info->id)->update(['occupancy' => 'Vacant', 'schedule' => '']);
+            $room_status = HskpRoomStatus::where('id',$room_info->id)->first();
+            if ($room_status->attendant_id == 0 ){
+                HskpRoomStatus::where('id', $room_info->id)->update(['occupancy' => 'Vacant', 'schedule' => '', 'fo_state' => NULL, 'working_status' => 100, 'full_clean_date' => NULL]);
+            }else{
+                HskpRoomStatus::where('id', $room_info->id)->update(['occupancy' => 'Vacant', 'schedule' => '', 'fo_state' => NULL, 'working_status' => 0, 'full_clean_date' => NULL]);
+            }
 
         }
 
@@ -1232,7 +1678,12 @@ class ProcessController extends Controller
 
         if ($exist == false){
 
-            HskpRoomStatus::where('id', $room_info->id)->update(['occupancy' => 'Vacant', 'schedule' => '']);
+            $room_status = HskpRoomStatus::where('id',$room_info->id)->first();
+            if ($room_status->attendant_id == 0 ){
+                HskpRoomStatus::where('id', $room_info->id)->update(['occupancy' => 'Vacant', 'schedule' => '', 'fo_state' => NULL, 'working_status' => 100, 'full_clean_date' => NULL]);
+            }else{
+                HskpRoomStatus::where('id', $room_info->id)->update(['occupancy' => 'Vacant', 'schedule' => '', 'fo_state' => NULL, 'working_status' => 0, 'full_clean_date' => NULL]);
+            }
 
         }
 
@@ -1296,6 +1747,9 @@ class ProcessController extends Controller
         $share = $params[6];
         $arrival = $params[7];
         $departure = $params[8];
+        $mealplan = $params[13];
+        $adults = $params[14];
+		$kids = $params[15];
 	//	$title = '';  
         if( count($params) > 9 )
         {
@@ -1381,7 +1835,7 @@ class ProcessController extends Controller
 
             $this->sendAlarm($ret, $alarm);
 
-            return $this->checkin($request);
+            return $this->checkin($request, 0);
         }
 
         $guest->guest_name = $guest_name;
@@ -1392,6 +1846,9 @@ class ProcessController extends Controller
         $guest->departure = $departure;
         $guest->profile_id = $profileid;
         $guest->no_post = $no_post;
+        $guest->meal_plan = $mealplan;
+        $guest->adult =  $adults;
+        $guest->chld =  $kids;
         $guest->save();
 
         // save to log
@@ -1424,6 +1881,9 @@ class ProcessController extends Controller
         $guest_id = $params[2];
         $oldroom_number = $params[3];
         $oldroom_occupied = $params[4];
+        $mealplan = $params[5];
+        $adults = $params[6];
+		$kids = $params[7];
 
         $alarm = array();
 
@@ -1506,6 +1966,9 @@ class ProcessController extends Controller
         $newguest->guest_name = $guest->guest_name;
         $newguest->first_name = $guest->first_name;
         $newguest->title = $guest->title;
+        $newguest->meal_plan =  $mealplan;
+        $newguest->adult =  $adults;
+        $newguest->chld =  $kids;
         $newguest->email = $guest->email;
         $newguest->mobile = $guest->mobile;
         $newguest->room_id = $newroom_info->id;
@@ -1535,7 +1998,12 @@ class ProcessController extends Controller
 
             if ($exist == false){
 
-                HskpRoomStatus::where('id', $guest->room_id)->update(['occupancy' => 'Vacant', 'schedule' => '']);
+                $room_status = HskpRoomStatus::where('id',$guest->room_id)->first();
+                if ($room_status->attendant_id == 0 ){
+                        HskpRoomStatus::where('id', $guest->room_id)->update(['occupancy' => 'Vacant', 'schedule' => '', 'fo_state' => NULL, 'working_status' => 100, 'full_clean_date' => NULL]);
+                }else{
+                        HskpRoomStatus::where('id', $guest->room_id)->update(['occupancy' => 'Vacant', 'schedule' => '', 'fo_state' => NULL, 'working_status' => 0, 'full_clean_date' => NULL]);
+                }
 
             }
             $this->sendCheckoutResponse($ret, $guest->room_id, ' ');
@@ -1560,7 +2028,12 @@ class ProcessController extends Controller
 
                 if ($exist == false){
 
-                    HskpRoomStatus::where('id', $oldguest_newroom->room_id)->update(['occupancy' => 'Vacant', 'schedule' => '']);
+                    $room_status = HskpRoomStatus::where('id',$oldguest_newroom->room_id)->first();
+                    if ($room_status->attendant_id == 0 ){
+                        HskpRoomStatus::where('id', $oldguest_newroom->room_id)->update(['occupancy' => 'Vacant', 'schedule' => '', 'fo_state' => NULL, 'working_status' => 100, 'full_clean_date' => NULL]);
+                    }else{
+                        HskpRoomStatus::where('id', $oldguest_newroom->room_id)->update(['occupancy' => 'Vacant', 'schedule' => '', 'fo_state' => NULL, 'working_status' => 0, 'full_clean_date' => NULL]);
+                    }
 
                 }
 
@@ -1568,41 +2041,51 @@ class ProcessController extends Controller
             }
         }
 
-        $oldroom_mailbox = IVRUser::where('room_id', $oldroom_info->id)->first();
-        $newroom_mailbox = IVRUser::where('room_id', $newroom_info->id)->first();
+        // $oldroom_mailbox = IVRUser::where('room_id', $oldroom_info->id)->first();
+        // $newroom_mailbox = IVRUser::where('room_id', $newroom_info->id)->first();
 
         // if there is no guest, room state must be changed and free mailbox.
         $this->freeRoom($oldroom_info);
 
-        if (empty($newroom_mailbox))    // there is no mailbox for new room
-        {
-            if (!empty($oldroom_mailbox))    // there is mailbox for old room
-            {
-                // move mailbox from old room to new room
-                $oldroom_mailbox->room_id = $newroom_info->id;
-                $oldroom_mailbox->save();
-            } else    // there is no mailbox for old room
-            {
-                // find valid mailbox
-                $newroom_mailbox = IVRUser::where('room_id', '<', '1')->first();
-                if (empty($newroom_mailbox))    // There is no valid mail box
-                {
-                    $data = array();
-                    $data['type'] = 'warn';
-                    $data['msg'] = 'Invalid assign mailbox request for Room %3$s received from %2$s in %1$s. Cause: There is no mailbox for %3$s in Property %1$s';
-                    array_push($alarm, $data);
-                } else  // there is valid mailbox.
-                {
-                    // assign valid mail box to new room
-                    $newroom_mailbox->room_id = $newroom_info->id;
-                    $newroom_mailbox->save();
-                }
-            }
-        }
+        // if (empty($newroom_mailbox))    // there is no mailbox for new room
+        // {
+        //     if (!empty($oldroom_mailbox))    // there is mailbox for old room
+        //     {
+        //         // move mailbox from old room to new room
+        //         $oldroom_mailbox->room_id = $newroom_info->id;
+        //         $oldroom_mailbox->save();
+        //     } else    // there is no mailbox for old room
+        //     {
+        //         // find valid mailbox
+        //         $newroom_mailbox = IVRUser::where('room_id', '<', '1')->first();
+        //         if (empty($newroom_mailbox))    // There is no valid mail box
+        //         {
+        //             $data = array();
+        //             $data['type'] = 'warn';
+        //             $data['msg'] = 'Invalid assign mailbox request for Room %3$s received from %2$s in %1$s. Cause: There is no mailbox for %3$s in Property %1$s';
+        //             array_push($alarm, $data);
+        //         } else  // there is valid mailbox.
+        //         {
+        //             // assign valid mail box to new room
+        //             $newroom_mailbox->room_id = $newroom_info->id;
+        //             $newroom_mailbox->save();
+        //         }
+        //     }
+        // }
 
         // checkin on new room
         $newguest->save();
 
+        // transfer wakeup call
+        $wakeup = Wakeup::where('room_id', $oldroom_info->id)
+                  ->where('property_id', $property_id)
+                  ->where('status', 'Pending')
+                  ->get();
+        if (!empty($wakeup)){
+            foreach($wakeup as $row){
+                Wakeup::where('id', $row->id)->update(['room_id' => $newroom_info->id]);
+            }
+        }
 
         $this->saveGuestLog('roomchange', $newguest->id);
 
@@ -2046,6 +2529,33 @@ class ProcessController extends Controller
         return $this->sendAlarm($ret, $alarm);
     }
 
+    public function manualNightAudit(Request $request) {
+		$property_id = $request->get('property_id', 0);
+        $channel_name = $request->get('channel_name', '');
+        $building_ids = $request->get('building_ids', '');
+        app('App\Http\Controllers\Backoffice\Guest\HSKPController')->nightAudit($property_id);
+        // Send Night Audit Alarm
+        // $channel_id = DB::connection('interface')->table('channel as cn')
+		// 			->leftJoin('protocol as cp', 'cn.protocol_id', '=', 'cp.id')
+        //             ->where('cp.name', $channel_name)
+		// 			->select(['cn.id', 'cp.name'])
+        //             ->pluck('id');
+        
+        // for ($i=0; $i < count($building_ids); $i++) { 
+        //     $src_config = array();
+        //     $src_config['src_property_id'] = $property_id;
+        //     $src_config['src_build_id'] = $building_ids[$i];
+        //     $src_config['accept_build_id'] = array();
+        //     $ret = array();
+        //     $ret['property_id'] = $property_id;
+        //     $ret['channel_id'] = $channel_id;
+        //     $ret['src_config'] = $src_config;
+        //     $alarm = array();
+        //     $ret['alarm'] = $alarm;
+        //     Functions::sendMessageToInterface('interface_alarm', $ret); 
+        // }
+	}
+
 
     private function nightaudit($request)
     {
@@ -2331,7 +2841,7 @@ class ProcessController extends Controller
         $transfer = $params[6];
         $access_code = $params[7];
         $pulse = 0;
-        $year = date('y');
+        // $year = date('y');
         $duration_flag = substr($duration, 0, 1);
         if($duration_flag == 'S')
         {
@@ -2339,8 +2849,8 @@ class ProcessController extends Controller
         }
          else if($duration_flag == 'E')
         {
-            $duration_temp=$year.'-'.substr($duration, 1,2).'-'.substr($duration, 3,2).' '.substr($duration, 5,2).':'.substr($duration, 7,2).':'.substr($duration, 9,2);
-			$time_temp=$year.'-'.substr($time, 0,2).'-'.substr($time, 2,2).' '.substr($time, 4,2).':'.substr($time, 6,2).':'.substr($time, 8,2);
+            $duration_temp=substr($duration, 1,4).'-'.substr($duration, 5,2).'-'.substr($duration, 7,2).' '.substr($duration, 9,2).':'.substr($duration, 11,2).':'.substr($duration, 13,2);
+			$time_temp=substr($time, 0,4).'-'.substr($time, 4,2).'-'.substr($time, 6,2).' '.substr($time, 8,2).':'.substr($time, 10,2).':'.substr($time, 12,2);
             $durations= date_diff( new DateTime($duration_temp), new DateTime($time_temp) );
             //$start_time=$params[7];
            	//$start_time=new DateTime($start_time);
@@ -2348,9 +2858,8 @@ class ProcessController extends Controller
             //$durations= date_diff( $start_time, $duration );
             $elapse_seconds = ((($durations->h)*3600)+(($durations->m)*60)+$durations->s);
             
-            $date=substr($time, 0,2).'/'.substr($time, 2,2);
-            $time=(substr($time, 4,2).':'.substr($time, 6,2).':'.substr($time, 8,2));
-
+            $date=substr($time, 4,2).'/'.substr($time, 6,2);
+            $time=(substr($time, 8,2).':'.substr($time, 10,2).':'.substr($time, 12,2));
         }
         else
         {
@@ -2621,7 +3130,7 @@ class ProcessController extends Controller
         return $result;
     }
 
-private function getChargeValue($chargemode, $timeslab, $dest_group, $elapse, $elapse_seconds, &$ret, &$alarm, $room_id, $calleeid) {
+private function getChargeValue($chargemode, $timeslab, $dest_group, $elapse, $elapse_seconds, &$ret, &$alarm, $room_id, $calleeid, $bcext) {
         date_default_timezone_set(config('app.timezone'));
         $cur_date = date("Y-m-d");
         $result = array();
@@ -2654,9 +3163,33 @@ private function getChargeValue($chargemode, $timeslab, $dest_group, $elapse, $e
             $call_allowance = Allowance::find($adminrate->call_allowance);
         } 
 		else if($chargemode == 'bc'){
-		$guestrate = GuestChargeMap::where('time_slab', $timeslab->id)
-                ->where('carrier_group_id', $dest_group->carrier_group_id)
-                ->first();
+            $slab = 0;
+            $carrier = 0;
+            $rate_room_type = 0;
+           if($bcext->applied_room_type != 0){
+                $guestratevip = GuestChargeMap::where('time_slab', $timeslab->id)->where('carrier_group_id', $dest_group->carrier_group_id)->get();
+              
+                $rate_room_type = 0;
+                foreach( $guestratevip as $row){
+                    $rate_room_type = $row->room_type_ids;
+                    $rate_room_type = explode(',', $rate_room_type);
+                    if(in_array($bcext->applied_room_type,$rate_room_type)){
+                        $slab = $row->time_slab;
+                        $carrier = $row->carrier_group_id;
+                        break;
+                    }
+                }
+                 if ($slab != 0 && $carrier != 0){
+                    $guestrate = GuestChargeMap::where('time_slab', $slab)
+                    ->where('carrier_group_id', $carrier)
+                    ->where('room_type_ids',$rate_room_type)
+                    ->first();
+                 }
+            } else{
+		        $guestrate = GuestChargeMap::where('time_slab', $timeslab->id)
+                    ->where('carrier_group_id', $dest_group->carrier_group_id)
+                    ->first();
+            }
 
             if (empty($guestrate)) {
                 // should be exception
@@ -3520,7 +4053,7 @@ private function getChargeValue($chargemode, $timeslab, $dest_group, $elapse, $e
 
             $timeslab = $result['data'];
 
-            $charge_value = $this->getChargeValue($chargemode, $timeslab, $dest_group, $elapse, $elapse_seconds, $ret, $alarm,$room_id ,$calleeid);
+            $charge_value = $this->getChargeValue($chargemode, $timeslab, $dest_group, $elapse, $elapse_seconds, $ret, $alarm,$room_id ,$calleeid, $bcext);
             if( $charge_value['code'] != 0 )
                 return $charge_value['data'];
         }
@@ -3923,6 +4456,226 @@ $bc_call_list = BCCall::where('call_date', '>', $call_date)
         return $this->sendAlarm($ret, $alarm);
     }
 
+    private function minibarPAcheck($request)
+    {
+        date_default_timezone_set(config('app.timezone'));
+		$cur_time = date("Y-m-d H:i:s");
+    
+        $ret = array();
+        $channel_id = 0;
+        $params = explode('|', $this->getParam($request->input('param', '0|0||EN|0|0|Y|160610|000000')));
+        $src_config = $request->input('src_config');
+        $property_id = $request->input('property_id', '0');
+        
+        if( !empty($src_config) )
+            $property_id = $src_config['src_property_id'];
+        $post_no = $params[4];
+         DB::table('services_minibar_posting_log')
+            ->where('posting_no', $post_no)
+            ->update([
+                'post_status' => 'PA',
+                'updated_at' => $cur_time
+            ]);
+        
+    }
+
+    private function dndOnGrms($request)
+    {
+        date_default_timezone_set(config('app.timezone'));
+		$cur_time = date("Y-m-d H:i:s");
+    
+        $ret = array();
+        $channel_id = 0;
+        $params = explode('|', $this->getParam($request->input('param', '0|0||EN|0|0|Y|160610|000000')));
+        $src_config = $request->input('src_config');
+        $property_id = $request->input('property_id', '0');
+        
+        if( !empty($src_config) )
+            $property_id = $src_config['src_property_id'];
+        $room = $params[0];
+        $room_info = $this->getRoomInfowdChannel($property_id, $room, $src_config);
+        if (!empty($room_info))
+        {
+            $room_status = HskpRoomStatus::where('id',$room_info->id)->first();
+            if ($room_status->working_status != 3)
+            {
+                HskpRoomStatus::where('id', $room_info->id)->update(['working_status' => 3]);
+                $hskp_log = new HskpStatusLog();
+		        $hskp_log->room_id = $room_info->id;
+		        $hskp_log->hskp_id = $room_info->hskp_status_id;
+		        $hskp_log->user_id = 0;
+		        $hskp_log->state = 3;	// DND
+                $hskp_log->method = 'GRMS';
+		        $hskp_log->created_at = $cur_time;
+		        $hskp_log->save();
+                Functions::sendHskpStatusChangeWithRoom($room_info->id);
+                if ($room_status->attendant_id > 0)
+                {
+                    $attendant = DB::table('services_roster_list')
+								->where('id', $room_status->attendant_id)
+								->first();
+                    $message = 'Room ' . $room.' DND ON';
+		            RosterList::sendRosterNotification($attendant, $message);
+                }
+                if ($room_status->supervisor_id > 0)
+                {
+                    $supervisor = DB::table('services_roster_list')
+								->where('id', $room_status->supervisor_id)
+								->first();
+                    $message = 'Room ' . $room.' DND ON';
+		            RosterList::sendRosterNotification($supervisor, $message);
+                }
+            }
+        }
+        
+    }
+
+    private function dndOffGrms($request)
+    {
+        date_default_timezone_set(config('app.timezone'));
+		$cur_time = date("Y-m-d H:i:s");
+    
+        $ret = array();
+        $channel_id = 0;
+        $params = explode('|', $this->getParam($request->input('param', '0|0||EN|0|0|Y|160610|000000')));
+        $src_config = $request->input('src_config');
+
+        $property_id = $request->input('property_id', '0');
+        
+        if( !empty($src_config) )
+            $property_id = $src_config['src_property_id'];
+
+        $room = $params[0];
+        $room_info = $this->getRoomInfowdChannel($property_id, $room, $src_config);
+
+        if (!empty($room_info))
+        {
+            $room_status = HskpRoomStatus::where('id',$room_info->id)->first();
+
+            if ($room_status->working_status == 3)
+            {
+
+                if ($room_status->attendant_id == 0)
+                {
+                    HskpRoomStatus::where('id', $room_info->id)->update(['working_status' => 100]);
+
+                    $hskp_log = new HskpStatusLog();
+
+		            $hskp_log->room_id = $room_info->id;
+		            $hskp_log->hskp_id = $room_info->hskp_status_id;
+		            $hskp_log->user_id = 0;
+		            $hskp_log->state = 100;	// DND
+                    $hskp_log->method = 'GRMS';
+		            $hskp_log->created_at = $cur_time;
+
+		            $hskp_log->save();
+
+                }
+                if ($room_status->attendant_id > 0)
+                {
+                    HskpRoomStatus::where('id', $room_info->id)->update(['working_status' => 0]);
+
+                    $hskp_log = new HskpStatusLog();
+
+		            $hskp_log->room_id = $room_info->id;
+		            $hskp_log->hskp_id = $room_info->hskp_status_id;
+		            $hskp_log->user_id = 0;
+		            $hskp_log->state = 0;	// DND
+                    $hskp_log->method = 'GRMS';
+		            $hskp_log->created_at = $cur_time;
+
+		            $hskp_log->save();
+
+                }
+
+                Functions::sendHskpStatusChangeWithRoom($room_info->id);
+                if ($room_status->attendant_id > 0)
+                {
+
+                    $attendant = DB::table('services_roster_list')
+								->where('id', $room_status->attendant_id)
+								->first();
+                    $message = 'Room ' . $room.' DND OFF';
+		            RosterList::sendRosterNotification($attendant, $message);
+                }
+
+                if ($room_status->supervisor_id > 0)
+                {
+                    $supervisor = DB::table('services_roster_list')
+								->where('id', $room_status->supervisor_id)
+								->first();
+                    $message = 'Room ' . $room.' DND OFF';
+		            RosterList::sendRosterNotification($supervisor, $message);
+                }
+            }
+        }
+        
+    }
+
+    private function murGrms($request)
+    {
+        date_default_timezone_set(config('app.timezone'));
+		$cur_time = date("Y-m-d H:i:s");
+    
+        $ret = array();
+        $channel_id = 0;
+        $params = explode('|', $this->getParam($request->input('param', '0|0||EN|0|0|Y|160610|000000')));
+        $src_config = $request->input('src_config');
+
+        $property_id = $request->input('property_id', '0');
+        
+        if( !empty($src_config) )
+            $property_id = $src_config['src_property_id'];
+
+        $room = $params[0];
+
+        $task = DB::table('property_setting')
+			->where('settings_key','grms_mur_task_id')
+			->where('property_id',$property_id)
+			->select('value')
+			->first();
+
+        if (!empty($task))
+            $task_id = $task->value;
+        else
+            $task_id = 0;
+
+        $quantity = 1;
+        $type = 1;
+		$comment = 'Requested Via GRMS';
+		$priority = 1;
+		$start_date_time = $cur_time;
+		$picture_path = '';
+		$location_type = $request->get('location_type', "Room");
+
+        $arr = array();
+		
+
+        $arr['user_id']=0;
+		$arr['property_id']=$property_id;
+		$arr['room']=$room;
+		$arr['task_id']=$task_id;
+		$arr['quantity']=$quantity;
+		$arr['type']=$type;
+		$arr['start_date_time']=$start_date_time;
+		$arr['picture_path']=$picture_path;
+		$arr['priority']=$priority;
+		$arr['comment']=$comment;
+		$arr['location_type']=$location_type;
+		$arr['status_id'] = 1;
+		$arr['checklist_id'] = 0;
+
+        $room_info = $this->getRoomInfowdChannel($arr['property_id'], $arr['room'], $src_config);
+
+        if (!empty($room_info) && $task_id != 0)
+        {
+            $room_id = $room_info->id;
+            $model = app('App\Http\Controllers\Frontend\GuestserviceController')->createMURfromGRMS($arr, $room_id, $room_info, $ret);
+
+            return $model;
+        }
+    }
+
     private function hoursToMinute($hour)
     { // $hour must be a string type: "HH:mm:ss"
 
@@ -4047,9 +4800,12 @@ $bc_call_list = BCCall::where('call_date', '>', $call_date)
                             ->exists();
 
                         if ($exist == false){
-
-                                HskpRoomStatus::where('id', $room_id)->update(['occupancy' => 'Vacant', 'schedule' => '']);
-
+                            $room_status = HskpRoomStatus::where('id',$room_id)->first();
+                            if ($room_status->attendant_id == 0 ){
+                                HskpRoomStatus::where('id', $room_id)->update(['occupancy' => 'Vacant', 'schedule' => '', 'fo_state' => NULL, 'working_status' => 100, 'full_clean_date' => NULL]);
+                            }else{
+                                HskpRoomStatus::where('id', $room_id)->update(['occupancy' => 'Vacant', 'schedule' => '', 'fo_state' => NULL, 'working_status' => 0, 'full_clean_date' => NULL]);
+                            }
                         }
                         $this->sendCheckoutResponse($ret, $room_id, $guest_name);
                         break;    
@@ -4094,7 +4850,7 @@ $bc_call_list = BCCall::where('call_date', '>', $call_date)
                         
                         $request->request->add(['param' => $params]);                    
                         
-                        $this->checkin($request);                    
+                        $this->checkin($request, 0);                    
                         break;
                     case 'Checkout':
                         $guest_id = $request->get('guest_id', 0);
@@ -4241,208 +4997,46 @@ $bc_call_list = BCCall::where('call_date', '>', $call_date)
 				->update($input);
     }
 
-    private function offline_checkin($request){
-        //room number, fo_status, occupancy, room state ,adult, kid - 101|Checked In|OCC|DI|1|0
-        $params = explode('|', $this->getParam($request->input('param', ''))); 
+    public function updateDNDIvr(Request $request)
+    {
         $property_id = $request->input('property_id', '0');
+        $building_id = $request->input('building_id', '0');
+        $room_number = $request->input('room_id', '0');
 
-        $src_config = $request->input('src_config');
-        if( !empty($src_config) ){
-            $property_id_src = $src_config['src_property_id'];
-        }
-        if($property_id_src == $property_id){
+        $room_info = DB::table('common_room as r')
+            ->join('common_floor as f', 'r.flr_id', '=', 'f.id')
+            ->join('common_building as b', 'f.bldg_id', '=', 'b.id')
+            ->where('b.id', '=', $building_id)
+            ->where('r.room', '=', $room_number)
+            ->where('b.property_id', '=', $property_id)
+            ->select(DB::raw('r.id, f.bldg_id,r.room'))->first();
 
-            $rm_info =  DB::table('common_room as r')
-                    ->leftJoin('services_room_status as srs', 'r.id', '=', 'srs.id')
-                    ->where('r.room','=', (int)$params[0])
-                    ->where('srs.property_id','=',$property_id)
+        if (!empty($room_info)) {
+            $exists = GuestExtension::where('room_id', '=', $room_info->id)->exists();
+
+            if ($exists) {
+
+                $guest = Guest::where('room_id', $room_info->id)
+                    ->where('checkout_flag', 'checkin')
                     ->first();
-        
-            if (!empty($rm_info)) {
+                if (!empty($guest)) {  
 
-                // services_hskp_log config
-                $update_hskp_log = DB::table('offline_interface_update_config')
-                    ->where('property_id', $property_id)
-                    ->where('incoming_property','ov_occupancy')
-                    ->where('table_name','services_hskp_log')
-                    ->where('incoming_value', $params[2])
-                    ->first();
-
-                $cur_time = date("Y-m-d H:i:s");
-            
-                $hskp_log = new HskpStatusLog();
-                $hskp_log->room_id = $rm_info->id;
-                $hskp_log->hskp_id = 0;
-                $hskp_log->user_id = 0;
-                $hskp_log->method = "offlinefiles";
-                if(!empty($update_hskp_log)){
-                    $hskp_log->state = $update_hskp_log->value;
-                }
-                $hskp_log->created_at = $cur_time;
-                $hskp_log->save();
-
-                // services_room_status config
-
-                $rm_status = HskpRoomStatus::where('id','=',$rm_info->id)
-                ->where('property_id',$property_id)->first();
-
-                //update rm_state
-                $update_rm_status = DB::table('offline_interface_update_config')
-                    ->where('property_id', $property_id)
-                    ->where('incoming_property','rm_state')
-                    ->where('table_name','services_room_status')
-                    ->where('column_name','rm_state')
-                    ->where('incoming_value', $params[3])
-                    ->first();
-
-                if(!empty($update_rm_status)){
-                    $rm_status->rm_state = $update_rm_status->value;
-                }
-
-                //update room_status
-                $update_room_status = DB::table('offline_interface_update_config')
-                    ->where('property_id', $property_id)
-                    ->where('incoming_property','rm_state')
-                    ->where('table_name','services_room_status')
-                    ->where('column_name','room_status')
-                    ->where('incoming_value', $params[3])
-                    ->first();
-
-                if(!empty($update_room_status)){
-                    $rm_status->room_status = $update_room_status->value;
-                }
-
-                //update ov_occupancy
-                $update_ov_occupancy = DB::table('offline_interface_update_config')
-                    ->where('property_id', $property_id)
-                    ->where('incoming_property','ov_occupancy')
-                    ->where('table_name','services_room_status')
-                    ->where('column_name','ov_occupancy')
-                    ->where('incoming_value', $params[2])
-                    ->first();
-
-                if(!empty($update_ov_occupancy)){
-                    $rm_status->ov_occupancy = $update_ov_occupancy->value;
-                }
-
-                // $update_service_state = DB::table('offline_interface_update_config')
-                //     ->where('property_id', $property_id)
-                //     ->where('incoming_property','rm_state')
-                //     ->where('table_name','services_room_status')
-                //     ->where('column_name','service_state')
-                //     ->where('incoming_value', $params[3])
-                //     ->first();
-                // if(!empty($update_service_state)){
-                //     $rm_status->service_state = $update_service_state->value;
-                // }
-                
-                // fo_state to fo_state
-                $update_fo_state = DB::table('offline_interface_update_config')
-                    ->where('property_id', $property_id)
-                    ->where('incoming_property','fo_state')
-                    ->where('table_name','services_room_status')
-                    ->where('column_name','fo_state')
-                    ->where('incoming_value', $params[1])
-                    ->first();
-
-                if(!empty($update_fo_state)){
-                    $rm_status->fo_state = $update_fo_state->value;
-                }
-
-                //exception for fo_state with occupancy
-                $update_ov_occupancy_fo = DB::table('offline_interface_update_config')
-                    ->where('property_id', $property_id)
-                    ->where('incoming_property','ov_occupancy')
-                    ->where('table_name','services_room_status')
-                    ->where('column_name','fo_state')
-                    ->where('incoming_value', $params[2])
-                    ->first();
-
-                if(!empty($update_ov_occupancy_fo)){
-                    $rm_status->fo_state = $update_ov_occupancy_fo->value;
-                }
-
-                // if($rm_status->ov_occupancy == 'Vacant'){
-                //     $rm_status->fo_state = 'Checked Out';
-                // }else{
-                //     $rm_status->fo_state = $params[1];
-                // }
-                // if($rm_status->rm_state = "Out of Service"){
-                //     $rm_status->service_state = "OOS";
-                // }
-                // if($rm_status->rm_state = "Out of Order"){
-                //     $rm_status->service_state = "OOO";
-                // }
-
-                //update service_state
-                $update_service_state = DB::table('offline_interface_update_config')
-                    ->where('property_id', $property_id)
-                    ->where('incoming_property','rm_state')
-                    ->where('table_name','services_room_status')
-                    ->where('column_name','service_state')
-                    ->where('incoming_value', $params[3])
-                    ->first();
-                if(!empty($update_service_state)){
-                    $rm_status->service_state = $update_service_state->value;
-                }
-
-                //update working_status
-                $update_working_status = DB::table('offline_interface_update_config')
-                    ->where('property_id', $property_id)
-                    ->where('incoming_property','rm_state')
-                    ->where('table_name','services_room_status')
-                    ->where('column_name','working_status')
-                    ->where('incoming_value', $params[3])
-                    ->first();
-
-                if(!empty($update_working_status)){
-                    if ($rm_status->working_status  == 0 || $rm_status->working_status  == 1 || $rm_status->working_status  == 2 || $rm_status->working_status  == 7)
-                    {
-                        $rm_status->working_status = $update_working_status->value;
+                    if ($guest->dnd == 0){
+                        Guest::where('room_id', $room_info->id)
+                            ->where('checkout_flag', 'checkin')
+                            ->update(['dnd' => 1]);
                     }
-                }
-
-                $rm_status->save();
-
-                $rules = array();
-
-		        $rules['offline_adult_kid'] = 0;
-
-                $rules = PropertySetting::getPropertySettings($property_id, $rules);
-                $cur_date = date("Y-m-d");
-
-                if ($rules['offline_adult_kid'] == 1){
-
-                    $guest = DB::table('common_guest as cg')
-				            ->join('common_room as cr', 'cg.room_id', '=', 'cr.id')
-				            ->join('common_floor as cf', 'cr.flr_id', '=', 'cf.id')	
-				            ->join('common_building as cb', 'cf.bldg_id', '=', 'cb.id')
-					        ->where('cg.room_id', $rm_info->id)
-					        ->where('cg.departure', '>=', $cur_date)
-					        ->where('cg.checkout_flag', 'checkin')
-					        ->where('cg.property_id',$property_id)
-					        ->where('cb.property_id',$property_id)
-					        ->first();
-
-                    if (!empty($guest)){
-
-                         DB::table('common_guest as cg')
-				            ->join('common_room as cr', 'cg.room_id', '=', 'cr.id')
-				            ->join('common_floor as cf', 'cr.flr_id', '=', 'cf.id')	
-				            ->join('common_building as cb', 'cf.bldg_id', '=', 'cb.id')
-					        ->where('cg.room_id', $rm_info->id)
-					        ->where('cg.departure', '>=', $cur_date)
-					        ->where('cg.checkout_flag', 'checkin')
-					        ->where('cg.property_id',$property_id)
-					        ->where('cb.property_id',$property_id)
-					        ->update(['cg.adult' => $params[4], 'cg.chld' => $params[5]]);
+                    else{
+                        Guest::where('room_id', $room_info->id)
+                            ->where('checkout_flag', 'checkin')
+                            ->update(['dnd' => 0]);
                     }
+                    $this->saveGuestLog('dnd', $guest->id);
 
+                    $guest_upd = Guest::where('id', $guest->id)->first();
 
+                    return $guest_upd->dnd;
                 }
-
-
-
 
             }
 
@@ -4450,150 +5044,69 @@ $bc_call_list = BCCall::where('call_date', '>', $call_date)
 
     }
 
-    private function offline_vacant($request){
-        //room number, occupancy, room state - 108|VAC|OS
-        $params = explode('|', $this->getParam($request->input('param', ''))); 
-        $property_id = $request->input('property_id', '0');
-
-        $src_config = $request->input('src_config');
-        if( !empty($src_config) ){
-            $property_id_src = $src_config['src_property_id'];
-        }
-        if($property_id_src == $property_id){
-
-            $rm_info =  DB::table('common_room as r')
-                    ->leftJoin('services_room_status as srs', 'r.id', '=', 'srs.id')
-                    ->where('r.room','=', (int)$params[0])
-                    ->where('srs.property_id','=',$property_id)
-                    ->first();
+    private function sendCheckinEmailtoGuest($guest_id, $property_id)
+    {
         
-            if (!empty($rm_info)) {
+        $guest_data = DB::table('common_guest as cg')
+                    ->leftjoin('common_property as cp', 'cg.property_id', '=', 'cp.id')
+                    ->leftjoin('common_room as cr', 'cg.room_id', '=', 'cr.id')
+			        ->where('cg.id', $guest_id)
+			        
+                    ->select(DB::raw('cg.*,cp.name as property_name, cr.room'))
+			        ->first();
+        if(empty($guest_data))
+			return '0';
 
-                // services_hskp_log config
-                $update_hskp_log = DB::table('offline_interface_update_config')
-                    ->where('property_id', $property_id)
-                    ->where('incoming_property','rm_state')
-                    ->where('table_name','services_hskp_log')
-                    ->where('incoming_value', $params[2])
-                    ->first();
+        $guest = (object)array();
+	    $guest->guest_name = $guest_data->guest_name;
+		$guest->property_name = $guest_data->property_name;
+        $guest->room_number = $guest_data->room;
+        $guest->checkin_date = $guest_data->arrival;
+        $guest->checkout_date = $guest_data->departure;
+        $guest->current_date = date("Y-m-d");
+        $guest->current_time = date("H:i");
+		$data = array();
+		$data['property_id'] = $property_id;
+		$data['guest'] = $guest;
+		$email_content = GuestCheckinTemplate::generateTemplate($data);
 
-                $cur_time = date("Y-m-d H:i:s");
-                
-                $hskp_log = new HskpStatusLog();
-                $hskp_log->room_id = $rm_info->id;
-                $hskp_log->hskp_id = 0;
-                $hskp_log->user_id = 0;
-                $hskp_log->method = "offlinefiles";
-                if(!empty($update_hskp_log)){
-                    $hskp_log->state = $update_hskp_log->value;
-                }
-                $hskp_log->created_at = $cur_time;
-                $hskp_log->save();
+        $settings = PropertySetting::getGuestServiceSetting($property_id);
+		$send_flag = $settings['send_email_to_guest'];
+        if ($send_flag == 'ON')
+        {
+            $smtp = Functions::getMailSetting($property_id, 'notification_');
 
-                // services_room_status config
-                $update_room_status = DB::table('offline_interface_update_config')
-                    ->where('property_id', $property_id)
-                    ->where('incoming_property','rm_state')
-                    ->where('table_name','services_room_status')
-                    ->where('column_name','working_status')
-                    ->where('incoming_value', $params[2])
-                    ->first();
+            if (!empty($guest_data->email))
+            {
+                $message = array();
 
-                $rm_status = HskpRoomStatus::where('id','=',$rm_info->id)
-                ->where('property_id',$property_id)->first();
+                $message['type'] = 'email';
+		        $message['to'] = $guest_data->email;
+		        $message['subject'] = "Welcome to " . $guest_data->property_name;
+		        $message['content'] = $email_content;
+		        $message['smtp'] = $smtp;
 
-                //update rm_state
-                $update_rm_status = DB::table('offline_interface_update_config')
-                    ->where('property_id', $property_id)
-                    ->where('incoming_property','rm_state')
-                    ->where('table_name','services_room_status')
-                    ->where('column_name','rm_state')
-                    ->where('incoming_value', $params[2])
-                    ->first();
-
-                if(!empty($update_rm_status)){
-                    $rm_status->rm_state = $update_rm_status->value;
-                }
-
-                //update room_status
-                $update_room_status = DB::table('offline_interface_update_config')
-                    ->where('property_id', $property_id)
-                    ->where('incoming_property','rm_state')
-                    ->where('table_name','services_room_status')
-                    ->where('column_name','room_status')
-                    ->where('incoming_value', $params[2])
-                    ->first();
-
-                if(!empty($update_room_status)){
-                    $rm_status->room_status = $update_room_status->value;
-                }
-
-                //$rm_status->rm_state = $this->roomStateValue($params[2]);
-                //$rm_status->room_status = $this->roomStateValue($params[2]);
-
-                //update ov_occupancy
-                $update_ov_occupancy = DB::table('offline_interface_update_config')
-                    ->where('property_id', $property_id)
-                    ->where('incoming_property','ov_occupancy')
-                    ->where('table_name','services_room_status')
-                    ->where('column_name','ov_occupancy')
-                    ->where('incoming_value', $params[1])
-                    ->first();
-
-                if(!empty($update_ov_occupancy)){
-                    $rm_status->ov_occupancy = $update_ov_occupancy->value;
-                }
-
-                //exception for fo_state with occupancy
-                $update_ov_occupancy_fo = DB::table('offline_interface_update_config')
-                    ->where('property_id', $property_id)
-                    ->where('incoming_property','ov_occupancy')
-                    ->where('table_name','services_room_status')
-                    ->where('column_name','fo_state')
-                    ->where('incoming_value', $params[1])
-                    ->first();
-
-                if(!empty($update_ov_occupancy_fo)){
-                    $rm_status->fo_state = $update_ov_occupancy_fo->value;
-                }
-
-                //$rm_status->ov_occupancy = $this->occupancyValue($params[1]);
-                // if($rm_status->ov_occupancy == 'Vacant'){
-                //     $rm_status->fo_state = 'Checked Out';
-                // }
-                // if($rm_status->rm_state = "Out of Service"){
-                //     $rm_status->service_state = "OOS";
-                // }
-                // if($rm_status->rm_state = "Out of Order"){
-                //     $rm_status->service_state = "OOO";
-                // }
-                $update_service_state = DB::table('offline_interface_update_config')
-                    ->where('property_id', $property_id)
-                    ->where('incoming_property','rm_state')
-                    ->where('table_name','services_room_status')
-                    ->where('column_name','service_state')
-                    ->where('incoming_value', $params[2])
-                    ->first();
-                if(!empty($update_service_state)){
-                    $rm_status->service_state = $update_service_state->value;
-                }
-
-                $update_working_status = DB::table('offline_interface_update_config')
-                    ->where('property_id', $property_id)
-                    ->where('incoming_property','rm_state')
-                    ->where('table_name','services_room_status')
-                    ->where('column_name','working_status')
-                    ->where('incoming_value', $params[2])
-                    ->first();
-
-                if(!empty($update_working_status)){
-                    if ($rm_status->working_status  == 0 || $rm_status->working_status  == 1 || $rm_status->working_status  == 2 || $rm_status->working_status  == 7){
-                        $rm_status->working_status = $update_working_status->value;
-                    }
-                }
-                $rm_status->save();
+		        Redis::publish('notify', json_encode($message));
             }
-
         }
+
+    }
+
+    public function getOfflineInterfaceFileConnections(Request $request)
+    {
+        $connections = DB::table('offline_interface_connection')->get();
+
+        if(!empty($connections)){
+            $ret['code'] = 200;
+            $ret['message'] = 'Offline Interface Connections';
+            $ret['connections'] = $connections;
+        }
+        else{
+            $ret['code'] = 200;
+            $ret['message'] = 'No Offline Interface Connections';
+            $ret['connections'] = [];
+        }
+
+        return Response::json($ret);
     }
 }
