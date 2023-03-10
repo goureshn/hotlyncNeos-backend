@@ -203,6 +203,9 @@ Route::prefix('guestservice')->group(function () {
         Route::any('updaterosterdevice', 'updateRosterForDevice');
         Route::any('transferdevice', 'transferDevice');
         Route::any('clearallrosters', 'clearAllRosters');
+        Route::any('uploadguestcustomimg', 'uploadguestcustomimg');
+        Route::any('removeguestcustomimg', 'removeguestcustomimg');
+        Route::any('emailvippdf', 'emailvippdf');
         Route::any('uploadguestimg', 'uploadGuestImg');
         Route::any('exportguestfacility', 'exportGuestFacilityList')->withoutMiddleware('api_auth_group');
     });
