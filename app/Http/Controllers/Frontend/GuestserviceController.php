@@ -151,7 +151,7 @@ class GuestserviceController extends Controller
 		$filekey = "guest_custom_img";
 		$query = DB::table('common_guest')->where('guest_id', $guest_id);
 		$data = $query->first()->custom_imgs;
-		$custom_imgs = $data === null ? [] : json_decode($data);
+		$custom_imgs = $data === null || $data === "null" || $data === "NULL" ? [] : json_decode($data);
 		$ret = array();
 
         if(!File::isDirectory(public_path($output_dir)))
